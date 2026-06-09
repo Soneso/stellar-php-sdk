@@ -21,6 +21,7 @@ class XdrEnvelopeType {
     const ENVELOPE_TYPE_POOL_REVOKE_OP_ID = 7;
     const ENVELOPE_TYPE_CONTRACT_ID = 8;
     const ENVELOPE_TYPE_SOROBAN_AUTHORIZATION = 9;
+    const ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS = 10;
 
     public function __construct(int $value) {
         $this->value = $value;
@@ -70,6 +71,10 @@ class XdrEnvelopeType {
         return new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION);
     }
 
+    public static function ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS(): XdrEnvelopeType {
+        return new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }
@@ -87,6 +92,7 @@ class XdrEnvelopeType {
             case 7:
             case 8:
             case 9:
+            case 10:
                 return new XdrEnvelopeType($value);
             default:
                 throw new InvalidArgumentException("Unknown enum value: $value");
@@ -117,6 +123,7 @@ class XdrEnvelopeType {
             self::ENVELOPE_TYPE_POOL_REVOKE_OP_ID => 'pool_revoke_op_id',
             self::ENVELOPE_TYPE_CONTRACT_ID => 'contract_id',
             self::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION => 'soroban_authorization',
+            self::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS => 'soroban_authorization_with_address',
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown XdrEnvelopeType enum value: ' . $this->value
@@ -142,6 +149,7 @@ class XdrEnvelopeType {
             'pool_revoke_op_id' => new static(self::ENVELOPE_TYPE_POOL_REVOKE_OP_ID),
             'contract_id' => new static(self::ENVELOPE_TYPE_CONTRACT_ID),
             'soroban_authorization' => new static(self::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION),
+            'soroban_authorization_with_address' => new static(self::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS),
             default => throw new InvalidArgumentException(
                 'Unknown XdrEnvelopeType JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
@@ -188,6 +196,8 @@ class XdrEnvelopeType {
                 return 'ENVELOPE_TYPE_CONTRACT_ID';
             case self::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION:
                 return 'ENVELOPE_TYPE_SOROBAN_AUTHORIZATION';
+            case self::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS:
+                return 'ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS';
             default:
                 return 'XdrEnvelopeType#' . $this->value;
         }
@@ -215,6 +225,8 @@ class XdrEnvelopeType {
                 return new static(self::ENVELOPE_TYPE_CONTRACT_ID);
             case 'ENVELOPE_TYPE_SOROBAN_AUTHORIZATION':
                 return new static(self::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION);
+            case 'ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS':
+                return new static(self::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS);
             default:
                 $prefix = 'XdrEnvelopeType#';
                 if (str_starts_with($name, $prefix)) {

@@ -22,6 +22,57 @@ class XdrExporterGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrLedgerCloseMetaBatch');
     }
 
+    public function testXdrLedgerCloseMetaBatchStructJsonRoundTrip(): void
+    {
+        $original = new XdrLedgerCloseMetaBatch(42, 42, []);
+        $j1 = $original->toJsonValue();
+        $back = XdrLedgerCloseMetaBatch::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLedgerCloseMetaBatch');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrLedgerCloseMetaBatch');
+        $back2 = XdrLedgerCloseMetaBatch::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLedgerCloseMetaBatch');
+    }
+
+    public function testXdrLedgerCloseMetaBatchStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrLedgerCloseMetaBatch(42, 42, []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrLedgerCloseMetaBatch::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrLedgerCloseMetaBatchGettersSetters(): void
     {
         $obj = new XdrLedgerCloseMetaBatch(42, 42, []);

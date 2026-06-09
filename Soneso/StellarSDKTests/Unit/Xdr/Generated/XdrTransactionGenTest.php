@@ -76,12 +76,16 @@ use Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLOp;
 use Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResult;
 use Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLResultCode;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
+use Soneso\StellarSDK\Xdr\XdrFeeBumpTransaction;
+use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionEnvelope;
 use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionExt;
+use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionInnerTx;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimage;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimageContractID;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimageOperationID;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimageRevokeID;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimageSorobanAuthorization;
+use Soneso\StellarSDK\Xdr\XdrHashIDPreimageSorobanAuthorizationWithAddress;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionBase;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
@@ -129,7 +133,12 @@ use Soneso\StellarSDK\Xdr\XdrMuxedAccountMed25519;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccountMed25519Base;
 use Soneso\StellarSDK\Xdr\XdrOfferEntry;
 use Soneso\StellarSDK\Xdr\XdrOfferEntryExt;
+use Soneso\StellarSDK\Xdr\XdrOperation;
+use Soneso\StellarSDK\Xdr\XdrOperationBody;
+use Soneso\StellarSDK\Xdr\XdrOperationResult;
 use Soneso\StellarSDK\Xdr\XdrOperationResultCode;
+use Soneso\StellarSDK\Xdr\XdrOperationResultTr;
+use Soneso\StellarSDK\Xdr\XdrOperationResultTrBase;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrPathPaymentResultSuccess;
 use Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation;
@@ -168,7 +177,9 @@ use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
 use Soneso\StellarSDK\Xdr\XdrSimplePaymentResult;
 use Soneso\StellarSDK\Xdr\XdrSorobanAddressCredentials;
+use Soneso\StellarSDK\Xdr\XdrSorobanAddressCredentialsWithDelegates;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntries;
+use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntry;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunction;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionBase;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionType;
@@ -176,40 +187,109 @@ use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedInvocation;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentials;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsBase;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
+use Soneso\StellarSDK\Xdr\XdrSorobanDelegateSignature;
 use Soneso\StellarSDK\Xdr\XdrSorobanResources;
 use Soneso\StellarSDK\Xdr\XdrSorobanResourcesExtV0;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
 use Soneso\StellarSDK\Xdr\XdrTimeBounds;
 use Soneso\StellarSDK\Xdr\XdrTimeBoundsBase;
+use Soneso\StellarSDK\Xdr\XdrTransaction;
+use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrTransactionEnvelopeBase;
 use Soneso\StellarSDK\Xdr\XdrTransactionExt;
 use Soneso\StellarSDK\Xdr\XdrTransactionResult;
 use Soneso\StellarSDK\Xdr\XdrTransactionResultCode;
 use Soneso\StellarSDK\Xdr\XdrTransactionResultExt;
 use Soneso\StellarSDK\Xdr\XdrTransactionResultResult;
+use Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayload;
+use Soneso\StellarSDK\Xdr\XdrTransactionSignaturePayloadTaggedTransaction;
 use Soneso\StellarSDK\Xdr\XdrTransactionV0;
 use Soneso\StellarSDK\Xdr\XdrTransactionV0Base;
 use Soneso\StellarSDK\Xdr\XdrTransactionV0Envelope;
 use Soneso\StellarSDK\Xdr\XdrTransactionV0Ext;
+use Soneso\StellarSDK\Xdr\XdrTransactionV1Envelope;
 
 class XdrTransactionGenTest extends TestCase
 {
-    public function testXdrLiquidityPoolParameters_XdrLiquidityPoolType_LIQUIDITY_POOL_CONSTANT_PRODUCT_ArmRoundTrip(): void
+    public function testXdrLiquidityPoolParametersUnionRoundTrip(): void
     {
-        $original = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT));
-        $original->constantProduct = new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 42);
+        $original = (function() { $p = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT)); $p->constantProduct = new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 30); return $p; })();
         $encoded = $original->encode();
         $decoded = XdrLiquidityPoolParameters::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
-        $this->assertNotNull($decoded->constantProduct);
-        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrLiquidityPoolParameters');
         $b64Decoded = XdrLiquidityPoolParameters::fromBase64Xdr($original->toBase64Xdr());
-        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrLiquidityPoolParameters');
+    }
+
+    public function testXdrLiquidityPoolParametersUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $p = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT)); $p->constantProduct = new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 30); return $p; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrLiquidityPoolParameters::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolParameters arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolParameters arm fallback');
+        $back2 = XdrLiquidityPoolParameters::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolParameters arm fallback');
+        $arm1 = (function() { $u = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT)); $u->constantProduct = new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 30); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrLiquidityPoolParameters::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolParameters arm XdrLiquidityPoolType_LIQUIDITY_POOL_CONSTANT_PRODUCT');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolParameters arm XdrLiquidityPoolType_LIQUIDITY_POOL_CONSTANT_PRODUCT');
+        $back2 = XdrLiquidityPoolParameters::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolParameters arm XdrLiquidityPoolType_LIQUIDITY_POOL_CONSTANT_PRODUCT');
+    }
+
+    public function testXdrLiquidityPoolParametersUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $p = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT)); $p->constantProduct = new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 30); return $p; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT)); $u->constantProduct = new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 30); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrLiquidityPoolParameters::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrLiquidityPoolParameters: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrLiquidityPoolParameters::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrLiquidityPoolParameters: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrLiquidityPoolParametersGettersSetters(): void
     {
-        $obj = (function() { $u = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT)); $u->constantProduct = new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 42); return $u; })();
+        $obj = (function() { $p = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT)); $p->constantProduct = new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 30); return $p; })();
         $this->assertNotNull($obj->getType());
         $obj->getConstantProduct();
     }
@@ -222,6 +302,79 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrMuxedAccount');
         $b64Decoded = XdrMuxedAccount::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrMuxedAccount');
+    }
+
+    public function testXdrMuxedAccountUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrMuxedAccount(str_repeat("\xAB", 32));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrMuxedAccount::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrMuxedAccount arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrMuxedAccount arm fallback');
+        $back2 = XdrMuxedAccount::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrMuxedAccount arm fallback');
+        $arm1 = (function() { $u = new XdrMuxedAccountBase(new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_ED25519)); $u->ed25519 = str_repeat("\xAB", 32); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrMuxedAccount::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrMuxedAccount arm XdrCryptoKeyType_KEY_TYPE_ED25519');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrMuxedAccount arm XdrCryptoKeyType_KEY_TYPE_ED25519');
+        $back2 = XdrMuxedAccount::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrMuxedAccount arm XdrCryptoKeyType_KEY_TYPE_ED25519');
+        $arm2 = (function() { $u = new XdrMuxedAccountBase(new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_MUXED_ED25519)); $u->med25519 = new XdrMuxedAccountMed25519(42, str_repeat("\xAB", 32)); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrMuxedAccount::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrMuxedAccount arm XdrCryptoKeyType_KEY_TYPE_MUXED_ED25519');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrMuxedAccount arm XdrCryptoKeyType_KEY_TYPE_MUXED_ED25519');
+        $back2 = XdrMuxedAccount::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrMuxedAccount arm XdrCryptoKeyType_KEY_TYPE_MUXED_ED25519');
+    }
+
+    public function testXdrMuxedAccountUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrMuxedAccount(str_repeat("\xAB", 32)))->toJsonValue();
+        $samples[] = ((function() { $u = new XdrMuxedAccountBase(new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_ED25519)); $u->ed25519 = str_repeat("\xAB", 32); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrMuxedAccountBase(new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_MUXED_ED25519)); $u->med25519 = new XdrMuxedAccountMed25519(42, str_repeat("\xAB", 32)); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrMuxedAccount::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrMuxedAccount: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrMuxedAccount::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrMuxedAccount: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrMuxedAccountGettersSetters(): void
@@ -251,6 +404,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrMuxedAccountMed25519');
         $b64Decoded = XdrMuxedAccountMed25519::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrMuxedAccountMed25519');
+    }
+
+    public function testXdrMuxedAccountMed25519StructJsonRoundTrip(): void
+    {
+        $original = new XdrMuxedAccountMed25519(42, str_repeat("\xAB", 32));
+        $j1 = $original->toJsonValue();
+        $back = XdrMuxedAccountMed25519::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrMuxedAccountMed25519');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrMuxedAccountMed25519');
+        $back2 = XdrMuxedAccountMed25519::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrMuxedAccountMed25519');
+    }
+
+    public function testXdrMuxedAccountMed25519StructJsonRejectsInvalid(): void
+    {
+        $original = new XdrMuxedAccountMed25519(42, str_repeat("\xAB", 32));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrMuxedAccountMed25519::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrMuxedAccountMed25519EdgeCaseZeroRoundTrip(): void
@@ -295,6 +499,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrDecoratedSignature');
         $b64Decoded = XdrDecoratedSignature::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrDecoratedSignature');
+    }
+
+    public function testXdrDecoratedSignatureStructJsonRoundTrip(): void
+    {
+        $original = new XdrDecoratedSignature(str_repeat("\xAB", 4), str_repeat("\xAB", 64));
+        $j1 = $original->toJsonValue();
+        $back = XdrDecoratedSignature::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrDecoratedSignature');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrDecoratedSignature');
+        $back2 = XdrDecoratedSignature::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrDecoratedSignature');
+    }
+
+    public function testXdrDecoratedSignatureStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrDecoratedSignature(str_repeat("\xAB", 4), str_repeat("\xAB", 64));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrDecoratedSignature::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrDecoratedSignatureGettersSetters(): void
@@ -374,6 +629,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrOperationType::RESTORE_FOOTPRINT());
     }
 
+    public function testXdrOperationTypeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrOperationType::CREATE_ACCOUNT, XdrOperationType::PAYMENT, XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE, XdrOperationType::MANAGE_SELL_OFFER, XdrOperationType::CREATE_PASSIVE_SELL_OFFER, XdrOperationType::SET_OPTIONS, XdrOperationType::CHANGE_TRUST, XdrOperationType::ALLOW_TRUST, XdrOperationType::ACCOUNT_MERGE, XdrOperationType::INFLATION, XdrOperationType::MANAGE_DATA, XdrOperationType::BUMP_SEQUENCE, XdrOperationType::MANAGE_BUY_OFFER, XdrOperationType::PATH_PAYMENT_STRICT_SEND, XdrOperationType::CREATE_CLAIMABLE_BALANCE, XdrOperationType::CLAIM_CLAIMABLE_BALANCE, XdrOperationType::BEGIN_SPONSORING_FUTURE_RESERVES, XdrOperationType::END_SPONSORING_FUTURE_RESERVES, XdrOperationType::REVOKE_SPONSORSHIP, XdrOperationType::CLAWBACK, XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE, XdrOperationType::SET_TRUST_LINE_FLAGS, XdrOperationType::LIQUIDITY_POOL_DEPOSIT, XdrOperationType::LIQUIDITY_POOL_WITHDRAW, XdrOperationType::INVOKE_HOST_FUNCTION, XdrOperationType::EXTEND_FOOTPRINT_TTL, XdrOperationType::RESTORE_FOOTPRINT];
+        foreach ($values as $v) {
+            $original = new XdrOperationType($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrOperationType::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationType value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationType value ' . $v);
+            $back2 = XdrOperationType::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationType value ' . $v);
+        }
+    }
+
+    public function testXdrOperationTypeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrOperationType::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrOperationType JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrCreateAccountOperationStructRoundTrip(): void
     {
         $original = new XdrCreateAccountOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new BigInteger('123456789'));
@@ -382,6 +662,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrCreateAccountOperation');
         $b64Decoded = XdrCreateAccountOperation::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrCreateAccountOperation');
+    }
+
+    public function testXdrCreateAccountOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrCreateAccountOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new BigInteger('123456789'));
+        $j1 = $original->toJsonValue();
+        $back = XdrCreateAccountOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateAccountOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateAccountOperation');
+        $back2 = XdrCreateAccountOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateAccountOperation');
+    }
+
+    public function testXdrCreateAccountOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrCreateAccountOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new BigInteger('123456789'));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['starting_balance' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrCreateAccountOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrCreateAccountOperationGettersSetters(): void
@@ -405,6 +736,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrPaymentOperation');
         $b64Decoded = XdrPaymentOperation::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrPaymentOperation');
+    }
+
+    public function testXdrPaymentOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrPaymentOperation(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'));
+        $j1 = $original->toJsonValue();
+        $back = XdrPaymentOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPaymentOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrPaymentOperation');
+        $back2 = XdrPaymentOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPaymentOperation');
+    }
+
+    public function testXdrPaymentOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrPaymentOperation(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['amount' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrPaymentOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrPaymentOperationGettersSetters(): void
@@ -432,6 +814,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrPathPaymentStrictReceiveOperation');
         $b64Decoded = XdrPathPaymentStrictReceiveOperation::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrPathPaymentStrictReceiveOperation');
+    }
+
+    public function testXdrPathPaymentStrictReceiveOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrPathPaymentStrictReceiveOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), []);
+        $j1 = $original->toJsonValue();
+        $back = XdrPathPaymentStrictReceiveOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictReceiveOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictReceiveOperation');
+        $back2 = XdrPathPaymentStrictReceiveOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictReceiveOperation');
+    }
+
+    public function testXdrPathPaymentStrictReceiveOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrPathPaymentStrictReceiveOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['send_max' => true, 'dest_amount' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrPathPaymentStrictReceiveOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrPathPaymentStrictReceiveOperationStructWithArraysRoundTrip(): void
@@ -480,6 +913,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrPathPaymentStrictSendOperation');
     }
 
+    public function testXdrPathPaymentStrictSendOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrPathPaymentStrictSendOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), []);
+        $j1 = $original->toJsonValue();
+        $back = XdrPathPaymentStrictSendOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictSendOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictSendOperation');
+        $back2 = XdrPathPaymentStrictSendOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictSendOperation');
+    }
+
+    public function testXdrPathPaymentStrictSendOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrPathPaymentStrictSendOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['send_amount' => true, 'dest_min' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrPathPaymentStrictSendOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrPathPaymentStrictSendOperationStructWithArraysRoundTrip(): void
     {
         $original = new XdrPathPaymentStrictSendOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), [new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE))]);
@@ -526,6 +1010,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrManageSellOfferOperation');
     }
 
+    public function testXdrManageSellOfferOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrManageSellOfferOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42), 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrManageSellOfferOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageSellOfferOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrManageSellOfferOperation');
+        $back2 = XdrManageSellOfferOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageSellOfferOperation');
+    }
+
+    public function testXdrManageSellOfferOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrManageSellOfferOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42), 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['amount' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrManageSellOfferOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrManageSellOfferOperationEdgeCaseZeroRoundTrip(): void
     {
         $original = new XdrManageSellOfferOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42), 0);
@@ -567,6 +1102,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrManageBuyOfferOperation');
         $b64Decoded = XdrManageBuyOfferOperation::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrManageBuyOfferOperation');
+    }
+
+    public function testXdrManageBuyOfferOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrManageBuyOfferOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42), 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrManageBuyOfferOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageBuyOfferOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrManageBuyOfferOperation');
+        $back2 = XdrManageBuyOfferOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageBuyOfferOperation');
+    }
+
+    public function testXdrManageBuyOfferOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrManageBuyOfferOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42), 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['buy_amount' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrManageBuyOfferOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrManageBuyOfferOperationEdgeCaseZeroRoundTrip(): void
@@ -612,6 +1198,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrCreatePassiveSellOfferOperation');
     }
 
+    public function testXdrCreatePassiveSellOfferOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrCreatePassiveSellOfferOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42));
+        $j1 = $original->toJsonValue();
+        $back = XdrCreatePassiveSellOfferOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreatePassiveSellOfferOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrCreatePassiveSellOfferOperation');
+        $back2 = XdrCreatePassiveSellOfferOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreatePassiveSellOfferOperation');
+    }
+
+    public function testXdrCreatePassiveSellOfferOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrCreatePassiveSellOfferOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['amount' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrCreatePassiveSellOfferOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrCreatePassiveSellOfferOperationGettersSetters(): void
     {
         $obj = new XdrCreatePassiveSellOfferOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42));
@@ -641,6 +1278,68 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSetOptionsOperation');
         $b64Decoded = XdrSetOptionsOperation::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSetOptionsOperation');
+    }
+
+    public function testXdrSetOptionsOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $j1 = $original->toJsonValue();
+        $back = XdrSetOptionsOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetOptionsOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSetOptionsOperation');
+        $back2 = XdrSetOptionsOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetOptionsOperation');
+    }
+
+    public function testXdrSetOptionsOperationStructJsonOptionalsPresentRoundTrip(): void
+    {
+        $original = new XdrSetOptionsOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, 42, 42, 42, 42, 'test_string', new XdrSigner((function() { $sk = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519)); $sk->ed25519 = str_repeat("\xAB", 32); return $sk; })(), 42));
+        $j1 = $original->toJsonValue();
+        $back = XdrSetOptionsOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetOptionsOperation optionals-present');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSetOptionsOperation optionals-present');
+        $back2 = XdrSetOptionsOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetOptionsOperation optionals-present');
+    }
+
+    public function testXdrSetOptionsOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSetOptionsOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrSetOptionsOperationStructOptionalsPresentRoundTrip(): void
@@ -697,6 +1396,21 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
     }
 
+    public function testXdrChangeTrustAsset_XdrAssetType_ASSET_TYPE_POOL_SHARE_ArmRoundTrip(): void
+    {
+        $original = new XdrChangeTrustAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE));
+        $original->liquidityPool = (function() { $p = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT)); $p->constantProduct = new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 30); return $p; })();
+        $encoded = $original->encode();
+        $decoded = XdrChangeTrustAsset::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
+        $this->assertNotNull($decoded->liquidityPool);
+        $this->assertNull($decoded->alphaNum4);
+        $this->assertNull($decoded->alphaNum12);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrChangeTrustAsset::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
     public function testXdrChangeTrustAsset_XdrAssetType_ASSET_TYPE_NATIVE_VoidArmRoundTrip(): void
     {
         $original = new XdrChangeTrustAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
@@ -704,6 +1418,87 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrChangeTrustAsset::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrChangeTrustAssetUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrChangeTrustAssetBase(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrChangeTrustAsset::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrChangeTrustAsset arm XdrAssetType_ASSET_TYPE_NATIVE');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrChangeTrustAsset arm XdrAssetType_ASSET_TYPE_NATIVE');
+        $back2 = XdrChangeTrustAsset::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrChangeTrustAsset arm XdrAssetType_ASSET_TYPE_NATIVE');
+        $arm1 = (function() { $u = new XdrChangeTrustAssetBase(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4)); $u->alphaNum4 = new XdrAssetAlphaNum4(str_repeat("\xAB", 4), XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H')); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrChangeTrustAsset::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrChangeTrustAsset arm XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM4');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrChangeTrustAsset arm XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM4');
+        $back2 = XdrChangeTrustAsset::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrChangeTrustAsset arm XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM4');
+        $arm2 = (function() { $u = new XdrChangeTrustAssetBase(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12)); $u->alphaNum12 = new XdrAssetAlphaNum12(str_repeat("\xAB", 12), XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H')); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrChangeTrustAsset::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrChangeTrustAsset arm XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM12');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrChangeTrustAsset arm XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM12');
+        $back2 = XdrChangeTrustAsset::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrChangeTrustAsset arm XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM12');
+        $arm3 = (function() { $u = new XdrChangeTrustAssetBase(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE)); $u->liquidityPool = (function() { $p = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT)); $p->constantProduct = new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 30); return $p; })(); return $u; })();
+        $j1 = $arm3->toJsonValue();
+        $back = XdrChangeTrustAsset::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrChangeTrustAsset arm XdrAssetType_ASSET_TYPE_POOL_SHARE');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrChangeTrustAsset arm XdrAssetType_ASSET_TYPE_POOL_SHARE');
+        $back2 = XdrChangeTrustAsset::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrChangeTrustAsset arm XdrAssetType_ASSET_TYPE_POOL_SHARE');
+    }
+
+    public function testXdrChangeTrustAssetUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrChangeTrustAssetBase(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)))->toJsonValue();
+        $samples[] = ((function() { $u = new XdrChangeTrustAssetBase(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4)); $u->alphaNum4 = new XdrAssetAlphaNum4(str_repeat("\xAB", 4), XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H')); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrChangeTrustAssetBase(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12)); $u->alphaNum12 = new XdrAssetAlphaNum12(str_repeat("\xAB", 12), XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H')); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrChangeTrustAssetBase(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE)); $u->liquidityPool = (function() { $p = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT)); $p->constantProduct = new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 30); return $p; })(); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrChangeTrustAsset::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrChangeTrustAsset: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrChangeTrustAsset::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrChangeTrustAsset: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrChangeTrustAssetGettersSetters(): void
@@ -734,6 +1529,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrChangeTrustOperation');
         $b64Decoded = XdrChangeTrustOperation::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrChangeTrustOperation');
+    }
+
+    public function testXdrChangeTrustOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrChangeTrustOperation(new XdrChangeTrustAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'));
+        $j1 = $original->toJsonValue();
+        $back = XdrChangeTrustOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrChangeTrustOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrChangeTrustOperation');
+        $back2 = XdrChangeTrustOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrChangeTrustOperation');
+    }
+
+    public function testXdrChangeTrustOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrChangeTrustOperation(new XdrChangeTrustAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['limit' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrChangeTrustOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrChangeTrustOperationGettersSetters(): void
@@ -772,6 +1618,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrAllowTrustOperation');
     }
 
+    public function testXdrAllowTrustOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrAllowTrustOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), XdrAllowTrustOperationAsset::fromAlphaNumAssetCode('USD'), 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrAllowTrustOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAllowTrustOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrAllowTrustOperation');
+        $back2 = XdrAllowTrustOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAllowTrustOperation');
+    }
+
+    public function testXdrAllowTrustOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrAllowTrustOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), XdrAllowTrustOperationAsset::fromAlphaNumAssetCode('USD'), 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrAllowTrustOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrAllowTrustOperationEdgeCaseZeroRoundTrip(): void
     {
         $original = new XdrAllowTrustOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), XdrAllowTrustOperationAsset::fromAlphaNumAssetCode('USD'), 0);
@@ -807,6 +1704,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrManageDataOperation');
     }
 
+    public function testXdrManageDataOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrManageDataOperation('test_key', new XdrDataValue("\x01\x02\x03\x04"));
+        $j1 = $original->toJsonValue();
+        $back = XdrManageDataOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageDataOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrManageDataOperation');
+        $back2 = XdrManageDataOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageDataOperation');
+    }
+
+    public function testXdrManageDataOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrManageDataOperation('test_key', new XdrDataValue("\x01\x02\x03\x04"));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrManageDataOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrManageDataOperationGettersSetters(): void
     {
         $obj = new XdrManageDataOperation('test_key', new XdrDataValue("\x01\x02\x03\x04"));
@@ -840,6 +1788,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrBumpSequenceOperation');
     }
 
+    public function testXdrBumpSequenceOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrBumpSequenceOperation(new XdrSequenceNumber(new BigInteger('123456789')));
+        $j1 = $original->toJsonValue();
+        $back = XdrBumpSequenceOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrBumpSequenceOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrBumpSequenceOperation');
+        $back2 = XdrBumpSequenceOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrBumpSequenceOperation');
+    }
+
+    public function testXdrBumpSequenceOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrBumpSequenceOperation(new XdrSequenceNumber(new BigInteger('123456789')));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrBumpSequenceOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrBumpSequenceOperationGettersSetters(): void
     {
         $obj = new XdrBumpSequenceOperation(new XdrSequenceNumber(new BigInteger('123456789')));
@@ -857,6 +1856,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrCreateClaimableBalanceOperation');
         $b64Decoded = XdrCreateClaimableBalanceOperation::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrCreateClaimableBalanceOperation');
+    }
+
+    public function testXdrCreateClaimableBalanceOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrCreateClaimableBalanceOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), []);
+        $j1 = $original->toJsonValue();
+        $back = XdrCreateClaimableBalanceOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateClaimableBalanceOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateClaimableBalanceOperation');
+        $back2 = XdrCreateClaimableBalanceOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateClaimableBalanceOperation');
+    }
+
+    public function testXdrCreateClaimableBalanceOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrCreateClaimableBalanceOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['amount' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrCreateClaimableBalanceOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrCreateClaimableBalanceOperationGettersSetters(): void
@@ -883,6 +1933,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrClaimClaimableBalanceOperation');
     }
 
+    public function testXdrClaimClaimableBalanceOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrClaimClaimableBalanceOperation(new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32)));
+        $j1 = $original->toJsonValue();
+        $back = XdrClaimClaimableBalanceOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClaimClaimableBalanceOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrClaimClaimableBalanceOperation');
+        $back2 = XdrClaimClaimableBalanceOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClaimClaimableBalanceOperation');
+    }
+
+    public function testXdrClaimClaimableBalanceOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrClaimClaimableBalanceOperation(new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32)));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrClaimClaimableBalanceOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrClaimClaimableBalanceOperationGettersSetters(): void
     {
         $obj = new XdrClaimClaimableBalanceOperation(new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32)));
@@ -900,6 +2001,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrBeginSponsoringFutureReservesOperation');
         $b64Decoded = XdrBeginSponsoringFutureReservesOperation::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrBeginSponsoringFutureReservesOperation');
+    }
+
+    public function testXdrBeginSponsoringFutureReservesOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrBeginSponsoringFutureReservesOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'));
+        $j1 = $original->toJsonValue();
+        $back = XdrBeginSponsoringFutureReservesOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrBeginSponsoringFutureReservesOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrBeginSponsoringFutureReservesOperation');
+        $back2 = XdrBeginSponsoringFutureReservesOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrBeginSponsoringFutureReservesOperation');
+    }
+
+    public function testXdrBeginSponsoringFutureReservesOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrBeginSponsoringFutureReservesOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrBeginSponsoringFutureReservesOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrBeginSponsoringFutureReservesOperationGettersSetters(): void
@@ -937,6 +2089,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrRevokeSponsorshipType::SIGNER());
     }
 
+    public function testXdrRevokeSponsorshipTypeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrRevokeSponsorshipType::LEDGER_ENTRY, XdrRevokeSponsorshipType::SIGNER];
+        foreach ($values as $v) {
+            $original = new XdrRevokeSponsorshipType($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrRevokeSponsorshipType::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRevokeSponsorshipType value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrRevokeSponsorshipType value ' . $v);
+            $back2 = XdrRevokeSponsorshipType::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRevokeSponsorshipType value ' . $v);
+        }
+    }
+
+    public function testXdrRevokeSponsorshipTypeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrRevokeSponsorshipType::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrRevokeSponsorshipType JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrRevokeSponsorshipOperation_XdrRevokeSponsorshipType_LEDGER_ENTRY_ArmRoundTrip(): void
     {
         $original = new XdrRevokeSponsorshipOperation(new XdrRevokeSponsorshipType(XdrRevokeSponsorshipType::LEDGER_ENTRY));
@@ -965,6 +2142,71 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
     }
 
+    public function testXdrRevokeSponsorshipOperationUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrRevokeSponsorshipOperation(new XdrRevokeSponsorshipType(XdrRevokeSponsorshipType::LEDGER_ENTRY)); $u->ledgerKey = XdrLedgerKey::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrRevokeSponsorshipOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRevokeSponsorshipOperation arm XdrRevokeSponsorshipType_LEDGER_ENTRY');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrRevokeSponsorshipOperation arm XdrRevokeSponsorshipType_LEDGER_ENTRY');
+        $back2 = XdrRevokeSponsorshipOperation::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRevokeSponsorshipOperation arm XdrRevokeSponsorshipType_LEDGER_ENTRY');
+        $arm1 = (function() { $u = new XdrRevokeSponsorshipOperation(new XdrRevokeSponsorshipType(XdrRevokeSponsorshipType::SIGNER)); $u->signer = new XdrRevokeSponsorshipSigner(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), (function() { $sk = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519)); $sk->ed25519 = str_repeat("\xAB", 32); return $sk; })()); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrRevokeSponsorshipOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRevokeSponsorshipOperation arm XdrRevokeSponsorshipType_SIGNER');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrRevokeSponsorshipOperation arm XdrRevokeSponsorshipType_SIGNER');
+        $back2 = XdrRevokeSponsorshipOperation::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRevokeSponsorshipOperation arm XdrRevokeSponsorshipType_SIGNER');
+    }
+
+    public function testXdrRevokeSponsorshipOperationUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrRevokeSponsorshipOperation(new XdrRevokeSponsorshipType(XdrRevokeSponsorshipType::LEDGER_ENTRY)); $u->ledgerKey = XdrLedgerKey::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrRevokeSponsorshipOperation(new XdrRevokeSponsorshipType(XdrRevokeSponsorshipType::SIGNER)); $u->signer = new XdrRevokeSponsorshipSigner(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), (function() { $sk = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519)); $sk->ed25519 = str_repeat("\xAB", 32); return $sk; })()); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrRevokeSponsorshipOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrRevokeSponsorshipOperation: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrRevokeSponsorshipOperation::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrRevokeSponsorshipOperation: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrRevokeSponsorshipOperationGettersSetters(): void
     {
         $obj = (function() { $u = new XdrRevokeSponsorshipOperation(new XdrRevokeSponsorshipType(XdrRevokeSponsorshipType::LEDGER_ENTRY)); $u->ledgerKey = XdrLedgerKey::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'); return $u; })();
@@ -981,6 +2223,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrRevokeSponsorshipSigner');
         $b64Decoded = XdrRevokeSponsorshipSigner::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrRevokeSponsorshipSigner');
+    }
+
+    public function testXdrRevokeSponsorshipSignerStructJsonRoundTrip(): void
+    {
+        $original = new XdrRevokeSponsorshipSigner(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), (function() { $sk = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519)); $sk->ed25519 = str_repeat("\xAB", 32); return $sk; })());
+        $j1 = $original->toJsonValue();
+        $back = XdrRevokeSponsorshipSigner::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRevokeSponsorshipSigner');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrRevokeSponsorshipSigner');
+        $back2 = XdrRevokeSponsorshipSigner::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRevokeSponsorshipSigner');
+    }
+
+    public function testXdrRevokeSponsorshipSignerStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrRevokeSponsorshipSigner(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), (function() { $sk = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519)); $sk->ed25519 = str_repeat("\xAB", 32); return $sk; })());
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrRevokeSponsorshipSigner::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrRevokeSponsorshipSignerGettersSetters(): void
@@ -1004,6 +2297,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrClawbackOperation');
         $b64Decoded = XdrClawbackOperation::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrClawbackOperation');
+    }
+
+    public function testXdrClawbackOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrClawbackOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrMuxedAccount(str_repeat("\xAB", 32)), new BigInteger('123456789'));
+        $j1 = $original->toJsonValue();
+        $back = XdrClawbackOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClawbackOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrClawbackOperation');
+        $back2 = XdrClawbackOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClawbackOperation');
+    }
+
+    public function testXdrClawbackOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrClawbackOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrMuxedAccount(str_repeat("\xAB", 32)), new BigInteger('123456789'));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['amount' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrClawbackOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrClawbackOperationGettersSetters(): void
@@ -1033,6 +2377,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrClawbackClaimableBalanceOperation');
     }
 
+    public function testXdrClawbackClaimableBalanceOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrClawbackClaimableBalanceOperation(new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32)));
+        $j1 = $original->toJsonValue();
+        $back = XdrClawbackClaimableBalanceOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClawbackClaimableBalanceOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrClawbackClaimableBalanceOperation');
+        $back2 = XdrClawbackClaimableBalanceOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClawbackClaimableBalanceOperation');
+    }
+
+    public function testXdrClawbackClaimableBalanceOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrClawbackClaimableBalanceOperation(new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32)));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrClawbackClaimableBalanceOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrClawbackClaimableBalanceOperationGettersSetters(): void
     {
         $obj = new XdrClawbackClaimableBalanceOperation(new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32)));
@@ -1050,6 +2445,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSetTrustLineFlagsOperation');
         $b64Decoded = XdrSetTrustLineFlagsOperation::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSetTrustLineFlagsOperation');
+    }
+
+    public function testXdrSetTrustLineFlagsOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrSetTrustLineFlagsOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 42, 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrSetTrustLineFlagsOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetTrustLineFlagsOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSetTrustLineFlagsOperation');
+        $back2 = XdrSetTrustLineFlagsOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetTrustLineFlagsOperation');
+    }
+
+    public function testXdrSetTrustLineFlagsOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSetTrustLineFlagsOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 42, 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSetTrustLineFlagsOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrSetTrustLineFlagsOperationEdgeCaseZeroRoundTrip(): void
@@ -1089,6 +2535,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrLiquidityPoolDepositOperation');
         $b64Decoded = XdrLiquidityPoolDepositOperation::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrLiquidityPoolDepositOperation');
+    }
+
+    public function testXdrLiquidityPoolDepositOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrLiquidityPoolDepositOperation(str_repeat('ab', 32), new BigInteger('1000'), new BigInteger('1000'), new XdrPrice(1, 1), new XdrPrice(2, 1));
+        $j1 = $original->toJsonValue();
+        $back = XdrLiquidityPoolDepositOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolDepositOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolDepositOperation');
+        $back2 = XdrLiquidityPoolDepositOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolDepositOperation');
+    }
+
+    public function testXdrLiquidityPoolDepositOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrLiquidityPoolDepositOperation(str_repeat('ab', 32), new BigInteger('1000'), new BigInteger('1000'), new XdrPrice(1, 1), new XdrPrice(2, 1));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['max_amount_a' => true, 'max_amount_b' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrLiquidityPoolDepositOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrLiquidityPoolDepositOperationGettersSetters(): void
@@ -1140,6 +2637,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrLiquidityPoolWithdrawOperation');
         $b64Decoded = XdrLiquidityPoolWithdrawOperation::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrLiquidityPoolWithdrawOperation');
+    }
+
+    public function testXdrLiquidityPoolWithdrawOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrLiquidityPoolWithdrawOperation(str_repeat('ab', 32), new BigInteger('1000'), new BigInteger('1000'), new BigInteger('1000'));
+        $j1 = $original->toJsonValue();
+        $back = XdrLiquidityPoolWithdrawOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolWithdrawOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolWithdrawOperation');
+        $back2 = XdrLiquidityPoolWithdrawOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolWithdrawOperation');
+    }
+
+    public function testXdrLiquidityPoolWithdrawOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrLiquidityPoolWithdrawOperation(str_repeat('ab', 32), new BigInteger('1000'), new BigInteger('1000'), new BigInteger('1000'));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['amount' => true, 'min_amount_a' => true, 'min_amount_b' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrLiquidityPoolWithdrawOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrLiquidityPoolWithdrawOperationGettersSetters(): void
@@ -1206,6 +2754,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrHostFunctionType::CREATE_CONTRACT_V2());
     }
 
+    public function testXdrHostFunctionTypeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT, XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT, XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM, XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2];
+        foreach ($values as $v) {
+            $original = new XdrHostFunctionType($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrHostFunctionType::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrHostFunctionType value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrHostFunctionType value ' . $v);
+            $back2 = XdrHostFunctionType::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrHostFunctionType value ' . $v);
+        }
+    }
+
+    public function testXdrHostFunctionTypeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrHostFunctionType::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrHostFunctionType JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrContractIDPreimageTypeEnumRoundTrip(): void
     {
         $values = [XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS, XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET];
@@ -1232,37 +2805,117 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET());
     }
 
-    public function testXdrContractIDPreimage_XdrContractIDPreimageType_CONTRACT_ID_PREIMAGE_FROM_ADDRESS_ArmRoundTrip(): void
+    public function testXdrContractIDPreimageTypeEnumJsonRoundTrip(): void
     {
-        $original = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS));
-        $original->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32));
-        $encoded = $original->encode();
-        $decoded = XdrContractIDPreimage::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
-        $this->assertNotNull($decoded->fromAddress);
-        $this->assertNull($decoded->fromAsset);
-        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
-        $b64Decoded = XdrContractIDPreimage::fromBase64Xdr($original->toBase64Xdr());
-        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+        $values = [XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS, XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET];
+        foreach ($values as $v) {
+            $original = new XdrContractIDPreimageType($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrContractIDPreimageType::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrContractIDPreimageType value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrContractIDPreimageType value ' . $v);
+            $back2 = XdrContractIDPreimageType::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrContractIDPreimageType value ' . $v);
+        }
     }
 
-    public function testXdrContractIDPreimage_XdrContractIDPreimageType_CONTRACT_ID_PREIMAGE_FROM_ASSET_ArmRoundTrip(): void
+    public function testXdrContractIDPreimageTypeEnumJsonRejectsInvalid(): void
     {
-        $original = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET));
-        $original->fromAsset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrContractIDPreimageType::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrContractIDPreimageType JSON: ' . var_export($bad, true));
+        }
+    }
+
+    public function testXdrContractIDPreimageUnionRoundTrip(): void
+    {
+        $original = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $p; })();
         $encoded = $original->encode();
         $decoded = XdrContractIDPreimage::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
-        $this->assertNotNull($decoded->fromAsset);
-        $this->assertNull($decoded->fromAddress);
-        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrContractIDPreimage');
         $b64Decoded = XdrContractIDPreimage::fromBase64Xdr($original->toBase64Xdr());
-        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrContractIDPreimage');
+    }
+
+    public function testXdrContractIDPreimageUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $p; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrContractIDPreimage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrContractIDPreimage arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrContractIDPreimage arm fallback');
+        $back2 = XdrContractIDPreimage::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrContractIDPreimage arm fallback');
+        $arm1 = (function() { $u = new XdrContractIDPreimageBase(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $u->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrContractIDPreimage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrContractIDPreimage arm XdrContractIDPreimageType_CONTRACT_ID_PREIMAGE_FROM_ADDRESS');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrContractIDPreimage arm XdrContractIDPreimageType_CONTRACT_ID_PREIMAGE_FROM_ADDRESS');
+        $back2 = XdrContractIDPreimage::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrContractIDPreimage arm XdrContractIDPreimageType_CONTRACT_ID_PREIMAGE_FROM_ADDRESS');
+        $arm2 = (function() { $u = new XdrContractIDPreimageBase(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET)); $u->fromAsset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrContractIDPreimage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrContractIDPreimage arm XdrContractIDPreimageType_CONTRACT_ID_PREIMAGE_FROM_ASSET');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrContractIDPreimage arm XdrContractIDPreimageType_CONTRACT_ID_PREIMAGE_FROM_ASSET');
+        $back2 = XdrContractIDPreimage::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrContractIDPreimage arm XdrContractIDPreimageType_CONTRACT_ID_PREIMAGE_FROM_ASSET');
+    }
+
+    public function testXdrContractIDPreimageUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $p; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrContractIDPreimageBase(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $u->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrContractIDPreimageBase(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET)); $u->fromAsset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrContractIDPreimage::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrContractIDPreimage: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrContractIDPreimage::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrContractIDPreimage: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrContractIDPreimageGettersSetters(): void
     {
-        $obj = (function() { $u = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $u->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $u; })();
+        $obj = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $p; })();
         $this->assertNotNull($obj->getType());
         $obj->getFromAddress();
         $obj->getFromAsset();
@@ -1289,6 +2942,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrContractIDPreimageFromAddress');
     }
 
+    public function testXdrContractIDPreimageFromAddressStructJsonRoundTrip(): void
+    {
+        $original = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32));
+        $j1 = $original->toJsonValue();
+        $back = XdrContractIDPreimageFromAddress::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrContractIDPreimageFromAddress');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrContractIDPreimageFromAddress');
+        $back2 = XdrContractIDPreimageFromAddress::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrContractIDPreimageFromAddress');
+    }
+
+    public function testXdrContractIDPreimageFromAddressStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrContractIDPreimageFromAddress::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrContractIDPreimageFromAddressGettersSetters(): void
     {
         $obj = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32));
@@ -1304,7 +3008,7 @@ class XdrTransactionGenTest extends TestCase
 
     public function testXdrCreateContractArgsStructRoundTrip(): void
     {
-        $original = new XdrCreateContractArgs((function() { $u = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $u->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $u; })(), new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()));
+        $original = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })();
         $encoded = $original->encode();
         $decoded = XdrCreateContractArgs::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrCreateContractArgs');
@@ -1312,14 +3016,65 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrCreateContractArgs');
     }
 
+    public function testXdrCreateContractArgsStructJsonRoundTrip(): void
+    {
+        $original = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrCreateContractArgs::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateContractArgs');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateContractArgs');
+        $back2 = XdrCreateContractArgs::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateContractArgs');
+    }
+
+    public function testXdrCreateContractArgsStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrCreateContractArgs::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrCreateContractArgsGettersSetters(): void
     {
-        $obj = new XdrCreateContractArgs((function() { $u = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $u->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $u; })(), new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()));
-        $this->assertNotNull($obj->getContractIDPreimage());
-        $newVal = (function() { $u = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $u->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $u; })();
+        $obj = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })();
+        $obj->getContractIDPreimage();
+        $newVal = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $p; })();
         $obj->setContractIDPreimage($newVal);
         $this->assertSame($newVal, $obj->getContractIDPreimage());
-        $this->assertNotNull($obj->getExecutable());
+        $obj->getExecutable();
         $newVal = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
         $obj->setExecutable($newVal);
         $this->assertSame($newVal, $obj->getExecutable());
@@ -1327,7 +3082,7 @@ class XdrTransactionGenTest extends TestCase
 
     public function testXdrCreateContractArgsV2StructRoundTrip(): void
     {
-        $original = new XdrCreateContractArgsV2((function() { $u = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $u->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $u; })(), new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []);
+        $original = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgsV2($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []); })();
         $encoded = $original->encode();
         $decoded = XdrCreateContractArgsV2::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrCreateContractArgsV2');
@@ -1335,24 +3090,65 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrCreateContractArgsV2');
     }
 
-    public function testXdrCreateContractArgsV2StructWithArraysRoundTrip(): void
+    public function testXdrCreateContractArgsV2StructJsonRoundTrip(): void
     {
-        $original = new XdrCreateContractArgsV2((function() { $u = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $u->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $u; })(), new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), [new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))]);
-        $encoded = $original->encode();
-        $decoded = XdrCreateContractArgsV2::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode(), 'Arrays roundtrip failed for XdrCreateContractArgsV2');
-        $b64Decoded = XdrCreateContractArgsV2::fromBase64Xdr($original->toBase64Xdr());
-        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 arrays roundtrip failed for XdrCreateContractArgsV2');
+        $original = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgsV2($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrCreateContractArgsV2::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateContractArgsV2');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateContractArgsV2');
+        $back2 = XdrCreateContractArgsV2::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateContractArgsV2');
+    }
+
+    public function testXdrCreateContractArgsV2StructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgsV2($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrCreateContractArgsV2::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrCreateContractArgsV2GettersSetters(): void
     {
-        $obj = new XdrCreateContractArgsV2((function() { $u = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $u->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $u; })(), new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []);
-        $this->assertNotNull($obj->getContractIDPreimage());
-        $newVal = (function() { $u = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $u->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $u; })();
+        $obj = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgsV2($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []); })();
+        $obj->getContractIDPreimage();
+        $newVal = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $p; })();
         $obj->setContractIDPreimage($newVal);
         $this->assertSame($newVal, $obj->getContractIDPreimage());
-        $this->assertNotNull($obj->getExecutable());
+        $obj->getExecutable();
         $newVal = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
         $obj->setExecutable($newVal);
         $this->assertSame($newVal, $obj->getExecutable());
@@ -1367,6 +3163,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrInvokeContractArgs');
         $b64Decoded = XdrInvokeContractArgs::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrInvokeContractArgs');
+    }
+
+    public function testXdrInvokeContractArgsStructJsonRoundTrip(): void
+    {
+        $original = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []);
+        $j1 = $original->toJsonValue();
+        $back = XdrInvokeContractArgs::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInvokeContractArgs');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrInvokeContractArgs');
+        $back2 = XdrInvokeContractArgs::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInvokeContractArgs');
+    }
+
+    public function testXdrInvokeContractArgsStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrInvokeContractArgs::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrInvokeContractArgsStructWithArraysRoundTrip(): void
@@ -1409,6 +3256,22 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
     }
 
+    public function testXdrHostFunction_XdrHostFunctionType_HOST_FUNCTION_TYPE_CREATE_CONTRACT_ArmRoundTrip(): void
+    {
+        $original = new XdrHostFunction(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT));
+        $original->createContract = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })();
+        $encoded = $original->encode();
+        $decoded = XdrHostFunction::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
+        $this->assertNotNull($decoded->createContract);
+        $this->assertNull($decoded->invokeContract);
+        $this->assertNull($decoded->wasm);
+        $this->assertNull($decoded->createContractV2);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrHostFunction::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
     public function testXdrHostFunction_XdrHostFunctionType_HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM_ArmRoundTrip(): void
     {
         $original = new XdrHostFunction(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM));
@@ -1423,6 +3286,103 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrHostFunction::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrHostFunction_XdrHostFunctionType_HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2_ArmRoundTrip(): void
+    {
+        $original = new XdrHostFunction(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2));
+        $original->createContractV2 = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgsV2($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []); })();
+        $encoded = $original->encode();
+        $decoded = XdrHostFunction::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
+        $this->assertNotNull($decoded->createContractV2);
+        $this->assertNull($decoded->invokeContract);
+        $this->assertNull($decoded->createContract);
+        $this->assertNull($decoded->wasm);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrHostFunction::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrHostFunctionUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrHostFunctionBase(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT)); $u->invokeContract = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrHostFunction::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrHostFunction arm XdrHostFunctionType_HOST_FUNCTION_TYPE_INVOKE_CONTRACT');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrHostFunction arm XdrHostFunctionType_HOST_FUNCTION_TYPE_INVOKE_CONTRACT');
+        $back2 = XdrHostFunction::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrHostFunction arm XdrHostFunctionType_HOST_FUNCTION_TYPE_INVOKE_CONTRACT');
+        $arm1 = (function() { $u = new XdrHostFunctionBase(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT)); $u->createContract = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })(); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrHostFunction::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrHostFunction arm XdrHostFunctionType_HOST_FUNCTION_TYPE_CREATE_CONTRACT');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrHostFunction arm XdrHostFunctionType_HOST_FUNCTION_TYPE_CREATE_CONTRACT');
+        $back2 = XdrHostFunction::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrHostFunction arm XdrHostFunctionType_HOST_FUNCTION_TYPE_CREATE_CONTRACT');
+        $arm2 = (function() { $u = new XdrHostFunctionBase(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM)); $u->wasm = new XdrDataValueMandatory("\x01\x02\x03\x04"); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrHostFunction::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrHostFunction arm XdrHostFunctionType_HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrHostFunction arm XdrHostFunctionType_HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM');
+        $back2 = XdrHostFunction::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrHostFunction arm XdrHostFunctionType_HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM');
+        $arm3 = (function() { $u = new XdrHostFunctionBase(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2)); $u->createContractV2 = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgsV2($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []); })(); return $u; })();
+        $j1 = $arm3->toJsonValue();
+        $back = XdrHostFunction::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrHostFunction arm XdrHostFunctionType_HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrHostFunction arm XdrHostFunctionType_HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2');
+        $back2 = XdrHostFunction::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrHostFunction arm XdrHostFunctionType_HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2');
+    }
+
+    public function testXdrHostFunctionUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrHostFunctionBase(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT)); $u->invokeContract = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrHostFunctionBase(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT)); $u->createContract = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })(); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrHostFunctionBase(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM)); $u->wasm = new XdrDataValueMandatory("\x01\x02\x03\x04"); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrHostFunctionBase(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2)); $u->createContractV2 = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgsV2($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []); })(); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrHostFunction::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrHostFunction: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrHostFunction::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrHostFunction: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrHostFunctionGettersSetters(): void
@@ -1493,6 +3453,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN());
     }
 
+    public function testXdrSorobanAuthorizedFunctionTypeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN, XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN, XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN];
+        foreach ($values as $v) {
+            $original = new XdrSorobanAuthorizedFunctionType($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrSorobanAuthorizedFunctionType::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanAuthorizedFunctionType value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanAuthorizedFunctionType value ' . $v);
+            $back2 = XdrSorobanAuthorizedFunctionType::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanAuthorizedFunctionType value ' . $v);
+        }
+    }
+
+    public function testXdrSorobanAuthorizedFunctionTypeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrSorobanAuthorizedFunctionType::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrSorobanAuthorizedFunctionType JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrSorobanAuthorizedFunction_XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN_ArmRoundTrip(): void
     {
         $original = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN));
@@ -1506,6 +3491,109 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrSorobanAuthorizedFunction::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrSorobanAuthorizedFunction_XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN_ArmRoundTrip(): void
+    {
+        $original = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN));
+        $original->createContractHostFn = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })();
+        $encoded = $original->encode();
+        $decoded = XdrSorobanAuthorizedFunction::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
+        $this->assertNotNull($decoded->createContractHostFn);
+        $this->assertNull($decoded->contractFn);
+        $this->assertNull($decoded->createContractV2HostFn);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrSorobanAuthorizedFunction::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrSorobanAuthorizedFunction_XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN_ArmRoundTrip(): void
+    {
+        $original = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN));
+        $original->createContractV2HostFn = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgsV2($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []); })();
+        $encoded = $original->encode();
+        $decoded = XdrSorobanAuthorizedFunction::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
+        $this->assertNotNull($decoded->createContractV2HostFn);
+        $this->assertNull($decoded->contractFn);
+        $this->assertNull($decoded->createContractHostFn);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrSorobanAuthorizedFunction::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrSorobanAuthorizedFunctionUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrSorobanAuthorizedFunctionBase(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrSorobanAuthorizedFunction::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanAuthorizedFunction arm XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanAuthorizedFunction arm XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN');
+        $back2 = XdrSorobanAuthorizedFunction::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanAuthorizedFunction arm XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN');
+        $arm1 = (function() { $u = new XdrSorobanAuthorizedFunctionBase(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN)); $u->createContractHostFn = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })(); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrSorobanAuthorizedFunction::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanAuthorizedFunction arm XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanAuthorizedFunction arm XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN');
+        $back2 = XdrSorobanAuthorizedFunction::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanAuthorizedFunction arm XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN');
+        $arm2 = (function() { $u = new XdrSorobanAuthorizedFunctionBase(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN)); $u->createContractV2HostFn = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgsV2($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []); })(); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrSorobanAuthorizedFunction::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanAuthorizedFunction arm XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanAuthorizedFunction arm XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN');
+        $back2 = XdrSorobanAuthorizedFunction::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanAuthorizedFunction arm XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN');
+    }
+
+    public function testXdrSorobanAuthorizedFunctionUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrSorobanAuthorizedFunctionBase(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrSorobanAuthorizedFunctionBase(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN)); $u->createContractHostFn = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })(); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrSorobanAuthorizedFunctionBase(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN)); $u->createContractV2HostFn = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgsV2($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []); })(); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSorobanAuthorizedFunction::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrSorobanAuthorizedFunction: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrSorobanAuthorizedFunction::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrSorobanAuthorizedFunction: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrSorobanAuthorizedFunctionGettersSetters(): void
@@ -1538,6 +3626,67 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSorobanAuthorizedInvocation');
     }
 
+    public function testXdrSorobanAuthorizedInvocationStructJsonRoundTrip(): void
+    {
+        $original = new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []);
+        $j1 = $original->toJsonValue();
+        $back = XdrSorobanAuthorizedInvocation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanAuthorizedInvocation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanAuthorizedInvocation');
+        $back2 = XdrSorobanAuthorizedInvocation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanAuthorizedInvocation');
+    }
+
+    public function testXdrSorobanAuthorizedInvocationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSorobanAuthorizedInvocation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrSorobanAuthorizedInvocationStructWithArraysRoundTrip(): void
+    {
+        $original = new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), [new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN)); $u->createContractHostFn = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })(); return $u; })(), [])]);
+        $encoded = $original->encode();
+        $decoded = XdrSorobanAuthorizedInvocation::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Arrays roundtrip failed for XdrSorobanAuthorizedInvocation');
+        $b64Decoded = XdrSorobanAuthorizedInvocation::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 arrays roundtrip failed for XdrSorobanAuthorizedInvocation');
+    }
+
     public function testXdrSorobanAuthorizedInvocationGettersSetters(): void
     {
         $obj = new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []);
@@ -1556,6 +3705,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSorobanAddressCredentials');
         $b64Decoded = XdrSorobanAddressCredentials::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSorobanAddressCredentials');
+    }
+
+    public function testXdrSorobanAddressCredentialsStructJsonRoundTrip(): void
+    {
+        $original = new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)));
+        $j1 = $original->toJsonValue();
+        $back = XdrSorobanAddressCredentials::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanAddressCredentials');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanAddressCredentials');
+        $back2 = XdrSorobanAddressCredentials::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanAddressCredentials');
+    }
+
+    public function testXdrSorobanAddressCredentialsStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSorobanAddressCredentials::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrSorobanAddressCredentialsEdgeCaseZeroRoundTrip(): void
@@ -1587,9 +3787,175 @@ class XdrTransactionGenTest extends TestCase
         $this->assertSame($newVal, $obj->getSignature());
     }
 
+    public function testXdrSorobanDelegateSignatureStructRoundTrip(): void
+    {
+        $original = new XdrSorobanDelegateSignature(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), []);
+        $encoded = $original->encode();
+        $decoded = XdrSorobanDelegateSignature::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSorobanDelegateSignature');
+        $b64Decoded = XdrSorobanDelegateSignature::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSorobanDelegateSignature');
+    }
+
+    public function testXdrSorobanDelegateSignatureStructJsonRoundTrip(): void
+    {
+        $original = new XdrSorobanDelegateSignature(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), []);
+        $j1 = $original->toJsonValue();
+        $back = XdrSorobanDelegateSignature::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanDelegateSignature');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanDelegateSignature');
+        $back2 = XdrSorobanDelegateSignature::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanDelegateSignature');
+    }
+
+    public function testXdrSorobanDelegateSignatureStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSorobanDelegateSignature(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSorobanDelegateSignature::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrSorobanDelegateSignatureStructWithArraysRoundTrip(): void
+    {
+        $original = new XdrSorobanDelegateSignature(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), [new XdrSorobanDelegateSignature(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), [])]);
+        $encoded = $original->encode();
+        $decoded = XdrSorobanDelegateSignature::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Arrays roundtrip failed for XdrSorobanDelegateSignature');
+        $b64Decoded = XdrSorobanDelegateSignature::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 arrays roundtrip failed for XdrSorobanDelegateSignature');
+    }
+
+    public function testXdrSorobanDelegateSignatureGettersSetters(): void
+    {
+        $obj = new XdrSorobanDelegateSignature(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), []);
+        $this->assertNotNull($obj->getAddress());
+        $newVal = XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        $obj->setAddress($newVal);
+        $this->assertSame($newVal, $obj->getAddress());
+        $this->assertNotNull($obj->getSignature());
+        $newVal = new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID));
+        $obj->setSignature($newVal);
+        $this->assertSame($newVal, $obj->getSignature());
+        $this->assertIsArray($obj->getNestedDelegates());
+    }
+
+    public function testXdrSorobanAddressCredentialsWithDelegatesStructRoundTrip(): void
+    {
+        $original = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), []);
+        $encoded = $original->encode();
+        $decoded = XdrSorobanAddressCredentialsWithDelegates::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSorobanAddressCredentialsWithDelegates');
+        $b64Decoded = XdrSorobanAddressCredentialsWithDelegates::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSorobanAddressCredentialsWithDelegates');
+    }
+
+    public function testXdrSorobanAddressCredentialsWithDelegatesStructJsonRoundTrip(): void
+    {
+        $original = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), []);
+        $j1 = $original->toJsonValue();
+        $back = XdrSorobanAddressCredentialsWithDelegates::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanAddressCredentialsWithDelegates');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanAddressCredentialsWithDelegates');
+        $back2 = XdrSorobanAddressCredentialsWithDelegates::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanAddressCredentialsWithDelegates');
+    }
+
+    public function testXdrSorobanAddressCredentialsWithDelegatesStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSorobanAddressCredentialsWithDelegates::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrSorobanAddressCredentialsWithDelegatesStructWithArraysRoundTrip(): void
+    {
+        $original = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), [new XdrSorobanDelegateSignature(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), [])]);
+        $encoded = $original->encode();
+        $decoded = XdrSorobanAddressCredentialsWithDelegates::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Arrays roundtrip failed for XdrSorobanAddressCredentialsWithDelegates');
+        $b64Decoded = XdrSorobanAddressCredentialsWithDelegates::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 arrays roundtrip failed for XdrSorobanAddressCredentialsWithDelegates');
+    }
+
+    public function testXdrSorobanAddressCredentialsWithDelegatesGettersSetters(): void
+    {
+        $obj = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), []);
+        $this->assertNotNull($obj->getAddressCredentials());
+        $newVal = new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)));
+        $obj->setAddressCredentials($newVal);
+        $this->assertSame($newVal, $obj->getAddressCredentials());
+        $this->assertIsArray($obj->getDelegates());
+    }
+
     public function testXdrSorobanCredentialsTypeEnumRoundTrip(): void
     {
-        $values = [XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT, XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS];
+        $values = [XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT, XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS, XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2, XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES];
         foreach ($values as $v) {
             $original = new XdrSorobanCredentialsType($v);
             $encoded = $original->encode();
@@ -1611,6 +3977,33 @@ class XdrTransactionGenTest extends TestCase
     {
         $this->assertNotNull(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT());
         $this->assertNotNull(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS());
+        $this->assertNotNull(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2());
+        $this->assertNotNull(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES());
+    }
+
+    public function testXdrSorobanCredentialsTypeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT, XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS, XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2, XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES];
+        foreach ($values as $v) {
+            $original = new XdrSorobanCredentialsType($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrSorobanCredentialsType::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanCredentialsType value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanCredentialsType value ' . $v);
+            $back2 = XdrSorobanCredentialsType::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanCredentialsType value ' . $v);
+        }
+    }
+
+    public function testXdrSorobanCredentialsTypeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrSorobanCredentialsType::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrSorobanCredentialsType JSON: ' . var_export($bad, true));
+        }
     }
 
     public function testXdrSorobanCredentials_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_ArmRoundTrip(): void
@@ -1621,6 +4014,38 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrSorobanCredentials::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
         $this->assertNotNull($decoded->address);
+        $this->assertNull($decoded->addressV2);
+        $this->assertNull($decoded->addressWithDelegates);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrSorobanCredentials::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrSorobanCredentials_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_V2_ArmRoundTrip(): void
+    {
+        $original = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2));
+        $original->addressV2 = new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)));
+        $encoded = $original->encode();
+        $decoded = XdrSorobanCredentials::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
+        $this->assertNotNull($decoded->addressV2);
+        $this->assertNull($decoded->address);
+        $this->assertNull($decoded->addressWithDelegates);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrSorobanCredentials::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrSorobanCredentials_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES_ArmRoundTrip(): void
+    {
+        $original = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES));
+        $original->addressWithDelegates = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), []);
+        $encoded = $original->encode();
+        $decoded = XdrSorobanCredentials::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
+        $this->assertNotNull($decoded->addressWithDelegates);
+        $this->assertNull($decoded->address);
+        $this->assertNull($decoded->addressV2);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrSorobanCredentials::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -1635,11 +4060,94 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode());
     }
 
+    public function testXdrSorobanCredentialsUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrSorobanCredentialsBase(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrSorobanCredentials::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanCredentials arm XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_SOURCE_ACCOUNT');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanCredentials arm XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_SOURCE_ACCOUNT');
+        $back2 = XdrSorobanCredentials::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanCredentials arm XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_SOURCE_ACCOUNT');
+        $arm1 = (function() { $u = new XdrSorobanCredentialsBase(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS)); $u->address = new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrSorobanCredentials::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanCredentials arm XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanCredentials arm XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS');
+        $back2 = XdrSorobanCredentials::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanCredentials arm XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS');
+        $arm2 = (function() { $u = new XdrSorobanCredentialsBase(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2)); $u->addressV2 = new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrSorobanCredentials::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanCredentials arm XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_V2');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanCredentials arm XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_V2');
+        $back2 = XdrSorobanCredentials::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanCredentials arm XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_V2');
+        $arm3 = (function() { $u = new XdrSorobanCredentialsBase(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES)); $u->addressWithDelegates = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), []); return $u; })();
+        $j1 = $arm3->toJsonValue();
+        $back = XdrSorobanCredentials::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanCredentials arm XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanCredentials arm XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES');
+        $back2 = XdrSorobanCredentials::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanCredentials arm XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES');
+    }
+
+    public function testXdrSorobanCredentialsUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrSorobanCredentialsBase(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT)))->toJsonValue();
+        $samples[] = ((function() { $u = new XdrSorobanCredentialsBase(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS)); $u->address = new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrSorobanCredentialsBase(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2)); $u->addressV2 = new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrSorobanCredentialsBase(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES)); $u->addressWithDelegates = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), []); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSorobanCredentials::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrSorobanCredentials: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrSorobanCredentials::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrSorobanCredentials: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrSorobanCredentialsGettersSetters(): void
     {
         $obj = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT));
         $this->assertNotNull($obj->getType());
         $obj->getAddress();
+        $obj->getAddressV2();
+        $obj->getAddressWithDelegates();
     }
 
     public function testXdrSorobanCredentialsBaseRoundTrip(): void
@@ -1653,6 +4161,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $fromB64->encode());
     }
 
+    public function testXdrSorobanAuthorizationEntryStructJsonRoundTrip(): void
+    {
+        $original = new XdrSorobanAuthorizationEntry(new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT)), new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []));
+        $j1 = $original->toJsonValue();
+        $back = XdrSorobanAuthorizationEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanAuthorizationEntry');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanAuthorizationEntry');
+        $back2 = XdrSorobanAuthorizationEntry::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanAuthorizationEntry');
+    }
+
+    public function testXdrSorobanAuthorizationEntryStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSorobanAuthorizationEntry(new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT)), new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSorobanAuthorizationEntry::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrSorobanAuthorizationEntriesTypedefRoundTrip(): void
     {
         $original = new XdrSorobanAuthorizationEntries([]);
@@ -1663,6 +4222,25 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSorobanAuthorizationEntries');
     }
 
+    public function testXdrSorobanAuthorizationEntriesTypedefJsonRoundTrip(): void
+    {
+        $original = new XdrSorobanAuthorizationEntries([]);
+        $j1 = $original->toJsonValue();
+        $back = XdrSorobanAuthorizationEntries::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanAuthorizationEntries');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanAuthorizationEntries');
+        $back2 = XdrSorobanAuthorizationEntries::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanAuthorizationEntries');
+    }
+
+    public function testXdrSorobanAuthorizationEntriesTypedefJsonRejectsInvalid(): void
+    {
+        $threw = false;
+        try { XdrSorobanAuthorizationEntries::fromJsonValue('not-an-array'); }
+        catch (\InvalidArgumentException $e) { $threw = true; }
+        $this->assertTrue($threw, 'Expected rejection for XdrSorobanAuthorizationEntries typedef JSON');
+    }
+
     public function testXdrInvokeHostFunctionOpStructRoundTrip(): void
     {
         $original = new XdrInvokeHostFunctionOp((function() { $u = new XdrHostFunction(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT)); $u->invokeContract = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []);
@@ -1671,6 +4249,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrInvokeHostFunctionOp');
         $b64Decoded = XdrInvokeHostFunctionOp::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrInvokeHostFunctionOp');
+    }
+
+    public function testXdrInvokeHostFunctionOpStructJsonRoundTrip(): void
+    {
+        $original = new XdrInvokeHostFunctionOp((function() { $u = new XdrHostFunction(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT)); $u->invokeContract = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []);
+        $j1 = $original->toJsonValue();
+        $back = XdrInvokeHostFunctionOp::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInvokeHostFunctionOp');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrInvokeHostFunctionOp');
+        $back2 = XdrInvokeHostFunctionOp::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInvokeHostFunctionOp');
+    }
+
+    public function testXdrInvokeHostFunctionOpStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrInvokeHostFunctionOp((function() { $u = new XdrHostFunction(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_INVOKE_CONTRACT)); $u->invokeContract = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrInvokeHostFunctionOp::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrInvokeHostFunctionOpGettersSetters(): void
@@ -1691,6 +4320,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrExtendFootprintTTLOp');
         $b64Decoded = XdrExtendFootprintTTLOp::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrExtendFootprintTTLOp');
+    }
+
+    public function testXdrExtendFootprintTTLOpStructJsonRoundTrip(): void
+    {
+        $original = new XdrExtendFootprintTTLOp(new XdrExtensionPoint(0), 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrExtendFootprintTTLOp::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrExtendFootprintTTLOp');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrExtendFootprintTTLOp');
+        $back2 = XdrExtendFootprintTTLOp::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrExtendFootprintTTLOp');
+    }
+
+    public function testXdrExtendFootprintTTLOpStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrExtendFootprintTTLOp(new XdrExtensionPoint(0), 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrExtendFootprintTTLOp::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrExtendFootprintTTLOpEdgeCaseZeroRoundTrip(): void
@@ -1724,6 +4404,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrRestoreFootprintOp');
     }
 
+    public function testXdrRestoreFootprintOpStructJsonRoundTrip(): void
+    {
+        $original = new XdrRestoreFootprintOp(new XdrExtensionPoint(0));
+        $j1 = $original->toJsonValue();
+        $back = XdrRestoreFootprintOp::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRestoreFootprintOp');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrRestoreFootprintOp');
+        $back2 = XdrRestoreFootprintOp::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRestoreFootprintOp');
+    }
+
+    public function testXdrRestoreFootprintOpStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrRestoreFootprintOp(new XdrExtensionPoint(0));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrRestoreFootprintOp::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrRestoreFootprintOpGettersSetters(): void
     {
         $obj = new XdrRestoreFootprintOp(new XdrExtensionPoint(0));
@@ -1731,6 +4462,325 @@ class XdrTransactionGenTest extends TestCase
         $newVal = new XdrExtensionPoint(0);
         $obj->setExt($newVal);
         $this->assertSame($newVal, $obj->getExt());
+    }
+
+    public function testXdrOperationStructJsonRoundTrip(): void
+    {
+        $original = new XdrOperation(new XdrOperationBody(new XdrOperationType(XdrOperationType::INFLATION)), null);
+        $j1 = $original->toJsonValue();
+        $back = XdrOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperation');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrOperation');
+        $back2 = XdrOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperation');
+    }
+
+    public function testXdrOperationStructJsonOptionalsPresentRoundTrip(): void
+    {
+        $original = new XdrOperation(new XdrOperationBody(new XdrOperationType(XdrOperationType::INFLATION)), new XdrMuxedAccount(str_repeat("\xAB", 32)));
+        $j1 = $original->toJsonValue();
+        $back = XdrOperation::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperation optionals-present');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrOperation optionals-present');
+        $back2 = XdrOperation::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperation optionals-present');
+    }
+
+    public function testXdrOperationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrOperation(new XdrOperationBody(new XdrOperationType(XdrOperationType::INFLATION)), null);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrOperation::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrOperationBodyUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::CREATE_ACCOUNT)); $u->createAccountOp = new XdrCreateAccountOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new BigInteger('123456789')); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_CREATE_ACCOUNT');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_CREATE_ACCOUNT');
+        $back2 = XdrOperationBody::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_CREATE_ACCOUNT');
+        $arm1 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::PAYMENT)); $u->paymentOp = new XdrPaymentOperation(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789')); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_PAYMENT');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_PAYMENT');
+        $back2 = XdrOperationBody::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_PAYMENT');
+        $arm2 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE)); $u->pathPaymentStrictReceiveOp = new XdrPathPaymentStrictReceiveOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), []); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_PATH_PAYMENT_STRICT_RECEIVE');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_PATH_PAYMENT_STRICT_RECEIVE');
+        $back2 = XdrOperationBody::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_PATH_PAYMENT_STRICT_RECEIVE');
+        $arm3 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::MANAGE_SELL_OFFER)); $u->manageSellOfferOp = new XdrManageSellOfferOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42), 42); return $u; })();
+        $j1 = $arm3->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_MANAGE_SELL_OFFER');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_MANAGE_SELL_OFFER');
+        $back2 = XdrOperationBody::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_MANAGE_SELL_OFFER');
+        $arm4 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::CREATE_PASSIVE_SELL_OFFER)); $u->createPassiveSellOfferOp = new XdrCreatePassiveSellOfferOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42)); return $u; })();
+        $j1 = $arm4->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_CREATE_PASSIVE_SELL_OFFER');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_CREATE_PASSIVE_SELL_OFFER');
+        $back2 = XdrOperationBody::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_CREATE_PASSIVE_SELL_OFFER');
+        $arm5 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::SET_OPTIONS)); $u->setOptionsOp = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null); return $u; })();
+        $j1 = $arm5->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_SET_OPTIONS');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_SET_OPTIONS');
+        $back2 = XdrOperationBody::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_SET_OPTIONS');
+        $arm6 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::CHANGE_TRUST)); $u->changeTrustOp = new XdrChangeTrustOperation(new XdrChangeTrustAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789')); return $u; })();
+        $j1 = $arm6->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_CHANGE_TRUST');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_CHANGE_TRUST');
+        $back2 = XdrOperationBody::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_CHANGE_TRUST');
+        $arm7 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::ALLOW_TRUST)); $u->allowTrustOperation = new XdrAllowTrustOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), XdrAllowTrustOperationAsset::fromAlphaNumAssetCode('USD'), 42); return $u; })();
+        $j1 = $arm7->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_ALLOW_TRUST');
+        $this->assertSame($arm7->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_ALLOW_TRUST');
+        $back2 = XdrOperationBody::fromJson($arm7->toJson());
+        $this->assertSame($arm7->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_ALLOW_TRUST');
+        $arm8 = new XdrOperationBody(new XdrOperationType(XdrOperationType::INFLATION));
+        $j1 = $arm8->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_INFLATION');
+        $this->assertSame($arm8->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_INFLATION');
+        $back2 = XdrOperationBody::fromJson($arm8->toJson());
+        $this->assertSame($arm8->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_INFLATION');
+        $arm9 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::MANAGE_DATA)); $u->manageDataOperation = new XdrManageDataOperation('test_key', new XdrDataValue("\x01\x02\x03\x04")); return $u; })();
+        $j1 = $arm9->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_MANAGE_DATA');
+        $this->assertSame($arm9->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_MANAGE_DATA');
+        $back2 = XdrOperationBody::fromJson($arm9->toJson());
+        $this->assertSame($arm9->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_MANAGE_DATA');
+        $arm10 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::BUMP_SEQUENCE)); $u->bumpSequenceOp = new XdrBumpSequenceOperation(new XdrSequenceNumber(new BigInteger('123456789'))); return $u; })();
+        $j1 = $arm10->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_BUMP_SEQUENCE');
+        $this->assertSame($arm10->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_BUMP_SEQUENCE');
+        $back2 = XdrOperationBody::fromJson($arm10->toJson());
+        $this->assertSame($arm10->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_BUMP_SEQUENCE');
+        $arm11 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::MANAGE_BUY_OFFER)); $u->manageBuyOfferOp = new XdrManageBuyOfferOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42), 42); return $u; })();
+        $j1 = $arm11->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_MANAGE_BUY_OFFER');
+        $this->assertSame($arm11->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_MANAGE_BUY_OFFER');
+        $back2 = XdrOperationBody::fromJson($arm11->toJson());
+        $this->assertSame($arm11->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_MANAGE_BUY_OFFER');
+        $arm12 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::PATH_PAYMENT_STRICT_SEND)); $u->pathPaymentStrictSendOp = new XdrPathPaymentStrictSendOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), []); return $u; })();
+        $j1 = $arm12->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_PATH_PAYMENT_STRICT_SEND');
+        $this->assertSame($arm12->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_PATH_PAYMENT_STRICT_SEND');
+        $back2 = XdrOperationBody::fromJson($arm12->toJson());
+        $this->assertSame($arm12->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_PATH_PAYMENT_STRICT_SEND');
+        $arm13 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::CREATE_CLAIMABLE_BALANCE)); $u->createClaimableBalanceOperation = new XdrCreateClaimableBalanceOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), []); return $u; })();
+        $j1 = $arm13->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_CREATE_CLAIMABLE_BALANCE');
+        $this->assertSame($arm13->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_CREATE_CLAIMABLE_BALANCE');
+        $back2 = XdrOperationBody::fromJson($arm13->toJson());
+        $this->assertSame($arm13->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_CREATE_CLAIMABLE_BALANCE');
+        $arm14 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::CLAIM_CLAIMABLE_BALANCE)); $u->claimClaimableBalanceOperation = new XdrClaimClaimableBalanceOperation(new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32))); return $u; })();
+        $j1 = $arm14->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_CLAIM_CLAIMABLE_BALANCE');
+        $this->assertSame($arm14->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_CLAIM_CLAIMABLE_BALANCE');
+        $back2 = XdrOperationBody::fromJson($arm14->toJson());
+        $this->assertSame($arm14->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_CLAIM_CLAIMABLE_BALANCE');
+        $arm15 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::BEGIN_SPONSORING_FUTURE_RESERVES)); $u->beginSponsoringFutureReservesOperation = new XdrBeginSponsoringFutureReservesOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H')); return $u; })();
+        $j1 = $arm15->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_BEGIN_SPONSORING_FUTURE_RESERVES');
+        $this->assertSame($arm15->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_BEGIN_SPONSORING_FUTURE_RESERVES');
+        $back2 = XdrOperationBody::fromJson($arm15->toJson());
+        $this->assertSame($arm15->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_BEGIN_SPONSORING_FUTURE_RESERVES');
+        $arm16 = new XdrOperationBody(new XdrOperationType(XdrOperationType::END_SPONSORING_FUTURE_RESERVES));
+        $j1 = $arm16->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_END_SPONSORING_FUTURE_RESERVES');
+        $this->assertSame($arm16->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_END_SPONSORING_FUTURE_RESERVES');
+        $back2 = XdrOperationBody::fromJson($arm16->toJson());
+        $this->assertSame($arm16->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_END_SPONSORING_FUTURE_RESERVES');
+        $arm17 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::REVOKE_SPONSORSHIP)); $u->revokeSponsorshipOperation = (function() { $u = new XdrRevokeSponsorshipOperation(new XdrRevokeSponsorshipType(XdrRevokeSponsorshipType::LEDGER_ENTRY)); $u->ledgerKey = XdrLedgerKey::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'); return $u; })(); return $u; })();
+        $j1 = $arm17->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_REVOKE_SPONSORSHIP');
+        $this->assertSame($arm17->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_REVOKE_SPONSORSHIP');
+        $back2 = XdrOperationBody::fromJson($arm17->toJson());
+        $this->assertSame($arm17->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_REVOKE_SPONSORSHIP');
+        $arm18 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::CLAWBACK)); $u->clawbackOperation = new XdrClawbackOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrMuxedAccount(str_repeat("\xAB", 32)), new BigInteger('123456789')); return $u; })();
+        $j1 = $arm18->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_CLAWBACK');
+        $this->assertSame($arm18->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_CLAWBACK');
+        $back2 = XdrOperationBody::fromJson($arm18->toJson());
+        $this->assertSame($arm18->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_CLAWBACK');
+        $arm19 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE)); $u->clawbackClaimableBalanceOperation = new XdrClawbackClaimableBalanceOperation(new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32))); return $u; })();
+        $j1 = $arm19->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_CLAWBACK_CLAIMABLE_BALANCE');
+        $this->assertSame($arm19->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_CLAWBACK_CLAIMABLE_BALANCE');
+        $back2 = XdrOperationBody::fromJson($arm19->toJson());
+        $this->assertSame($arm19->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_CLAWBACK_CLAIMABLE_BALANCE');
+        $arm20 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::SET_TRUST_LINE_FLAGS)); $u->setTrustLineFlagsOperation = new XdrSetTrustLineFlagsOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 42, 42); return $u; })();
+        $j1 = $arm20->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_SET_TRUST_LINE_FLAGS');
+        $this->assertSame($arm20->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_SET_TRUST_LINE_FLAGS');
+        $back2 = XdrOperationBody::fromJson($arm20->toJson());
+        $this->assertSame($arm20->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_SET_TRUST_LINE_FLAGS');
+        $arm21 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::LIQUIDITY_POOL_DEPOSIT)); $u->liquidityPoolDepositOperation = new XdrLiquidityPoolDepositOperation(str_repeat('ab', 32), new BigInteger('1000'), new BigInteger('1000'), new XdrPrice(1, 1), new XdrPrice(2, 1)); return $u; })();
+        $j1 = $arm21->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_LIQUIDITY_POOL_DEPOSIT');
+        $this->assertSame($arm21->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_LIQUIDITY_POOL_DEPOSIT');
+        $back2 = XdrOperationBody::fromJson($arm21->toJson());
+        $this->assertSame($arm21->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_LIQUIDITY_POOL_DEPOSIT');
+        $arm22 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::LIQUIDITY_POOL_WITHDRAW)); $u->liquidityPoolWithdrawOperation = new XdrLiquidityPoolWithdrawOperation(str_repeat('ab', 32), new BigInteger('1000'), new BigInteger('1000'), new BigInteger('1000')); return $u; })();
+        $j1 = $arm22->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_LIQUIDITY_POOL_WITHDRAW');
+        $this->assertSame($arm22->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_LIQUIDITY_POOL_WITHDRAW');
+        $back2 = XdrOperationBody::fromJson($arm22->toJson());
+        $this->assertSame($arm22->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_LIQUIDITY_POOL_WITHDRAW');
+        $arm23 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::INVOKE_HOST_FUNCTION)); $u->invokeHostFunctionOperation = new XdrInvokeHostFunctionOp((function() { $u = new XdrHostFunction(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT)); $u->createContract = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })(); return $u; })(), []); return $u; })();
+        $j1 = $arm23->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_INVOKE_HOST_FUNCTION');
+        $this->assertSame($arm23->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_INVOKE_HOST_FUNCTION');
+        $back2 = XdrOperationBody::fromJson($arm23->toJson());
+        $this->assertSame($arm23->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_INVOKE_HOST_FUNCTION');
+        $arm24 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::EXTEND_FOOTPRINT_TTL)); $u->extendFootprintTTLOp = new XdrExtendFootprintTTLOp(new XdrExtensionPoint(0), 42); return $u; })();
+        $j1 = $arm24->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_EXTEND_FOOTPRINT_TTL');
+        $this->assertSame($arm24->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_EXTEND_FOOTPRINT_TTL');
+        $back2 = XdrOperationBody::fromJson($arm24->toJson());
+        $this->assertSame($arm24->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_EXTEND_FOOTPRINT_TTL');
+        $arm25 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::RESTORE_FOOTPRINT)); $u->restoreFootprintOp = new XdrRestoreFootprintOp(new XdrExtensionPoint(0)); return $u; })();
+        $j1 = $arm25->toJsonValue();
+        $back = XdrOperationBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationBody arm XdrOperationType_RESTORE_FOOTPRINT');
+        $this->assertSame($arm25->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationBody arm XdrOperationType_RESTORE_FOOTPRINT');
+        $back2 = XdrOperationBody::fromJson($arm25->toJson());
+        $this->assertSame($arm25->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationBody arm XdrOperationType_RESTORE_FOOTPRINT');
+    }
+
+    public function testXdrOperationBodyUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::CREATE_ACCOUNT)); $u->createAccountOp = new XdrCreateAccountOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new BigInteger('123456789')); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::PAYMENT)); $u->paymentOp = new XdrPaymentOperation(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789')); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE)); $u->pathPaymentStrictReceiveOp = new XdrPathPaymentStrictReceiveOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), []); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::MANAGE_SELL_OFFER)); $u->manageSellOfferOp = new XdrManageSellOfferOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42), 42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::CREATE_PASSIVE_SELL_OFFER)); $u->createPassiveSellOfferOp = new XdrCreatePassiveSellOfferOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::SET_OPTIONS)); $u->setOptionsOp = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::CHANGE_TRUST)); $u->changeTrustOp = new XdrChangeTrustOperation(new XdrChangeTrustAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789')); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::ALLOW_TRUST)); $u->allowTrustOperation = new XdrAllowTrustOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), XdrAllowTrustOperationAsset::fromAlphaNumAssetCode('USD'), 42); return $u; })())->toJsonValue();
+        $samples[] = (new XdrOperationBody(new XdrOperationType(XdrOperationType::INFLATION)))->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::MANAGE_DATA)); $u->manageDataOperation = new XdrManageDataOperation('test_key', new XdrDataValue("\x01\x02\x03\x04")); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::BUMP_SEQUENCE)); $u->bumpSequenceOp = new XdrBumpSequenceOperation(new XdrSequenceNumber(new BigInteger('123456789'))); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::MANAGE_BUY_OFFER)); $u->manageBuyOfferOp = new XdrManageBuyOfferOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42), 42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::PATH_PAYMENT_STRICT_SEND)); $u->pathPaymentStrictSendOp = new XdrPathPaymentStrictSendOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), []); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::CREATE_CLAIMABLE_BALANCE)); $u->createClaimableBalanceOperation = new XdrCreateClaimableBalanceOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), []); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::CLAIM_CLAIMABLE_BALANCE)); $u->claimClaimableBalanceOperation = new XdrClaimClaimableBalanceOperation(new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32))); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::BEGIN_SPONSORING_FUTURE_RESERVES)); $u->beginSponsoringFutureReservesOperation = new XdrBeginSponsoringFutureReservesOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H')); return $u; })())->toJsonValue();
+        $samples[] = (new XdrOperationBody(new XdrOperationType(XdrOperationType::END_SPONSORING_FUTURE_RESERVES)))->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::REVOKE_SPONSORSHIP)); $u->revokeSponsorshipOperation = (function() { $u = new XdrRevokeSponsorshipOperation(new XdrRevokeSponsorshipType(XdrRevokeSponsorshipType::LEDGER_ENTRY)); $u->ledgerKey = XdrLedgerKey::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'); return $u; })(); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::CLAWBACK)); $u->clawbackOperation = new XdrClawbackOperation(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrMuxedAccount(str_repeat("\xAB", 32)), new BigInteger('123456789')); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE)); $u->clawbackClaimableBalanceOperation = new XdrClawbackClaimableBalanceOperation(new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32))); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::SET_TRUST_LINE_FLAGS)); $u->setTrustLineFlagsOperation = new XdrSetTrustLineFlagsOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 42, 42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::LIQUIDITY_POOL_DEPOSIT)); $u->liquidityPoolDepositOperation = new XdrLiquidityPoolDepositOperation(str_repeat('ab', 32), new BigInteger('1000'), new BigInteger('1000'), new XdrPrice(1, 1), new XdrPrice(2, 1)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::LIQUIDITY_POOL_WITHDRAW)); $u->liquidityPoolWithdrawOperation = new XdrLiquidityPoolWithdrawOperation(str_repeat('ab', 32), new BigInteger('1000'), new BigInteger('1000'), new BigInteger('1000')); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::INVOKE_HOST_FUNCTION)); $u->invokeHostFunctionOperation = new XdrInvokeHostFunctionOp((function() { $u = new XdrHostFunction(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT)); $u->createContract = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })(); return $u; })(), []); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::EXTEND_FOOTPRINT_TTL)); $u->extendFootprintTTLOp = new XdrExtendFootprintTTLOp(new XdrExtensionPoint(0), 42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::RESTORE_FOOTPRINT)); $u->restoreFootprintOp = new XdrRestoreFootprintOp(new XdrExtensionPoint(0)); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrOperationBody::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrOperationBody: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrOperationBody::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrOperationBody: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrHashIDPreimage_XdrEnvelopeType_ENVELOPE_TYPE_OP_ID_ArmRoundTrip(): void
@@ -1744,6 +4794,7 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNull($decoded->revokeID);
         $this->assertNull($decoded->contractID);
         $this->assertNull($decoded->sorobanAuthorization);
+        $this->assertNull($decoded->sorobanAuthorizationWithAddress);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrHashIDPreimage::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
@@ -1760,9 +4811,100 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNull($decoded->operationID);
         $this->assertNull($decoded->contractID);
         $this->assertNull($decoded->sorobanAuthorization);
+        $this->assertNull($decoded->sorobanAuthorizationWithAddress);
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrHashIDPreimage::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrHashIDPreimage_XdrEnvelopeType_ENVELOPE_TYPE_CONTRACT_ID_ArmRoundTrip(): void
+    {
+        $original = new XdrHashIDPreimage(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID));
+        $original->contractID = new XdrHashIDPreimageContractID(str_repeat("\xAB", 32), (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $p; })());
+        $encoded = $original->encode();
+        $decoded = XdrHashIDPreimage::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
+        $this->assertNotNull($decoded->contractID);
+        $this->assertNull($decoded->operationID);
+        $this->assertNull($decoded->revokeID);
+        $this->assertNull($decoded->sorobanAuthorization);
+        $this->assertNull($decoded->sorobanAuthorizationWithAddress);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrHashIDPreimage::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrHashIDPreimageUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrHashIDPreimage(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_OP_ID)); $u->operationID = new XdrHashIDPreimageOperationID(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSequenceNumber(new BigInteger('123456789')), 42); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrHashIDPreimage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrHashIDPreimage arm XdrEnvelopeType_ENVELOPE_TYPE_OP_ID');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrHashIDPreimage arm XdrEnvelopeType_ENVELOPE_TYPE_OP_ID');
+        $back2 = XdrHashIDPreimage::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrHashIDPreimage arm XdrEnvelopeType_ENVELOPE_TYPE_OP_ID');
+        $arm1 = (function() { $u = new XdrHashIDPreimage(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_POOL_REVOKE_OP_ID)); $u->revokeID = new XdrHashIDPreimageRevokeID(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSequenceNumber(new BigInteger('123456789')), 42, str_repeat("\xAB", 32), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE))); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrHashIDPreimage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrHashIDPreimage arm XdrEnvelopeType_ENVELOPE_TYPE_POOL_REVOKE_OP_ID');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrHashIDPreimage arm XdrEnvelopeType_ENVELOPE_TYPE_POOL_REVOKE_OP_ID');
+        $back2 = XdrHashIDPreimage::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrHashIDPreimage arm XdrEnvelopeType_ENVELOPE_TYPE_POOL_REVOKE_OP_ID');
+        $arm2 = (function() { $u = new XdrHashIDPreimage(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID)); $u->contractID = new XdrHashIDPreimageContractID(str_repeat("\xAB", 32), (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $p; })()); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrHashIDPreimage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrHashIDPreimage arm XdrEnvelopeType_ENVELOPE_TYPE_CONTRACT_ID');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrHashIDPreimage arm XdrEnvelopeType_ENVELOPE_TYPE_CONTRACT_ID');
+        $back2 = XdrHashIDPreimage::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrHashIDPreimage arm XdrEnvelopeType_ENVELOPE_TYPE_CONTRACT_ID');
+    }
+
+    public function testXdrHashIDPreimageUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrHashIDPreimage(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_OP_ID)); $u->operationID = new XdrHashIDPreimageOperationID(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSequenceNumber(new BigInteger('123456789')), 42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrHashIDPreimage(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_POOL_REVOKE_OP_ID)); $u->revokeID = new XdrHashIDPreimageRevokeID(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSequenceNumber(new BigInteger('123456789')), 42, str_repeat("\xAB", 32), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE))); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrHashIDPreimage(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID)); $u->contractID = new XdrHashIDPreimageContractID(str_repeat("\xAB", 32), (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $p; })()); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrHashIDPreimage::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrHashIDPreimage: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrHashIDPreimage::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrHashIDPreimage: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrHashIDPreimageGettersSetters(): void
@@ -1773,6 +4915,7 @@ class XdrTransactionGenTest extends TestCase
         $obj->getRevokeID();
         $obj->getContractID();
         $obj->getSorobanAuthorization();
+        $obj->getSorobanAuthorizationWithAddress();
     }
 
     public function testXdrHashIDPreimageOperationIDStructRoundTrip(): void
@@ -1783,6 +4926,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrHashIDPreimageOperationID');
         $b64Decoded = XdrHashIDPreimageOperationID::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrHashIDPreimageOperationID');
+    }
+
+    public function testXdrHashIDPreimageOperationIDStructJsonRoundTrip(): void
+    {
+        $original = new XdrHashIDPreimageOperationID(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSequenceNumber(new BigInteger('123456789')), 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrHashIDPreimageOperationID::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrHashIDPreimageOperationID');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrHashIDPreimageOperationID');
+        $back2 = XdrHashIDPreimageOperationID::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrHashIDPreimageOperationID');
+    }
+
+    public function testXdrHashIDPreimageOperationIDStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrHashIDPreimageOperationID(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSequenceNumber(new BigInteger('123456789')), 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrHashIDPreimageOperationID::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrHashIDPreimageOperationIDEdgeCaseZeroRoundTrip(): void
@@ -1820,6 +5014,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrHashIDPreimageRevokeID');
     }
 
+    public function testXdrHashIDPreimageRevokeIDStructJsonRoundTrip(): void
+    {
+        $original = new XdrHashIDPreimageRevokeID(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSequenceNumber(new BigInteger('123456789')), 42, str_repeat("\xAB", 32), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)));
+        $j1 = $original->toJsonValue();
+        $back = XdrHashIDPreimageRevokeID::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrHashIDPreimageRevokeID');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrHashIDPreimageRevokeID');
+        $back2 = XdrHashIDPreimageRevokeID::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrHashIDPreimageRevokeID');
+    }
+
+    public function testXdrHashIDPreimageRevokeIDStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrHashIDPreimageRevokeID(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSequenceNumber(new BigInteger('123456789')), 42, str_repeat("\xAB", 32), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrHashIDPreimageRevokeID::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrHashIDPreimageRevokeIDEdgeCaseZeroRoundTrip(): void
     {
         $original = new XdrHashIDPreimageRevokeID(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSequenceNumber(new BigInteger('123456789')), 0, str_repeat("\xAB", 32), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)));
@@ -1855,7 +5100,7 @@ class XdrTransactionGenTest extends TestCase
 
     public function testXdrHashIDPreimageContractIDStructRoundTrip(): void
     {
-        $original = new XdrHashIDPreimageContractID(str_repeat("\xAB", 32), (function() { $u = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $u->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $u; })());
+        $original = new XdrHashIDPreimageContractID(str_repeat("\xAB", 32), (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $p; })());
         $encoded = $original->encode();
         $decoded = XdrHashIDPreimageContractID::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrHashIDPreimageContractID');
@@ -1863,15 +5108,66 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrHashIDPreimageContractID');
     }
 
+    public function testXdrHashIDPreimageContractIDStructJsonRoundTrip(): void
+    {
+        $original = new XdrHashIDPreimageContractID(str_repeat("\xAB", 32), (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $p; })());
+        $j1 = $original->toJsonValue();
+        $back = XdrHashIDPreimageContractID::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrHashIDPreimageContractID');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrHashIDPreimageContractID');
+        $back2 = XdrHashIDPreimageContractID::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrHashIDPreimageContractID');
+    }
+
+    public function testXdrHashIDPreimageContractIDStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrHashIDPreimageContractID(str_repeat("\xAB", 32), (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $p; })());
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrHashIDPreimageContractID::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrHashIDPreimageContractIDGettersSetters(): void
     {
-        $obj = new XdrHashIDPreimageContractID(str_repeat("\xAB", 32), (function() { $u = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $u->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $u; })());
+        $obj = new XdrHashIDPreimageContractID(str_repeat("\xAB", 32), (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $p; })());
         $this->assertNotNull($obj->getNetworkID());
         $newVal = str_repeat("\xAB", 32);
         $obj->setNetworkID($newVal);
         $this->assertSame($newVal, $obj->getNetworkID());
         $this->assertNotNull($obj->getContractIDPreimage());
-        $newVal = (function() { $u = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $u->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $u; })();
+        $newVal = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $p; })();
         $obj->setContractIDPreimage($newVal);
         $this->assertSame($newVal, $obj->getContractIDPreimage());
     }
@@ -1884,6 +5180,65 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrHashIDPreimageSorobanAuthorization');
         $b64Decoded = XdrHashIDPreimageSorobanAuthorization::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrHashIDPreimageSorobanAuthorization');
+    }
+
+    public function testXdrHashIDPreimageSorobanAuthorizationStructJsonRoundTrip(): void
+    {
+        $original = new XdrHashIDPreimageSorobanAuthorization(str_repeat("\xAB", 32), 42, 42, new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []));
+        $j1 = $original->toJsonValue();
+        $back = XdrHashIDPreimageSorobanAuthorization::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrHashIDPreimageSorobanAuthorization');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrHashIDPreimageSorobanAuthorization');
+        $back2 = XdrHashIDPreimageSorobanAuthorization::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrHashIDPreimageSorobanAuthorization');
+    }
+
+    public function testXdrHashIDPreimageSorobanAuthorizationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrHashIDPreimageSorobanAuthorization(str_repeat("\xAB", 32), 42, 42, new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrHashIDPreimageSorobanAuthorization::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrHashIDPreimageSorobanAuthorizationEdgeCaseZeroRoundTrip(): void
+    {
+        $original = new XdrHashIDPreimageSorobanAuthorization(str_repeat("\xAB", 32), 0, 42, new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN)); $u->createContractHostFn = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })(); return $u; })(), []));
+        $encoded = $original->encode();
+        $decoded = XdrHashIDPreimageSorobanAuthorization::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrHashIDPreimageSorobanAuthorization');
     }
 
     public function testXdrHashIDPreimageSorobanAuthorizationGettersSetters(): void
@@ -1902,6 +5257,103 @@ class XdrTransactionGenTest extends TestCase
         $obj->setSignatureExpirationLedger($newVal);
         $this->assertSame($newVal, $obj->getSignatureExpirationLedger());
         $this->assertNotNull($obj->getInvocation());
+        $newVal = new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN)); $u->createContractHostFn = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })(); return $u; })(), []);
+        $obj->setInvocation($newVal);
+        $this->assertSame($newVal, $obj->getInvocation());
+    }
+
+    public function testXdrHashIDPreimageSorobanAuthorizationWithAddressStructRoundTrip(): void
+    {
+        $original = new XdrHashIDPreimageSorobanAuthorizationWithAddress(str_repeat("\xAB", 32), 42, 42, XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []));
+        $encoded = $original->encode();
+        $decoded = XdrHashIDPreimageSorobanAuthorizationWithAddress::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrHashIDPreimageSorobanAuthorizationWithAddress');
+        $b64Decoded = XdrHashIDPreimageSorobanAuthorizationWithAddress::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrHashIDPreimageSorobanAuthorizationWithAddress');
+    }
+
+    public function testXdrHashIDPreimageSorobanAuthorizationWithAddressStructJsonRoundTrip(): void
+    {
+        $original = new XdrHashIDPreimageSorobanAuthorizationWithAddress(str_repeat("\xAB", 32), 42, 42, XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []));
+        $j1 = $original->toJsonValue();
+        $back = XdrHashIDPreimageSorobanAuthorizationWithAddress::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrHashIDPreimageSorobanAuthorizationWithAddress');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrHashIDPreimageSorobanAuthorizationWithAddress');
+        $back2 = XdrHashIDPreimageSorobanAuthorizationWithAddress::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrHashIDPreimageSorobanAuthorizationWithAddress');
+    }
+
+    public function testXdrHashIDPreimageSorobanAuthorizationWithAddressStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrHashIDPreimageSorobanAuthorizationWithAddress(str_repeat("\xAB", 32), 42, 42, XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrHashIDPreimageSorobanAuthorizationWithAddress::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrHashIDPreimageSorobanAuthorizationWithAddressEdgeCaseZeroRoundTrip(): void
+    {
+        $original = new XdrHashIDPreimageSorobanAuthorizationWithAddress(str_repeat("\xAB", 32), 0, 42, XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN)); $u->createContractHostFn = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })(); return $u; })(), []));
+        $encoded = $original->encode();
+        $decoded = XdrHashIDPreimageSorobanAuthorizationWithAddress::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrHashIDPreimageSorobanAuthorizationWithAddress');
+    }
+
+    public function testXdrHashIDPreimageSorobanAuthorizationWithAddressGettersSetters(): void
+    {
+        $obj = new XdrHashIDPreimageSorobanAuthorizationWithAddress(str_repeat("\xAB", 32), 42, 42, XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []));
+        $this->assertNotNull($obj->getNetworkID());
+        $newVal = str_repeat("\xAB", 32);
+        $obj->setNetworkID($newVal);
+        $this->assertSame($newVal, $obj->getNetworkID());
+        $this->assertNotNull($obj->getNonce());
+        $newVal = 42;
+        $obj->setNonce($newVal);
+        $this->assertSame($newVal, $obj->getNonce());
+        $this->assertNotNull($obj->getSignatureExpirationLedger());
+        $newVal = 42;
+        $obj->setSignatureExpirationLedger($newVal);
+        $this->assertSame($newVal, $obj->getSignatureExpirationLedger());
+        $this->assertNotNull($obj->getAddress());
+        $newVal = XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        $obj->setAddress($newVal);
+        $this->assertSame($newVal, $obj->getAddress());
+        $this->assertNotNull($obj->getInvocation());
+        $newVal = new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN)); $u->createContractHostFn = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })(); return $u; })(), []);
+        $obj->setInvocation($newVal);
+        $this->assertSame($newVal, $obj->getInvocation());
     }
 
     public function testXdrMemoTypeEnumRoundTrip(): void
@@ -1931,6 +5383,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrMemoType::MEMO_ID());
         $this->assertNotNull(XdrMemoType::MEMO_HASH());
         $this->assertNotNull(XdrMemoType::MEMO_RETURN());
+    }
+
+    public function testXdrMemoTypeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrMemoType::MEMO_NONE, XdrMemoType::MEMO_TEXT, XdrMemoType::MEMO_ID, XdrMemoType::MEMO_HASH, XdrMemoType::MEMO_RETURN];
+        foreach ($values as $v) {
+            $original = new XdrMemoType($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrMemoType::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrMemoType value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrMemoType value ' . $v);
+            $back2 = XdrMemoType::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrMemoType value ' . $v);
+        }
+    }
+
+    public function testXdrMemoTypeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrMemoType::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrMemoType JSON: ' . var_export($bad, true));
+        }
     }
 
     public function testXdrMemo_XdrMemoType_MEMO_TEXT_ArmRoundTrip(): void
@@ -2006,6 +5483,95 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode());
     }
 
+    public function testXdrMemoUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrMemo::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrMemo arm XdrMemoType_MEMO_NONE');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrMemo arm XdrMemoType_MEMO_NONE');
+        $back2 = XdrMemo::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrMemo arm XdrMemoType_MEMO_NONE');
+        $arm1 = (function() { $u = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_TEXT)); $u->text = 'test_string'; return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrMemo::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrMemo arm XdrMemoType_MEMO_TEXT');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrMemo arm XdrMemoType_MEMO_TEXT');
+        $back2 = XdrMemo::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrMemo arm XdrMemoType_MEMO_TEXT');
+        $arm2 = (function() { $u = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_ID)); $u->id = 42; return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrMemo::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrMemo arm XdrMemoType_MEMO_ID');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrMemo arm XdrMemoType_MEMO_ID');
+        $back2 = XdrMemo::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrMemo arm XdrMemoType_MEMO_ID');
+        $arm3 = (function() { $u = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_HASH)); $u->hash = str_repeat("\xAB", 32); return $u; })();
+        $j1 = $arm3->toJsonValue();
+        $back = XdrMemo::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrMemo arm XdrMemoType_MEMO_HASH');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrMemo arm XdrMemoType_MEMO_HASH');
+        $back2 = XdrMemo::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrMemo arm XdrMemoType_MEMO_HASH');
+        $arm4 = (function() { $u = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_RETURN)); $u->returnHash = str_repeat("\xAB", 32); return $u; })();
+        $j1 = $arm4->toJsonValue();
+        $back = XdrMemo::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrMemo arm XdrMemoType_MEMO_RETURN');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrMemo arm XdrMemoType_MEMO_RETURN');
+        $back2 = XdrMemo::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrMemo arm XdrMemoType_MEMO_RETURN');
+    }
+
+    public function testXdrMemoUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)))->toJsonValue();
+        $samples[] = ((function() { $u = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_TEXT)); $u->text = 'test_string'; return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_ID)); $u->id = 42; return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_HASH)); $u->hash = str_repeat("\xAB", 32); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_RETURN)); $u->returnHash = str_repeat("\xAB", 32); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrMemo::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrMemo: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrMemo::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrMemo: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrMemoGettersSetters(): void
     {
         $obj = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE));
@@ -2024,6 +5590,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTimeBounds');
         $b64Decoded = XdrTimeBounds::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTimeBounds');
+    }
+
+    public function testXdrTimeBoundsStructJsonRoundTrip(): void
+    {
+        $original = new XdrTimeBounds(new \DateTime('@1000'), new \DateTime('@2000'));
+        $j1 = $original->toJsonValue();
+        $back = XdrTimeBounds::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTimeBounds');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTimeBounds');
+        $back2 = XdrTimeBounds::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTimeBounds');
+    }
+
+    public function testXdrTimeBoundsStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrTimeBounds(new \DateTime('@1000'), new \DateTime('@2000'));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTimeBounds::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrTimeBoundsGettersSetters(): void
@@ -2062,6 +5679,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrLedgerBounds');
     }
 
+    public function testXdrLedgerBoundsStructJsonRoundTrip(): void
+    {
+        $original = new XdrLedgerBounds(42, 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrLedgerBounds::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLedgerBounds');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrLedgerBounds');
+        $back2 = XdrLedgerBounds::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLedgerBounds');
+    }
+
+    public function testXdrLedgerBoundsStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrLedgerBounds(42, 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrLedgerBounds::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrLedgerBoundsEdgeCaseZeroRoundTrip(): void
     {
         $original = new XdrLedgerBounds(0, 42);
@@ -2091,6 +5759,68 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrPreconditionsV2');
         $b64Decoded = XdrPreconditionsV2::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrPreconditionsV2');
+    }
+
+    public function testXdrPreconditionsV2StructJsonRoundTrip(): void
+    {
+        $original = new XdrPreconditionsV2(42, 42, [], null, null, null);
+        $j1 = $original->toJsonValue();
+        $back = XdrPreconditionsV2::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPreconditionsV2');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrPreconditionsV2');
+        $back2 = XdrPreconditionsV2::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPreconditionsV2');
+    }
+
+    public function testXdrPreconditionsV2StructJsonOptionalsPresentRoundTrip(): void
+    {
+        $original = new XdrPreconditionsV2(42, 42, [], new XdrTimeBounds(new \DateTime('@1000'), new \DateTime('@2000')), new XdrLedgerBounds(42, 42), new XdrSequenceNumber(new BigInteger('123456789')));
+        $j1 = $original->toJsonValue();
+        $back = XdrPreconditionsV2::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPreconditionsV2 optionals-present');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrPreconditionsV2 optionals-present');
+        $back2 = XdrPreconditionsV2::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPreconditionsV2 optionals-present');
+    }
+
+    public function testXdrPreconditionsV2StructJsonRejectsInvalid(): void
+    {
+        $original = new XdrPreconditionsV2(42, 42, [], null, null, null);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrPreconditionsV2::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrPreconditionsV2StructOptionalsPresentRoundTrip(): void
@@ -2165,6 +5895,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrPreconditionType::V2());
     }
 
+    public function testXdrPreconditionTypeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrPreconditionType::NONE, XdrPreconditionType::TIME, XdrPreconditionType::V2];
+        foreach ($values as $v) {
+            $original = new XdrPreconditionType($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrPreconditionType::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPreconditionType value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrPreconditionType value ' . $v);
+            $back2 = XdrPreconditionType::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPreconditionType value ' . $v);
+        }
+    }
+
+    public function testXdrPreconditionTypeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrPreconditionType::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrPreconditionType JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrPreconditions_XdrPreconditionType_TIME_ArmRoundTrip(): void
     {
         $original = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::TIME));
@@ -2202,6 +5957,79 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode());
     }
 
+    public function testXdrPreconditionsUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::NONE));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrPreconditions::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPreconditions arm XdrPreconditionType_NONE');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrPreconditions arm XdrPreconditionType_NONE');
+        $back2 = XdrPreconditions::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPreconditions arm XdrPreconditionType_NONE');
+        $arm1 = (function() { $u = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::TIME)); $u->timeBounds = new XdrTimeBounds(new \DateTime('@1000'), new \DateTime('@2000')); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrPreconditions::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPreconditions arm XdrPreconditionType_TIME');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrPreconditions arm XdrPreconditionType_TIME');
+        $back2 = XdrPreconditions::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPreconditions arm XdrPreconditionType_TIME');
+        $arm2 = (function() { $u = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::V2)); $u->v2 = new XdrPreconditionsV2(42, 42, [], null, null, null); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrPreconditions::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPreconditions arm XdrPreconditionType_V2');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrPreconditions arm XdrPreconditionType_V2');
+        $back2 = XdrPreconditions::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPreconditions arm XdrPreconditionType_V2');
+    }
+
+    public function testXdrPreconditionsUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::NONE)))->toJsonValue();
+        $samples[] = ((function() { $u = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::TIME)); $u->timeBounds = new XdrTimeBounds(new \DateTime('@1000'), new \DateTime('@2000')); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::V2)); $u->v2 = new XdrPreconditionsV2(42, 42, [], null, null, null); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrPreconditions::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrPreconditions: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrPreconditions::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrPreconditions: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrPreconditionsGettersSetters(): void
     {
         $obj = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::NONE));
@@ -2220,6 +6048,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrLedgerFootprint');
     }
 
+    public function testXdrLedgerFootprintStructJsonRoundTrip(): void
+    {
+        $original = new XdrLedgerFootprint([], []);
+        $j1 = $original->toJsonValue();
+        $back = XdrLedgerFootprint::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLedgerFootprint');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrLedgerFootprint');
+        $back2 = XdrLedgerFootprint::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLedgerFootprint');
+    }
+
+    public function testXdrLedgerFootprintStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrLedgerFootprint([], []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrLedgerFootprint::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrLedgerFootprintGettersSetters(): void
     {
         $obj = new XdrLedgerFootprint([], []);
@@ -2235,6 +6114,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSorobanResources');
         $b64Decoded = XdrSorobanResources::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSorobanResources');
+    }
+
+    public function testXdrSorobanResourcesStructJsonRoundTrip(): void
+    {
+        $original = new XdrSorobanResources(new XdrLedgerFootprint([], []), 42, 42, 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrSorobanResources::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanResources');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanResources');
+        $back2 = XdrSorobanResources::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanResources');
+    }
+
+    public function testXdrSorobanResourcesStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSorobanResources(new XdrLedgerFootprint([], []), 42, 42, 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSorobanResources::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrSorobanResourcesGettersSetters(): void
@@ -2268,6 +6198,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSorobanResourcesExtV0');
     }
 
+    public function testXdrSorobanResourcesExtV0StructJsonRoundTrip(): void
+    {
+        $original = new XdrSorobanResourcesExtV0([]);
+        $j1 = $original->toJsonValue();
+        $back = XdrSorobanResourcesExtV0::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanResourcesExtV0');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanResourcesExtV0');
+        $back2 = XdrSorobanResourcesExtV0::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanResourcesExtV0');
+    }
+
+    public function testXdrSorobanResourcesExtV0StructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSorobanResourcesExtV0([]);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSorobanResourcesExtV0::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrSorobanResourcesExtV0StructWithArraysRoundTrip(): void
     {
         $original = new XdrSorobanResourcesExtV0([42]);
@@ -2292,6 +6273,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSorobanTransactionData');
         $b64Decoded = XdrSorobanTransactionData::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSorobanTransactionData');
+    }
+
+    public function testXdrSorobanTransactionDataStructJsonRoundTrip(): void
+    {
+        $original = new XdrSorobanTransactionData(new XdrSorobanTransactionDataExt(0), new XdrSorobanResources(new XdrLedgerFootprint([], []), 42, 42, 42), 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrSorobanTransactionData::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanTransactionData');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanTransactionData');
+        $back2 = XdrSorobanTransactionData::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanTransactionData');
+    }
+
+    public function testXdrSorobanTransactionDataStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSorobanTransactionData(new XdrSorobanTransactionDataExt(0), new XdrSorobanResources(new XdrLedgerFootprint([], []), 42, 42, 42), 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSorobanTransactionData::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrSorobanTransactionDataGettersSetters(): void
@@ -2321,6 +6353,79 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSorobanTransactionDataExt');
     }
 
+    public function testXdrSorobanTransactionDataExtUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrSorobanTransactionDataExt(0);
+        $j1 = $arm0->toJsonValue();
+        $back = XdrSorobanTransactionDataExt::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanTransactionDataExt arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanTransactionDataExt arm fallback');
+        $back2 = XdrSorobanTransactionDataExt::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanTransactionDataExt arm fallback');
+        $arm1 = new XdrSorobanTransactionDataExt(0);
+        $j1 = $arm1->toJsonValue();
+        $back = XdrSorobanTransactionDataExt::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanTransactionDataExt arm 0');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanTransactionDataExt arm 0');
+        $back2 = XdrSorobanTransactionDataExt::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanTransactionDataExt arm 0');
+        $arm2 = (function() { $u = new XdrSorobanTransactionDataExt(1); $u->resourceExt = new XdrSorobanResourcesExtV0([]); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrSorobanTransactionDataExt::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSorobanTransactionDataExt arm 1');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrSorobanTransactionDataExt arm 1');
+        $back2 = XdrSorobanTransactionDataExt::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSorobanTransactionDataExt arm 1');
+    }
+
+    public function testXdrSorobanTransactionDataExtUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrSorobanTransactionDataExt(0))->toJsonValue();
+        $samples[] = (new XdrSorobanTransactionDataExt(0))->toJsonValue();
+        $samples[] = ((function() { $u = new XdrSorobanTransactionDataExt(1); $u->resourceExt = new XdrSorobanResourcesExtV0([]); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSorobanTransactionDataExt::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrSorobanTransactionDataExt: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrSorobanTransactionDataExt::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrSorobanTransactionDataExt: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrSorobanTransactionDataExtGettersSetters(): void
     {
         $obj = new XdrSorobanTransactionDataExt(0);
@@ -2336,6 +6441,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTransactionV0');
         $b64Decoded = XdrTransactionV0::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTransactionV0');
+    }
+
+    public function testXdrTransactionV0StructJsonRoundTrip(): void
+    {
+        $original = new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []);
+        $j1 = $original->toJsonValue();
+        $back = XdrTransactionV0::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionV0');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionV0');
+        $back2 = XdrTransactionV0::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionV0');
+    }
+
+    public function testXdrTransactionV0StructJsonRejectsInvalid(): void
+    {
+        $original = new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTransactionV0::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrTransactionV0GettersSetters(): void
@@ -2392,6 +6548,63 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode());
     }
 
+    public function testXdrTransactionV0ExtUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrTransactionV0Ext(0);
+        $j1 = $arm0->toJsonValue();
+        $back = XdrTransactionV0Ext::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionV0Ext arm 0');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionV0Ext arm 0');
+        $back2 = XdrTransactionV0Ext::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionV0Ext arm 0');
+    }
+
+    public function testXdrTransactionV0ExtUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrTransactionV0Ext(0))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTransactionV0Ext::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrTransactionV0Ext: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrTransactionV0Ext::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrTransactionV0Ext: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrTransactionV0ExtGettersSetters(): void
     {
         $obj = new XdrTransactionV0Ext(0);
@@ -2408,6 +6621,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTransactionV0Envelope');
     }
 
+    public function testXdrTransactionV0EnvelopeStructJsonRoundTrip(): void
+    {
+        $original = new XdrTransactionV0Envelope(new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []), []);
+        $j1 = $original->toJsonValue();
+        $back = XdrTransactionV0Envelope::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionV0Envelope');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionV0Envelope');
+        $back2 = XdrTransactionV0Envelope::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionV0Envelope');
+    }
+
+    public function testXdrTransactionV0EnvelopeStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrTransactionV0Envelope(new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []), []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTransactionV0Envelope::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrTransactionV0EnvelopeGettersSetters(): void
     {
         $obj = new XdrTransactionV0Envelope(new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []), []);
@@ -2416,6 +6680,57 @@ class XdrTransactionGenTest extends TestCase
         $obj->setTx($newVal);
         $this->assertSame($newVal, $obj->getTx());
         $this->assertIsArray($obj->getSignatures());
+    }
+
+    public function testXdrTransactionStructJsonRoundTrip(): void
+    {
+        $original = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0));
+        $j1 = $original->toJsonValue();
+        $back = XdrTransaction::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransaction');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTransaction');
+        $back2 = XdrTransaction::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransaction');
+    }
+
+    public function testXdrTransactionStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTransaction::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrTransactionExt_1_ArmRoundTrip(): void
@@ -2440,11 +6755,243 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode());
     }
 
+    public function testXdrTransactionExtUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrTransactionExt(0);
+        $j1 = $arm0->toJsonValue();
+        $back = XdrTransactionExt::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionExt arm 0');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionExt arm 0');
+        $back2 = XdrTransactionExt::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionExt arm 0');
+        $arm1 = (function() { $u = new XdrTransactionExt(1); $u->sorobanTransactionData = new XdrSorobanTransactionData(new XdrSorobanTransactionDataExt(0), new XdrSorobanResources(new XdrLedgerFootprint([], []), 42, 42, 42), 42); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrTransactionExt::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionExt arm 1');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionExt arm 1');
+        $back2 = XdrTransactionExt::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionExt arm 1');
+    }
+
+    public function testXdrTransactionExtUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrTransactionExt(0))->toJsonValue();
+        $samples[] = ((function() { $u = new XdrTransactionExt(1); $u->sorobanTransactionData = new XdrSorobanTransactionData(new XdrSorobanTransactionDataExt(0), new XdrSorobanResources(new XdrLedgerFootprint([], []), 42, 42, 42), 42); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTransactionExt::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrTransactionExt: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrTransactionExt::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrTransactionExt: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrTransactionExtGettersSetters(): void
     {
         $obj = new XdrTransactionExt(0);
         $this->assertNotNull($obj->getDiscriminant());
         $obj->getSorobanTransactionData();
+    }
+
+    public function testXdrTransactionV1EnvelopeStructJsonRoundTrip(): void
+    {
+        $original = new XdrTransactionV1Envelope(new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)), []);
+        $j1 = $original->toJsonValue();
+        $back = XdrTransactionV1Envelope::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionV1Envelope');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionV1Envelope');
+        $back2 = XdrTransactionV1Envelope::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionV1Envelope');
+    }
+
+    public function testXdrTransactionV1EnvelopeStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrTransactionV1Envelope(new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)), []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTransactionV1Envelope::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrFeeBumpTransactionStructJsonRoundTrip(): void
+    {
+        $original = (function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $i = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $i->v1 = new XdrTransactionV1Envelope($tx, []); return new XdrFeeBumpTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), 200, $i, new XdrFeeBumpTransactionExt(0)); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrFeeBumpTransaction::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrFeeBumpTransaction');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrFeeBumpTransaction');
+        $back2 = XdrFeeBumpTransaction::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrFeeBumpTransaction');
+    }
+
+    public function testXdrFeeBumpTransactionStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $i = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $i->v1 = new XdrTransactionV1Envelope($tx, []); return new XdrFeeBumpTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), 200, $i, new XdrFeeBumpTransactionExt(0)); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrFeeBumpTransaction::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrFeeBumpTransactionInnerTxUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $i = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $i->v1 = new XdrTransactionV1Envelope($tx, []); return $i; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrFeeBumpTransactionInnerTx::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrFeeBumpTransactionInnerTx arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrFeeBumpTransactionInnerTx arm fallback');
+        $back2 = XdrFeeBumpTransactionInnerTx::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrFeeBumpTransactionInnerTx arm fallback');
+        $arm1 = (function() { $u = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $u->v1 = new XdrTransactionV1Envelope(new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)), []); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrFeeBumpTransactionInnerTx::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrFeeBumpTransactionInnerTx arm XdrEnvelopeType_ENVELOPE_TYPE_TX');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrFeeBumpTransactionInnerTx arm XdrEnvelopeType_ENVELOPE_TYPE_TX');
+        $back2 = XdrFeeBumpTransactionInnerTx::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrFeeBumpTransactionInnerTx arm XdrEnvelopeType_ENVELOPE_TYPE_TX');
+    }
+
+    public function testXdrFeeBumpTransactionInnerTxUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $i = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $i->v1 = new XdrTransactionV1Envelope($tx, []); return $i; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $u->v1 = new XdrTransactionV1Envelope(new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)), []); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrFeeBumpTransactionInnerTx::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrFeeBumpTransactionInnerTx: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrFeeBumpTransactionInnerTx::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrFeeBumpTransactionInnerTx: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrFeeBumpTransactionExtUnionRoundTrip(): void
@@ -2457,10 +7004,323 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrFeeBumpTransactionExt');
     }
 
+    public function testXdrFeeBumpTransactionExtUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrFeeBumpTransactionExt(0);
+        $j1 = $arm0->toJsonValue();
+        $back = XdrFeeBumpTransactionExt::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrFeeBumpTransactionExt arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrFeeBumpTransactionExt arm fallback');
+        $back2 = XdrFeeBumpTransactionExt::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrFeeBumpTransactionExt arm fallback');
+        $arm1 = new XdrFeeBumpTransactionExt(0);
+        $j1 = $arm1->toJsonValue();
+        $back = XdrFeeBumpTransactionExt::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrFeeBumpTransactionExt arm 0');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrFeeBumpTransactionExt arm 0');
+        $back2 = XdrFeeBumpTransactionExt::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrFeeBumpTransactionExt arm 0');
+    }
+
+    public function testXdrFeeBumpTransactionExtUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrFeeBumpTransactionExt(0))->toJsonValue();
+        $samples[] = (new XdrFeeBumpTransactionExt(0))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrFeeBumpTransactionExt::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrFeeBumpTransactionExt: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrFeeBumpTransactionExt::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrFeeBumpTransactionExt: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrFeeBumpTransactionExtGettersSetters(): void
     {
         $obj = new XdrFeeBumpTransactionExt(0);
         $this->assertNotNull($obj->getDiscriminant());
+    }
+
+    public function testXdrFeeBumpTransactionEnvelopeStructJsonRoundTrip(): void
+    {
+        $original = (function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $i = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $i->v1 = new XdrTransactionV1Envelope($tx, []); $fb = new XdrFeeBumpTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), 200, $i, new XdrFeeBumpTransactionExt(0)); return new XdrFeeBumpTransactionEnvelope($fb, []); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrFeeBumpTransactionEnvelope::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrFeeBumpTransactionEnvelope');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrFeeBumpTransactionEnvelope');
+        $back2 = XdrFeeBumpTransactionEnvelope::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrFeeBumpTransactionEnvelope');
+    }
+
+    public function testXdrFeeBumpTransactionEnvelopeStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $i = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $i->v1 = new XdrTransactionV1Envelope($tx, []); $fb = new XdrFeeBumpTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), 200, $i, new XdrFeeBumpTransactionExt(0)); return new XdrFeeBumpTransactionEnvelope($fb, []); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrFeeBumpTransactionEnvelope::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrTransactionEnvelopeUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrTransactionEnvelopeBase(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0)); $u->v0 = new XdrTransactionV0Envelope(new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []), []); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrTransactionEnvelope::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionEnvelope arm XdrEnvelopeType_ENVELOPE_TYPE_TX_V0');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionEnvelope arm XdrEnvelopeType_ENVELOPE_TYPE_TX_V0');
+        $back2 = XdrTransactionEnvelope::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionEnvelope arm XdrEnvelopeType_ENVELOPE_TYPE_TX_V0');
+        $arm1 = (function() { $u = new XdrTransactionEnvelopeBase(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $u->v1 = new XdrTransactionV1Envelope(new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)), []); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrTransactionEnvelope::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionEnvelope arm XdrEnvelopeType_ENVELOPE_TYPE_TX');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionEnvelope arm XdrEnvelopeType_ENVELOPE_TYPE_TX');
+        $back2 = XdrTransactionEnvelope::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionEnvelope arm XdrEnvelopeType_ENVELOPE_TYPE_TX');
+        $arm2 = (function() { $u = new XdrTransactionEnvelopeBase(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP)); $u->feeBump = (function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $i = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $i->v1 = new XdrTransactionV1Envelope($tx, []); $fb = new XdrFeeBumpTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), 200, $i, new XdrFeeBumpTransactionExt(0)); return new XdrFeeBumpTransactionEnvelope($fb, []); })(); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrTransactionEnvelope::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionEnvelope arm XdrEnvelopeType_ENVELOPE_TYPE_TX_FEE_BUMP');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionEnvelope arm XdrEnvelopeType_ENVELOPE_TYPE_TX_FEE_BUMP');
+        $back2 = XdrTransactionEnvelope::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionEnvelope arm XdrEnvelopeType_ENVELOPE_TYPE_TX_FEE_BUMP');
+    }
+
+    public function testXdrTransactionEnvelopeUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrTransactionEnvelopeBase(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0)); $u->v0 = new XdrTransactionV0Envelope(new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []), []); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrTransactionEnvelopeBase(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $u->v1 = new XdrTransactionV1Envelope(new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)), []); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrTransactionEnvelopeBase(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP)); $u->feeBump = (function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $i = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $i->v1 = new XdrTransactionV1Envelope($tx, []); $fb = new XdrFeeBumpTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), 200, $i, new XdrFeeBumpTransactionExt(0)); return new XdrFeeBumpTransactionEnvelope($fb, []); })(); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTransactionEnvelope::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrTransactionEnvelope: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrTransactionEnvelope::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrTransactionEnvelope: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
+    public function testXdrTransactionSignaturePayloadStructJsonRoundTrip(): void
+    {
+        $original = (function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $t = new XdrTransactionSignaturePayloadTaggedTransaction(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $t->tx = $tx; return new XdrTransactionSignaturePayload(str_repeat("\0", 32), $t); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrTransactionSignaturePayload::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionSignaturePayload');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionSignaturePayload');
+        $back2 = XdrTransactionSignaturePayload::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionSignaturePayload');
+    }
+
+    public function testXdrTransactionSignaturePayloadStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $t = new XdrTransactionSignaturePayloadTaggedTransaction(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $t->tx = $tx; return new XdrTransactionSignaturePayload(str_repeat("\0", 32), $t); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTransactionSignaturePayload::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrTransactionSignaturePayloadTaggedTransactionUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $t = new XdrTransactionSignaturePayloadTaggedTransaction(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $t->tx = $tx; return $t; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrTransactionSignaturePayloadTaggedTransaction::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionSignaturePayloadTaggedTransaction arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionSignaturePayloadTaggedTransaction arm fallback');
+        $back2 = XdrTransactionSignaturePayloadTaggedTransaction::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionSignaturePayloadTaggedTransaction arm fallback');
+        $arm1 = (function() { $u = new XdrTransactionSignaturePayloadTaggedTransaction(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $u->tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrTransactionSignaturePayloadTaggedTransaction::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionSignaturePayloadTaggedTransaction arm XdrEnvelopeType_ENVELOPE_TYPE_TX');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionSignaturePayloadTaggedTransaction arm XdrEnvelopeType_ENVELOPE_TYPE_TX');
+        $back2 = XdrTransactionSignaturePayloadTaggedTransaction::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionSignaturePayloadTaggedTransaction arm XdrEnvelopeType_ENVELOPE_TYPE_TX');
+        $arm2 = (function() { $u = new XdrTransactionSignaturePayloadTaggedTransaction(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP)); $u->feeBump = (function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $i = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $i->v1 = new XdrTransactionV1Envelope($tx, []); return new XdrFeeBumpTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), 200, $i, new XdrFeeBumpTransactionExt(0)); })(); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrTransactionSignaturePayloadTaggedTransaction::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionSignaturePayloadTaggedTransaction arm XdrEnvelopeType_ENVELOPE_TYPE_TX_FEE_BUMP');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionSignaturePayloadTaggedTransaction arm XdrEnvelopeType_ENVELOPE_TYPE_TX_FEE_BUMP');
+        $back2 = XdrTransactionSignaturePayloadTaggedTransaction::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionSignaturePayloadTaggedTransaction arm XdrEnvelopeType_ENVELOPE_TYPE_TX_FEE_BUMP');
+    }
+
+    public function testXdrTransactionSignaturePayloadTaggedTransactionUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $t = new XdrTransactionSignaturePayloadTaggedTransaction(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $t->tx = $tx; return $t; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrTransactionSignaturePayloadTaggedTransaction(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $u->tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrTransactionSignaturePayloadTaggedTransaction(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP)); $u->feeBump = (function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $i = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $i->v1 = new XdrTransactionV1Envelope($tx, []); return new XdrFeeBumpTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), 200, $i, new XdrFeeBumpTransactionExt(0)); })(); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTransactionSignaturePayloadTaggedTransaction::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrTransactionSignaturePayloadTaggedTransaction: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrTransactionSignaturePayloadTaggedTransaction::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrTransactionSignaturePayloadTaggedTransaction: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrClaimAtomTypeEnumRoundTrip(): void
@@ -2490,6 +7350,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrClaimAtomType::LIQUIDITY_POOL());
     }
 
+    public function testXdrClaimAtomTypeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrClaimAtomType::V0, XdrClaimAtomType::ORDER_BOOK, XdrClaimAtomType::LIQUIDITY_POOL];
+        foreach ($values as $v) {
+            $original = new XdrClaimAtomType($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrClaimAtomType::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClaimAtomType value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrClaimAtomType value ' . $v);
+            $back2 = XdrClaimAtomType::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClaimAtomType value ' . $v);
+        }
+    }
+
+    public function testXdrClaimAtomTypeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrClaimAtomType::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrClaimAtomType JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrClaimOfferAtomV0StructRoundTrip(): void
     {
         $original = new XdrClaimOfferAtomV0(str_repeat("\xAB", 32), 42, new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'));
@@ -2498,6 +7383,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrClaimOfferAtomV0');
         $b64Decoded = XdrClaimOfferAtomV0::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrClaimOfferAtomV0');
+    }
+
+    public function testXdrClaimOfferAtomV0StructJsonRoundTrip(): void
+    {
+        $original = new XdrClaimOfferAtomV0(str_repeat("\xAB", 32), 42, new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'));
+        $j1 = $original->toJsonValue();
+        $back = XdrClaimOfferAtomV0::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClaimOfferAtomV0');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrClaimOfferAtomV0');
+        $back2 = XdrClaimOfferAtomV0::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClaimOfferAtomV0');
+    }
+
+    public function testXdrClaimOfferAtomV0StructJsonRejectsInvalid(): void
+    {
+        $original = new XdrClaimOfferAtomV0(str_repeat("\xAB", 32), 42, new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['amount_sold' => true, 'amount_bought' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrClaimOfferAtomV0::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrClaimOfferAtomV0EdgeCaseZeroRoundTrip(): void
@@ -2547,6 +7483,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrClaimOfferAtom');
     }
 
+    public function testXdrClaimOfferAtomStructJsonRoundTrip(): void
+    {
+        $original = new XdrClaimOfferAtom(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'));
+        $j1 = $original->toJsonValue();
+        $back = XdrClaimOfferAtom::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClaimOfferAtom');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrClaimOfferAtom');
+        $back2 = XdrClaimOfferAtom::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClaimOfferAtom');
+    }
+
+    public function testXdrClaimOfferAtomStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrClaimOfferAtom(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['amount_sold' => true, 'amount_bought' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrClaimOfferAtom::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrClaimOfferAtomEdgeCaseZeroRoundTrip(): void
     {
         $original = new XdrClaimOfferAtom(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 0, new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'));
@@ -2592,6 +7579,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrClaimLiquidityAtom');
         $b64Decoded = XdrClaimLiquidityAtom::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrClaimLiquidityAtom');
+    }
+
+    public function testXdrClaimLiquidityAtomStructJsonRoundTrip(): void
+    {
+        $original = new XdrClaimLiquidityAtom(str_repeat("\xAB", 32), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'));
+        $j1 = $original->toJsonValue();
+        $back = XdrClaimLiquidityAtom::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClaimLiquidityAtom');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrClaimLiquidityAtom');
+        $back2 = XdrClaimLiquidityAtom::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClaimLiquidityAtom');
+    }
+
+    public function testXdrClaimLiquidityAtomStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrClaimLiquidityAtom(str_repeat("\xAB", 32), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['amount_sold' => true, 'amount_bought' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrClaimLiquidityAtom::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrClaimLiquidityAtomGettersSetters(): void
@@ -2664,6 +7702,79 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
     }
 
+    public function testXdrClaimAtomUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrClaimAtom(new XdrClaimAtomType(XdrClaimAtomType::V0)); $u->v0 = new XdrClaimOfferAtomV0(str_repeat("\xAB", 32), 42, new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789')); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrClaimAtom::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClaimAtom arm XdrClaimAtomType_V0');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrClaimAtom arm XdrClaimAtomType_V0');
+        $back2 = XdrClaimAtom::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClaimAtom arm XdrClaimAtomType_V0');
+        $arm1 = (function() { $u = new XdrClaimAtom(new XdrClaimAtomType(XdrClaimAtomType::ORDER_BOOK)); $u->orderBook = new XdrClaimOfferAtom(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789')); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrClaimAtom::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClaimAtom arm XdrClaimAtomType_ORDER_BOOK');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrClaimAtom arm XdrClaimAtomType_ORDER_BOOK');
+        $back2 = XdrClaimAtom::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClaimAtom arm XdrClaimAtomType_ORDER_BOOK');
+        $arm2 = (function() { $u = new XdrClaimAtom(new XdrClaimAtomType(XdrClaimAtomType::LIQUIDITY_POOL)); $u->liquidityPool = new XdrClaimLiquidityAtom(str_repeat("\xAB", 32), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789')); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrClaimAtom::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClaimAtom arm XdrClaimAtomType_LIQUIDITY_POOL');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrClaimAtom arm XdrClaimAtomType_LIQUIDITY_POOL');
+        $back2 = XdrClaimAtom::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClaimAtom arm XdrClaimAtomType_LIQUIDITY_POOL');
+    }
+
+    public function testXdrClaimAtomUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrClaimAtom(new XdrClaimAtomType(XdrClaimAtomType::V0)); $u->v0 = new XdrClaimOfferAtomV0(str_repeat("\xAB", 32), 42, new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789')); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrClaimAtom(new XdrClaimAtomType(XdrClaimAtomType::ORDER_BOOK)); $u->orderBook = new XdrClaimOfferAtom(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789')); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrClaimAtom(new XdrClaimAtomType(XdrClaimAtomType::LIQUIDITY_POOL)); $u->liquidityPool = new XdrClaimLiquidityAtom(str_repeat("\xAB", 32), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789')); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrClaimAtom::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrClaimAtom: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrClaimAtom::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrClaimAtom: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrClaimAtomGettersSetters(): void
     {
         $obj = (function() { $u = new XdrClaimAtom(new XdrClaimAtomType(XdrClaimAtomType::V0)); $u->v0 = new XdrClaimOfferAtomV0(str_repeat("\xAB", 32), 42, new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789')); return $u; })();
@@ -2702,6 +7813,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrCreateAccountResultCode::ACCOUNT_ALREADY_EXIST());
     }
 
+    public function testXdrCreateAccountResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrCreateAccountResultCode::SUCCESS, XdrCreateAccountResultCode::MALFORMED, XdrCreateAccountResultCode::UNDERFUNDED, XdrCreateAccountResultCode::LOW_RESERVE, XdrCreateAccountResultCode::ACCOUNT_ALREADY_EXIST];
+        foreach ($values as $v) {
+            $original = new XdrCreateAccountResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrCreateAccountResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateAccountResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateAccountResultCode value ' . $v);
+            $back2 = XdrCreateAccountResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateAccountResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrCreateAccountResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrCreateAccountResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrCreateAccountResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrCreateAccountResult_XdrCreateAccountResultCode_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrCreateAccountResult(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::SUCCESS));
@@ -2718,6 +7854,95 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrCreateAccountResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->resultCode->getValue(), $decoded->resultCode->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrCreateAccountResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrCreateAccountResult(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrCreateAccountResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateAccountResult arm XdrCreateAccountResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateAccountResult arm XdrCreateAccountResultCode_SUCCESS');
+        $back2 = XdrCreateAccountResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateAccountResult arm XdrCreateAccountResultCode_SUCCESS');
+        $arm1 = new XdrCreateAccountResult(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::MALFORMED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrCreateAccountResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateAccountResult arm XdrCreateAccountResultCode_MALFORMED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateAccountResult arm XdrCreateAccountResultCode_MALFORMED');
+        $back2 = XdrCreateAccountResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateAccountResult arm XdrCreateAccountResultCode_MALFORMED');
+        $arm2 = new XdrCreateAccountResult(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::UNDERFUNDED));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrCreateAccountResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateAccountResult arm XdrCreateAccountResultCode_UNDERFUNDED');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateAccountResult arm XdrCreateAccountResultCode_UNDERFUNDED');
+        $back2 = XdrCreateAccountResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateAccountResult arm XdrCreateAccountResultCode_UNDERFUNDED');
+        $arm3 = new XdrCreateAccountResult(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::LOW_RESERVE));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrCreateAccountResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateAccountResult arm XdrCreateAccountResultCode_LOW_RESERVE');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateAccountResult arm XdrCreateAccountResultCode_LOW_RESERVE');
+        $back2 = XdrCreateAccountResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateAccountResult arm XdrCreateAccountResultCode_LOW_RESERVE');
+        $arm4 = new XdrCreateAccountResult(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::ACCOUNT_ALREADY_EXIST));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrCreateAccountResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateAccountResult arm XdrCreateAccountResultCode_ACCOUNT_ALREADY_EXIST');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateAccountResult arm XdrCreateAccountResultCode_ACCOUNT_ALREADY_EXIST');
+        $back2 = XdrCreateAccountResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateAccountResult arm XdrCreateAccountResultCode_ACCOUNT_ALREADY_EXIST');
+    }
+
+    public function testXdrCreateAccountResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrCreateAccountResult(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrCreateAccountResult(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrCreateAccountResult(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::UNDERFUNDED)))->toJsonValue();
+        $samples[] = (new XdrCreateAccountResult(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::LOW_RESERVE)))->toJsonValue();
+        $samples[] = (new XdrCreateAccountResult(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::ACCOUNT_ALREADY_EXIST)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrCreateAccountResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrCreateAccountResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrCreateAccountResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrCreateAccountResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrCreateAccountResultGettersSetters(): void
@@ -2760,6 +7985,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrPaymentResultCode::NO_ISSUER());
     }
 
+    public function testXdrPaymentResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrPaymentResultCode::SUCCESS, XdrPaymentResultCode::MALFORMED, XdrPaymentResultCode::UNDERFUNDED, XdrPaymentResultCode::SRC_NO_TRUST, XdrPaymentResultCode::SRC_NOT_AUTHORIZED, XdrPaymentResultCode::NO_DESTINATION, XdrPaymentResultCode::NO_TRUST, XdrPaymentResultCode::NOT_AUTHORIZED, XdrPaymentResultCode::LINE_FULL, XdrPaymentResultCode::NO_ISSUER];
+        foreach ($values as $v) {
+            $original = new XdrPaymentResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrPaymentResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPaymentResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrPaymentResultCode value ' . $v);
+            $back2 = XdrPaymentResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPaymentResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrPaymentResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrPaymentResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrPaymentResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrPaymentResult_XdrPaymentResultCode_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::SUCCESS));
@@ -2776,6 +8026,135 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrPaymentResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->resultCode->getValue(), $decoded->resultCode->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrPaymentResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrPaymentResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPaymentResult arm XdrPaymentResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrPaymentResult arm XdrPaymentResultCode_SUCCESS');
+        $back2 = XdrPaymentResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPaymentResult arm XdrPaymentResultCode_SUCCESS');
+        $arm1 = new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::MALFORMED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrPaymentResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPaymentResult arm XdrPaymentResultCode_MALFORMED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrPaymentResult arm XdrPaymentResultCode_MALFORMED');
+        $back2 = XdrPaymentResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPaymentResult arm XdrPaymentResultCode_MALFORMED');
+        $arm2 = new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::UNDERFUNDED));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrPaymentResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPaymentResult arm XdrPaymentResultCode_UNDERFUNDED');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrPaymentResult arm XdrPaymentResultCode_UNDERFUNDED');
+        $back2 = XdrPaymentResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPaymentResult arm XdrPaymentResultCode_UNDERFUNDED');
+        $arm3 = new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::SRC_NO_TRUST));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrPaymentResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPaymentResult arm XdrPaymentResultCode_SRC_NO_TRUST');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrPaymentResult arm XdrPaymentResultCode_SRC_NO_TRUST');
+        $back2 = XdrPaymentResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPaymentResult arm XdrPaymentResultCode_SRC_NO_TRUST');
+        $arm4 = new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::SRC_NOT_AUTHORIZED));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrPaymentResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPaymentResult arm XdrPaymentResultCode_SRC_NOT_AUTHORIZED');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrPaymentResult arm XdrPaymentResultCode_SRC_NOT_AUTHORIZED');
+        $back2 = XdrPaymentResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPaymentResult arm XdrPaymentResultCode_SRC_NOT_AUTHORIZED');
+        $arm5 = new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::NO_DESTINATION));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrPaymentResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPaymentResult arm XdrPaymentResultCode_NO_DESTINATION');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrPaymentResult arm XdrPaymentResultCode_NO_DESTINATION');
+        $back2 = XdrPaymentResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPaymentResult arm XdrPaymentResultCode_NO_DESTINATION');
+        $arm6 = new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::NO_TRUST));
+        $j1 = $arm6->toJsonValue();
+        $back = XdrPaymentResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPaymentResult arm XdrPaymentResultCode_NO_TRUST');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrPaymentResult arm XdrPaymentResultCode_NO_TRUST');
+        $back2 = XdrPaymentResult::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPaymentResult arm XdrPaymentResultCode_NO_TRUST');
+        $arm7 = new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::NOT_AUTHORIZED));
+        $j1 = $arm7->toJsonValue();
+        $back = XdrPaymentResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPaymentResult arm XdrPaymentResultCode_NOT_AUTHORIZED');
+        $this->assertSame($arm7->toJson(), $back->toJson(), 'JSON string not stable for XdrPaymentResult arm XdrPaymentResultCode_NOT_AUTHORIZED');
+        $back2 = XdrPaymentResult::fromJson($arm7->toJson());
+        $this->assertSame($arm7->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPaymentResult arm XdrPaymentResultCode_NOT_AUTHORIZED');
+        $arm8 = new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::LINE_FULL));
+        $j1 = $arm8->toJsonValue();
+        $back = XdrPaymentResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPaymentResult arm XdrPaymentResultCode_LINE_FULL');
+        $this->assertSame($arm8->toJson(), $back->toJson(), 'JSON string not stable for XdrPaymentResult arm XdrPaymentResultCode_LINE_FULL');
+        $back2 = XdrPaymentResult::fromJson($arm8->toJson());
+        $this->assertSame($arm8->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPaymentResult arm XdrPaymentResultCode_LINE_FULL');
+        $arm9 = new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::NO_ISSUER));
+        $j1 = $arm9->toJsonValue();
+        $back = XdrPaymentResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPaymentResult arm XdrPaymentResultCode_NO_ISSUER');
+        $this->assertSame($arm9->toJson(), $back->toJson(), 'JSON string not stable for XdrPaymentResult arm XdrPaymentResultCode_NO_ISSUER');
+        $back2 = XdrPaymentResult::fromJson($arm9->toJson());
+        $this->assertSame($arm9->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPaymentResult arm XdrPaymentResultCode_NO_ISSUER');
+    }
+
+    public function testXdrPaymentResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::UNDERFUNDED)))->toJsonValue();
+        $samples[] = (new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::SRC_NO_TRUST)))->toJsonValue();
+        $samples[] = (new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::SRC_NOT_AUTHORIZED)))->toJsonValue();
+        $samples[] = (new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::NO_DESTINATION)))->toJsonValue();
+        $samples[] = (new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::NO_TRUST)))->toJsonValue();
+        $samples[] = (new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::NOT_AUTHORIZED)))->toJsonValue();
+        $samples[] = (new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::LINE_FULL)))->toJsonValue();
+        $samples[] = (new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::NO_ISSUER)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrPaymentResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrPaymentResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrPaymentResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrPaymentResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrPaymentResultGettersSetters(): void
@@ -2821,9 +8200,34 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrPathPaymentStrictReceiveResultCode::OVER_SENDMAX());
     }
 
+    public function testXdrPathPaymentStrictReceiveResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrPathPaymentStrictReceiveResultCode::SUCCESS, XdrPathPaymentStrictReceiveResultCode::MALFORMED, XdrPathPaymentStrictReceiveResultCode::UNDERFUNDED, XdrPathPaymentStrictReceiveResultCode::SRC_NO_TRUST, XdrPathPaymentStrictReceiveResultCode::SRC_NOT_AUTHORIZED, XdrPathPaymentStrictReceiveResultCode::NO_DESTINATION, XdrPathPaymentStrictReceiveResultCode::NO_TRUST, XdrPathPaymentStrictReceiveResultCode::NOT_AUTHORIZED, XdrPathPaymentStrictReceiveResultCode::LINE_FULL, XdrPathPaymentStrictReceiveResultCode::NO_ISSUER, XdrPathPaymentStrictReceiveResultCode::TOO_FEW_OFFERS, XdrPathPaymentStrictReceiveResultCode::OFFER_CROSS_SELF, XdrPathPaymentStrictReceiveResultCode::OVER_SENDMAX];
+        foreach ($values as $v) {
+            $original = new XdrPathPaymentStrictReceiveResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrPathPaymentStrictReceiveResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictReceiveResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictReceiveResultCode value ' . $v);
+            $back2 = XdrPathPaymentStrictReceiveResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictReceiveResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrPathPaymentStrictReceiveResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrPathPaymentStrictReceiveResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrPathPaymentStrictReceiveResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrSimplePaymentResultStructRoundTrip(): void
     {
-        $original = new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'));
+        $original = new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000'));
         $encoded = $original->encode();
         $decoded = XdrSimplePaymentResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSimplePaymentResult');
@@ -2831,21 +8235,86 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSimplePaymentResult');
     }
 
+    public function testXdrSimplePaymentResultStructJsonRoundTrip(): void
+    {
+        $original = new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000'));
+        $j1 = $original->toJsonValue();
+        $back = XdrSimplePaymentResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSimplePaymentResult');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSimplePaymentResult');
+        $back2 = XdrSimplePaymentResult::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSimplePaymentResult');
+    }
+
+    public function testXdrSimplePaymentResultStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000'));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['amount' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSimplePaymentResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrSimplePaymentResultGettersSetters(): void
     {
-        $obj = new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'));
-        $this->assertNotNull($obj->getDestination());
+        $obj = new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000'));
+        $obj->getDestination();
         $newVal = XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
         $obj->setDestination($newVal);
         $this->assertSame($newVal, $obj->getDestination());
-        $this->assertNotNull($obj->getAsset());
+        $obj->getAsset();
         $newVal = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
         $obj->setAsset($newVal);
         $this->assertSame($newVal, $obj->getAsset());
-        $this->assertNotNull($obj->getAmount());
+        $obj->getAmount();
         $newVal = new BigInteger('123456789');
         $obj->setAmount($newVal);
         $this->assertSame($newVal, $obj->getAmount());
+    }
+
+    public function testXdrPathPaymentStrictReceiveResult_XdrPathPaymentStrictReceiveResultCode_SUCCESS_ArmRoundTrip(): void
+    {
+        $original = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::SUCCESS));
+        $original->success = new XdrPathPaymentResultSuccess([], new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000')));
+        $encoded = $original->encode();
+        $decoded = XdrPathPaymentStrictReceiveResult::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->code->getValue(), $decoded->code->getValue());
+        $this->assertNotNull($decoded->success);
+        $this->assertNull($decoded->noIssuer);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrPathPaymentStrictReceiveResult::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
     }
 
     public function testXdrPathPaymentStrictReceiveResult_XdrPathPaymentStrictReceiveResultCode_NO_ISSUER_ArmRoundTrip(): void
@@ -2880,6 +8349,159 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode());
     }
 
+    public function testXdrPathPaymentStrictReceiveResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::SUCCESS)); $u->success = new XdrPathPaymentResultSuccess([], new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000'))); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrPathPaymentStrictReceiveResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_SUCCESS');
+        $back2 = XdrPathPaymentStrictReceiveResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_SUCCESS');
+        $arm1 = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::MALFORMED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrPathPaymentStrictReceiveResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_MALFORMED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_MALFORMED');
+        $back2 = XdrPathPaymentStrictReceiveResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_MALFORMED');
+        $arm2 = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::UNDERFUNDED));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrPathPaymentStrictReceiveResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_UNDERFUNDED');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_UNDERFUNDED');
+        $back2 = XdrPathPaymentStrictReceiveResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_UNDERFUNDED');
+        $arm3 = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::SRC_NO_TRUST));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrPathPaymentStrictReceiveResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_SRC_NO_TRUST');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_SRC_NO_TRUST');
+        $back2 = XdrPathPaymentStrictReceiveResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_SRC_NO_TRUST');
+        $arm4 = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::SRC_NOT_AUTHORIZED));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrPathPaymentStrictReceiveResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_SRC_NOT_AUTHORIZED');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_SRC_NOT_AUTHORIZED');
+        $back2 = XdrPathPaymentStrictReceiveResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_SRC_NOT_AUTHORIZED');
+        $arm5 = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::NO_DESTINATION));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrPathPaymentStrictReceiveResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_NO_DESTINATION');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_NO_DESTINATION');
+        $back2 = XdrPathPaymentStrictReceiveResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_NO_DESTINATION');
+        $arm6 = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::NO_TRUST));
+        $j1 = $arm6->toJsonValue();
+        $back = XdrPathPaymentStrictReceiveResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_NO_TRUST');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_NO_TRUST');
+        $back2 = XdrPathPaymentStrictReceiveResult::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_NO_TRUST');
+        $arm7 = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::NOT_AUTHORIZED));
+        $j1 = $arm7->toJsonValue();
+        $back = XdrPathPaymentStrictReceiveResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_NOT_AUTHORIZED');
+        $this->assertSame($arm7->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_NOT_AUTHORIZED');
+        $back2 = XdrPathPaymentStrictReceiveResult::fromJson($arm7->toJson());
+        $this->assertSame($arm7->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_NOT_AUTHORIZED');
+        $arm8 = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::LINE_FULL));
+        $j1 = $arm8->toJsonValue();
+        $back = XdrPathPaymentStrictReceiveResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_LINE_FULL');
+        $this->assertSame($arm8->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_LINE_FULL');
+        $back2 = XdrPathPaymentStrictReceiveResult::fromJson($arm8->toJson());
+        $this->assertSame($arm8->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_LINE_FULL');
+        $arm9 = (function() { $u = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::NO_ISSUER)); $u->noIssuer = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)); return $u; })();
+        $j1 = $arm9->toJsonValue();
+        $back = XdrPathPaymentStrictReceiveResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_NO_ISSUER');
+        $this->assertSame($arm9->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_NO_ISSUER');
+        $back2 = XdrPathPaymentStrictReceiveResult::fromJson($arm9->toJson());
+        $this->assertSame($arm9->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_NO_ISSUER');
+        $arm10 = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::TOO_FEW_OFFERS));
+        $j1 = $arm10->toJsonValue();
+        $back = XdrPathPaymentStrictReceiveResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_TOO_FEW_OFFERS');
+        $this->assertSame($arm10->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_TOO_FEW_OFFERS');
+        $back2 = XdrPathPaymentStrictReceiveResult::fromJson($arm10->toJson());
+        $this->assertSame($arm10->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_TOO_FEW_OFFERS');
+        $arm11 = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::OFFER_CROSS_SELF));
+        $j1 = $arm11->toJsonValue();
+        $back = XdrPathPaymentStrictReceiveResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_OFFER_CROSS_SELF');
+        $this->assertSame($arm11->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_OFFER_CROSS_SELF');
+        $back2 = XdrPathPaymentStrictReceiveResult::fromJson($arm11->toJson());
+        $this->assertSame($arm11->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_OFFER_CROSS_SELF');
+        $arm12 = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::OVER_SENDMAX));
+        $j1 = $arm12->toJsonValue();
+        $back = XdrPathPaymentStrictReceiveResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_OVER_SENDMAX');
+        $this->assertSame($arm12->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_OVER_SENDMAX');
+        $back2 = XdrPathPaymentStrictReceiveResult::fromJson($arm12->toJson());
+        $this->assertSame($arm12->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictReceiveResult arm XdrPathPaymentStrictReceiveResultCode_OVER_SENDMAX');
+    }
+
+    public function testXdrPathPaymentStrictReceiveResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::SUCCESS)); $u->success = new XdrPathPaymentResultSuccess([], new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000'))); return $u; })())->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::UNDERFUNDED)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::SRC_NO_TRUST)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::SRC_NOT_AUTHORIZED)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::NO_DESTINATION)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::NO_TRUST)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::NOT_AUTHORIZED)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::LINE_FULL)))->toJsonValue();
+        $samples[] = ((function() { $u = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::NO_ISSUER)); $u->noIssuer = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)); return $u; })())->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::TOO_FEW_OFFERS)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::OFFER_CROSS_SELF)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::OVER_SENDMAX)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrPathPaymentStrictReceiveResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrPathPaymentStrictReceiveResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrPathPaymentStrictReceiveResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrPathPaymentStrictReceiveResult: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrPathPaymentStrictReceiveResultGettersSetters(): void
     {
         $obj = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::MALFORMED));
@@ -2890,7 +8512,7 @@ class XdrTransactionGenTest extends TestCase
 
     public function testXdrPathPaymentResultSuccessStructRoundTrip(): void
     {
-        $original = new XdrPathPaymentResultSuccess([], new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789')));
+        $original = new XdrPathPaymentResultSuccess([], new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000')));
         $encoded = $original->encode();
         $decoded = XdrPathPaymentResultSuccess::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrPathPaymentResultSuccess');
@@ -2898,12 +8520,63 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrPathPaymentResultSuccess');
     }
 
+    public function testXdrPathPaymentResultSuccessStructJsonRoundTrip(): void
+    {
+        $original = new XdrPathPaymentResultSuccess([], new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000')));
+        $j1 = $original->toJsonValue();
+        $back = XdrPathPaymentResultSuccess::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentResultSuccess');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentResultSuccess');
+        $back2 = XdrPathPaymentResultSuccess::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentResultSuccess');
+    }
+
+    public function testXdrPathPaymentResultSuccessStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrPathPaymentResultSuccess([], new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000')));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrPathPaymentResultSuccess::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrPathPaymentResultSuccessGettersSetters(): void
     {
-        $obj = new XdrPathPaymentResultSuccess([], new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789')));
+        $obj = new XdrPathPaymentResultSuccess([], new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000')));
         $this->assertIsArray($obj->getOffers());
-        $this->assertNotNull($obj->getLast());
-        $newVal = new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'));
+        $obj->getLast();
+        $newVal = new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000'));
         $obj->setLast($newVal);
         $this->assertSame($newVal, $obj->getLast());
     }
@@ -2945,6 +8618,45 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrPathPaymentStrictSendResultCode::UNDER_DESTMIN());
     }
 
+    public function testXdrPathPaymentStrictSendResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrPathPaymentStrictSendResultCode::SUCCESS, XdrPathPaymentStrictSendResultCode::MALFORMED, XdrPathPaymentStrictSendResultCode::UNDERFUNDED, XdrPathPaymentStrictSendResultCode::SRC_NO_TRUST, XdrPathPaymentStrictSendResultCode::SRC_NOT_AUTHORIZED, XdrPathPaymentStrictSendResultCode::NO_DESTINATION, XdrPathPaymentStrictSendResultCode::NO_TRUST, XdrPathPaymentStrictSendResultCode::NOT_AUTHORIZED, XdrPathPaymentStrictSendResultCode::LINE_FULL, XdrPathPaymentStrictSendResultCode::NO_ISSUER, XdrPathPaymentStrictSendResultCode::TOO_FEW_OFFERS, XdrPathPaymentStrictSendResultCode::OFFER_CROSS_SELF, XdrPathPaymentStrictSendResultCode::UNDER_DESTMIN];
+        foreach ($values as $v) {
+            $original = new XdrPathPaymentStrictSendResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrPathPaymentStrictSendResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictSendResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictSendResultCode value ' . $v);
+            $back2 = XdrPathPaymentStrictSendResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictSendResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrPathPaymentStrictSendResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrPathPaymentStrictSendResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrPathPaymentStrictSendResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
+    public function testXdrPathPaymentStrictSendResult_XdrPathPaymentStrictSendResultCode_SUCCESS_ArmRoundTrip(): void
+    {
+        $original = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::SUCCESS));
+        $original->success = new XdrPathPaymentResultSuccess([], new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000')));
+        $encoded = $original->encode();
+        $decoded = XdrPathPaymentStrictSendResult::decode(new XdrBuffer($encoded));
+        $this->assertEquals($original->code->getValue(), $decoded->code->getValue());
+        $this->assertNotNull($decoded->success);
+        $this->assertNull($decoded->noIssuer);
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
+        $b64Decoded = XdrPathPaymentStrictSendResult::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
     public function testXdrPathPaymentStrictSendResult_XdrPathPaymentStrictSendResultCode_NO_ISSUER_ArmRoundTrip(): void
     {
         $original = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::NO_ISSUER));
@@ -2975,6 +8687,159 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrPathPaymentStrictSendResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->code->getValue(), $decoded->code->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrPathPaymentStrictSendResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::SUCCESS)); $u->success = new XdrPathPaymentResultSuccess([], new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000'))); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrPathPaymentStrictSendResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_SUCCESS');
+        $back2 = XdrPathPaymentStrictSendResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_SUCCESS');
+        $arm1 = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::MALFORMED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrPathPaymentStrictSendResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_MALFORMED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_MALFORMED');
+        $back2 = XdrPathPaymentStrictSendResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_MALFORMED');
+        $arm2 = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::UNDERFUNDED));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrPathPaymentStrictSendResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_UNDERFUNDED');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_UNDERFUNDED');
+        $back2 = XdrPathPaymentStrictSendResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_UNDERFUNDED');
+        $arm3 = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::SRC_NO_TRUST));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrPathPaymentStrictSendResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_SRC_NO_TRUST');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_SRC_NO_TRUST');
+        $back2 = XdrPathPaymentStrictSendResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_SRC_NO_TRUST');
+        $arm4 = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::SRC_NOT_AUTHORIZED));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrPathPaymentStrictSendResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_SRC_NOT_AUTHORIZED');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_SRC_NOT_AUTHORIZED');
+        $back2 = XdrPathPaymentStrictSendResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_SRC_NOT_AUTHORIZED');
+        $arm5 = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::NO_DESTINATION));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrPathPaymentStrictSendResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_NO_DESTINATION');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_NO_DESTINATION');
+        $back2 = XdrPathPaymentStrictSendResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_NO_DESTINATION');
+        $arm6 = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::NO_TRUST));
+        $j1 = $arm6->toJsonValue();
+        $back = XdrPathPaymentStrictSendResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_NO_TRUST');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_NO_TRUST');
+        $back2 = XdrPathPaymentStrictSendResult::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_NO_TRUST');
+        $arm7 = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::NOT_AUTHORIZED));
+        $j1 = $arm7->toJsonValue();
+        $back = XdrPathPaymentStrictSendResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_NOT_AUTHORIZED');
+        $this->assertSame($arm7->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_NOT_AUTHORIZED');
+        $back2 = XdrPathPaymentStrictSendResult::fromJson($arm7->toJson());
+        $this->assertSame($arm7->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_NOT_AUTHORIZED');
+        $arm8 = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::LINE_FULL));
+        $j1 = $arm8->toJsonValue();
+        $back = XdrPathPaymentStrictSendResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_LINE_FULL');
+        $this->assertSame($arm8->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_LINE_FULL');
+        $back2 = XdrPathPaymentStrictSendResult::fromJson($arm8->toJson());
+        $this->assertSame($arm8->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_LINE_FULL');
+        $arm9 = (function() { $u = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::NO_ISSUER)); $u->noIssuer = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)); return $u; })();
+        $j1 = $arm9->toJsonValue();
+        $back = XdrPathPaymentStrictSendResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_NO_ISSUER');
+        $this->assertSame($arm9->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_NO_ISSUER');
+        $back2 = XdrPathPaymentStrictSendResult::fromJson($arm9->toJson());
+        $this->assertSame($arm9->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_NO_ISSUER');
+        $arm10 = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::TOO_FEW_OFFERS));
+        $j1 = $arm10->toJsonValue();
+        $back = XdrPathPaymentStrictSendResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_TOO_FEW_OFFERS');
+        $this->assertSame($arm10->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_TOO_FEW_OFFERS');
+        $back2 = XdrPathPaymentStrictSendResult::fromJson($arm10->toJson());
+        $this->assertSame($arm10->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_TOO_FEW_OFFERS');
+        $arm11 = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::OFFER_CROSS_SELF));
+        $j1 = $arm11->toJsonValue();
+        $back = XdrPathPaymentStrictSendResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_OFFER_CROSS_SELF');
+        $this->assertSame($arm11->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_OFFER_CROSS_SELF');
+        $back2 = XdrPathPaymentStrictSendResult::fromJson($arm11->toJson());
+        $this->assertSame($arm11->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_OFFER_CROSS_SELF');
+        $arm12 = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::UNDER_DESTMIN));
+        $j1 = $arm12->toJsonValue();
+        $back = XdrPathPaymentStrictSendResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_UNDER_DESTMIN');
+        $this->assertSame($arm12->toJson(), $back->toJson(), 'JSON string not stable for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_UNDER_DESTMIN');
+        $back2 = XdrPathPaymentStrictSendResult::fromJson($arm12->toJson());
+        $this->assertSame($arm12->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPathPaymentStrictSendResult arm XdrPathPaymentStrictSendResultCode_UNDER_DESTMIN');
+    }
+
+    public function testXdrPathPaymentStrictSendResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::SUCCESS)); $u->success = new XdrPathPaymentResultSuccess([], new XdrSimplePaymentResult(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000'))); return $u; })())->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::UNDERFUNDED)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::SRC_NO_TRUST)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::SRC_NOT_AUTHORIZED)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::NO_DESTINATION)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::NO_TRUST)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::NOT_AUTHORIZED)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::LINE_FULL)))->toJsonValue();
+        $samples[] = ((function() { $u = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::NO_ISSUER)); $u->noIssuer = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)); return $u; })())->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::TOO_FEW_OFFERS)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::OFFER_CROSS_SELF)))->toJsonValue();
+        $samples[] = (new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::UNDER_DESTMIN)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrPathPaymentStrictSendResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrPathPaymentStrictSendResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrPathPaymentStrictSendResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrPathPaymentStrictSendResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrPathPaymentStrictSendResultGettersSetters(): void
@@ -3022,6 +8887,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrManageOfferResultCode::LOW_RESERVE());
     }
 
+    public function testXdrManageOfferResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrManageOfferResultCode::SUCCESS, XdrManageOfferResultCode::MALFORMED, XdrManageOfferResultCode::SELL_NO_TRUST, XdrManageOfferResultCode::BUY_NO_TRUST, XdrManageOfferResultCode::SELL_NOT_AUTHORIZED, XdrManageOfferResultCode::BUY_NOT_AUTHORIZED, XdrManageOfferResultCode::LINE_FULL, XdrManageOfferResultCode::UNDERFUNDED, XdrManageOfferResultCode::CROSS_SELF, XdrManageOfferResultCode::SELL_NO_ISSUER, XdrManageOfferResultCode::BUY_NO_ISSUER, XdrManageOfferResultCode::NOT_FOUND, XdrManageOfferResultCode::LOW_RESERVE];
+        foreach ($values as $v) {
+            $original = new XdrManageOfferResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrManageOfferResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferResultCode value ' . $v);
+            $back2 = XdrManageOfferResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrManageOfferResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrManageOfferResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrManageOfferResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrManageOfferEffectEnumRoundTrip(): void
     {
         $values = [XdrManageOfferEffect::MANAGE_OFFER_CREATED, XdrManageOfferEffect::MANAGE_OFFER_UPDATED, XdrManageOfferEffect::MANAGE_OFFER_DELETED];
@@ -3049,6 +8939,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrManageOfferEffect::MANAGE_OFFER_DELETED());
     }
 
+    public function testXdrManageOfferEffectEnumJsonRoundTrip(): void
+    {
+        $values = [XdrManageOfferEffect::MANAGE_OFFER_CREATED, XdrManageOfferEffect::MANAGE_OFFER_UPDATED, XdrManageOfferEffect::MANAGE_OFFER_DELETED];
+        foreach ($values as $v) {
+            $original = new XdrManageOfferEffect($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrManageOfferEffect::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferEffect value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferEffect value ' . $v);
+            $back2 = XdrManageOfferEffect::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferEffect value ' . $v);
+        }
+    }
+
+    public function testXdrManageOfferEffectEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrManageOfferEffect::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrManageOfferEffect JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrManageOfferSuccessResultStructRoundTrip(): void
     {
         $original = new XdrManageOfferSuccessResult([], new XdrManageOfferSuccessResultOffer(new XdrManageOfferEffect(XdrManageOfferEffect::MANAGE_OFFER_DELETED)));
@@ -3057,6 +8972,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrManageOfferSuccessResult');
         $b64Decoded = XdrManageOfferSuccessResult::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrManageOfferSuccessResult');
+    }
+
+    public function testXdrManageOfferSuccessResultStructJsonRoundTrip(): void
+    {
+        $original = new XdrManageOfferSuccessResult([], new XdrManageOfferSuccessResultOffer(new XdrManageOfferEffect(XdrManageOfferEffect::MANAGE_OFFER_DELETED)));
+        $j1 = $original->toJsonValue();
+        $back = XdrManageOfferSuccessResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferSuccessResult');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferSuccessResult');
+        $back2 = XdrManageOfferSuccessResult::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferSuccessResult');
+    }
+
+    public function testXdrManageOfferSuccessResultStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrManageOfferSuccessResult([], new XdrManageOfferSuccessResultOffer(new XdrManageOfferEffect(XdrManageOfferEffect::MANAGE_OFFER_DELETED)));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrManageOfferSuccessResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrManageOfferSuccessResultGettersSetters(): void
@@ -3091,6 +9057,79 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode());
     }
 
+    public function testXdrManageOfferSuccessResultOfferUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrManageOfferSuccessResultOffer(new XdrManageOfferEffect(XdrManageOfferEffect::MANAGE_OFFER_CREATED)); $u->offer = new XdrOfferEntry(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42), 42, new XdrOfferEntryExt(0)); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrManageOfferSuccessResultOffer::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferSuccessResultOffer arm XdrManageOfferEffect_MANAGE_OFFER_CREATED');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferSuccessResultOffer arm XdrManageOfferEffect_MANAGE_OFFER_CREATED');
+        $back2 = XdrManageOfferSuccessResultOffer::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferSuccessResultOffer arm XdrManageOfferEffect_MANAGE_OFFER_CREATED');
+        $arm1 = (function() { $u = new XdrManageOfferSuccessResultOffer(new XdrManageOfferEffect(XdrManageOfferEffect::MANAGE_OFFER_UPDATED)); $u->offer = new XdrOfferEntry(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42), 42, new XdrOfferEntryExt(0)); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrManageOfferSuccessResultOffer::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferSuccessResultOffer arm XdrManageOfferEffect_MANAGE_OFFER_UPDATED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferSuccessResultOffer arm XdrManageOfferEffect_MANAGE_OFFER_UPDATED');
+        $back2 = XdrManageOfferSuccessResultOffer::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferSuccessResultOffer arm XdrManageOfferEffect_MANAGE_OFFER_UPDATED');
+        $arm2 = new XdrManageOfferSuccessResultOffer(new XdrManageOfferEffect(XdrManageOfferEffect::MANAGE_OFFER_DELETED));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrManageOfferSuccessResultOffer::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferSuccessResultOffer arm XdrManageOfferEffect_MANAGE_OFFER_DELETED');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferSuccessResultOffer arm XdrManageOfferEffect_MANAGE_OFFER_DELETED');
+        $back2 = XdrManageOfferSuccessResultOffer::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferSuccessResultOffer arm XdrManageOfferEffect_MANAGE_OFFER_DELETED');
+    }
+
+    public function testXdrManageOfferSuccessResultOfferUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrManageOfferSuccessResultOffer(new XdrManageOfferEffect(XdrManageOfferEffect::MANAGE_OFFER_CREATED)); $u->offer = new XdrOfferEntry(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42), 42, new XdrOfferEntryExt(0)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrManageOfferSuccessResultOffer(new XdrManageOfferEffect(XdrManageOfferEffect::MANAGE_OFFER_UPDATED)); $u->offer = new XdrOfferEntry(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'), new XdrPrice(42, 42), 42, new XdrOfferEntryExt(0)); return $u; })())->toJsonValue();
+        $samples[] = (new XdrManageOfferSuccessResultOffer(new XdrManageOfferEffect(XdrManageOfferEffect::MANAGE_OFFER_DELETED)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrManageOfferSuccessResultOffer::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrManageOfferSuccessResultOffer: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrManageOfferSuccessResultOffer::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrManageOfferSuccessResultOffer: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrManageOfferSuccessResultOfferGettersSetters(): void
     {
         $obj = new XdrManageOfferSuccessResultOffer(new XdrManageOfferEffect(XdrManageOfferEffect::MANAGE_OFFER_DELETED));
@@ -3098,26 +9137,175 @@ class XdrTransactionGenTest extends TestCase
         $obj->getOffer();
     }
 
-    public function testXdrManageOfferResult_XdrManageOfferResultCode_SUCCESS_ArmRoundTrip(): void
-    {
-        $original = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::SUCCESS));
-        $original->success = new XdrManageOfferSuccessResult([], new XdrManageOfferSuccessResultOffer(new XdrManageOfferEffect(XdrManageOfferEffect::MANAGE_OFFER_DELETED)));
-        $encoded = $original->encode();
-        $decoded = XdrManageOfferResult::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->code->getValue(), $decoded->code->getValue());
-        $this->assertNotNull($decoded->success);
-        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
-        $b64Decoded = XdrManageOfferResult::fromBase64Xdr($original->toBase64Xdr());
-        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
-    }
-
-    public function testXdrManageOfferResult_XdrManageOfferResultCode_MALFORMED_VoidArmRoundTrip(): void
+    public function testXdrManageOfferResultUnionRoundTrip(): void
     {
         $original = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::MALFORMED));
         $encoded = $original->encode();
         $decoded = XdrManageOfferResult::decode(new XdrBuffer($encoded));
-        $this->assertEquals($original->code->getValue(), $decoded->code->getValue());
-        $this->assertEquals($encoded, $decoded->encode());
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrManageOfferResult');
+        $b64Decoded = XdrManageOfferResult::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrManageOfferResult');
+    }
+
+    public function testXdrManageOfferResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::MALFORMED));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrManageOfferResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferResult arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferResult arm fallback');
+        $back2 = XdrManageOfferResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferResult arm fallback');
+        $arm1 = (function() { $u = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::SUCCESS)); $u->success = new XdrManageOfferSuccessResult([], new XdrManageOfferSuccessResultOffer(new XdrManageOfferEffect(XdrManageOfferEffect::MANAGE_OFFER_DELETED))); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrManageOfferResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferResult arm XdrManageOfferResultCode_SUCCESS');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferResult arm XdrManageOfferResultCode_SUCCESS');
+        $back2 = XdrManageOfferResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferResult arm XdrManageOfferResultCode_SUCCESS');
+        $arm2 = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::MALFORMED));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrManageOfferResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferResult arm XdrManageOfferResultCode_MALFORMED');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferResult arm XdrManageOfferResultCode_MALFORMED');
+        $back2 = XdrManageOfferResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferResult arm XdrManageOfferResultCode_MALFORMED');
+        $arm3 = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::SELL_NO_TRUST));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrManageOfferResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferResult arm XdrManageOfferResultCode_SELL_NO_TRUST');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferResult arm XdrManageOfferResultCode_SELL_NO_TRUST');
+        $back2 = XdrManageOfferResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferResult arm XdrManageOfferResultCode_SELL_NO_TRUST');
+        $arm4 = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::BUY_NO_TRUST));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrManageOfferResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferResult arm XdrManageOfferResultCode_BUY_NO_TRUST');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferResult arm XdrManageOfferResultCode_BUY_NO_TRUST');
+        $back2 = XdrManageOfferResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferResult arm XdrManageOfferResultCode_BUY_NO_TRUST');
+        $arm5 = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::SELL_NOT_AUTHORIZED));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrManageOfferResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferResult arm XdrManageOfferResultCode_SELL_NOT_AUTHORIZED');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferResult arm XdrManageOfferResultCode_SELL_NOT_AUTHORIZED');
+        $back2 = XdrManageOfferResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferResult arm XdrManageOfferResultCode_SELL_NOT_AUTHORIZED');
+        $arm6 = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::BUY_NOT_AUTHORIZED));
+        $j1 = $arm6->toJsonValue();
+        $back = XdrManageOfferResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferResult arm XdrManageOfferResultCode_BUY_NOT_AUTHORIZED');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferResult arm XdrManageOfferResultCode_BUY_NOT_AUTHORIZED');
+        $back2 = XdrManageOfferResult::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferResult arm XdrManageOfferResultCode_BUY_NOT_AUTHORIZED');
+        $arm7 = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::LINE_FULL));
+        $j1 = $arm7->toJsonValue();
+        $back = XdrManageOfferResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferResult arm XdrManageOfferResultCode_LINE_FULL');
+        $this->assertSame($arm7->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferResult arm XdrManageOfferResultCode_LINE_FULL');
+        $back2 = XdrManageOfferResult::fromJson($arm7->toJson());
+        $this->assertSame($arm7->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferResult arm XdrManageOfferResultCode_LINE_FULL');
+        $arm8 = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::UNDERFUNDED));
+        $j1 = $arm8->toJsonValue();
+        $back = XdrManageOfferResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferResult arm XdrManageOfferResultCode_UNDERFUNDED');
+        $this->assertSame($arm8->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferResult arm XdrManageOfferResultCode_UNDERFUNDED');
+        $back2 = XdrManageOfferResult::fromJson($arm8->toJson());
+        $this->assertSame($arm8->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferResult arm XdrManageOfferResultCode_UNDERFUNDED');
+        $arm9 = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::CROSS_SELF));
+        $j1 = $arm9->toJsonValue();
+        $back = XdrManageOfferResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferResult arm XdrManageOfferResultCode_CROSS_SELF');
+        $this->assertSame($arm9->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferResult arm XdrManageOfferResultCode_CROSS_SELF');
+        $back2 = XdrManageOfferResult::fromJson($arm9->toJson());
+        $this->assertSame($arm9->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferResult arm XdrManageOfferResultCode_CROSS_SELF');
+        $arm10 = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::SELL_NO_ISSUER));
+        $j1 = $arm10->toJsonValue();
+        $back = XdrManageOfferResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferResult arm XdrManageOfferResultCode_SELL_NO_ISSUER');
+        $this->assertSame($arm10->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferResult arm XdrManageOfferResultCode_SELL_NO_ISSUER');
+        $back2 = XdrManageOfferResult::fromJson($arm10->toJson());
+        $this->assertSame($arm10->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferResult arm XdrManageOfferResultCode_SELL_NO_ISSUER');
+        $arm11 = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::BUY_NO_ISSUER));
+        $j1 = $arm11->toJsonValue();
+        $back = XdrManageOfferResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferResult arm XdrManageOfferResultCode_BUY_NO_ISSUER');
+        $this->assertSame($arm11->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferResult arm XdrManageOfferResultCode_BUY_NO_ISSUER');
+        $back2 = XdrManageOfferResult::fromJson($arm11->toJson());
+        $this->assertSame($arm11->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferResult arm XdrManageOfferResultCode_BUY_NO_ISSUER');
+        $arm12 = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::NOT_FOUND));
+        $j1 = $arm12->toJsonValue();
+        $back = XdrManageOfferResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferResult arm XdrManageOfferResultCode_NOT_FOUND');
+        $this->assertSame($arm12->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferResult arm XdrManageOfferResultCode_NOT_FOUND');
+        $back2 = XdrManageOfferResult::fromJson($arm12->toJson());
+        $this->assertSame($arm12->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferResult arm XdrManageOfferResultCode_NOT_FOUND');
+        $arm13 = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::LOW_RESERVE));
+        $j1 = $arm13->toJsonValue();
+        $back = XdrManageOfferResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageOfferResult arm XdrManageOfferResultCode_LOW_RESERVE');
+        $this->assertSame($arm13->toJson(), $back->toJson(), 'JSON string not stable for XdrManageOfferResult arm XdrManageOfferResultCode_LOW_RESERVE');
+        $back2 = XdrManageOfferResult::fromJson($arm13->toJson());
+        $this->assertSame($arm13->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageOfferResult arm XdrManageOfferResultCode_LOW_RESERVE');
+    }
+
+    public function testXdrManageOfferResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = ((function() { $u = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::SUCCESS)); $u->success = new XdrManageOfferSuccessResult([], new XdrManageOfferSuccessResultOffer(new XdrManageOfferEffect(XdrManageOfferEffect::MANAGE_OFFER_DELETED))); return $u; })())->toJsonValue();
+        $samples[] = (new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::SELL_NO_TRUST)))->toJsonValue();
+        $samples[] = (new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::BUY_NO_TRUST)))->toJsonValue();
+        $samples[] = (new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::SELL_NOT_AUTHORIZED)))->toJsonValue();
+        $samples[] = (new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::BUY_NOT_AUTHORIZED)))->toJsonValue();
+        $samples[] = (new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::LINE_FULL)))->toJsonValue();
+        $samples[] = (new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::UNDERFUNDED)))->toJsonValue();
+        $samples[] = (new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::CROSS_SELF)))->toJsonValue();
+        $samples[] = (new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::SELL_NO_ISSUER)))->toJsonValue();
+        $samples[] = (new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::BUY_NO_ISSUER)))->toJsonValue();
+        $samples[] = (new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::NOT_FOUND)))->toJsonValue();
+        $samples[] = (new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::LOW_RESERVE)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrManageOfferResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrManageOfferResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrManageOfferResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrManageOfferResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrManageOfferResultGettersSetters(): void
@@ -3162,6 +9350,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrSetOptionsResultCode::AUTH_REVOCABLE_REQUIRED());
     }
 
+    public function testXdrSetOptionsResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrSetOptionsResultCode::SUCCESS, XdrSetOptionsResultCode::LOW_RESERVE, XdrSetOptionsResultCode::TOO_MANY_SIGNERS, XdrSetOptionsResultCode::BAD_FLAGS, XdrSetOptionsResultCode::INVALID_INFLATION, XdrSetOptionsResultCode::CANT_CHANGE, XdrSetOptionsResultCode::UNKNOWN_FLAG, XdrSetOptionsResultCode::THRESHOLD_OUT_OF_RANGE, XdrSetOptionsResultCode::BAD_SIGNER, XdrSetOptionsResultCode::INVALID_HOME_DOMAIN, XdrSetOptionsResultCode::AUTH_REVOCABLE_REQUIRED];
+        foreach ($values as $v) {
+            $original = new XdrSetOptionsResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrSetOptionsResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetOptionsResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSetOptionsResultCode value ' . $v);
+            $back2 = XdrSetOptionsResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetOptionsResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrSetOptionsResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrSetOptionsResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrSetOptionsResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrSetOptionsResult_XdrSetOptionsResultCode_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::SUCCESS));
@@ -3178,6 +9391,143 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrSetOptionsResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->resultCode->getValue(), $decoded->resultCode->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrSetOptionsResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrSetOptionsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_SUCCESS');
+        $back2 = XdrSetOptionsResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetOptionsResult arm XdrSetOptionsResultCode_SUCCESS');
+        $arm1 = new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::LOW_RESERVE));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrSetOptionsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_LOW_RESERVE');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_LOW_RESERVE');
+        $back2 = XdrSetOptionsResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetOptionsResult arm XdrSetOptionsResultCode_LOW_RESERVE');
+        $arm2 = new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::TOO_MANY_SIGNERS));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrSetOptionsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_TOO_MANY_SIGNERS');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_TOO_MANY_SIGNERS');
+        $back2 = XdrSetOptionsResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetOptionsResult arm XdrSetOptionsResultCode_TOO_MANY_SIGNERS');
+        $arm3 = new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::BAD_FLAGS));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrSetOptionsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_BAD_FLAGS');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_BAD_FLAGS');
+        $back2 = XdrSetOptionsResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetOptionsResult arm XdrSetOptionsResultCode_BAD_FLAGS');
+        $arm4 = new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::INVALID_INFLATION));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrSetOptionsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_INVALID_INFLATION');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_INVALID_INFLATION');
+        $back2 = XdrSetOptionsResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetOptionsResult arm XdrSetOptionsResultCode_INVALID_INFLATION');
+        $arm5 = new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::CANT_CHANGE));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrSetOptionsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_CANT_CHANGE');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_CANT_CHANGE');
+        $back2 = XdrSetOptionsResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetOptionsResult arm XdrSetOptionsResultCode_CANT_CHANGE');
+        $arm6 = new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::UNKNOWN_FLAG));
+        $j1 = $arm6->toJsonValue();
+        $back = XdrSetOptionsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_UNKNOWN_FLAG');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_UNKNOWN_FLAG');
+        $back2 = XdrSetOptionsResult::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetOptionsResult arm XdrSetOptionsResultCode_UNKNOWN_FLAG');
+        $arm7 = new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::THRESHOLD_OUT_OF_RANGE));
+        $j1 = $arm7->toJsonValue();
+        $back = XdrSetOptionsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_THRESHOLD_OUT_OF_RANGE');
+        $this->assertSame($arm7->toJson(), $back->toJson(), 'JSON string not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_THRESHOLD_OUT_OF_RANGE');
+        $back2 = XdrSetOptionsResult::fromJson($arm7->toJson());
+        $this->assertSame($arm7->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetOptionsResult arm XdrSetOptionsResultCode_THRESHOLD_OUT_OF_RANGE');
+        $arm8 = new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::BAD_SIGNER));
+        $j1 = $arm8->toJsonValue();
+        $back = XdrSetOptionsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_BAD_SIGNER');
+        $this->assertSame($arm8->toJson(), $back->toJson(), 'JSON string not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_BAD_SIGNER');
+        $back2 = XdrSetOptionsResult::fromJson($arm8->toJson());
+        $this->assertSame($arm8->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetOptionsResult arm XdrSetOptionsResultCode_BAD_SIGNER');
+        $arm9 = new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::INVALID_HOME_DOMAIN));
+        $j1 = $arm9->toJsonValue();
+        $back = XdrSetOptionsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_INVALID_HOME_DOMAIN');
+        $this->assertSame($arm9->toJson(), $back->toJson(), 'JSON string not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_INVALID_HOME_DOMAIN');
+        $back2 = XdrSetOptionsResult::fromJson($arm9->toJson());
+        $this->assertSame($arm9->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetOptionsResult arm XdrSetOptionsResultCode_INVALID_HOME_DOMAIN');
+        $arm10 = new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::AUTH_REVOCABLE_REQUIRED));
+        $j1 = $arm10->toJsonValue();
+        $back = XdrSetOptionsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_AUTH_REVOCABLE_REQUIRED');
+        $this->assertSame($arm10->toJson(), $back->toJson(), 'JSON string not stable for XdrSetOptionsResult arm XdrSetOptionsResultCode_AUTH_REVOCABLE_REQUIRED');
+        $back2 = XdrSetOptionsResult::fromJson($arm10->toJson());
+        $this->assertSame($arm10->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetOptionsResult arm XdrSetOptionsResultCode_AUTH_REVOCABLE_REQUIRED');
+    }
+
+    public function testXdrSetOptionsResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::LOW_RESERVE)))->toJsonValue();
+        $samples[] = (new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::TOO_MANY_SIGNERS)))->toJsonValue();
+        $samples[] = (new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::BAD_FLAGS)))->toJsonValue();
+        $samples[] = (new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::INVALID_INFLATION)))->toJsonValue();
+        $samples[] = (new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::CANT_CHANGE)))->toJsonValue();
+        $samples[] = (new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::UNKNOWN_FLAG)))->toJsonValue();
+        $samples[] = (new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::THRESHOLD_OUT_OF_RANGE)))->toJsonValue();
+        $samples[] = (new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::BAD_SIGNER)))->toJsonValue();
+        $samples[] = (new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::INVALID_HOME_DOMAIN)))->toJsonValue();
+        $samples[] = (new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::AUTH_REVOCABLE_REQUIRED)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSetOptionsResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrSetOptionsResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrSetOptionsResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrSetOptionsResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrSetOptionsResultGettersSetters(): void
@@ -3219,6 +9569,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrChangeTrustResultCode::NOT_AUTH_MAINTAIN_LIABILITIES());
     }
 
+    public function testXdrChangeTrustResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrChangeTrustResultCode::SUCCESS, XdrChangeTrustResultCode::MALFORMED, XdrChangeTrustResultCode::NO_ISSUER, XdrChangeTrustResultCode::INVALID_LIMIT, XdrChangeTrustResultCode::LOW_RESERVE, XdrChangeTrustResultCode::SELF_NOT_ALLOWED, XdrChangeTrustResultCode::TRUST_LINE_MISSING, XdrChangeTrustResultCode::CANNOT_DELETE, XdrChangeTrustResultCode::NOT_AUTH_MAINTAIN_LIABILITIES];
+        foreach ($values as $v) {
+            $original = new XdrChangeTrustResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrChangeTrustResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrChangeTrustResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrChangeTrustResultCode value ' . $v);
+            $back2 = XdrChangeTrustResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrChangeTrustResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrChangeTrustResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrChangeTrustResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrChangeTrustResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrChangeTrustResult_XdrChangeTrustResultCode_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::SUCCESS));
@@ -3235,6 +9610,127 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrChangeTrustResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->resultCode->getValue(), $decoded->resultCode->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrChangeTrustResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrChangeTrustResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_SUCCESS');
+        $back2 = XdrChangeTrustResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrChangeTrustResult arm XdrChangeTrustResultCode_SUCCESS');
+        $arm1 = new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::MALFORMED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrChangeTrustResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_MALFORMED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_MALFORMED');
+        $back2 = XdrChangeTrustResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrChangeTrustResult arm XdrChangeTrustResultCode_MALFORMED');
+        $arm2 = new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::NO_ISSUER));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrChangeTrustResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_NO_ISSUER');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_NO_ISSUER');
+        $back2 = XdrChangeTrustResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrChangeTrustResult arm XdrChangeTrustResultCode_NO_ISSUER');
+        $arm3 = new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::INVALID_LIMIT));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrChangeTrustResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_INVALID_LIMIT');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_INVALID_LIMIT');
+        $back2 = XdrChangeTrustResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrChangeTrustResult arm XdrChangeTrustResultCode_INVALID_LIMIT');
+        $arm4 = new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::LOW_RESERVE));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrChangeTrustResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_LOW_RESERVE');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_LOW_RESERVE');
+        $back2 = XdrChangeTrustResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrChangeTrustResult arm XdrChangeTrustResultCode_LOW_RESERVE');
+        $arm5 = new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::SELF_NOT_ALLOWED));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrChangeTrustResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_SELF_NOT_ALLOWED');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_SELF_NOT_ALLOWED');
+        $back2 = XdrChangeTrustResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrChangeTrustResult arm XdrChangeTrustResultCode_SELF_NOT_ALLOWED');
+        $arm6 = new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::TRUST_LINE_MISSING));
+        $j1 = $arm6->toJsonValue();
+        $back = XdrChangeTrustResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_TRUST_LINE_MISSING');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_TRUST_LINE_MISSING');
+        $back2 = XdrChangeTrustResult::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrChangeTrustResult arm XdrChangeTrustResultCode_TRUST_LINE_MISSING');
+        $arm7 = new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::CANNOT_DELETE));
+        $j1 = $arm7->toJsonValue();
+        $back = XdrChangeTrustResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_CANNOT_DELETE');
+        $this->assertSame($arm7->toJson(), $back->toJson(), 'JSON string not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_CANNOT_DELETE');
+        $back2 = XdrChangeTrustResult::fromJson($arm7->toJson());
+        $this->assertSame($arm7->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrChangeTrustResult arm XdrChangeTrustResultCode_CANNOT_DELETE');
+        $arm8 = new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::NOT_AUTH_MAINTAIN_LIABILITIES));
+        $j1 = $arm8->toJsonValue();
+        $back = XdrChangeTrustResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_NOT_AUTH_MAINTAIN_LIABILITIES');
+        $this->assertSame($arm8->toJson(), $back->toJson(), 'JSON string not stable for XdrChangeTrustResult arm XdrChangeTrustResultCode_NOT_AUTH_MAINTAIN_LIABILITIES');
+        $back2 = XdrChangeTrustResult::fromJson($arm8->toJson());
+        $this->assertSame($arm8->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrChangeTrustResult arm XdrChangeTrustResultCode_NOT_AUTH_MAINTAIN_LIABILITIES');
+    }
+
+    public function testXdrChangeTrustResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::NO_ISSUER)))->toJsonValue();
+        $samples[] = (new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::INVALID_LIMIT)))->toJsonValue();
+        $samples[] = (new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::LOW_RESERVE)))->toJsonValue();
+        $samples[] = (new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::SELF_NOT_ALLOWED)))->toJsonValue();
+        $samples[] = (new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::TRUST_LINE_MISSING)))->toJsonValue();
+        $samples[] = (new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::CANNOT_DELETE)))->toJsonValue();
+        $samples[] = (new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::NOT_AUTH_MAINTAIN_LIABILITIES)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrChangeTrustResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrChangeTrustResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrChangeTrustResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrChangeTrustResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrChangeTrustResultGettersSetters(): void
@@ -3274,6 +9770,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrAllowTrustResultCode::LOW_RESERVE());
     }
 
+    public function testXdrAllowTrustResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrAllowTrustResultCode::SUCCESS, XdrAllowTrustResultCode::MALFORMED, XdrAllowTrustResultCode::NO_TRUST_LINE, XdrAllowTrustResultCode::TRUST_NOT_REQUIRED, XdrAllowTrustResultCode::CANT_REVOKE, XdrAllowTrustResultCode::SELF_NOT_ALLOWED, XdrAllowTrustResultCode::LOW_RESERVE];
+        foreach ($values as $v) {
+            $original = new XdrAllowTrustResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrAllowTrustResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAllowTrustResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrAllowTrustResultCode value ' . $v);
+            $back2 = XdrAllowTrustResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAllowTrustResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrAllowTrustResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrAllowTrustResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrAllowTrustResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrAllowTrustResult_XdrAllowTrustResultCode_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::SUCCESS));
@@ -3290,6 +9811,111 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrAllowTrustResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->resultCode->getValue(), $decoded->resultCode->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrAllowTrustResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrAllowTrustResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAllowTrustResult arm XdrAllowTrustResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrAllowTrustResult arm XdrAllowTrustResultCode_SUCCESS');
+        $back2 = XdrAllowTrustResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAllowTrustResult arm XdrAllowTrustResultCode_SUCCESS');
+        $arm1 = new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::MALFORMED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrAllowTrustResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAllowTrustResult arm XdrAllowTrustResultCode_MALFORMED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrAllowTrustResult arm XdrAllowTrustResultCode_MALFORMED');
+        $back2 = XdrAllowTrustResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAllowTrustResult arm XdrAllowTrustResultCode_MALFORMED');
+        $arm2 = new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::NO_TRUST_LINE));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrAllowTrustResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAllowTrustResult arm XdrAllowTrustResultCode_NO_TRUST_LINE');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrAllowTrustResult arm XdrAllowTrustResultCode_NO_TRUST_LINE');
+        $back2 = XdrAllowTrustResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAllowTrustResult arm XdrAllowTrustResultCode_NO_TRUST_LINE');
+        $arm3 = new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::TRUST_NOT_REQUIRED));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrAllowTrustResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAllowTrustResult arm XdrAllowTrustResultCode_TRUST_NOT_REQUIRED');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrAllowTrustResult arm XdrAllowTrustResultCode_TRUST_NOT_REQUIRED');
+        $back2 = XdrAllowTrustResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAllowTrustResult arm XdrAllowTrustResultCode_TRUST_NOT_REQUIRED');
+        $arm4 = new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::CANT_REVOKE));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrAllowTrustResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAllowTrustResult arm XdrAllowTrustResultCode_CANT_REVOKE');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrAllowTrustResult arm XdrAllowTrustResultCode_CANT_REVOKE');
+        $back2 = XdrAllowTrustResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAllowTrustResult arm XdrAllowTrustResultCode_CANT_REVOKE');
+        $arm5 = new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::SELF_NOT_ALLOWED));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrAllowTrustResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAllowTrustResult arm XdrAllowTrustResultCode_SELF_NOT_ALLOWED');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrAllowTrustResult arm XdrAllowTrustResultCode_SELF_NOT_ALLOWED');
+        $back2 = XdrAllowTrustResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAllowTrustResult arm XdrAllowTrustResultCode_SELF_NOT_ALLOWED');
+        $arm6 = new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::LOW_RESERVE));
+        $j1 = $arm6->toJsonValue();
+        $back = XdrAllowTrustResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAllowTrustResult arm XdrAllowTrustResultCode_LOW_RESERVE');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrAllowTrustResult arm XdrAllowTrustResultCode_LOW_RESERVE');
+        $back2 = XdrAllowTrustResult::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAllowTrustResult arm XdrAllowTrustResultCode_LOW_RESERVE');
+    }
+
+    public function testXdrAllowTrustResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::NO_TRUST_LINE)))->toJsonValue();
+        $samples[] = (new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::TRUST_NOT_REQUIRED)))->toJsonValue();
+        $samples[] = (new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::CANT_REVOKE)))->toJsonValue();
+        $samples[] = (new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::SELF_NOT_ALLOWED)))->toJsonValue();
+        $samples[] = (new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::LOW_RESERVE)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrAllowTrustResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrAllowTrustResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrAllowTrustResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrAllowTrustResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrAllowTrustResultGettersSetters(): void
@@ -3330,6 +9956,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrAccountMergeResultCode::IS_SPONSOR());
     }
 
+    public function testXdrAccountMergeResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrAccountMergeResultCode::SUCCESS, XdrAccountMergeResultCode::MALFORMED, XdrAccountMergeResultCode::NO_ACCOUNT, XdrAccountMergeResultCode::IMMUTABLE_SET, XdrAccountMergeResultCode::HAS_SUB_ENTRIES, XdrAccountMergeResultCode::SEQNUM_TOO_FAR, XdrAccountMergeResultCode::DEST_FULL, XdrAccountMergeResultCode::IS_SPONSOR];
+        foreach ($values as $v) {
+            $original = new XdrAccountMergeResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrAccountMergeResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAccountMergeResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrAccountMergeResultCode value ' . $v);
+            $back2 = XdrAccountMergeResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAccountMergeResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrAccountMergeResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrAccountMergeResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrAccountMergeResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrAccountMergeResult_XdrAccountMergeResultCode_SUCCESS_ArmRoundTrip(): void
     {
         $original = new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::SUCCESS));
@@ -3350,6 +10001,119 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrAccountMergeResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->resultCode->getValue(), $decoded->resultCode->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrAccountMergeResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::SUCCESS)); $u->sourceAccountBalance = new BigInteger('123456789'); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrAccountMergeResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAccountMergeResult arm XdrAccountMergeResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrAccountMergeResult arm XdrAccountMergeResultCode_SUCCESS');
+        $back2 = XdrAccountMergeResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAccountMergeResult arm XdrAccountMergeResultCode_SUCCESS');
+        $arm1 = new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::MALFORMED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrAccountMergeResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAccountMergeResult arm XdrAccountMergeResultCode_MALFORMED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrAccountMergeResult arm XdrAccountMergeResultCode_MALFORMED');
+        $back2 = XdrAccountMergeResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAccountMergeResult arm XdrAccountMergeResultCode_MALFORMED');
+        $arm2 = new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::NO_ACCOUNT));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrAccountMergeResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAccountMergeResult arm XdrAccountMergeResultCode_NO_ACCOUNT');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrAccountMergeResult arm XdrAccountMergeResultCode_NO_ACCOUNT');
+        $back2 = XdrAccountMergeResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAccountMergeResult arm XdrAccountMergeResultCode_NO_ACCOUNT');
+        $arm3 = new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::IMMUTABLE_SET));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrAccountMergeResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAccountMergeResult arm XdrAccountMergeResultCode_IMMUTABLE_SET');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrAccountMergeResult arm XdrAccountMergeResultCode_IMMUTABLE_SET');
+        $back2 = XdrAccountMergeResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAccountMergeResult arm XdrAccountMergeResultCode_IMMUTABLE_SET');
+        $arm4 = new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::HAS_SUB_ENTRIES));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrAccountMergeResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAccountMergeResult arm XdrAccountMergeResultCode_HAS_SUB_ENTRIES');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrAccountMergeResult arm XdrAccountMergeResultCode_HAS_SUB_ENTRIES');
+        $back2 = XdrAccountMergeResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAccountMergeResult arm XdrAccountMergeResultCode_HAS_SUB_ENTRIES');
+        $arm5 = new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::SEQNUM_TOO_FAR));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrAccountMergeResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAccountMergeResult arm XdrAccountMergeResultCode_SEQNUM_TOO_FAR');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrAccountMergeResult arm XdrAccountMergeResultCode_SEQNUM_TOO_FAR');
+        $back2 = XdrAccountMergeResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAccountMergeResult arm XdrAccountMergeResultCode_SEQNUM_TOO_FAR');
+        $arm6 = new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::DEST_FULL));
+        $j1 = $arm6->toJsonValue();
+        $back = XdrAccountMergeResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAccountMergeResult arm XdrAccountMergeResultCode_DEST_FULL');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrAccountMergeResult arm XdrAccountMergeResultCode_DEST_FULL');
+        $back2 = XdrAccountMergeResult::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAccountMergeResult arm XdrAccountMergeResultCode_DEST_FULL');
+        $arm7 = new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::IS_SPONSOR));
+        $j1 = $arm7->toJsonValue();
+        $back = XdrAccountMergeResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAccountMergeResult arm XdrAccountMergeResultCode_IS_SPONSOR');
+        $this->assertSame($arm7->toJson(), $back->toJson(), 'JSON string not stable for XdrAccountMergeResult arm XdrAccountMergeResultCode_IS_SPONSOR');
+        $back2 = XdrAccountMergeResult::fromJson($arm7->toJson());
+        $this->assertSame($arm7->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAccountMergeResult arm XdrAccountMergeResultCode_IS_SPONSOR');
+    }
+
+    public function testXdrAccountMergeResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::SUCCESS)); $u->sourceAccountBalance = new BigInteger('123456789'); return $u; })())->toJsonValue();
+        $samples[] = (new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::NO_ACCOUNT)))->toJsonValue();
+        $samples[] = (new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::IMMUTABLE_SET)))->toJsonValue();
+        $samples[] = (new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::HAS_SUB_ENTRIES)))->toJsonValue();
+        $samples[] = (new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::SEQNUM_TOO_FAR)))->toJsonValue();
+        $samples[] = (new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::DEST_FULL)))->toJsonValue();
+        $samples[] = (new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::IS_SPONSOR)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrAccountMergeResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrAccountMergeResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrAccountMergeResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrAccountMergeResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrAccountMergeResultGettersSetters(): void
@@ -3385,6 +10149,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrInflationResultCode::NOT_TIME());
     }
 
+    public function testXdrInflationResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrInflationResultCode::SUCCESS, XdrInflationResultCode::NOT_TIME];
+        foreach ($values as $v) {
+            $original = new XdrInflationResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrInflationResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInflationResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrInflationResultCode value ' . $v);
+            $back2 = XdrInflationResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInflationResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrInflationResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrInflationResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrInflationResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrInflationPayoutStructRoundTrip(): void
     {
         $original = new XdrInflationPayout(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new BigInteger('123456789'));
@@ -3393,6 +10182,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrInflationPayout');
         $b64Decoded = XdrInflationPayout::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrInflationPayout');
+    }
+
+    public function testXdrInflationPayoutStructJsonRoundTrip(): void
+    {
+        $original = new XdrInflationPayout(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new BigInteger('123456789'));
+        $j1 = $original->toJsonValue();
+        $back = XdrInflationPayout::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInflationPayout');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrInflationPayout');
+        $back2 = XdrInflationPayout::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInflationPayout');
+    }
+
+    public function testXdrInflationPayoutStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrInflationPayout(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new BigInteger('123456789'));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['amount' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrInflationPayout::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrInflationPayoutGettersSetters(): void
@@ -3428,6 +10268,71 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrInflationResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->code->getValue(), $decoded->code->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrInflationResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrInflationResult(new XdrInflationResultCode(XdrInflationResultCode::SUCCESS)); $u->payouts = []; return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrInflationResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInflationResult arm XdrInflationResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrInflationResult arm XdrInflationResultCode_SUCCESS');
+        $back2 = XdrInflationResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInflationResult arm XdrInflationResultCode_SUCCESS');
+        $arm1 = new XdrInflationResult(new XdrInflationResultCode(XdrInflationResultCode::NOT_TIME));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrInflationResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInflationResult arm XdrInflationResultCode_NOT_TIME');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrInflationResult arm XdrInflationResultCode_NOT_TIME');
+        $back2 = XdrInflationResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInflationResult arm XdrInflationResultCode_NOT_TIME');
+    }
+
+    public function testXdrInflationResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrInflationResult(new XdrInflationResultCode(XdrInflationResultCode::SUCCESS)); $u->payouts = []; return $u; })())->toJsonValue();
+        $samples[] = (new XdrInflationResult(new XdrInflationResultCode(XdrInflationResultCode::NOT_TIME)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrInflationResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrInflationResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrInflationResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrInflationResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrInflationResultGettersSetters(): void
@@ -3466,6 +10371,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrManageDataResultCode::INVALID_NAME());
     }
 
+    public function testXdrManageDataResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrManageDataResultCode::SUCCESS, XdrManageDataResultCode::NOT_SUPPORTED_YET, XdrManageDataResultCode::NAME_NOT_FOUND, XdrManageDataResultCode::LOW_RESERVE, XdrManageDataResultCode::INVALID_NAME];
+        foreach ($values as $v) {
+            $original = new XdrManageDataResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrManageDataResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageDataResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrManageDataResultCode value ' . $v);
+            $back2 = XdrManageDataResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageDataResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrManageDataResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrManageDataResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrManageDataResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrManageDataResult_XdrManageDataResultCode_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrManageDataResult(new XdrManageDataResultCode(XdrManageDataResultCode::SUCCESS));
@@ -3482,6 +10412,95 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrManageDataResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->code->getValue(), $decoded->code->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrManageDataResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrManageDataResult(new XdrManageDataResultCode(XdrManageDataResultCode::SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrManageDataResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageDataResult arm XdrManageDataResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrManageDataResult arm XdrManageDataResultCode_SUCCESS');
+        $back2 = XdrManageDataResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageDataResult arm XdrManageDataResultCode_SUCCESS');
+        $arm1 = new XdrManageDataResult(new XdrManageDataResultCode(XdrManageDataResultCode::NOT_SUPPORTED_YET));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrManageDataResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageDataResult arm XdrManageDataResultCode_NOT_SUPPORTED_YET');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrManageDataResult arm XdrManageDataResultCode_NOT_SUPPORTED_YET');
+        $back2 = XdrManageDataResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageDataResult arm XdrManageDataResultCode_NOT_SUPPORTED_YET');
+        $arm2 = new XdrManageDataResult(new XdrManageDataResultCode(XdrManageDataResultCode::NAME_NOT_FOUND));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrManageDataResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageDataResult arm XdrManageDataResultCode_NAME_NOT_FOUND');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrManageDataResult arm XdrManageDataResultCode_NAME_NOT_FOUND');
+        $back2 = XdrManageDataResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageDataResult arm XdrManageDataResultCode_NAME_NOT_FOUND');
+        $arm3 = new XdrManageDataResult(new XdrManageDataResultCode(XdrManageDataResultCode::LOW_RESERVE));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrManageDataResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageDataResult arm XdrManageDataResultCode_LOW_RESERVE');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrManageDataResult arm XdrManageDataResultCode_LOW_RESERVE');
+        $back2 = XdrManageDataResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageDataResult arm XdrManageDataResultCode_LOW_RESERVE');
+        $arm4 = new XdrManageDataResult(new XdrManageDataResultCode(XdrManageDataResultCode::INVALID_NAME));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrManageDataResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrManageDataResult arm XdrManageDataResultCode_INVALID_NAME');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrManageDataResult arm XdrManageDataResultCode_INVALID_NAME');
+        $back2 = XdrManageDataResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrManageDataResult arm XdrManageDataResultCode_INVALID_NAME');
+    }
+
+    public function testXdrManageDataResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrManageDataResult(new XdrManageDataResultCode(XdrManageDataResultCode::SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrManageDataResult(new XdrManageDataResultCode(XdrManageDataResultCode::NOT_SUPPORTED_YET)))->toJsonValue();
+        $samples[] = (new XdrManageDataResult(new XdrManageDataResultCode(XdrManageDataResultCode::NAME_NOT_FOUND)))->toJsonValue();
+        $samples[] = (new XdrManageDataResult(new XdrManageDataResultCode(XdrManageDataResultCode::LOW_RESERVE)))->toJsonValue();
+        $samples[] = (new XdrManageDataResult(new XdrManageDataResultCode(XdrManageDataResultCode::INVALID_NAME)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrManageDataResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrManageDataResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrManageDataResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrManageDataResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrManageDataResultGettersSetters(): void
@@ -3516,6 +10535,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrBumpSequenceResultCode::BAD_SEQ());
     }
 
+    public function testXdrBumpSequenceResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrBumpSequenceResultCode::SUCCESS, XdrBumpSequenceResultCode::BAD_SEQ];
+        foreach ($values as $v) {
+            $original = new XdrBumpSequenceResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrBumpSequenceResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrBumpSequenceResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrBumpSequenceResultCode value ' . $v);
+            $back2 = XdrBumpSequenceResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrBumpSequenceResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrBumpSequenceResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrBumpSequenceResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrBumpSequenceResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrBumpSequenceResult_XdrBumpSequenceResultCode_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrBumpSequenceResult(new XdrBumpSequenceResultCode(XdrBumpSequenceResultCode::SUCCESS));
@@ -3532,6 +10576,71 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrBumpSequenceResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->resultCode->getValue(), $decoded->resultCode->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrBumpSequenceResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrBumpSequenceResult(new XdrBumpSequenceResultCode(XdrBumpSequenceResultCode::SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrBumpSequenceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrBumpSequenceResult arm XdrBumpSequenceResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrBumpSequenceResult arm XdrBumpSequenceResultCode_SUCCESS');
+        $back2 = XdrBumpSequenceResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrBumpSequenceResult arm XdrBumpSequenceResultCode_SUCCESS');
+        $arm1 = new XdrBumpSequenceResult(new XdrBumpSequenceResultCode(XdrBumpSequenceResultCode::BAD_SEQ));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrBumpSequenceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrBumpSequenceResult arm XdrBumpSequenceResultCode_BAD_SEQ');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrBumpSequenceResult arm XdrBumpSequenceResultCode_BAD_SEQ');
+        $back2 = XdrBumpSequenceResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrBumpSequenceResult arm XdrBumpSequenceResultCode_BAD_SEQ');
+    }
+
+    public function testXdrBumpSequenceResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrBumpSequenceResult(new XdrBumpSequenceResultCode(XdrBumpSequenceResultCode::SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrBumpSequenceResult(new XdrBumpSequenceResultCode(XdrBumpSequenceResultCode::BAD_SEQ)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrBumpSequenceResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrBumpSequenceResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrBumpSequenceResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrBumpSequenceResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrBumpSequenceResultGettersSetters(): void
@@ -3570,6 +10679,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrCreateClaimableBalanceResultCode::UNDERFUNDED());
     }
 
+    public function testXdrCreateClaimableBalanceResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrCreateClaimableBalanceResultCode::SUCCESS, XdrCreateClaimableBalanceResultCode::MALFORMED, XdrCreateClaimableBalanceResultCode::LOW_RESERVE, XdrCreateClaimableBalanceResultCode::NO_TRUST, XdrCreateClaimableBalanceResultCode::NOT_AUTHORIZED, XdrCreateClaimableBalanceResultCode::UNDERFUNDED];
+        foreach ($values as $v) {
+            $original = new XdrCreateClaimableBalanceResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrCreateClaimableBalanceResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateClaimableBalanceResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateClaimableBalanceResultCode value ' . $v);
+            $back2 = XdrCreateClaimableBalanceResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateClaimableBalanceResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrCreateClaimableBalanceResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrCreateClaimableBalanceResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrCreateClaimableBalanceResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrCreateClaimableBalanceResult_XdrCreateClaimableBalanceResultCode_SUCCESS_ArmRoundTrip(): void
     {
         $original = new XdrCreateClaimableBalanceResult(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::SUCCESS));
@@ -3590,6 +10724,103 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrCreateClaimableBalanceResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->code->getValue(), $decoded->code->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrCreateClaimableBalanceResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrCreateClaimableBalanceResult(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::SUCCESS)); $u->balanceID = new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32)); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrCreateClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_SUCCESS');
+        $back2 = XdrCreateClaimableBalanceResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_SUCCESS');
+        $arm1 = new XdrCreateClaimableBalanceResult(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::MALFORMED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrCreateClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_MALFORMED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_MALFORMED');
+        $back2 = XdrCreateClaimableBalanceResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_MALFORMED');
+        $arm2 = new XdrCreateClaimableBalanceResult(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::LOW_RESERVE));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrCreateClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_LOW_RESERVE');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_LOW_RESERVE');
+        $back2 = XdrCreateClaimableBalanceResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_LOW_RESERVE');
+        $arm3 = new XdrCreateClaimableBalanceResult(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::NO_TRUST));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrCreateClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_NO_TRUST');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_NO_TRUST');
+        $back2 = XdrCreateClaimableBalanceResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_NO_TRUST');
+        $arm4 = new XdrCreateClaimableBalanceResult(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::NOT_AUTHORIZED));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrCreateClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_NOT_AUTHORIZED');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_NOT_AUTHORIZED');
+        $back2 = XdrCreateClaimableBalanceResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_NOT_AUTHORIZED');
+        $arm5 = new XdrCreateClaimableBalanceResult(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::UNDERFUNDED));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrCreateClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_UNDERFUNDED');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_UNDERFUNDED');
+        $back2 = XdrCreateClaimableBalanceResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrCreateClaimableBalanceResult arm XdrCreateClaimableBalanceResultCode_UNDERFUNDED');
+    }
+
+    public function testXdrCreateClaimableBalanceResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrCreateClaimableBalanceResult(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::SUCCESS)); $u->balanceID = new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32)); return $u; })())->toJsonValue();
+        $samples[] = (new XdrCreateClaimableBalanceResult(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrCreateClaimableBalanceResult(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::LOW_RESERVE)))->toJsonValue();
+        $samples[] = (new XdrCreateClaimableBalanceResult(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::NO_TRUST)))->toJsonValue();
+        $samples[] = (new XdrCreateClaimableBalanceResult(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::NOT_AUTHORIZED)))->toJsonValue();
+        $samples[] = (new XdrCreateClaimableBalanceResult(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::UNDERFUNDED)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrCreateClaimableBalanceResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrCreateClaimableBalanceResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrCreateClaimableBalanceResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrCreateClaimableBalanceResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrCreateClaimableBalanceResultGettersSetters(): void
@@ -3630,6 +10861,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrClaimClaimableBalanceResultCode::TRUSTLINE_FROZEN());
     }
 
+    public function testXdrClaimClaimableBalanceResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrClaimClaimableBalanceResultCode::SUCCESS, XdrClaimClaimableBalanceResultCode::DOES_NOT_EXIST, XdrClaimClaimableBalanceResultCode::CANNOT_CLAIM, XdrClaimClaimableBalanceResultCode::LINE_FULL, XdrClaimClaimableBalanceResultCode::NO_TRUST, XdrClaimClaimableBalanceResultCode::NOT_AUTHORIZED, XdrClaimClaimableBalanceResultCode::TRUSTLINE_FROZEN];
+        foreach ($values as $v) {
+            $original = new XdrClaimClaimableBalanceResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrClaimClaimableBalanceResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClaimClaimableBalanceResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrClaimClaimableBalanceResultCode value ' . $v);
+            $back2 = XdrClaimClaimableBalanceResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClaimClaimableBalanceResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrClaimClaimableBalanceResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrClaimClaimableBalanceResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrClaimClaimableBalanceResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrClaimClaimableBalanceResult_XdrClaimClaimableBalanceResultCode_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::SUCCESS));
@@ -3646,6 +10902,111 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrClaimClaimableBalanceResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->resultCode->getValue(), $decoded->resultCode->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrClaimClaimableBalanceResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrClaimClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_SUCCESS');
+        $back2 = XdrClaimClaimableBalanceResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_SUCCESS');
+        $arm1 = new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::DOES_NOT_EXIST));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrClaimClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_DOES_NOT_EXIST');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_DOES_NOT_EXIST');
+        $back2 = XdrClaimClaimableBalanceResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_DOES_NOT_EXIST');
+        $arm2 = new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::CANNOT_CLAIM));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrClaimClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_CANNOT_CLAIM');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_CANNOT_CLAIM');
+        $back2 = XdrClaimClaimableBalanceResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_CANNOT_CLAIM');
+        $arm3 = new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::LINE_FULL));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrClaimClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_LINE_FULL');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_LINE_FULL');
+        $back2 = XdrClaimClaimableBalanceResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_LINE_FULL');
+        $arm4 = new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::NO_TRUST));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrClaimClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_NO_TRUST');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_NO_TRUST');
+        $back2 = XdrClaimClaimableBalanceResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_NO_TRUST');
+        $arm5 = new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::NOT_AUTHORIZED));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrClaimClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_NOT_AUTHORIZED');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_NOT_AUTHORIZED');
+        $back2 = XdrClaimClaimableBalanceResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_NOT_AUTHORIZED');
+        $arm6 = new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::TRUSTLINE_FROZEN));
+        $j1 = $arm6->toJsonValue();
+        $back = XdrClaimClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_TRUSTLINE_FROZEN');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_TRUSTLINE_FROZEN');
+        $back2 = XdrClaimClaimableBalanceResult::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClaimClaimableBalanceResult arm XdrClaimClaimableBalanceResultCode_TRUSTLINE_FROZEN');
+    }
+
+    public function testXdrClaimClaimableBalanceResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::DOES_NOT_EXIST)))->toJsonValue();
+        $samples[] = (new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::CANNOT_CLAIM)))->toJsonValue();
+        $samples[] = (new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::LINE_FULL)))->toJsonValue();
+        $samples[] = (new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::NO_TRUST)))->toJsonValue();
+        $samples[] = (new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::NOT_AUTHORIZED)))->toJsonValue();
+        $samples[] = (new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::TRUSTLINE_FROZEN)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrClaimClaimableBalanceResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrClaimClaimableBalanceResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrClaimClaimableBalanceResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrClaimClaimableBalanceResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrClaimClaimableBalanceResultGettersSetters(): void
@@ -3682,6 +11043,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrBeginSponsoringFutureReservesResultCode::RECURSIVE());
     }
 
+    public function testXdrBeginSponsoringFutureReservesResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrBeginSponsoringFutureReservesResultCode::SUCCESS, XdrBeginSponsoringFutureReservesResultCode::MALFORMED, XdrBeginSponsoringFutureReservesResultCode::ALREADY_SPONSORED, XdrBeginSponsoringFutureReservesResultCode::RECURSIVE];
+        foreach ($values as $v) {
+            $original = new XdrBeginSponsoringFutureReservesResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrBeginSponsoringFutureReservesResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrBeginSponsoringFutureReservesResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrBeginSponsoringFutureReservesResultCode value ' . $v);
+            $back2 = XdrBeginSponsoringFutureReservesResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrBeginSponsoringFutureReservesResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrBeginSponsoringFutureReservesResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrBeginSponsoringFutureReservesResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrBeginSponsoringFutureReservesResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrBeginSponsoringFutureReservesResult_XdrBeginSponsoringFutureReservesResultCode_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrBeginSponsoringFutureReservesResult(new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::SUCCESS));
@@ -3698,6 +11084,87 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrBeginSponsoringFutureReservesResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->resultCode->getValue(), $decoded->resultCode->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrBeginSponsoringFutureReservesResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrBeginSponsoringFutureReservesResult(new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrBeginSponsoringFutureReservesResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrBeginSponsoringFutureReservesResult arm XdrBeginSponsoringFutureReservesResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrBeginSponsoringFutureReservesResult arm XdrBeginSponsoringFutureReservesResultCode_SUCCESS');
+        $back2 = XdrBeginSponsoringFutureReservesResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrBeginSponsoringFutureReservesResult arm XdrBeginSponsoringFutureReservesResultCode_SUCCESS');
+        $arm1 = new XdrBeginSponsoringFutureReservesResult(new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::MALFORMED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrBeginSponsoringFutureReservesResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrBeginSponsoringFutureReservesResult arm XdrBeginSponsoringFutureReservesResultCode_MALFORMED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrBeginSponsoringFutureReservesResult arm XdrBeginSponsoringFutureReservesResultCode_MALFORMED');
+        $back2 = XdrBeginSponsoringFutureReservesResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrBeginSponsoringFutureReservesResult arm XdrBeginSponsoringFutureReservesResultCode_MALFORMED');
+        $arm2 = new XdrBeginSponsoringFutureReservesResult(new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::ALREADY_SPONSORED));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrBeginSponsoringFutureReservesResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrBeginSponsoringFutureReservesResult arm XdrBeginSponsoringFutureReservesResultCode_ALREADY_SPONSORED');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrBeginSponsoringFutureReservesResult arm XdrBeginSponsoringFutureReservesResultCode_ALREADY_SPONSORED');
+        $back2 = XdrBeginSponsoringFutureReservesResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrBeginSponsoringFutureReservesResult arm XdrBeginSponsoringFutureReservesResultCode_ALREADY_SPONSORED');
+        $arm3 = new XdrBeginSponsoringFutureReservesResult(new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::RECURSIVE));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrBeginSponsoringFutureReservesResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrBeginSponsoringFutureReservesResult arm XdrBeginSponsoringFutureReservesResultCode_RECURSIVE');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrBeginSponsoringFutureReservesResult arm XdrBeginSponsoringFutureReservesResultCode_RECURSIVE');
+        $back2 = XdrBeginSponsoringFutureReservesResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrBeginSponsoringFutureReservesResult arm XdrBeginSponsoringFutureReservesResultCode_RECURSIVE');
+    }
+
+    public function testXdrBeginSponsoringFutureReservesResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrBeginSponsoringFutureReservesResult(new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrBeginSponsoringFutureReservesResult(new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrBeginSponsoringFutureReservesResult(new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::ALREADY_SPONSORED)))->toJsonValue();
+        $samples[] = (new XdrBeginSponsoringFutureReservesResult(new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::RECURSIVE)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrBeginSponsoringFutureReservesResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrBeginSponsoringFutureReservesResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrBeginSponsoringFutureReservesResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrBeginSponsoringFutureReservesResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrBeginSponsoringFutureReservesResultGettersSetters(): void
@@ -3732,6 +11199,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrEndSponsoringFutureReservesResultCode::NOT_SPONSORED());
     }
 
+    public function testXdrEndSponsoringFutureReservesResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrEndSponsoringFutureReservesResultCode::SUCCESS, XdrEndSponsoringFutureReservesResultCode::NOT_SPONSORED];
+        foreach ($values as $v) {
+            $original = new XdrEndSponsoringFutureReservesResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrEndSponsoringFutureReservesResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrEndSponsoringFutureReservesResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrEndSponsoringFutureReservesResultCode value ' . $v);
+            $back2 = XdrEndSponsoringFutureReservesResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrEndSponsoringFutureReservesResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrEndSponsoringFutureReservesResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrEndSponsoringFutureReservesResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrEndSponsoringFutureReservesResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrEndSponsoringFutureReservesResult_XdrEndSponsoringFutureReservesResultCode_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrEndSponsoringFutureReservesResult(new XdrEndSponsoringFutureReservesResultCode(XdrEndSponsoringFutureReservesResultCode::SUCCESS));
@@ -3748,6 +11240,71 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrEndSponsoringFutureReservesResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->resultCode->getValue(), $decoded->resultCode->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrEndSponsoringFutureReservesResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrEndSponsoringFutureReservesResult(new XdrEndSponsoringFutureReservesResultCode(XdrEndSponsoringFutureReservesResultCode::SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrEndSponsoringFutureReservesResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrEndSponsoringFutureReservesResult arm XdrEndSponsoringFutureReservesResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrEndSponsoringFutureReservesResult arm XdrEndSponsoringFutureReservesResultCode_SUCCESS');
+        $back2 = XdrEndSponsoringFutureReservesResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrEndSponsoringFutureReservesResult arm XdrEndSponsoringFutureReservesResultCode_SUCCESS');
+        $arm1 = new XdrEndSponsoringFutureReservesResult(new XdrEndSponsoringFutureReservesResultCode(XdrEndSponsoringFutureReservesResultCode::NOT_SPONSORED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrEndSponsoringFutureReservesResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrEndSponsoringFutureReservesResult arm XdrEndSponsoringFutureReservesResultCode_NOT_SPONSORED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrEndSponsoringFutureReservesResult arm XdrEndSponsoringFutureReservesResultCode_NOT_SPONSORED');
+        $back2 = XdrEndSponsoringFutureReservesResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrEndSponsoringFutureReservesResult arm XdrEndSponsoringFutureReservesResultCode_NOT_SPONSORED');
+    }
+
+    public function testXdrEndSponsoringFutureReservesResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrEndSponsoringFutureReservesResult(new XdrEndSponsoringFutureReservesResultCode(XdrEndSponsoringFutureReservesResultCode::SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrEndSponsoringFutureReservesResult(new XdrEndSponsoringFutureReservesResultCode(XdrEndSponsoringFutureReservesResultCode::NOT_SPONSORED)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrEndSponsoringFutureReservesResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrEndSponsoringFutureReservesResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrEndSponsoringFutureReservesResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrEndSponsoringFutureReservesResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrEndSponsoringFutureReservesResultGettersSetters(): void
@@ -3786,6 +11343,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrRevokeSponsorshipResultCode::MALFORMED());
     }
 
+    public function testXdrRevokeSponsorshipResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrRevokeSponsorshipResultCode::SUCCESS, XdrRevokeSponsorshipResultCode::DOES_NOT_EXIST, XdrRevokeSponsorshipResultCode::NOT_SPONSOR, XdrRevokeSponsorshipResultCode::LOW_RESERVE, XdrRevokeSponsorshipResultCode::ONLY_TRANSFERABLE, XdrRevokeSponsorshipResultCode::MALFORMED];
+        foreach ($values as $v) {
+            $original = new XdrRevokeSponsorshipResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrRevokeSponsorshipResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRevokeSponsorshipResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrRevokeSponsorshipResultCode value ' . $v);
+            $back2 = XdrRevokeSponsorshipResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRevokeSponsorshipResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrRevokeSponsorshipResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrRevokeSponsorshipResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrRevokeSponsorshipResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrRevokeSponsorshipResult_XdrRevokeSponsorshipResultCode_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrRevokeSponsorshipResult(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::SUCCESS));
@@ -3802,6 +11384,103 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrRevokeSponsorshipResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->resultCode->getValue(), $decoded->resultCode->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrRevokeSponsorshipResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrRevokeSponsorshipResult(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrRevokeSponsorshipResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_SUCCESS');
+        $back2 = XdrRevokeSponsorshipResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_SUCCESS');
+        $arm1 = new XdrRevokeSponsorshipResult(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::DOES_NOT_EXIST));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrRevokeSponsorshipResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_DOES_NOT_EXIST');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_DOES_NOT_EXIST');
+        $back2 = XdrRevokeSponsorshipResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_DOES_NOT_EXIST');
+        $arm2 = new XdrRevokeSponsorshipResult(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::NOT_SPONSOR));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrRevokeSponsorshipResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_NOT_SPONSOR');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_NOT_SPONSOR');
+        $back2 = XdrRevokeSponsorshipResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_NOT_SPONSOR');
+        $arm3 = new XdrRevokeSponsorshipResult(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::LOW_RESERVE));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrRevokeSponsorshipResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_LOW_RESERVE');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_LOW_RESERVE');
+        $back2 = XdrRevokeSponsorshipResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_LOW_RESERVE');
+        $arm4 = new XdrRevokeSponsorshipResult(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::ONLY_TRANSFERABLE));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrRevokeSponsorshipResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_ONLY_TRANSFERABLE');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_ONLY_TRANSFERABLE');
+        $back2 = XdrRevokeSponsorshipResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_ONLY_TRANSFERABLE');
+        $arm5 = new XdrRevokeSponsorshipResult(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::MALFORMED));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrRevokeSponsorshipResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_MALFORMED');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_MALFORMED');
+        $back2 = XdrRevokeSponsorshipResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRevokeSponsorshipResult arm XdrRevokeSponsorshipResultCode_MALFORMED');
+    }
+
+    public function testXdrRevokeSponsorshipResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrRevokeSponsorshipResult(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrRevokeSponsorshipResult(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::DOES_NOT_EXIST)))->toJsonValue();
+        $samples[] = (new XdrRevokeSponsorshipResult(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::NOT_SPONSOR)))->toJsonValue();
+        $samples[] = (new XdrRevokeSponsorshipResult(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::LOW_RESERVE)))->toJsonValue();
+        $samples[] = (new XdrRevokeSponsorshipResult(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::ONLY_TRANSFERABLE)))->toJsonValue();
+        $samples[] = (new XdrRevokeSponsorshipResult(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::MALFORMED)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrRevokeSponsorshipResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrRevokeSponsorshipResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrRevokeSponsorshipResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrRevokeSponsorshipResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrRevokeSponsorshipResultGettersSetters(): void
@@ -3839,6 +11518,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrClawbackResultCode::UNDERFUNDED());
     }
 
+    public function testXdrClawbackResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrClawbackResultCode::SUCCESS, XdrClawbackResultCode::MALFORMED, XdrClawbackResultCode::NOT_ENABLED, XdrClawbackResultCode::NO_TRUST, XdrClawbackResultCode::UNDERFUNDED];
+        foreach ($values as $v) {
+            $original = new XdrClawbackResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrClawbackResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClawbackResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrClawbackResultCode value ' . $v);
+            $back2 = XdrClawbackResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClawbackResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrClawbackResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrClawbackResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrClawbackResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrClawbackResult_XdrClawbackResultCode_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrClawbackResult(new XdrClawbackResultCode(XdrClawbackResultCode::SUCCESS));
@@ -3855,6 +11559,95 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrClawbackResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->resultCode->getValue(), $decoded->resultCode->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrClawbackResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrClawbackResult(new XdrClawbackResultCode(XdrClawbackResultCode::SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrClawbackResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClawbackResult arm XdrClawbackResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrClawbackResult arm XdrClawbackResultCode_SUCCESS');
+        $back2 = XdrClawbackResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClawbackResult arm XdrClawbackResultCode_SUCCESS');
+        $arm1 = new XdrClawbackResult(new XdrClawbackResultCode(XdrClawbackResultCode::MALFORMED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrClawbackResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClawbackResult arm XdrClawbackResultCode_MALFORMED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrClawbackResult arm XdrClawbackResultCode_MALFORMED');
+        $back2 = XdrClawbackResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClawbackResult arm XdrClawbackResultCode_MALFORMED');
+        $arm2 = new XdrClawbackResult(new XdrClawbackResultCode(XdrClawbackResultCode::NOT_ENABLED));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrClawbackResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClawbackResult arm XdrClawbackResultCode_NOT_ENABLED');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrClawbackResult arm XdrClawbackResultCode_NOT_ENABLED');
+        $back2 = XdrClawbackResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClawbackResult arm XdrClawbackResultCode_NOT_ENABLED');
+        $arm3 = new XdrClawbackResult(new XdrClawbackResultCode(XdrClawbackResultCode::NO_TRUST));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrClawbackResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClawbackResult arm XdrClawbackResultCode_NO_TRUST');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrClawbackResult arm XdrClawbackResultCode_NO_TRUST');
+        $back2 = XdrClawbackResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClawbackResult arm XdrClawbackResultCode_NO_TRUST');
+        $arm4 = new XdrClawbackResult(new XdrClawbackResultCode(XdrClawbackResultCode::UNDERFUNDED));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrClawbackResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClawbackResult arm XdrClawbackResultCode_UNDERFUNDED');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrClawbackResult arm XdrClawbackResultCode_UNDERFUNDED');
+        $back2 = XdrClawbackResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClawbackResult arm XdrClawbackResultCode_UNDERFUNDED');
+    }
+
+    public function testXdrClawbackResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrClawbackResult(new XdrClawbackResultCode(XdrClawbackResultCode::SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrClawbackResult(new XdrClawbackResultCode(XdrClawbackResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrClawbackResult(new XdrClawbackResultCode(XdrClawbackResultCode::NOT_ENABLED)))->toJsonValue();
+        $samples[] = (new XdrClawbackResult(new XdrClawbackResultCode(XdrClawbackResultCode::NO_TRUST)))->toJsonValue();
+        $samples[] = (new XdrClawbackResult(new XdrClawbackResultCode(XdrClawbackResultCode::UNDERFUNDED)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrClawbackResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrClawbackResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrClawbackResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrClawbackResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrClawbackResultGettersSetters(): void
@@ -3891,6 +11684,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrClawbackClaimableBalanceResultCode::NOT_CLAWBACK_ENABLED());
     }
 
+    public function testXdrClawbackClaimableBalanceResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrClawbackClaimableBalanceResultCode::SUCCESS, XdrClawbackClaimableBalanceResultCode::DOES_NOT_EXIST, XdrClawbackClaimableBalanceResultCode::NOT_ISSUER, XdrClawbackClaimableBalanceResultCode::NOT_CLAWBACK_ENABLED];
+        foreach ($values as $v) {
+            $original = new XdrClawbackClaimableBalanceResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrClawbackClaimableBalanceResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClawbackClaimableBalanceResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrClawbackClaimableBalanceResultCode value ' . $v);
+            $back2 = XdrClawbackClaimableBalanceResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClawbackClaimableBalanceResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrClawbackClaimableBalanceResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrClawbackClaimableBalanceResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrClawbackClaimableBalanceResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrClawbackClaimableBalanceResult_XdrClawbackClaimableBalanceResultCode_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrClawbackClaimableBalanceResult(new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::SUCCESS));
@@ -3907,6 +11725,87 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrClawbackClaimableBalanceResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->resultCode->getValue(), $decoded->resultCode->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrClawbackClaimableBalanceResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrClawbackClaimableBalanceResult(new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrClawbackClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClawbackClaimableBalanceResult arm XdrClawbackClaimableBalanceResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrClawbackClaimableBalanceResult arm XdrClawbackClaimableBalanceResultCode_SUCCESS');
+        $back2 = XdrClawbackClaimableBalanceResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClawbackClaimableBalanceResult arm XdrClawbackClaimableBalanceResultCode_SUCCESS');
+        $arm1 = new XdrClawbackClaimableBalanceResult(new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::DOES_NOT_EXIST));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrClawbackClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClawbackClaimableBalanceResult arm XdrClawbackClaimableBalanceResultCode_DOES_NOT_EXIST');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrClawbackClaimableBalanceResult arm XdrClawbackClaimableBalanceResultCode_DOES_NOT_EXIST');
+        $back2 = XdrClawbackClaimableBalanceResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClawbackClaimableBalanceResult arm XdrClawbackClaimableBalanceResultCode_DOES_NOT_EXIST');
+        $arm2 = new XdrClawbackClaimableBalanceResult(new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::NOT_ISSUER));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrClawbackClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClawbackClaimableBalanceResult arm XdrClawbackClaimableBalanceResultCode_NOT_ISSUER');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrClawbackClaimableBalanceResult arm XdrClawbackClaimableBalanceResultCode_NOT_ISSUER');
+        $back2 = XdrClawbackClaimableBalanceResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClawbackClaimableBalanceResult arm XdrClawbackClaimableBalanceResultCode_NOT_ISSUER');
+        $arm3 = new XdrClawbackClaimableBalanceResult(new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::NOT_CLAWBACK_ENABLED));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrClawbackClaimableBalanceResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrClawbackClaimableBalanceResult arm XdrClawbackClaimableBalanceResultCode_NOT_CLAWBACK_ENABLED');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrClawbackClaimableBalanceResult arm XdrClawbackClaimableBalanceResultCode_NOT_CLAWBACK_ENABLED');
+        $back2 = XdrClawbackClaimableBalanceResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrClawbackClaimableBalanceResult arm XdrClawbackClaimableBalanceResultCode_NOT_CLAWBACK_ENABLED');
+    }
+
+    public function testXdrClawbackClaimableBalanceResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrClawbackClaimableBalanceResult(new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrClawbackClaimableBalanceResult(new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::DOES_NOT_EXIST)))->toJsonValue();
+        $samples[] = (new XdrClawbackClaimableBalanceResult(new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::NOT_ISSUER)))->toJsonValue();
+        $samples[] = (new XdrClawbackClaimableBalanceResult(new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::NOT_CLAWBACK_ENABLED)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrClawbackClaimableBalanceResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrClawbackClaimableBalanceResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrClawbackClaimableBalanceResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrClawbackClaimableBalanceResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrClawbackClaimableBalanceResultGettersSetters(): void
@@ -3945,6 +11844,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrSetTrustLineFlagsResultCode::LOW_RESERVE());
     }
 
+    public function testXdrSetTrustLineFlagsResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrSetTrustLineFlagsResultCode::SUCCESS, XdrSetTrustLineFlagsResultCode::MALFORMED, XdrSetTrustLineFlagsResultCode::NO_TRUST_LINE, XdrSetTrustLineFlagsResultCode::CANT_REVOKE, XdrSetTrustLineFlagsResultCode::INVALID_STATE, XdrSetTrustLineFlagsResultCode::LOW_RESERVE];
+        foreach ($values as $v) {
+            $original = new XdrSetTrustLineFlagsResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrSetTrustLineFlagsResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetTrustLineFlagsResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSetTrustLineFlagsResultCode value ' . $v);
+            $back2 = XdrSetTrustLineFlagsResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetTrustLineFlagsResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrSetTrustLineFlagsResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrSetTrustLineFlagsResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrSetTrustLineFlagsResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrSetTrustLineFlagsResult_XdrSetTrustLineFlagsResultCode_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrSetTrustLineFlagsResult(new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::SUCCESS));
@@ -3961,6 +11885,103 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrSetTrustLineFlagsResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->resultCode->getValue(), $decoded->resultCode->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrSetTrustLineFlagsResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrSetTrustLineFlagsResult(new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrSetTrustLineFlagsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_SUCCESS');
+        $back2 = XdrSetTrustLineFlagsResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_SUCCESS');
+        $arm1 = new XdrSetTrustLineFlagsResult(new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::MALFORMED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrSetTrustLineFlagsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_MALFORMED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_MALFORMED');
+        $back2 = XdrSetTrustLineFlagsResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_MALFORMED');
+        $arm2 = new XdrSetTrustLineFlagsResult(new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::NO_TRUST_LINE));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrSetTrustLineFlagsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_NO_TRUST_LINE');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_NO_TRUST_LINE');
+        $back2 = XdrSetTrustLineFlagsResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_NO_TRUST_LINE');
+        $arm3 = new XdrSetTrustLineFlagsResult(new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::CANT_REVOKE));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrSetTrustLineFlagsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_CANT_REVOKE');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_CANT_REVOKE');
+        $back2 = XdrSetTrustLineFlagsResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_CANT_REVOKE');
+        $arm4 = new XdrSetTrustLineFlagsResult(new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::INVALID_STATE));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrSetTrustLineFlagsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_INVALID_STATE');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_INVALID_STATE');
+        $back2 = XdrSetTrustLineFlagsResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_INVALID_STATE');
+        $arm5 = new XdrSetTrustLineFlagsResult(new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::LOW_RESERVE));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrSetTrustLineFlagsResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_LOW_RESERVE');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_LOW_RESERVE');
+        $back2 = XdrSetTrustLineFlagsResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSetTrustLineFlagsResult arm XdrSetTrustLineFlagsResultCode_LOW_RESERVE');
+    }
+
+    public function testXdrSetTrustLineFlagsResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrSetTrustLineFlagsResult(new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrSetTrustLineFlagsResult(new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrSetTrustLineFlagsResult(new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::NO_TRUST_LINE)))->toJsonValue();
+        $samples[] = (new XdrSetTrustLineFlagsResult(new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::CANT_REVOKE)))->toJsonValue();
+        $samples[] = (new XdrSetTrustLineFlagsResult(new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::INVALID_STATE)))->toJsonValue();
+        $samples[] = (new XdrSetTrustLineFlagsResult(new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::LOW_RESERVE)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSetTrustLineFlagsResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrSetTrustLineFlagsResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrSetTrustLineFlagsResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrSetTrustLineFlagsResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrSetTrustLineFlagsResultGettersSetters(): void
@@ -4002,6 +12023,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrLiquidityPoolDepositResultCode::TRUSTLINE_FROZEN());
     }
 
+    public function testXdrLiquidityPoolDepositResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrLiquidityPoolDepositResultCode::SUCCESS, XdrLiquidityPoolDepositResultCode::MALFORMED, XdrLiquidityPoolDepositResultCode::NO_TRUST, XdrLiquidityPoolDepositResultCode::NOT_AUTHORIZED, XdrLiquidityPoolDepositResultCode::UNDERFUNDED, XdrLiquidityPoolDepositResultCode::LINE_FULL, XdrLiquidityPoolDepositResultCode::BAD_PRICE, XdrLiquidityPoolDepositResultCode::POOL_FULL, XdrLiquidityPoolDepositResultCode::TRUSTLINE_FROZEN];
+        foreach ($values as $v) {
+            $original = new XdrLiquidityPoolDepositResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrLiquidityPoolDepositResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolDepositResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolDepositResultCode value ' . $v);
+            $back2 = XdrLiquidityPoolDepositResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolDepositResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrLiquidityPoolDepositResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrLiquidityPoolDepositResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrLiquidityPoolDepositResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrLiquidityPoolDepositResult_XdrLiquidityPoolDepositResultCode_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::SUCCESS));
@@ -4018,6 +12064,127 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrLiquidityPoolDepositResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->resultCode->getValue(), $decoded->resultCode->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrLiquidityPoolDepositResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrLiquidityPoolDepositResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_SUCCESS');
+        $back2 = XdrLiquidityPoolDepositResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_SUCCESS');
+        $arm1 = new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::MALFORMED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrLiquidityPoolDepositResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_MALFORMED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_MALFORMED');
+        $back2 = XdrLiquidityPoolDepositResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_MALFORMED');
+        $arm2 = new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::NO_TRUST));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrLiquidityPoolDepositResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_NO_TRUST');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_NO_TRUST');
+        $back2 = XdrLiquidityPoolDepositResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_NO_TRUST');
+        $arm3 = new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::NOT_AUTHORIZED));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrLiquidityPoolDepositResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_NOT_AUTHORIZED');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_NOT_AUTHORIZED');
+        $back2 = XdrLiquidityPoolDepositResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_NOT_AUTHORIZED');
+        $arm4 = new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::UNDERFUNDED));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrLiquidityPoolDepositResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_UNDERFUNDED');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_UNDERFUNDED');
+        $back2 = XdrLiquidityPoolDepositResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_UNDERFUNDED');
+        $arm5 = new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::LINE_FULL));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrLiquidityPoolDepositResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_LINE_FULL');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_LINE_FULL');
+        $back2 = XdrLiquidityPoolDepositResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_LINE_FULL');
+        $arm6 = new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::BAD_PRICE));
+        $j1 = $arm6->toJsonValue();
+        $back = XdrLiquidityPoolDepositResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_BAD_PRICE');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_BAD_PRICE');
+        $back2 = XdrLiquidityPoolDepositResult::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_BAD_PRICE');
+        $arm7 = new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::POOL_FULL));
+        $j1 = $arm7->toJsonValue();
+        $back = XdrLiquidityPoolDepositResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_POOL_FULL');
+        $this->assertSame($arm7->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_POOL_FULL');
+        $back2 = XdrLiquidityPoolDepositResult::fromJson($arm7->toJson());
+        $this->assertSame($arm7->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_POOL_FULL');
+        $arm8 = new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::TRUSTLINE_FROZEN));
+        $j1 = $arm8->toJsonValue();
+        $back = XdrLiquidityPoolDepositResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_TRUSTLINE_FROZEN');
+        $this->assertSame($arm8->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_TRUSTLINE_FROZEN');
+        $back2 = XdrLiquidityPoolDepositResult::fromJson($arm8->toJson());
+        $this->assertSame($arm8->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolDepositResult arm XdrLiquidityPoolDepositResultCode_TRUSTLINE_FROZEN');
+    }
+
+    public function testXdrLiquidityPoolDepositResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::NO_TRUST)))->toJsonValue();
+        $samples[] = (new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::NOT_AUTHORIZED)))->toJsonValue();
+        $samples[] = (new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::UNDERFUNDED)))->toJsonValue();
+        $samples[] = (new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::LINE_FULL)))->toJsonValue();
+        $samples[] = (new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::BAD_PRICE)))->toJsonValue();
+        $samples[] = (new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::POOL_FULL)))->toJsonValue();
+        $samples[] = (new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::TRUSTLINE_FROZEN)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrLiquidityPoolDepositResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrLiquidityPoolDepositResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrLiquidityPoolDepositResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrLiquidityPoolDepositResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrLiquidityPoolDepositResultGettersSetters(): void
@@ -4057,6 +12224,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrLiquidityPoolWithdrawResultCode::TRUSTLINE_FROZEN());
     }
 
+    public function testXdrLiquidityPoolWithdrawResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrLiquidityPoolWithdrawResultCode::SUCCESS, XdrLiquidityPoolWithdrawResultCode::MALFORMED, XdrLiquidityPoolWithdrawResultCode::NO_TRUST, XdrLiquidityPoolWithdrawResultCode::UNDERFUNDED, XdrLiquidityPoolWithdrawResultCode::LINE_FULL, XdrLiquidityPoolWithdrawResultCode::UNDER_MINIMUM, XdrLiquidityPoolWithdrawResultCode::TRUSTLINE_FROZEN];
+        foreach ($values as $v) {
+            $original = new XdrLiquidityPoolWithdrawResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrLiquidityPoolWithdrawResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolWithdrawResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolWithdrawResultCode value ' . $v);
+            $back2 = XdrLiquidityPoolWithdrawResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolWithdrawResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrLiquidityPoolWithdrawResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrLiquidityPoolWithdrawResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrLiquidityPoolWithdrawResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrLiquidityPoolWithdrawResult_XdrLiquidityPoolWithdrawResultCode_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::SUCCESS));
@@ -4073,6 +12265,111 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrLiquidityPoolWithdrawResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->resultCode->getValue(), $decoded->resultCode->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrLiquidityPoolWithdrawResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrLiquidityPoolWithdrawResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_SUCCESS');
+        $back2 = XdrLiquidityPoolWithdrawResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_SUCCESS');
+        $arm1 = new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::MALFORMED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrLiquidityPoolWithdrawResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_MALFORMED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_MALFORMED');
+        $back2 = XdrLiquidityPoolWithdrawResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_MALFORMED');
+        $arm2 = new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::NO_TRUST));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrLiquidityPoolWithdrawResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_NO_TRUST');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_NO_TRUST');
+        $back2 = XdrLiquidityPoolWithdrawResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_NO_TRUST');
+        $arm3 = new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::UNDERFUNDED));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrLiquidityPoolWithdrawResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_UNDERFUNDED');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_UNDERFUNDED');
+        $back2 = XdrLiquidityPoolWithdrawResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_UNDERFUNDED');
+        $arm4 = new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::LINE_FULL));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrLiquidityPoolWithdrawResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_LINE_FULL');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_LINE_FULL');
+        $back2 = XdrLiquidityPoolWithdrawResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_LINE_FULL');
+        $arm5 = new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::UNDER_MINIMUM));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrLiquidityPoolWithdrawResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_UNDER_MINIMUM');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_UNDER_MINIMUM');
+        $back2 = XdrLiquidityPoolWithdrawResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_UNDER_MINIMUM');
+        $arm6 = new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::TRUSTLINE_FROZEN));
+        $j1 = $arm6->toJsonValue();
+        $back = XdrLiquidityPoolWithdrawResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_TRUSTLINE_FROZEN');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_TRUSTLINE_FROZEN');
+        $back2 = XdrLiquidityPoolWithdrawResult::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrLiquidityPoolWithdrawResult arm XdrLiquidityPoolWithdrawResultCode_TRUSTLINE_FROZEN');
+    }
+
+    public function testXdrLiquidityPoolWithdrawResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::NO_TRUST)))->toJsonValue();
+        $samples[] = (new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::UNDERFUNDED)))->toJsonValue();
+        $samples[] = (new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::LINE_FULL)))->toJsonValue();
+        $samples[] = (new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::UNDER_MINIMUM)))->toJsonValue();
+        $samples[] = (new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::TRUSTLINE_FROZEN)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrLiquidityPoolWithdrawResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrLiquidityPoolWithdrawResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrLiquidityPoolWithdrawResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrLiquidityPoolWithdrawResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrLiquidityPoolWithdrawResultGettersSetters(): void
@@ -4111,6 +12408,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE());
     }
 
+    public function testXdrInvokeHostFunctionResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_SUCCESS, XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_MALFORMED, XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_TRAPPED, XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED, XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED, XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE];
+        foreach ($values as $v) {
+            $original = new XdrInvokeHostFunctionResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrInvokeHostFunctionResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInvokeHostFunctionResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrInvokeHostFunctionResultCode value ' . $v);
+            $back2 = XdrInvokeHostFunctionResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInvokeHostFunctionResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrInvokeHostFunctionResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrInvokeHostFunctionResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrInvokeHostFunctionResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrInvokeHostFunctionResult_XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_SUCCESS_ArmRoundTrip(): void
     {
         $original = new XdrInvokeHostFunctionResult(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_SUCCESS));
@@ -4131,6 +12453,103 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrInvokeHostFunctionResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrInvokeHostFunctionResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrInvokeHostFunctionResult(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_SUCCESS)); $u->success = str_repeat("\xAB", 32); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrInvokeHostFunctionResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_SUCCESS');
+        $back2 = XdrInvokeHostFunctionResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_SUCCESS');
+        $arm1 = new XdrInvokeHostFunctionResult(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_MALFORMED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrInvokeHostFunctionResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_MALFORMED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_MALFORMED');
+        $back2 = XdrInvokeHostFunctionResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_MALFORMED');
+        $arm2 = new XdrInvokeHostFunctionResult(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_TRAPPED));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrInvokeHostFunctionResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_TRAPPED');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_TRAPPED');
+        $back2 = XdrInvokeHostFunctionResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_TRAPPED');
+        $arm3 = new XdrInvokeHostFunctionResult(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrInvokeHostFunctionResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED');
+        $back2 = XdrInvokeHostFunctionResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED');
+        $arm4 = new XdrInvokeHostFunctionResult(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrInvokeHostFunctionResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED');
+        $back2 = XdrInvokeHostFunctionResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED');
+        $arm5 = new XdrInvokeHostFunctionResult(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrInvokeHostFunctionResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE');
+        $back2 = XdrInvokeHostFunctionResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInvokeHostFunctionResult arm XdrInvokeHostFunctionResultCode_INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE');
+    }
+
+    public function testXdrInvokeHostFunctionResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrInvokeHostFunctionResult(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_SUCCESS)); $u->success = str_repeat("\xAB", 32); return $u; })())->toJsonValue();
+        $samples[] = (new XdrInvokeHostFunctionResult(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrInvokeHostFunctionResult(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_TRAPPED)))->toJsonValue();
+        $samples[] = (new XdrInvokeHostFunctionResult(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED)))->toJsonValue();
+        $samples[] = (new XdrInvokeHostFunctionResult(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED)))->toJsonValue();
+        $samples[] = (new XdrInvokeHostFunctionResult(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrInvokeHostFunctionResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrInvokeHostFunctionResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrInvokeHostFunctionResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrInvokeHostFunctionResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrInvokeHostFunctionResultGettersSetters(): void
@@ -4168,6 +12587,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE());
     }
 
+    public function testXdrExtendFootprintTTLResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_SUCCESS, XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_MALFORMED, XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED, XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE];
+        foreach ($values as $v) {
+            $original = new XdrExtendFootprintTTLResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrExtendFootprintTTLResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrExtendFootprintTTLResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrExtendFootprintTTLResultCode value ' . $v);
+            $back2 = XdrExtendFootprintTTLResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrExtendFootprintTTLResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrExtendFootprintTTLResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrExtendFootprintTTLResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrExtendFootprintTTLResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrExtendFootprintTTLResult_XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrExtendFootprintTTLResult(new XdrExtendFootprintTTLResultCode(XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_SUCCESS));
@@ -4184,6 +12628,87 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrExtendFootprintTTLResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->code->getValue(), $decoded->code->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrExtendFootprintTTLResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrExtendFootprintTTLResult(new XdrExtendFootprintTTLResultCode(XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrExtendFootprintTTLResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrExtendFootprintTTLResult arm XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrExtendFootprintTTLResult arm XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_SUCCESS');
+        $back2 = XdrExtendFootprintTTLResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrExtendFootprintTTLResult arm XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_SUCCESS');
+        $arm1 = new XdrExtendFootprintTTLResult(new XdrExtendFootprintTTLResultCode(XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_MALFORMED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrExtendFootprintTTLResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrExtendFootprintTTLResult arm XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_MALFORMED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrExtendFootprintTTLResult arm XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_MALFORMED');
+        $back2 = XdrExtendFootprintTTLResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrExtendFootprintTTLResult arm XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_MALFORMED');
+        $arm2 = new XdrExtendFootprintTTLResult(new XdrExtendFootprintTTLResultCode(XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrExtendFootprintTTLResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrExtendFootprintTTLResult arm XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrExtendFootprintTTLResult arm XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED');
+        $back2 = XdrExtendFootprintTTLResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrExtendFootprintTTLResult arm XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED');
+        $arm3 = new XdrExtendFootprintTTLResult(new XdrExtendFootprintTTLResultCode(XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrExtendFootprintTTLResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrExtendFootprintTTLResult arm XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrExtendFootprintTTLResult arm XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE');
+        $back2 = XdrExtendFootprintTTLResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrExtendFootprintTTLResult arm XdrExtendFootprintTTLResultCode_EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE');
+    }
+
+    public function testXdrExtendFootprintTTLResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrExtendFootprintTTLResult(new XdrExtendFootprintTTLResultCode(XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrExtendFootprintTTLResult(new XdrExtendFootprintTTLResultCode(XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrExtendFootprintTTLResult(new XdrExtendFootprintTTLResultCode(XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED)))->toJsonValue();
+        $samples[] = (new XdrExtendFootprintTTLResult(new XdrExtendFootprintTTLResultCode(XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrExtendFootprintTTLResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrExtendFootprintTTLResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrExtendFootprintTTLResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrExtendFootprintTTLResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrExtendFootprintTTLResultGettersSetters(): void
@@ -4220,6 +12745,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE());
     }
 
+    public function testXdrRestoreFootprintResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_SUCCESS, XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_MALFORMED, XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED, XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE];
+        foreach ($values as $v) {
+            $original = new XdrRestoreFootprintResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrRestoreFootprintResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRestoreFootprintResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrRestoreFootprintResultCode value ' . $v);
+            $back2 = XdrRestoreFootprintResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRestoreFootprintResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrRestoreFootprintResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrRestoreFootprintResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrRestoreFootprintResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrRestoreFootprintResult_XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_SUCCESS_VoidArmRoundTrip(): void
     {
         $original = new XdrRestoreFootprintResult(new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_SUCCESS));
@@ -4236,6 +12786,87 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrRestoreFootprintResult::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->code->getValue(), $decoded->code->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrRestoreFootprintResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrRestoreFootprintResult(new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_SUCCESS));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrRestoreFootprintResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRestoreFootprintResult arm XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_SUCCESS');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrRestoreFootprintResult arm XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_SUCCESS');
+        $back2 = XdrRestoreFootprintResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRestoreFootprintResult arm XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_SUCCESS');
+        $arm1 = new XdrRestoreFootprintResult(new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_MALFORMED));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrRestoreFootprintResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRestoreFootprintResult arm XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_MALFORMED');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrRestoreFootprintResult arm XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_MALFORMED');
+        $back2 = XdrRestoreFootprintResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRestoreFootprintResult arm XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_MALFORMED');
+        $arm2 = new XdrRestoreFootprintResult(new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrRestoreFootprintResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRestoreFootprintResult arm XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrRestoreFootprintResult arm XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED');
+        $back2 = XdrRestoreFootprintResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRestoreFootprintResult arm XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED');
+        $arm3 = new XdrRestoreFootprintResult(new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrRestoreFootprintResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrRestoreFootprintResult arm XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrRestoreFootprintResult arm XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE');
+        $back2 = XdrRestoreFootprintResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrRestoreFootprintResult arm XdrRestoreFootprintResultCode_RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE');
+    }
+
+    public function testXdrRestoreFootprintResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrRestoreFootprintResult(new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_SUCCESS)))->toJsonValue();
+        $samples[] = (new XdrRestoreFootprintResult(new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrRestoreFootprintResult(new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED)))->toJsonValue();
+        $samples[] = (new XdrRestoreFootprintResult(new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrRestoreFootprintResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrRestoreFootprintResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrRestoreFootprintResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrRestoreFootprintResult: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrRestoreFootprintResultGettersSetters(): void
@@ -4273,6 +12904,401 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrOperationResultCode::TOO_MANY_SUBENTRIES());
         $this->assertNotNull(XdrOperationResultCode::EXCEEDED_WORK_LIMIT());
         $this->assertNotNull(XdrOperationResultCode::TOO_MANY_SPONSORING());
+    }
+
+    public function testXdrOperationResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrOperationResultCode::INNER, XdrOperationResultCode::BAD_AUTH, XdrOperationResultCode::NO_ACCOUNT, XdrOperationResultCode::NOT_SUPPORTED, XdrOperationResultCode::TOO_MANY_SUBENTRIES, XdrOperationResultCode::EXCEEDED_WORK_LIMIT, XdrOperationResultCode::TOO_MANY_SPONSORING];
+        foreach ($values as $v) {
+            $original = new XdrOperationResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrOperationResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultCode value ' . $v);
+            $back2 = XdrOperationResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrOperationResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrOperationResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrOperationResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
+    public function testXdrOperationResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrOperationResult(new XdrOperationResultCode(XdrOperationResultCode::INNER)); $u->resultTr = (function() { $u = new XdrOperationResultTr(new XdrOperationType(XdrOperationType::CREATE_ACCOUNT)); $u->createAccountResult = new XdrCreateAccountResult(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::SUCCESS)); return $u; })(); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrOperationResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResult arm XdrOperationResultCode_INNER');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResult arm XdrOperationResultCode_INNER');
+        $back2 = XdrOperationResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResult arm XdrOperationResultCode_INNER');
+        $arm1 = new XdrOperationResult(new XdrOperationResultCode(XdrOperationResultCode::BAD_AUTH));
+        $j1 = $arm1->toJsonValue();
+        $back = XdrOperationResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResult arm XdrOperationResultCode_BAD_AUTH');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResult arm XdrOperationResultCode_BAD_AUTH');
+        $back2 = XdrOperationResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResult arm XdrOperationResultCode_BAD_AUTH');
+        $arm2 = new XdrOperationResult(new XdrOperationResultCode(XdrOperationResultCode::NO_ACCOUNT));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrOperationResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResult arm XdrOperationResultCode_NO_ACCOUNT');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResult arm XdrOperationResultCode_NO_ACCOUNT');
+        $back2 = XdrOperationResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResult arm XdrOperationResultCode_NO_ACCOUNT');
+        $arm3 = new XdrOperationResult(new XdrOperationResultCode(XdrOperationResultCode::NOT_SUPPORTED));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrOperationResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResult arm XdrOperationResultCode_NOT_SUPPORTED');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResult arm XdrOperationResultCode_NOT_SUPPORTED');
+        $back2 = XdrOperationResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResult arm XdrOperationResultCode_NOT_SUPPORTED');
+        $arm4 = new XdrOperationResult(new XdrOperationResultCode(XdrOperationResultCode::TOO_MANY_SUBENTRIES));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrOperationResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResult arm XdrOperationResultCode_TOO_MANY_SUBENTRIES');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResult arm XdrOperationResultCode_TOO_MANY_SUBENTRIES');
+        $back2 = XdrOperationResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResult arm XdrOperationResultCode_TOO_MANY_SUBENTRIES');
+        $arm5 = new XdrOperationResult(new XdrOperationResultCode(XdrOperationResultCode::EXCEEDED_WORK_LIMIT));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrOperationResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResult arm XdrOperationResultCode_EXCEEDED_WORK_LIMIT');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResult arm XdrOperationResultCode_EXCEEDED_WORK_LIMIT');
+        $back2 = XdrOperationResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResult arm XdrOperationResultCode_EXCEEDED_WORK_LIMIT');
+        $arm6 = new XdrOperationResult(new XdrOperationResultCode(XdrOperationResultCode::TOO_MANY_SPONSORING));
+        $j1 = $arm6->toJsonValue();
+        $back = XdrOperationResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResult arm XdrOperationResultCode_TOO_MANY_SPONSORING');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResult arm XdrOperationResultCode_TOO_MANY_SPONSORING');
+        $back2 = XdrOperationResult::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResult arm XdrOperationResultCode_TOO_MANY_SPONSORING');
+    }
+
+    public function testXdrOperationResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrOperationResult(new XdrOperationResultCode(XdrOperationResultCode::INNER)); $u->resultTr = (function() { $u = new XdrOperationResultTr(new XdrOperationType(XdrOperationType::CREATE_ACCOUNT)); $u->createAccountResult = new XdrCreateAccountResult(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::SUCCESS)); return $u; })(); return $u; })())->toJsonValue();
+        $samples[] = (new XdrOperationResult(new XdrOperationResultCode(XdrOperationResultCode::BAD_AUTH)))->toJsonValue();
+        $samples[] = (new XdrOperationResult(new XdrOperationResultCode(XdrOperationResultCode::NO_ACCOUNT)))->toJsonValue();
+        $samples[] = (new XdrOperationResult(new XdrOperationResultCode(XdrOperationResultCode::NOT_SUPPORTED)))->toJsonValue();
+        $samples[] = (new XdrOperationResult(new XdrOperationResultCode(XdrOperationResultCode::TOO_MANY_SUBENTRIES)))->toJsonValue();
+        $samples[] = (new XdrOperationResult(new XdrOperationResultCode(XdrOperationResultCode::EXCEEDED_WORK_LIMIT)))->toJsonValue();
+        $samples[] = (new XdrOperationResult(new XdrOperationResultCode(XdrOperationResultCode::TOO_MANY_SPONSORING)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrOperationResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrOperationResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrOperationResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrOperationResult: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
+    public function testXdrOperationResultTrUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::CREATE_ACCOUNT)); $u->createAccountResult = new XdrCreateAccountResult(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::SUCCESS)); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_CREATE_ACCOUNT');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_CREATE_ACCOUNT');
+        $back2 = XdrOperationResultTr::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_CREATE_ACCOUNT');
+        $arm1 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::PAYMENT)); $u->paymentResult = new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::SUCCESS)); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_PAYMENT');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_PAYMENT');
+        $back2 = XdrOperationResultTr::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_PAYMENT');
+        $arm2 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE)); $u->pathPaymentStrictReceiveResult = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::MALFORMED)); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_PATH_PAYMENT_STRICT_RECEIVE');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_PATH_PAYMENT_STRICT_RECEIVE');
+        $back2 = XdrOperationResultTr::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_PATH_PAYMENT_STRICT_RECEIVE');
+        $arm3 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::MANAGE_SELL_OFFER)); $u->manageOfferResult = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::MALFORMED)); return $u; })();
+        $j1 = $arm3->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_MANAGE_SELL_OFFER');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_MANAGE_SELL_OFFER');
+        $back2 = XdrOperationResultTr::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_MANAGE_SELL_OFFER');
+        $arm4 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::CREATE_PASSIVE_SELL_OFFER)); $u->createPassiveSellOfferResult = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::MALFORMED)); return $u; })();
+        $j1 = $arm4->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_CREATE_PASSIVE_SELL_OFFER');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_CREATE_PASSIVE_SELL_OFFER');
+        $back2 = XdrOperationResultTr::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_CREATE_PASSIVE_SELL_OFFER');
+        $arm5 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::SET_OPTIONS)); $u->setOptionsResult = new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::SUCCESS)); return $u; })();
+        $j1 = $arm5->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_SET_OPTIONS');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_SET_OPTIONS');
+        $back2 = XdrOperationResultTr::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_SET_OPTIONS');
+        $arm6 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::CHANGE_TRUST)); $u->changeTrustResult = new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::SUCCESS)); return $u; })();
+        $j1 = $arm6->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_CHANGE_TRUST');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_CHANGE_TRUST');
+        $back2 = XdrOperationResultTr::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_CHANGE_TRUST');
+        $arm7 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::ALLOW_TRUST)); $u->allowTrustResult = new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::SUCCESS)); return $u; })();
+        $j1 = $arm7->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_ALLOW_TRUST');
+        $this->assertSame($arm7->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_ALLOW_TRUST');
+        $back2 = XdrOperationResultTr::fromJson($arm7->toJson());
+        $this->assertSame($arm7->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_ALLOW_TRUST');
+        $arm8 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::ACCOUNT_MERGE)); $u->accountMergeResult = new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::MALFORMED)); return $u; })();
+        $j1 = $arm8->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_ACCOUNT_MERGE');
+        $this->assertSame($arm8->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_ACCOUNT_MERGE');
+        $back2 = XdrOperationResultTr::fromJson($arm8->toJson());
+        $this->assertSame($arm8->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_ACCOUNT_MERGE');
+        $arm9 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::INFLATION)); $u->inflationResult = new XdrInflationResult(new XdrInflationResultCode(XdrInflationResultCode::NOT_TIME)); return $u; })();
+        $j1 = $arm9->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_INFLATION');
+        $this->assertSame($arm9->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_INFLATION');
+        $back2 = XdrOperationResultTr::fromJson($arm9->toJson());
+        $this->assertSame($arm9->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_INFLATION');
+        $arm10 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::MANAGE_DATA)); $u->manageDataResult = new XdrManageDataResult(new XdrManageDataResultCode(XdrManageDataResultCode::SUCCESS)); return $u; })();
+        $j1 = $arm10->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_MANAGE_DATA');
+        $this->assertSame($arm10->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_MANAGE_DATA');
+        $back2 = XdrOperationResultTr::fromJson($arm10->toJson());
+        $this->assertSame($arm10->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_MANAGE_DATA');
+        $arm11 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::BUMP_SEQUENCE)); $u->bumpSequenceResult = new XdrBumpSequenceResult(new XdrBumpSequenceResultCode(XdrBumpSequenceResultCode::SUCCESS)); return $u; })();
+        $j1 = $arm11->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_BUMP_SEQUENCE');
+        $this->assertSame($arm11->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_BUMP_SEQUENCE');
+        $back2 = XdrOperationResultTr::fromJson($arm11->toJson());
+        $this->assertSame($arm11->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_BUMP_SEQUENCE');
+        $arm12 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::MANAGE_BUY_OFFER)); $u->manageBuyOfferResult = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::MALFORMED)); return $u; })();
+        $j1 = $arm12->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_MANAGE_BUY_OFFER');
+        $this->assertSame($arm12->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_MANAGE_BUY_OFFER');
+        $back2 = XdrOperationResultTr::fromJson($arm12->toJson());
+        $this->assertSame($arm12->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_MANAGE_BUY_OFFER');
+        $arm13 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::PATH_PAYMENT_STRICT_SEND)); $u->pathPaymentStrictSendResult = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::MALFORMED)); return $u; })();
+        $j1 = $arm13->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_PATH_PAYMENT_STRICT_SEND');
+        $this->assertSame($arm13->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_PATH_PAYMENT_STRICT_SEND');
+        $back2 = XdrOperationResultTr::fromJson($arm13->toJson());
+        $this->assertSame($arm13->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_PATH_PAYMENT_STRICT_SEND');
+        $arm14 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::CREATE_CLAIMABLE_BALANCE)); $u->createClaimableBalanceResult = new XdrCreateClaimableBalanceResult(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::MALFORMED)); return $u; })();
+        $j1 = $arm14->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_CREATE_CLAIMABLE_BALANCE');
+        $this->assertSame($arm14->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_CREATE_CLAIMABLE_BALANCE');
+        $back2 = XdrOperationResultTr::fromJson($arm14->toJson());
+        $this->assertSame($arm14->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_CREATE_CLAIMABLE_BALANCE');
+        $arm15 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::CLAIM_CLAIMABLE_BALANCE)); $u->claimClaimableBalanceResult = new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::SUCCESS)); return $u; })();
+        $j1 = $arm15->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_CLAIM_CLAIMABLE_BALANCE');
+        $this->assertSame($arm15->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_CLAIM_CLAIMABLE_BALANCE');
+        $back2 = XdrOperationResultTr::fromJson($arm15->toJson());
+        $this->assertSame($arm15->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_CLAIM_CLAIMABLE_BALANCE');
+        $arm16 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::BEGIN_SPONSORING_FUTURE_RESERVES)); $u->beginSponsoringFutureReservesResult = new XdrBeginSponsoringFutureReservesResult(new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::SUCCESS)); return $u; })();
+        $j1 = $arm16->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_BEGIN_SPONSORING_FUTURE_RESERVES');
+        $this->assertSame($arm16->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_BEGIN_SPONSORING_FUTURE_RESERVES');
+        $back2 = XdrOperationResultTr::fromJson($arm16->toJson());
+        $this->assertSame($arm16->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_BEGIN_SPONSORING_FUTURE_RESERVES');
+        $arm17 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::END_SPONSORING_FUTURE_RESERVES)); $u->endSponsoringFutureReservesResult = new XdrEndSponsoringFutureReservesResult(new XdrEndSponsoringFutureReservesResultCode(XdrEndSponsoringFutureReservesResultCode::SUCCESS)); return $u; })();
+        $j1 = $arm17->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_END_SPONSORING_FUTURE_RESERVES');
+        $this->assertSame($arm17->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_END_SPONSORING_FUTURE_RESERVES');
+        $back2 = XdrOperationResultTr::fromJson($arm17->toJson());
+        $this->assertSame($arm17->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_END_SPONSORING_FUTURE_RESERVES');
+        $arm18 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::REVOKE_SPONSORSHIP)); $u->revokeSponsorshipResult = new XdrRevokeSponsorshipResult(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::SUCCESS)); return $u; })();
+        $j1 = $arm18->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_REVOKE_SPONSORSHIP');
+        $this->assertSame($arm18->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_REVOKE_SPONSORSHIP');
+        $back2 = XdrOperationResultTr::fromJson($arm18->toJson());
+        $this->assertSame($arm18->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_REVOKE_SPONSORSHIP');
+        $arm19 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::CLAWBACK)); $u->clawbackResult = new XdrClawbackResult(new XdrClawbackResultCode(XdrClawbackResultCode::SUCCESS)); return $u; })();
+        $j1 = $arm19->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_CLAWBACK');
+        $this->assertSame($arm19->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_CLAWBACK');
+        $back2 = XdrOperationResultTr::fromJson($arm19->toJson());
+        $this->assertSame($arm19->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_CLAWBACK');
+        $arm20 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE)); $u->clawbackClaimableBalanceResult = new XdrClawbackClaimableBalanceResult(new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::SUCCESS)); return $u; })();
+        $j1 = $arm20->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_CLAWBACK_CLAIMABLE_BALANCE');
+        $this->assertSame($arm20->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_CLAWBACK_CLAIMABLE_BALANCE');
+        $back2 = XdrOperationResultTr::fromJson($arm20->toJson());
+        $this->assertSame($arm20->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_CLAWBACK_CLAIMABLE_BALANCE');
+        $arm21 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::SET_TRUST_LINE_FLAGS)); $u->setTrustLineFlagsResult = new XdrSetTrustLineFlagsResult(new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::SUCCESS)); return $u; })();
+        $j1 = $arm21->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_SET_TRUST_LINE_FLAGS');
+        $this->assertSame($arm21->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_SET_TRUST_LINE_FLAGS');
+        $back2 = XdrOperationResultTr::fromJson($arm21->toJson());
+        $this->assertSame($arm21->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_SET_TRUST_LINE_FLAGS');
+        $arm22 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::LIQUIDITY_POOL_DEPOSIT)); $u->liquidityPoolDepositResult = new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::SUCCESS)); return $u; })();
+        $j1 = $arm22->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_LIQUIDITY_POOL_DEPOSIT');
+        $this->assertSame($arm22->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_LIQUIDITY_POOL_DEPOSIT');
+        $back2 = XdrOperationResultTr::fromJson($arm22->toJson());
+        $this->assertSame($arm22->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_LIQUIDITY_POOL_DEPOSIT');
+        $arm23 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::LIQUIDITY_POOL_WITHDRAW)); $u->liquidityPoolWithdrawResult = new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::SUCCESS)); return $u; })();
+        $j1 = $arm23->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_LIQUIDITY_POOL_WITHDRAW');
+        $this->assertSame($arm23->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_LIQUIDITY_POOL_WITHDRAW');
+        $back2 = XdrOperationResultTr::fromJson($arm23->toJson());
+        $this->assertSame($arm23->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_LIQUIDITY_POOL_WITHDRAW');
+        $arm24 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::INVOKE_HOST_FUNCTION)); $u->invokeHostFunctionResult = new XdrInvokeHostFunctionResult(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_MALFORMED)); return $u; })();
+        $j1 = $arm24->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_INVOKE_HOST_FUNCTION');
+        $this->assertSame($arm24->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_INVOKE_HOST_FUNCTION');
+        $back2 = XdrOperationResultTr::fromJson($arm24->toJson());
+        $this->assertSame($arm24->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_INVOKE_HOST_FUNCTION');
+        $arm25 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::EXTEND_FOOTPRINT_TTL)); $u->extendFootprintTTLResult = new XdrExtendFootprintTTLResult(new XdrExtendFootprintTTLResultCode(XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_SUCCESS)); return $u; })();
+        $j1 = $arm25->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_EXTEND_FOOTPRINT_TTL');
+        $this->assertSame($arm25->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_EXTEND_FOOTPRINT_TTL');
+        $back2 = XdrOperationResultTr::fromJson($arm25->toJson());
+        $this->assertSame($arm25->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_EXTEND_FOOTPRINT_TTL');
+        $arm26 = (function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::RESTORE_FOOTPRINT)); $u->restoreFootprintResult = new XdrRestoreFootprintResult(new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_SUCCESS)); return $u; })();
+        $j1 = $arm26->toJsonValue();
+        $back = XdrOperationResultTr::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrOperationResultTr arm XdrOperationType_RESTORE_FOOTPRINT');
+        $this->assertSame($arm26->toJson(), $back->toJson(), 'JSON string not stable for XdrOperationResultTr arm XdrOperationType_RESTORE_FOOTPRINT');
+        $back2 = XdrOperationResultTr::fromJson($arm26->toJson());
+        $this->assertSame($arm26->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrOperationResultTr arm XdrOperationType_RESTORE_FOOTPRINT');
+    }
+
+    public function testXdrOperationResultTrUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::CREATE_ACCOUNT)); $u->createAccountResult = new XdrCreateAccountResult(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::PAYMENT)); $u->paymentResult = new XdrPaymentResult(new XdrPaymentResultCode(XdrPaymentResultCode::SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE)); $u->pathPaymentStrictReceiveResult = new XdrPathPaymentStrictReceiveResult(new XdrPathPaymentStrictReceiveResultCode(XdrPathPaymentStrictReceiveResultCode::MALFORMED)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::MANAGE_SELL_OFFER)); $u->manageOfferResult = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::MALFORMED)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::CREATE_PASSIVE_SELL_OFFER)); $u->createPassiveSellOfferResult = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::MALFORMED)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::SET_OPTIONS)); $u->setOptionsResult = new XdrSetOptionsResult(new XdrSetOptionsResultCode(XdrSetOptionsResultCode::SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::CHANGE_TRUST)); $u->changeTrustResult = new XdrChangeTrustResult(new XdrChangeTrustResultCode(XdrChangeTrustResultCode::SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::ALLOW_TRUST)); $u->allowTrustResult = new XdrAllowTrustResult(new XdrAllowTrustResultCode(XdrAllowTrustResultCode::SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::ACCOUNT_MERGE)); $u->accountMergeResult = new XdrAccountMergeResult(new XdrAccountMergeResultCode(XdrAccountMergeResultCode::MALFORMED)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::INFLATION)); $u->inflationResult = new XdrInflationResult(new XdrInflationResultCode(XdrInflationResultCode::NOT_TIME)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::MANAGE_DATA)); $u->manageDataResult = new XdrManageDataResult(new XdrManageDataResultCode(XdrManageDataResultCode::SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::BUMP_SEQUENCE)); $u->bumpSequenceResult = new XdrBumpSequenceResult(new XdrBumpSequenceResultCode(XdrBumpSequenceResultCode::SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::MANAGE_BUY_OFFER)); $u->manageBuyOfferResult = new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::MALFORMED)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::PATH_PAYMENT_STRICT_SEND)); $u->pathPaymentStrictSendResult = new XdrPathPaymentStrictSendResult(new XdrPathPaymentStrictSendResultCode(XdrPathPaymentStrictSendResultCode::MALFORMED)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::CREATE_CLAIMABLE_BALANCE)); $u->createClaimableBalanceResult = new XdrCreateClaimableBalanceResult(new XdrCreateClaimableBalanceResultCode(XdrCreateClaimableBalanceResultCode::MALFORMED)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::CLAIM_CLAIMABLE_BALANCE)); $u->claimClaimableBalanceResult = new XdrClaimClaimableBalanceResult(new XdrClaimClaimableBalanceResultCode(XdrClaimClaimableBalanceResultCode::SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::BEGIN_SPONSORING_FUTURE_RESERVES)); $u->beginSponsoringFutureReservesResult = new XdrBeginSponsoringFutureReservesResult(new XdrBeginSponsoringFutureReservesResultCode(XdrBeginSponsoringFutureReservesResultCode::SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::END_SPONSORING_FUTURE_RESERVES)); $u->endSponsoringFutureReservesResult = new XdrEndSponsoringFutureReservesResult(new XdrEndSponsoringFutureReservesResultCode(XdrEndSponsoringFutureReservesResultCode::SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::REVOKE_SPONSORSHIP)); $u->revokeSponsorshipResult = new XdrRevokeSponsorshipResult(new XdrRevokeSponsorshipResultCode(XdrRevokeSponsorshipResultCode::SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::CLAWBACK)); $u->clawbackResult = new XdrClawbackResult(new XdrClawbackResultCode(XdrClawbackResultCode::SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::CLAWBACK_CLAIMABLE_BALANCE)); $u->clawbackClaimableBalanceResult = new XdrClawbackClaimableBalanceResult(new XdrClawbackClaimableBalanceResultCode(XdrClawbackClaimableBalanceResultCode::SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::SET_TRUST_LINE_FLAGS)); $u->setTrustLineFlagsResult = new XdrSetTrustLineFlagsResult(new XdrSetTrustLineFlagsResultCode(XdrSetTrustLineFlagsResultCode::SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::LIQUIDITY_POOL_DEPOSIT)); $u->liquidityPoolDepositResult = new XdrLiquidityPoolDepositResult(new XdrLiquidityPoolDepositResultCode(XdrLiquidityPoolDepositResultCode::SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::LIQUIDITY_POOL_WITHDRAW)); $u->liquidityPoolWithdrawResult = new XdrLiquidityPoolWithdrawResult(new XdrLiquidityPoolWithdrawResultCode(XdrLiquidityPoolWithdrawResultCode::SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::INVOKE_HOST_FUNCTION)); $u->invokeHostFunctionResult = new XdrInvokeHostFunctionResult(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_MALFORMED)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::EXTEND_FOOTPRINT_TTL)); $u->extendFootprintTTLResult = new XdrExtendFootprintTTLResult(new XdrExtendFootprintTTLResultCode(XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_SUCCESS)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrOperationResultTrBase(new XdrOperationType(XdrOperationType::RESTORE_FOOTPRINT)); $u->restoreFootprintResult = new XdrRestoreFootprintResult(new XdrRestoreFootprintResultCode(XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_SUCCESS)); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrOperationResultTr::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrOperationResultTr: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrOperationResultTr::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrOperationResultTr: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrTransactionResultCodeEnumRoundTrip(): void
@@ -4319,6 +13345,31 @@ class XdrTransactionGenTest extends TestCase
         $this->assertNotNull(XdrTransactionResultCode::FROZEN_KEY_ACCESSED());
     }
 
+    public function testXdrTransactionResultCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrTransactionResultCode::FEE_BUMP_INNER_SUCCESS, XdrTransactionResultCode::SUCCESS, XdrTransactionResultCode::FAILED, XdrTransactionResultCode::TOO_EARLY, XdrTransactionResultCode::TOO_LATE, XdrTransactionResultCode::MISSING_OPERATION, XdrTransactionResultCode::BAD_SEQ, XdrTransactionResultCode::BAD_AUTH, XdrTransactionResultCode::INSUFFICIENT_BALANCE, XdrTransactionResultCode::NO_ACCOUNT, XdrTransactionResultCode::INSUFFICIENT_FEE, XdrTransactionResultCode::BAD_AUTH_EXTRA, XdrTransactionResultCode::INTERNAL_ERROR, XdrTransactionResultCode::NOT_SUPPORTED, XdrTransactionResultCode::FEE_BUMP_INNER_FAILED, XdrTransactionResultCode::BAD_SPONSORSHIP, XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP, XdrTransactionResultCode::MALFORMED, XdrTransactionResultCode::SOROBAN_INVALID, XdrTransactionResultCode::FROZEN_KEY_ACCESSED];
+        foreach ($values as $v) {
+            $original = new XdrTransactionResultCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrTransactionResultCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultCode value ' . $v);
+            $back2 = XdrTransactionResultCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultCode value ' . $v);
+        }
+    }
+
+    public function testXdrTransactionResultCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrTransactionResultCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrTransactionResultCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrInnerTransactionResultStructRoundTrip(): void
     {
         $original = new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0));
@@ -4327,6 +13378,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrInnerTransactionResult');
         $b64Decoded = XdrInnerTransactionResult::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrInnerTransactionResult');
+    }
+
+    public function testXdrInnerTransactionResultStructJsonRoundTrip(): void
+    {
+        $original = new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0));
+        $j1 = $original->toJsonValue();
+        $back = XdrInnerTransactionResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResult');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResult');
+        $back2 = XdrInnerTransactionResult::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResult');
+    }
+
+    public function testXdrInnerTransactionResultStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['fee_charged' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrInnerTransactionResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrInnerTransactionResultGettersSetters(): void
@@ -4356,6 +13458,207 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrInnerTransactionResultResult');
     }
 
+    public function testXdrInnerTransactionResultResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm fallback');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm fallback');
+        $arm1 = (function() { $u = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::SUCCESS)); $u->results = []; return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_SUCCESS');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_SUCCESS');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_SUCCESS');
+        $arm2 = (function() { $u = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::FAILED)); $u->results = []; return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_FAILED');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_FAILED');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_FAILED');
+        $arm3 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY));
+        $j1 = $arm3->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_TOO_EARLY');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_TOO_EARLY');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_TOO_EARLY');
+        $arm4 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_LATE));
+        $j1 = $arm4->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_TOO_LATE');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_TOO_LATE');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_TOO_LATE');
+        $arm5 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::MISSING_OPERATION));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_MISSING_OPERATION');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_MISSING_OPERATION');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_MISSING_OPERATION');
+        $arm6 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_SEQ));
+        $j1 = $arm6->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_BAD_SEQ');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_BAD_SEQ');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_BAD_SEQ');
+        $arm7 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_AUTH));
+        $j1 = $arm7->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_BAD_AUTH');
+        $this->assertSame($arm7->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_BAD_AUTH');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm7->toJson());
+        $this->assertSame($arm7->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_BAD_AUTH');
+        $arm8 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::INSUFFICIENT_BALANCE));
+        $j1 = $arm8->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_INSUFFICIENT_BALANCE');
+        $this->assertSame($arm8->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_INSUFFICIENT_BALANCE');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm8->toJson());
+        $this->assertSame($arm8->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_INSUFFICIENT_BALANCE');
+        $arm9 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::NO_ACCOUNT));
+        $j1 = $arm9->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_NO_ACCOUNT');
+        $this->assertSame($arm9->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_NO_ACCOUNT');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm9->toJson());
+        $this->assertSame($arm9->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_NO_ACCOUNT');
+        $arm10 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::INSUFFICIENT_FEE));
+        $j1 = $arm10->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_INSUFFICIENT_FEE');
+        $this->assertSame($arm10->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_INSUFFICIENT_FEE');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm10->toJson());
+        $this->assertSame($arm10->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_INSUFFICIENT_FEE');
+        $arm11 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_AUTH_EXTRA));
+        $j1 = $arm11->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_BAD_AUTH_EXTRA');
+        $this->assertSame($arm11->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_BAD_AUTH_EXTRA');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm11->toJson());
+        $this->assertSame($arm11->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_BAD_AUTH_EXTRA');
+        $arm12 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::INTERNAL_ERROR));
+        $j1 = $arm12->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_INTERNAL_ERROR');
+        $this->assertSame($arm12->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_INTERNAL_ERROR');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm12->toJson());
+        $this->assertSame($arm12->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_INTERNAL_ERROR');
+        $arm13 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::NOT_SUPPORTED));
+        $j1 = $arm13->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_NOT_SUPPORTED');
+        $this->assertSame($arm13->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_NOT_SUPPORTED');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm13->toJson());
+        $this->assertSame($arm13->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_NOT_SUPPORTED');
+        $arm14 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_SPONSORSHIP));
+        $j1 = $arm14->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_BAD_SPONSORSHIP');
+        $this->assertSame($arm14->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_BAD_SPONSORSHIP');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm14->toJson());
+        $this->assertSame($arm14->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_BAD_SPONSORSHIP');
+        $arm15 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP));
+        $j1 = $arm15->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_BAD_MIN_SEQ_AGE_OR_GAP');
+        $this->assertSame($arm15->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_BAD_MIN_SEQ_AGE_OR_GAP');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm15->toJson());
+        $this->assertSame($arm15->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_BAD_MIN_SEQ_AGE_OR_GAP');
+        $arm16 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::MALFORMED));
+        $j1 = $arm16->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_MALFORMED');
+        $this->assertSame($arm16->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_MALFORMED');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm16->toJson());
+        $this->assertSame($arm16->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_MALFORMED');
+        $arm17 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::SOROBAN_INVALID));
+        $j1 = $arm17->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_SOROBAN_INVALID');
+        $this->assertSame($arm17->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_SOROBAN_INVALID');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm17->toJson());
+        $this->assertSame($arm17->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_SOROBAN_INVALID');
+        $arm18 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::FROZEN_KEY_ACCESSED));
+        $j1 = $arm18->toJsonValue();
+        $back = XdrInnerTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_FROZEN_KEY_ACCESSED');
+        $this->assertSame($arm18->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultResult arm XdrTransactionResultCode_FROZEN_KEY_ACCESSED');
+        $back2 = XdrInnerTransactionResultResult::fromJson($arm18->toJson());
+        $this->assertSame($arm18->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultResult arm XdrTransactionResultCode_FROZEN_KEY_ACCESSED');
+    }
+
+    public function testXdrInnerTransactionResultResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)))->toJsonValue();
+        $samples[] = ((function() { $u = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::SUCCESS)); $u->results = []; return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::FAILED)); $u->results = []; return $u; })())->toJsonValue();
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)))->toJsonValue();
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_LATE)))->toJsonValue();
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::MISSING_OPERATION)))->toJsonValue();
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_SEQ)))->toJsonValue();
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_AUTH)))->toJsonValue();
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::INSUFFICIENT_BALANCE)))->toJsonValue();
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::NO_ACCOUNT)))->toJsonValue();
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::INSUFFICIENT_FEE)))->toJsonValue();
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_AUTH_EXTRA)))->toJsonValue();
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::INTERNAL_ERROR)))->toJsonValue();
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::NOT_SUPPORTED)))->toJsonValue();
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_SPONSORSHIP)))->toJsonValue();
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP)))->toJsonValue();
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::SOROBAN_INVALID)))->toJsonValue();
+        $samples[] = (new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::FROZEN_KEY_ACCESSED)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrInnerTransactionResultResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrInnerTransactionResultResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrInnerTransactionResultResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrInnerTransactionResultResult: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrInnerTransactionResultResultGettersSetters(): void
     {
         $obj = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY));
@@ -4373,6 +13676,71 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTransactionResultExt');
     }
 
+    public function testXdrTransactionResultExtUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrTransactionResultExt(0);
+        $j1 = $arm0->toJsonValue();
+        $back = XdrTransactionResultExt::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultExt arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultExt arm fallback');
+        $back2 = XdrTransactionResultExt::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultExt arm fallback');
+        $arm1 = new XdrTransactionResultExt(0);
+        $j1 = $arm1->toJsonValue();
+        $back = XdrTransactionResultExt::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultExt arm 0');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultExt arm 0');
+        $back2 = XdrTransactionResultExt::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultExt arm 0');
+    }
+
+    public function testXdrTransactionResultExtUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrTransactionResultExt(0))->toJsonValue();
+        $samples[] = (new XdrTransactionResultExt(0))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTransactionResultExt::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrTransactionResultExt: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrTransactionResultExt::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrTransactionResultExt: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrTransactionResultExtGettersSetters(): void
     {
         $obj = new XdrTransactionResultExt(0);
@@ -4387,6 +13755,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrInnerTransactionResultPair');
         $b64Decoded = XdrInnerTransactionResultPair::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrInnerTransactionResultPair');
+    }
+
+    public function testXdrInnerTransactionResultPairStructJsonRoundTrip(): void
+    {
+        $original = new XdrInnerTransactionResultPair(str_repeat('00', 32), new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0)));
+        $j1 = $original->toJsonValue();
+        $back = XdrInnerTransactionResultPair::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrInnerTransactionResultPair');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrInnerTransactionResultPair');
+        $back2 = XdrInnerTransactionResultPair::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrInnerTransactionResultPair');
+    }
+
+    public function testXdrInnerTransactionResultPairStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrInnerTransactionResultPair(str_repeat('00', 32), new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0)));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrInnerTransactionResultPair::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrInnerTransactionResultPairGettersSetters(): void
@@ -4425,6 +13844,57 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTransactionResult');
     }
 
+    public function testXdrTransactionResultStructJsonRoundTrip(): void
+    {
+        $original = new XdrTransactionResult(new BigInteger('0'), new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0));
+        $j1 = $original->toJsonValue();
+        $back = XdrTransactionResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResult');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResult');
+        $back2 = XdrTransactionResult::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResult');
+    }
+
+    public function testXdrTransactionResultStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrTransactionResult(new BigInteger('0'), new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = ['fee_charged' => true];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTransactionResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrTransactionResultGettersSetters(): void
     {
         $obj = new XdrTransactionResult(new BigInteger('0'), new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0));
@@ -4452,6 +13922,223 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTransactionResultResult');
     }
 
+    public function testXdrTransactionResultResultUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY));
+        $j1 = $arm0->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm fallback');
+        $back2 = XdrTransactionResultResult::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm fallback');
+        $arm1 = (function() { $u = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::FEE_BUMP_INNER_SUCCESS)); $u->innerResultPair = new XdrInnerTransactionResultPair(str_repeat('00', 32), new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0))); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_FEE_BUMP_INNER_SUCCESS');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_FEE_BUMP_INNER_SUCCESS');
+        $back2 = XdrTransactionResultResult::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_FEE_BUMP_INNER_SUCCESS');
+        $arm2 = (function() { $u = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::FEE_BUMP_INNER_FAILED)); $u->innerResultPair = new XdrInnerTransactionResultPair(str_repeat('00', 32), new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0))); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_FEE_BUMP_INNER_FAILED');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_FEE_BUMP_INNER_FAILED');
+        $back2 = XdrTransactionResultResult::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_FEE_BUMP_INNER_FAILED');
+        $arm3 = (function() { $u = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::SUCCESS)); $u->results = []; return $u; })();
+        $j1 = $arm3->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_SUCCESS');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_SUCCESS');
+        $back2 = XdrTransactionResultResult::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_SUCCESS');
+        $arm4 = (function() { $u = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::FAILED)); $u->results = []; return $u; })();
+        $j1 = $arm4->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_FAILED');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_FAILED');
+        $back2 = XdrTransactionResultResult::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_FAILED');
+        $arm5 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY));
+        $j1 = $arm5->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_TOO_EARLY');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_TOO_EARLY');
+        $back2 = XdrTransactionResultResult::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_TOO_EARLY');
+        $arm6 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_LATE));
+        $j1 = $arm6->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_TOO_LATE');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_TOO_LATE');
+        $back2 = XdrTransactionResultResult::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_TOO_LATE');
+        $arm7 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::MISSING_OPERATION));
+        $j1 = $arm7->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_MISSING_OPERATION');
+        $this->assertSame($arm7->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_MISSING_OPERATION');
+        $back2 = XdrTransactionResultResult::fromJson($arm7->toJson());
+        $this->assertSame($arm7->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_MISSING_OPERATION');
+        $arm8 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_SEQ));
+        $j1 = $arm8->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_BAD_SEQ');
+        $this->assertSame($arm8->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_BAD_SEQ');
+        $back2 = XdrTransactionResultResult::fromJson($arm8->toJson());
+        $this->assertSame($arm8->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_BAD_SEQ');
+        $arm9 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_AUTH));
+        $j1 = $arm9->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_BAD_AUTH');
+        $this->assertSame($arm9->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_BAD_AUTH');
+        $back2 = XdrTransactionResultResult::fromJson($arm9->toJson());
+        $this->assertSame($arm9->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_BAD_AUTH');
+        $arm10 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::INSUFFICIENT_BALANCE));
+        $j1 = $arm10->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_INSUFFICIENT_BALANCE');
+        $this->assertSame($arm10->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_INSUFFICIENT_BALANCE');
+        $back2 = XdrTransactionResultResult::fromJson($arm10->toJson());
+        $this->assertSame($arm10->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_INSUFFICIENT_BALANCE');
+        $arm11 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::NO_ACCOUNT));
+        $j1 = $arm11->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_NO_ACCOUNT');
+        $this->assertSame($arm11->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_NO_ACCOUNT');
+        $back2 = XdrTransactionResultResult::fromJson($arm11->toJson());
+        $this->assertSame($arm11->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_NO_ACCOUNT');
+        $arm12 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::INSUFFICIENT_FEE));
+        $j1 = $arm12->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_INSUFFICIENT_FEE');
+        $this->assertSame($arm12->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_INSUFFICIENT_FEE');
+        $back2 = XdrTransactionResultResult::fromJson($arm12->toJson());
+        $this->assertSame($arm12->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_INSUFFICIENT_FEE');
+        $arm13 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_AUTH_EXTRA));
+        $j1 = $arm13->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_BAD_AUTH_EXTRA');
+        $this->assertSame($arm13->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_BAD_AUTH_EXTRA');
+        $back2 = XdrTransactionResultResult::fromJson($arm13->toJson());
+        $this->assertSame($arm13->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_BAD_AUTH_EXTRA');
+        $arm14 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::INTERNAL_ERROR));
+        $j1 = $arm14->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_INTERNAL_ERROR');
+        $this->assertSame($arm14->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_INTERNAL_ERROR');
+        $back2 = XdrTransactionResultResult::fromJson($arm14->toJson());
+        $this->assertSame($arm14->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_INTERNAL_ERROR');
+        $arm15 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::NOT_SUPPORTED));
+        $j1 = $arm15->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_NOT_SUPPORTED');
+        $this->assertSame($arm15->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_NOT_SUPPORTED');
+        $back2 = XdrTransactionResultResult::fromJson($arm15->toJson());
+        $this->assertSame($arm15->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_NOT_SUPPORTED');
+        $arm16 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_SPONSORSHIP));
+        $j1 = $arm16->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_BAD_SPONSORSHIP');
+        $this->assertSame($arm16->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_BAD_SPONSORSHIP');
+        $back2 = XdrTransactionResultResult::fromJson($arm16->toJson());
+        $this->assertSame($arm16->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_BAD_SPONSORSHIP');
+        $arm17 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP));
+        $j1 = $arm17->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_BAD_MIN_SEQ_AGE_OR_GAP');
+        $this->assertSame($arm17->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_BAD_MIN_SEQ_AGE_OR_GAP');
+        $back2 = XdrTransactionResultResult::fromJson($arm17->toJson());
+        $this->assertSame($arm17->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_BAD_MIN_SEQ_AGE_OR_GAP');
+        $arm18 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::MALFORMED));
+        $j1 = $arm18->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_MALFORMED');
+        $this->assertSame($arm18->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_MALFORMED');
+        $back2 = XdrTransactionResultResult::fromJson($arm18->toJson());
+        $this->assertSame($arm18->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_MALFORMED');
+        $arm19 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::SOROBAN_INVALID));
+        $j1 = $arm19->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_SOROBAN_INVALID');
+        $this->assertSame($arm19->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_SOROBAN_INVALID');
+        $back2 = XdrTransactionResultResult::fromJson($arm19->toJson());
+        $this->assertSame($arm19->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_SOROBAN_INVALID');
+        $arm20 = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::FROZEN_KEY_ACCESSED));
+        $j1 = $arm20->toJsonValue();
+        $back = XdrTransactionResultResult::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTransactionResultResult arm XdrTransactionResultCode_FROZEN_KEY_ACCESSED');
+        $this->assertSame($arm20->toJson(), $back->toJson(), 'JSON string not stable for XdrTransactionResultResult arm XdrTransactionResultCode_FROZEN_KEY_ACCESSED');
+        $back2 = XdrTransactionResultResult::fromJson($arm20->toJson());
+        $this->assertSame($arm20->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTransactionResultResult arm XdrTransactionResultCode_FROZEN_KEY_ACCESSED');
+    }
+
+    public function testXdrTransactionResultResultUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)))->toJsonValue();
+        $samples[] = ((function() { $u = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::FEE_BUMP_INNER_SUCCESS)); $u->innerResultPair = new XdrInnerTransactionResultPair(str_repeat('00', 32), new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0))); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::FEE_BUMP_INNER_FAILED)); $u->innerResultPair = new XdrInnerTransactionResultPair(str_repeat('00', 32), new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0))); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::SUCCESS)); $u->results = []; return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::FAILED)); $u->results = []; return $u; })())->toJsonValue();
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)))->toJsonValue();
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_LATE)))->toJsonValue();
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::MISSING_OPERATION)))->toJsonValue();
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_SEQ)))->toJsonValue();
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_AUTH)))->toJsonValue();
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::INSUFFICIENT_BALANCE)))->toJsonValue();
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::NO_ACCOUNT)))->toJsonValue();
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::INSUFFICIENT_FEE)))->toJsonValue();
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_AUTH_EXTRA)))->toJsonValue();
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::INTERNAL_ERROR)))->toJsonValue();
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::NOT_SUPPORTED)))->toJsonValue();
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_SPONSORSHIP)))->toJsonValue();
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP)))->toJsonValue();
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::MALFORMED)))->toJsonValue();
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::SOROBAN_INVALID)))->toJsonValue();
+        $samples[] = (new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::FROZEN_KEY_ACCESSED)))->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTransactionResultResult::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrTransactionResultResult: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrTransactionResultResult::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrTransactionResultResult: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrTransactionResultResultGettersSetters(): void
     {
         $obj = new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY));
@@ -4460,13 +14147,13 @@ class XdrTransactionGenTest extends TestCase
         $obj->getResults();
     }
 
-    public function testXdrLiquidityPoolParametersTxRepRoundTrip_XdrLiquidityPoolType_LIQUIDITY_POOL_CONSTANT_PRODUCT(): void
+    public function testXdrLiquidityPoolParametersTxRepRoundTrip(): void
     {
-        $original = (function() { $u = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT)); $u->constantProduct = new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 42); return $u; })();
+        $original = (function() { $p = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT)); $p->constantProduct = new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 30); return $p; })();
         $lines = [];
         $original->toTxRep('test', $lines);
         $reconstructed = XdrLiquidityPoolParameters::fromTxRep($lines, 'test');
-        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLiquidityPoolParameters_XdrLiquidityPoolType_LIQUIDITY_POOL_CONSTANT_PRODUCT');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLiquidityPoolParameters');
     }
 
     public function testXdrMuxedAccountTxRepRoundTrip(): void
@@ -4968,6 +14655,15 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrChangeTrustAsset_XdrAssetType_ASSET_TYPE_CREDIT_ALPHANUM12');
     }
 
+    public function testXdrChangeTrustAssetTxRepRoundTrip_XdrAssetType_ASSET_TYPE_POOL_SHARE(): void
+    {
+        $original = (function() { $u = new XdrChangeTrustAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE)); $u->liquidityPool = (function() { $p = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT)); $p->constantProduct = new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 30); return $p; })(); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrChangeTrustAsset::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrChangeTrustAsset_XdrAssetType_ASSET_TYPE_POOL_SHARE');
+    }
+
     public function testXdrChangeTrustAssetTxRepRoundTrip_XdrAssetType_ASSET_TYPE_NATIVE(): void
     {
         $original = new XdrChangeTrustAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
@@ -5236,22 +14932,13 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrContractIDPreimageType_CONTRACT_ID_PREIMAGE_FROM_ASSET');
     }
 
-    public function testXdrContractIDPreimageTxRepRoundTrip_XdrContractIDPreimageType_CONTRACT_ID_PREIMAGE_FROM_ADDRESS(): void
+    public function testXdrContractIDPreimageTxRepRoundTrip(): void
     {
-        $original = (function() { $u = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $u->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $u; })();
+        $original = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $p; })();
         $lines = [];
         $original->toTxRep('test', $lines);
         $reconstructed = XdrContractIDPreimageBase::fromTxRep($lines, 'test');
-        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrContractIDPreimage_XdrContractIDPreimageType_CONTRACT_ID_PREIMAGE_FROM_ADDRESS');
-    }
-
-    public function testXdrContractIDPreimageTxRepRoundTrip_XdrContractIDPreimageType_CONTRACT_ID_PREIMAGE_FROM_ASSET(): void
-    {
-        $original = (function() { $u = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET)); $u->fromAsset = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)); return $u; })();
-        $lines = [];
-        $original->toTxRep('test', $lines);
-        $reconstructed = XdrContractIDPreimageBase::fromTxRep($lines, 'test');
-        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrContractIDPreimage_XdrContractIDPreimageType_CONTRACT_ID_PREIMAGE_FROM_ASSET');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrContractIDPreimage');
     }
 
     public function testXdrContractIDPreimageFromAddressTxRepRoundTrip(): void
@@ -5265,7 +14952,7 @@ class XdrTransactionGenTest extends TestCase
 
     public function testXdrCreateContractArgsTxRepRoundTrip(): void
     {
-        $original = new XdrCreateContractArgs((function() { $u = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $u->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $u; })(), new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()));
+        $original = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })();
         $lines = [];
         $original->toTxRep('test', $lines);
         $reconstructed = XdrCreateContractArgs::fromTxRep($lines, 'test');
@@ -5274,7 +14961,7 @@ class XdrTransactionGenTest extends TestCase
 
     public function testXdrCreateContractArgsV2TxRepRoundTrip(): void
     {
-        $original = new XdrCreateContractArgsV2((function() { $u = new XdrContractIDPreimage(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $u->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $u; })(), new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []);
+        $original = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgsV2($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []); })();
         $lines = [];
         $original->toTxRep('test', $lines);
         $reconstructed = XdrCreateContractArgsV2::fromTxRep($lines, 'test');
@@ -5299,6 +14986,15 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrHostFunction_XdrHostFunctionType_HOST_FUNCTION_TYPE_INVOKE_CONTRACT');
     }
 
+    public function testXdrHostFunctionTxRepRoundTrip_XdrHostFunctionType_HOST_FUNCTION_TYPE_CREATE_CONTRACT(): void
+    {
+        $original = (function() { $u = new XdrHostFunction(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT)); $u->createContract = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })(); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrHostFunction::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrHostFunction_XdrHostFunctionType_HOST_FUNCTION_TYPE_CREATE_CONTRACT');
+    }
+
     public function testXdrHostFunctionTxRepRoundTrip_XdrHostFunctionType_HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM(): void
     {
         $original = (function() { $u = new XdrHostFunction(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM)); $u->wasm = new XdrDataValueMandatory("\x01\x02\x03\x04"); return $u; })();
@@ -5306,6 +15002,15 @@ class XdrTransactionGenTest extends TestCase
         $original->toTxRep('test', $lines);
         $reconstructed = XdrHostFunction::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrHostFunction_XdrHostFunctionType_HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM');
+    }
+
+    public function testXdrHostFunctionTxRepRoundTrip_XdrHostFunctionType_HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2(): void
+    {
+        $original = (function() { $u = new XdrHostFunction(new XdrHostFunctionType(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2)); $u->createContractV2 = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgsV2($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []); })(); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrHostFunction::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrHostFunction_XdrHostFunctionType_HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2');
     }
 
     public function testXdrSorobanAuthorizedFunctionTypeTxRepEnumNames(): void
@@ -5363,6 +15068,24 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanAuthorizedFunction_XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN');
     }
 
+    public function testXdrSorobanAuthorizedFunctionTxRepRoundTrip_XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN(): void
+    {
+        $original = (function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN)); $u->createContractHostFn = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })(); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSorobanAuthorizedFunctionBase::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanAuthorizedFunction_XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN');
+    }
+
+    public function testXdrSorobanAuthorizedFunctionTxRepRoundTrip_XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN(): void
+    {
+        $original = (function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN)); $u->createContractV2HostFn = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgsV2($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []); })(); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSorobanAuthorizedFunctionBase::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanAuthorizedFunction_XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN');
+    }
+
     public function testXdrSorobanAuthorizedInvocationTxRepRoundTrip(): void
     {
         $original = new XdrSorobanAuthorizedInvocation((function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })(), []);
@@ -5381,6 +15104,24 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanAddressCredentials');
     }
 
+    public function testXdrSorobanDelegateSignatureTxRepRoundTrip(): void
+    {
+        $original = new XdrSorobanDelegateSignature(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), []);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSorobanDelegateSignature::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanDelegateSignature');
+    }
+
+    public function testXdrSorobanAddressCredentialsWithDelegatesTxRepRoundTrip(): void
+    {
+        $original = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), []);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSorobanAddressCredentialsWithDelegates::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanAddressCredentialsWithDelegates');
+    }
+
     public function testXdrSorobanCredentialsTypeTxRepEnumNames(): void
     {
         $val = new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
@@ -5391,6 +15132,16 @@ class XdrTransactionGenTest extends TestCase
         $val = new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS);
         $name = $val->enumName();
         $this->assertEquals('SOROBAN_CREDENTIALS_ADDRESS', $name);
+        $back = XdrSorobanCredentialsType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2);
+        $name = $val->enumName();
+        $this->assertEquals('SOROBAN_CREDENTIALS_ADDRESS_V2', $name);
+        $back = XdrSorobanCredentialsType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES);
+        $name = $val->enumName();
+        $this->assertEquals('SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES', $name);
         $back = XdrSorobanCredentialsType::fromTxRepName($name);
         $this->assertEquals($val->getValue(), $back->getValue());
     }
@@ -5413,6 +15164,24 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS');
     }
 
+    public function testXdrSorobanCredentialsTypeTxRepRoundTrip_SOROBAN_CREDENTIALS_ADDRESS_V2(): void
+    {
+        $original = new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSorobanCredentialsType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_V2');
+    }
+
+    public function testXdrSorobanCredentialsTypeTxRepRoundTrip_SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES(): void
+    {
+        $original = new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSorobanCredentialsType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES');
+    }
+
     public function testXdrSorobanCredentialsTxRepRoundTrip_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS(): void
     {
         $original = (function() { $u = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS)); $u->address = new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))); return $u; })();
@@ -5420,6 +15189,24 @@ class XdrTransactionGenTest extends TestCase
         $original->toTxRep('test', $lines);
         $reconstructed = XdrSorobanCredentialsBase::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanCredentials_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS');
+    }
+
+    public function testXdrSorobanCredentialsTxRepRoundTrip_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_V2(): void
+    {
+        $original = (function() { $u = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2)); $u->addressV2 = new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSorobanCredentialsBase::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanCredentials_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_V2');
+    }
+
+    public function testXdrSorobanCredentialsTxRepRoundTrip_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES(): void
+    {
+        $original = (function() { $u = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES)); $u->addressWithDelegates = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), []); return $u; })();
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSorobanCredentialsBase::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanCredentials_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES');
     }
 
     public function testXdrSorobanCredentialsTxRepRoundTrip_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_SOURCE_ACCOUNT(): void

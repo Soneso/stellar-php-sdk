@@ -13,6 +13,8 @@ class XdrSorobanCredentialsType {
 
     const SOROBAN_CREDENTIALS_SOURCE_ACCOUNT = 0;
     const SOROBAN_CREDENTIALS_ADDRESS = 1;
+    const SOROBAN_CREDENTIALS_ADDRESS_V2 = 2;
+    const SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES = 3;
 
     public function __construct(int $value) {
         $this->value = $value;
@@ -30,6 +32,14 @@ class XdrSorobanCredentialsType {
         return new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS);
     }
 
+    public static function SOROBAN_CREDENTIALS_ADDRESS_V2(): XdrSorobanCredentialsType {
+        return new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2);
+    }
+
+    public static function SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES(): XdrSorobanCredentialsType {
+        return new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }
@@ -39,6 +49,8 @@ class XdrSorobanCredentialsType {
         switch ($value) {
             case 0:
             case 1:
+            case 2:
+            case 3:
                 return new XdrSorobanCredentialsType($value);
             default:
                 throw new InvalidArgumentException("Unknown enum value: $value");
@@ -61,6 +73,8 @@ class XdrSorobanCredentialsType {
         return match ($this->value) {
             self::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT => 'source_account',
             self::SOROBAN_CREDENTIALS_ADDRESS => 'address',
+            self::SOROBAN_CREDENTIALS_ADDRESS_V2 => 'address_v2',
+            self::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES => 'address_with_delegates',
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown XdrSorobanCredentialsType enum value: ' . $this->value
@@ -78,6 +92,8 @@ class XdrSorobanCredentialsType {
         return match ($value) {
             'source_account' => new static(self::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT),
             'address' => new static(self::SOROBAN_CREDENTIALS_ADDRESS),
+            'address_v2' => new static(self::SOROBAN_CREDENTIALS_ADDRESS_V2),
+            'address_with_delegates' => new static(self::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES),
             default => throw new InvalidArgumentException(
                 'Unknown XdrSorobanCredentialsType JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
@@ -108,6 +124,10 @@ class XdrSorobanCredentialsType {
                 return 'SOROBAN_CREDENTIALS_SOURCE_ACCOUNT';
             case self::SOROBAN_CREDENTIALS_ADDRESS:
                 return 'SOROBAN_CREDENTIALS_ADDRESS';
+            case self::SOROBAN_CREDENTIALS_ADDRESS_V2:
+                return 'SOROBAN_CREDENTIALS_ADDRESS_V2';
+            case self::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
+                return 'SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES';
             default:
                 return 'XdrSorobanCredentialsType#' . $this->value;
         }
@@ -119,6 +139,10 @@ class XdrSorobanCredentialsType {
                 return new static(self::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
             case 'SOROBAN_CREDENTIALS_ADDRESS':
                 return new static(self::SOROBAN_CREDENTIALS_ADDRESS);
+            case 'SOROBAN_CREDENTIALS_ADDRESS_V2':
+                return new static(self::SOROBAN_CREDENTIALS_ADDRESS_V2);
+            case 'SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES':
+                return new static(self::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES);
             default:
                 $prefix = 'XdrSorobanCredentialsType#';
                 if (str_starts_with($name, $prefix)) {

@@ -15,6 +15,7 @@ class XdrHashIDPreimage {
     public ?XdrHashIDPreimageRevokeID $revokeID = null;
     public ?XdrHashIDPreimageContractID $contractID = null;
     public ?XdrHashIDPreimageSorobanAuthorization $sorobanAuthorization = null;
+    public ?XdrHashIDPreimageSorobanAuthorizationWithAddress $sorobanAuthorizationWithAddress = null;
 
     public function __construct(?XdrEnvelopeType $type = null) {
         if ($type !== null) {
@@ -37,6 +38,9 @@ class XdrHashIDPreimage {
             case XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION:
                 $bytes .= $this->sorobanAuthorization->encode();
                 break;
+            case XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS:
+                $bytes .= $this->sorobanAuthorizationWithAddress->encode();
+                break;
             default:
                 break;
         }
@@ -58,6 +62,9 @@ class XdrHashIDPreimage {
             case XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION:
                 $result->sorobanAuthorization = XdrHashIDPreimageSorobanAuthorization::decode($xdr);
                 break;
+            case XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS:
+                $result->sorobanAuthorizationWithAddress = XdrHashIDPreimageSorobanAuthorizationWithAddress::decode($xdr);
+                break;
             default:
                 break;
         }
@@ -74,6 +81,8 @@ class XdrHashIDPreimage {
     public function setContractID(?XdrHashIDPreimageContractID $contractID): void { $this->contractID = $contractID; }
     public function getSorobanAuthorization(): ?XdrHashIDPreimageSorobanAuthorization { return $this->sorobanAuthorization; }
     public function setSorobanAuthorization(?XdrHashIDPreimageSorobanAuthorization $sorobanAuthorization): void { $this->sorobanAuthorization = $sorobanAuthorization; }
+    public function getSorobanAuthorizationWithAddress(): ?XdrHashIDPreimageSorobanAuthorizationWithAddress { return $this->sorobanAuthorizationWithAddress; }
+    public function setSorobanAuthorizationWithAddress(?XdrHashIDPreimageSorobanAuthorizationWithAddress $sorobanAuthorizationWithAddress): void { $this->sorobanAuthorizationWithAddress = $sorobanAuthorizationWithAddress; }
 
     public function toBase64Xdr(): string {
         return base64_encode($this->encode());
@@ -93,6 +102,7 @@ class XdrHashIDPreimage {
             XdrEnvelopeType::ENVELOPE_TYPE_POOL_REVOKE_OP_ID => ['pool_revoke_op_id' => $this->revokeID->toJsonValue()],
             XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID => ['contract_id' => $this->contractID->toJsonValue()],
             XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION => ['soroban_authorization' => $this->sorobanAuthorization->toJsonValue()],
+            XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS => ['soroban_authorization_with_address' => $this->sorobanAuthorizationWithAddress->toJsonValue()],
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown discriminant for type on XdrEnvelopeType'
@@ -122,6 +132,7 @@ class XdrHashIDPreimage {
             'pool_revoke_op_id' => (static function () use ($arm) { $r = new static(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_POOL_REVOKE_OP_ID)); $r->revokeID = XdrHashIDPreimageRevokeID::fromJsonValue($arm); return $r; })(),
             'contract_id' => (static function () use ($arm) { $r = new static(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID)); $r->contractID = XdrHashIDPreimageContractID::fromJsonValue($arm); return $r; })(),
             'soroban_authorization' => (static function () use ($arm) { $r = new static(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION)); $r->sorobanAuthorization = XdrHashIDPreimageSorobanAuthorization::fromJsonValue($arm); return $r; })(),
+            'soroban_authorization_with_address' => (static function () use ($arm) { $r = new static(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS)); $r->sorobanAuthorizationWithAddress = XdrHashIDPreimageSorobanAuthorizationWithAddress::fromJsonValue($arm); return $r; })(),
             default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrHashIDPreimage: ' . XdrJsonHelper::safePreview($key)
             ),

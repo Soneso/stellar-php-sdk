@@ -56,10 +56,10 @@ FALLBACK_VALUES = {
   "XdrLiquidityPoolDepositOperation" => "new XdrLiquidityPoolDepositOperation(str_repeat('ab', 32), new BigInteger('1000'), new BigInteger('1000'), new XdrPrice(1, 1), new XdrPrice(2, 1))",
   "XdrLiquidityPoolWithdrawOperation" => "new XdrLiquidityPoolWithdrawOperation(str_repeat('ab', 32), new BigInteger('1000'), new BigInteger('1000'), new BigInteger('1000'))",
   "XdrSCVal" => "new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))",
-  "XdrContractEventBody" => "new XdrContractEventBody(1)",
+  "XdrContractEventBody" => "(function() { $b = new XdrContractEventBody(0); $b->v0 = new XdrContractEventBodyV0([], new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))); return $b; })()",
   "XdrExtensionPoint" => "new XdrExtensionPoint(0)",
-  "XdrDiagnosticEvent" => "(function() { $d = new XdrDiagnosticEvent(true, new XdrContractEvent(new XdrExtensionPoint(0), new XdrContractEventType(XdrContractEventType::CONTRACT_EVENT_TYPE_SYSTEM), new XdrContractEventBody(1))); return $d; })()",
-  "XdrTransactionEvent" => "new XdrTransactionEvent(new XdrTransactionEventStage(XdrTransactionEventStage::TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS), new XdrContractEvent(new XdrExtensionPoint(0), new XdrContractEventType(XdrContractEventType::CONTRACT_EVENT_TYPE_SYSTEM), new XdrContractEventBody(1)))",
+  "XdrDiagnosticEvent" => "(function() { $b = new XdrContractEventBody(0); $b->v0 = new XdrContractEventBodyV0([], new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))); $d = new XdrDiagnosticEvent(true, new XdrContractEvent(new XdrExtensionPoint(0), new XdrContractEventType(XdrContractEventType::CONTRACT_EVENT_TYPE_SYSTEM), $b)); return $d; })()",
+  "XdrTransactionEvent" => "(function() { $b = new XdrContractEventBody(0); $b->v0 = new XdrContractEventBodyV0([], new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))); return new XdrTransactionEvent(new XdrTransactionEventStage(XdrTransactionEventStage::TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS), new XdrContractEvent(new XdrExtensionPoint(0), new XdrContractEventType(XdrContractEventType::CONTRACT_EVENT_TYPE_SYSTEM), $b)); })()",
 
   # --- Group 1a: Primitive/utility dependency types ---
   "XdrStellarValueExt" => "new XdrStellarValueExt(new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_BASIC))",
@@ -163,6 +163,12 @@ FALLBACK_VALUES = {
   "XdrSignedTimeSlicedSurveyStartCollectingMessage" => "(function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat(\"\\xAB\", 32); $start = new XdrTimeSlicedSurveyStartCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStartCollectingMessage(str_repeat(\"\\xAB\", 64), $start); })()",
   "XdrSignedTimeSlicedSurveyStopCollectingMessage" => "(function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat(\"\\xAB\", 32); $stop = new XdrTimeSlicedSurveyStopCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStopCollectingMessage(str_repeat(\"\\xAB\", 64), $stop); })()",
 
+  # --- Group 1i0: Operation result leaf types ---
+  # XdrManageOfferResult shares its result-code enum across the sell/buy offer
+  # operations; its member-name overrides confuse generic arm synthesis, so pin
+  # a simple valid (void error-code) instance.
+  "XdrManageOfferResult" => "new XdrManageOfferResult(new XdrManageOfferResultCode(XdrManageOfferResultCode::MALFORMED))",
+
   # --- Group 1i: Transaction result chain ---
   "XdrTransactionResultResult" => "new XdrTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY))",
   "XdrTransactionResultExt" => "new XdrTransactionResultExt(0)",
@@ -184,10 +190,44 @@ FALLBACK_VALUES = {
   "XdrTransactionHistoryResultEntryExt" => "new XdrTransactionHistoryResultEntryExt(0)",
   "XdrTransactionHistoryResultEntry" => "new XdrTransactionHistoryResultEntry(42, new XdrTransactionResultSet([]), new XdrTransactionHistoryResultEntryExt(0))",
 
+  # --- Group 1m: Liquidity pool / path payment leaf types ---
+  "XdrLiquidityPoolConstantProductParameters" => "new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 30)",
+  "XdrLiquidityPoolParameters" => "(function() { $p = new XdrLiquidityPoolParameters(new XdrLiquidityPoolType(XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT)); $p->constantProduct = new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 30); return $p; })()",
+  "XdrConstantProduct" => "new XdrConstantProduct(new XdrLiquidityPoolConstantProductParameters(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), 30), new BigInteger('1000'), new BigInteger('1000'), new BigInteger('1000'), 1)",
+  "XdrSimplePaymentResult" => "new XdrSimplePaymentResult(XdrAccountID::fromAccountId('#{TEST_ACCOUNT_ID}'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000'))",
+  "XdrPathPaymentResultSuccess" => "new XdrPathPaymentResultSuccess([], new XdrSimplePaymentResult(XdrAccountID::fromAccountId('#{TEST_ACCOUNT_ID}'), new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('1000')))",
+
+  # --- Group 1n: Contract code / preimage leaf types ---
+  "XdrContractIDPreimage" => "(function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('#{TEST_ACCOUNT_ID}'), str_repeat(\"\\xAB\", 32)); return $p; })()",
+  "XdrCreateContractArgs" => "(function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('#{TEST_ACCOUNT_ID}'), str_repeat(\"\\xAB\", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })()",
+  "XdrCreateContractArgsV2" => "(function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('#{TEST_ACCOUNT_ID}'), str_repeat(\"\\xAB\", 32)); return new XdrCreateContractArgsV2($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []); })()",
+  "XdrContractCodeCostInputs" => "new XdrContractCodeCostInputs(new XdrExtensionPoint(0), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)",
+  "XdrContractCodeEntryV1" => "new XdrContractCodeEntryV1(new XdrExtensionPoint(0), new XdrContractCodeCostInputs(new XdrExtensionPoint(0), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1))",
+
+  # --- Group 1o: Trust line v1 leaf types ---
+  "XdrTrustLineEntryV1Ext" => "new XdrTrustLineEntryV1Ext(0)",
+  "XdrTrustLineEntryV1" => "new XdrTrustLineEntryV1(new XdrLiabilities(new BigInteger('0'), new BigInteger('0')), new XdrTrustLineEntryV1Ext(0))",
+
   # --- Group 1l: Transaction types ---
   "XdrTransactionV0" => "new XdrTransactionV0(str_repeat(\"\\xAB\", 32), new XdrSequenceNumber(new BigInteger('123456789')), [])",
   "XdrTransactionV0Envelope" => "new XdrTransactionV0Envelope(new XdrTransactionV0(str_repeat(\"\\xAB\", 32), new XdrSequenceNumber(new BigInteger('123456789')), []), [])",
   "XdrFeeBumpTransactionExt" => "new XdrFeeBumpTransactionExt(0)",
+
+  # --- Group 1p: Transaction / envelope / signature payload chain ---
+  "XdrTransaction" => "new XdrTransaction(new XdrMuxedAccount(str_repeat(\"\\xAB\", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0))",
+  "XdrTransactionV1Envelope" => "new XdrTransactionV1Envelope(new XdrTransaction(new XdrMuxedAccount(str_repeat(\"\\xAB\", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)), [])",
+  "XdrFeeBumpTransactionInnerTx" => "(function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat(\"\\xAB\", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $i = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $i->v1 = new XdrTransactionV1Envelope($tx, []); return $i; })()",
+  "XdrFeeBumpTransaction" => "(function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat(\"\\xAB\", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $i = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $i->v1 = new XdrTransactionV1Envelope($tx, []); return new XdrFeeBumpTransaction(new XdrMuxedAccount(str_repeat(\"\\xAB\", 32)), 200, $i, new XdrFeeBumpTransactionExt(0)); })()",
+  "XdrFeeBumpTransactionEnvelope" => "(function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat(\"\\xAB\", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $i = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $i->v1 = new XdrTransactionV1Envelope($tx, []); $fb = new XdrFeeBumpTransaction(new XdrMuxedAccount(str_repeat(\"\\xAB\", 32)), 200, $i, new XdrFeeBumpTransactionExt(0)); return new XdrFeeBumpTransactionEnvelope($fb, []); })()",
+  "XdrTransactionSignaturePayloadTaggedTransaction" => "(function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat(\"\\xAB\", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $t = new XdrTransactionSignaturePayloadTaggedTransaction(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $t->tx = $tx; return $t; })()",
+  "XdrTransactionSignaturePayload" => "(function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat(\"\\xAB\", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $t = new XdrTransactionSignaturePayloadTaggedTransaction(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $t->tx = $tx; return new XdrTransactionSignaturePayload(str_repeat(\"\\0\", 32), $t); })()",
+}.freeze
+
+# Curated instances with optional fields POPULATED for FALLBACK structs whose
+# generic construction is unreliable. Used by the optionals-present JSON test to
+# exercise the optional-present branches of toJsonValue / fromJsonValue.
+OPTIONALS_PRESENT_VALUES = {
+  "XdrSCPStatementPrepare" => "new XdrSCPStatementPrepare(str_repeat(\"\\0\", 32), new XdrSCPBallot(42, new XdrValue(str_repeat(\"\\xAB\", 32))), 0, 0, new XdrSCPBallot(1, new XdrValue(str_repeat(\"\\xCD\", 16))), new XdrSCPBallot(2, new XdrValue(str_repeat(\"\\xEF\", 16))))",
 }.freeze
 
 # Overrides for specific union arm values that need special treatment
@@ -199,6 +239,16 @@ ARM_VALUE_OVERRIDES = {
   ["XdrContractExecutable", "wasmIdHex"] => "str_repeat('ab', 32)",
   ["XdrContractExecutableBase", "wasmIdHex"] => "str_repeat('ab', 32)",
 }.freeze
+
+# Union arms whose JSON representation differs from the auto-synthesised XDR
+# representation (e.g. opaque-fixed bytes that JSON renders as a hex string).
+# For these the curated FALLBACK_VALUES instance is used instead of synthesis,
+# so we do not attempt to build the arm from raw test values for JSON tests.
+# Keys are [union_php_name_or_base, arm_field_name].
+ARM_JSON_NO_SYNTH = Set.new([
+  ["XdrClaimableBalanceID", "hash"],
+  ["XdrClaimableBalanceIDBase", "hash"],
+]).freeze
 
 # Types to completely skip test generation for (circular references, massive
 # dependency trees, or wrapper constructors incompatible with auto-construction).
@@ -686,6 +736,12 @@ def group_definitions_by_source(top, source_files)
   groups
 end
 
+# Names that are excluded from full test generation (SKIP_TEST_TYPES) but still
+# get JSON-only coverage (round-trip + negative) because they expose SEP-51 JSON
+# methods. Their binary auto-construction is circular/oversized, but their JSON
+# per-arm reconstruction is reachable through the Base class.
+$json_only_names = Set.new
+
 def collect_namespace_definitions(ns, groups, source)
   ns.definitions.each do |defn|
     next if defn.is_a?(AST::Definitions::Const)
@@ -698,19 +754,42 @@ def collect_namespace_definitions(ns, groups, source)
       groups[source] << defn
     end
 
+    # SKIP_TEST_TYPES that have JSON methods still get JSON-only tests.
+    if SKIP_TEST_TYPES.include?(php_name) && !TYPE_OVERRIDES.key?(php_name) &&
+       !SKIP_TYPES.include?(php_name) && json_class_for(php_name)
+      $json_only_names.add(php_name)
+      groups[source] ||= []
+      groups[source] << defn
+    end
+
     # Always collect nested definitions (even from skipped parents) so TxRep
     # tests can be generated for types like XdrTransactionExt that are nested
-    # under skipped types like XdrTransaction.
-    if defn.respond_to?(:nested_definitions)
-      defn.nested_definitions.each do |nested|
-        nested_name = name(nested)
-        next if SKIP_TYPES.include?(nested_name)
-        next if TYPE_OVERRIDES.key?(nested_name)
-        next if SKIP_TEST_TYPES.include?(nested_name)
+    # under skipped types like XdrTransaction. Recurses so grandchild nested
+    # types (e.g. XdrConstantProduct under a nested union) are also collected.
+    collect_nested_definitions(defn, groups, source)
+  end
+end
+
+def collect_nested_definitions(defn, groups, source)
+  return unless defn.respond_to?(:nested_definitions)
+  defn.nested_definitions.each do |nested|
+    nested_name = name(nested)
+    next if SKIP_TYPES.include?(nested_name)
+    next if TYPE_OVERRIDES.key?(nested_name)
+    if SKIP_TEST_TYPES.include?(nested_name)
+      # Nested SKIP_TEST_TYPES with JSON methods still get JSON-only tests.
+      if json_class_for(nested_name)
+        $json_only_names.add(nested_name)
         groups[source] ||= []
         groups[source] << nested
       end
+      # Still recurse: a SKIP parent may contain testable grandchildren.
+      collect_nested_definitions(nested, groups, source)
+      next
     end
+    groups[source] ||= []
+    groups[source] << nested
+    collect_nested_definitions(nested, groups, source)
   end
 end
 
@@ -733,6 +812,14 @@ def generate_test_file(source, definitions, output_dir)
     next if seen.include?(php_name)
     seen.add(php_name)
 
+    # JSON-only types (SKIP_TEST_TYPES with JSON methods): emit just the SEP-51
+    # JSON round-trip and negative tests, never the binary/TxRep/getter tests.
+    if $json_only_names.include?(php_name)
+      json_only = generate_json_only_tests(php_name, defn)
+      tests.concat(json_only) if json_only
+      next
+    end
+
     case defn
     when AST::Definitions::Enum
       test = generate_enum_test(php_name, defn)
@@ -746,9 +833,24 @@ def generate_test_file(source, definitions, output_dir)
       # Enum factory methods
       efactory_test = generate_enum_factory_tests(php_name, defn)
       tests << efactory_test if efactory_test
+      # JSON (SEP-51) round-trip
+      enum_json_test = generate_enum_json_test(php_name, defn)
+      tests << enum_json_test if enum_json_test
+      # JSON (SEP-51) negative
+      enum_neg_json = generate_enum_negative_json_test(php_name, defn)
+      tests << enum_neg_json if enum_neg_json
     when AST::Definitions::Struct
       test = generate_struct_test(php_name, defn)
       tests << test if test
+      # JSON (SEP-51) round-trip
+      struct_json_test = generate_struct_json_test(php_name, defn)
+      tests << struct_json_test if struct_json_test
+      # JSON (SEP-51) round-trip with optionals present
+      struct_json_opt = generate_struct_json_optionals_present_test(php_name, defn)
+      tests << struct_json_opt if struct_json_opt
+      # JSON (SEP-51) negative
+      struct_neg_json = generate_struct_negative_json_test(php_name, defn)
+      tests << struct_neg_json if struct_neg_json
       # Step 2: Optionals present
       opt_test = generate_struct_optionals_present_test(php_name, defn)
       tests << opt_test if opt_test
@@ -767,6 +869,12 @@ def generate_test_file(source, definitions, output_dir)
     when AST::Definitions::Union
       union_tests = generate_union_tests(php_name, defn)
       tests.concat(union_tests) if union_tests
+      # JSON (SEP-51) per-arm round-trip
+      union_json_test = generate_union_json_test(php_name, defn)
+      tests << union_json_test if union_json_test
+      # JSON (SEP-51) negative
+      union_neg_json = generate_union_negative_json_test(php_name, defn)
+      tests << union_neg_json if union_neg_json
       # Step 6: Union getter/setter
       ugs_test = generate_union_getter_setter_tests(php_name, defn)
       tests << ugs_test if ugs_test
@@ -776,6 +884,12 @@ def generate_test_file(source, definitions, output_dir)
     when AST::Definitions::Typedef
       test = generate_typedef_test(php_name, defn)
       tests << test if test
+      # JSON (SEP-51) round-trip
+      typedef_json_test = generate_typedef_json_test(php_name, defn)
+      tests << typedef_json_test if typedef_json_test
+      # JSON (SEP-51) negative
+      typedef_neg_json = generate_typedef_negative_json_test(php_name, defn)
+      tests << typedef_neg_json if typedef_neg_json
     end
 
     # Step 7: Factory method tests (wrapper types only)
@@ -791,6 +905,7 @@ def generate_test_file(source, definitions, output_dir)
     php_name = name(defn)
     next if seen_txrep.include?(php_name)
     seen_txrep.add(php_name)
+    next if $json_only_names.include?(php_name)
 
     txrep_tests = generate_txrep_tests(php_name, defn)
     tests.concat(txrep_tests) if txrep_tests
@@ -842,6 +957,197 @@ def generate_test_file(source, definitions, output_dir)
   end
 
   puts "  #{class_name}.php: #{tests.size} tests"
+end
+
+# ---------------------------------------------------------------------------
+# JSON (SEP-51) round-trip test generation
+#
+# Oracle: JSON self-consistency. A value must survive
+# toJsonValue -> fromJsonValue -> toJsonValue unchanged, and its toJson string
+# must be stable under fromJson. This exercises all four JSON methods without
+# crossing the JSON and XDR field representations (some types store a field as
+# raw bytes for encode() but as a hex string for toJsonValue()), so it is
+# robust to representation differences between the two serialisation paths.
+# ---------------------------------------------------------------------------
+
+# Xdr class basenames that expose JSON methods (computed once at load).
+# Resolved relative to this script's location so it is independent of the
+# working directory in effect when the constant is evaluated (the main entry
+# point chdir's to the repo root only later).
+JSON_METHOD_CLASSES = Dir.glob(
+  File.join(File.expand_path("../../..", __dir__), "Soneso", "StellarSDK", "Xdr", "*.php")
+).select { |f| File.read(f).include?("function toJsonValue") }
+  .map { |f| File.basename(f, ".php") }
+  .to_set
+
+# Returns the class to invoke JSON static methods on for php_name, or nil if the
+# type has no JSON methods. Always prefers php_name (the public type) over its
+# *Base: wrapper types inherit fromJsonValue/fromJson from the Base, and that
+# Base code uses `new static(...)` against the *wrapper's* constructor, so the
+# call must dispatch on the wrapper for `static` to resolve correctly.
+def json_class_for(php_name)
+  return php_name if JSON_METHOD_CLASSES.include?(php_name)
+  return php_name if JSON_METHOD_CLASSES.include?("#{php_name}Base")
+  nil
+end
+
+# Self-consistency assertions for an already-constructed instance variable.
+def json_roundtrip_assertions(json_class, label, instance_var = "$original")
+  [
+    "        $j1 = #{instance_var}->toJsonValue();",
+    "        $back = #{json_class}::fromJsonValue($j1);",
+    "        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for #{label}');",
+    "        $this->assertSame(#{instance_var}->toJson(), $back->toJson(), 'JSON string not stable for #{label}');",
+    "        $back2 = #{json_class}::fromJson(#{instance_var}->toJson());",
+    "        $this->assertSame(#{instance_var}->toJson(), $back2->toJson(), 'fromJson round-trip failed for #{label}');",
+  ]
+end
+
+def generate_enum_json_test(php_name, enum_defn)
+  json_class = json_class_for(php_name)
+  return nil unless json_class
+
+  const_class = BASE_WRAPPER_TYPES.include?(php_name) ? "#{php_name}Base" : php_name
+  imports = Set.new([const_class, php_name, json_class])
+
+  values = enum_defn.members.map do |m|
+    member_name = resolve_member_name(php_name, m.name.to_s)
+    "#{const_class}::#{member_name}"
+  end
+
+  lines = []
+  lines << "    public function test#{php_name}EnumJsonRoundTrip(): void"
+  lines << "    {"
+  lines << "        $values = [#{values.join(', ')}];"
+  lines << "        foreach ($values as $v) {"
+  lines << "            $original = new #{php_name}($v);"
+  lines << "            $j1 = $original->toJsonValue();"
+  lines << "            $back = #{json_class}::fromJsonValue($j1);"
+  lines << "            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for #{php_name} value ' . $v);"
+  lines << "            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for #{php_name} value ' . $v);"
+  lines << "            $back2 = #{json_class}::fromJson($original->toJson());"
+  lines << "            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for #{php_name} value ' . $v);"
+  lines << "        }"
+  lines << "    }"
+
+  { lines: lines, imports: imports }
+end
+
+def generate_struct_json_test(php_name, struct_defn)
+  json_class = json_class_for(php_name)
+  return nil unless json_class
+
+  value_expr = generate_struct_value(php_name, struct_defn, 0)
+  return nil unless value_expr
+
+  imports = collect_imports_from_expr(value_expr)
+  imports.add(php_name)
+  imports.add(json_class)
+
+  lines = []
+  lines << "    public function test#{php_name}StructJsonRoundTrip(): void"
+  lines << "    {"
+  lines << "        $original = #{value_expr};"
+  lines.concat(json_roundtrip_assertions(json_class, php_name))
+  lines << "    }"
+
+  { lines: lines, imports: imports }
+end
+
+# JSON round-trip with all populatable optional fields present, exercising the
+# optional-present branches of toJsonValue / fromJsonValue (which the default
+# struct JSON test leaves null). Only emitted when the struct has at least one
+# optional field we can construct a value for.
+def generate_struct_json_optionals_present_test(php_name, struct_defn)
+  json_class = json_class_for(php_name)
+  return nil unless json_class
+
+  # Curated optionals-present instances for FALLBACK structs whose generic
+  # construction is unreliable (typedef-typed constructor args), so we still
+  # exercise the optional-present JSON branches for them.
+  if OPTIONALS_PRESENT_VALUES.key?(php_name)
+    value_expr = OPTIONALS_PRESENT_VALUES[php_name]
+    imports = collect_imports_from_expr(value_expr)
+    imports.add(php_name)
+    imports.add(json_class)
+    lines = []
+    lines << "    public function test#{php_name}StructJsonOptionalsPresentRoundTrip(): void"
+    lines << "    {"
+    lines << "        $original = #{value_expr};"
+    lines.concat(json_roundtrip_assertions(json_class, "#{php_name} optionals-present"))
+    lines << "    }"
+    return { lines: lines, imports: imports }
+  end
+
+  # Skip FALLBACK structs without a curated optionals-present value: their
+  # generic construction is special and cannot be safely populated here.
+  return nil if FALLBACK_VALUES.key?(php_name)
+
+  fields = analyze_struct_fields(php_name, struct_defn)
+  return nil unless fields.any? { |f| f[:is_optional] }
+
+  constructor_fields = fields.reject { |f| f[:is_ext_point] }
+  required_fields = constructor_fields.reject { |f| f[:is_optional] }
+  optional_fields = constructor_fields.select { |f| f[:is_optional] }
+  ordered_fields = required_fields + optional_fields
+
+  can_populate_any = false
+  args = ordered_fields.map do |f|
+    if f[:is_array]
+      "[]"
+    elsif f[:is_optional]
+      typespec = f[:decl].respond_to?(:type) ? f[:decl].type : nil
+      val = test_value_for_type(f[:php_type], typespec, f[:decl], 1)
+      if val
+        can_populate_any = true
+        val
+      else
+        "null"
+      end
+    else
+      typespec = f[:decl].respond_to?(:type) ? f[:decl].type : nil
+      val = test_value_for_type(f[:php_type], typespec, f[:decl], 1)
+      return nil if val.nil?
+      val
+    end
+  end
+  return nil unless can_populate_any
+
+  value_expr = "new #{php_name}(#{args.join(', ')})"
+  imports = collect_imports_from_expr(value_expr)
+  imports.add(php_name)
+  imports.add(json_class)
+
+  lines = []
+  lines << "    public function test#{php_name}StructJsonOptionalsPresentRoundTrip(): void"
+  lines << "    {"
+  lines << "        $original = #{value_expr};"
+  lines.concat(json_roundtrip_assertions(json_class, "#{php_name} optionals-present"))
+  lines << "    }"
+
+  { lines: lines, imports: imports }
+end
+
+def generate_typedef_json_test(php_name, typedef_defn)
+  return nil if TYPE_OVERRIDES.key?(php_name)
+  json_class = json_class_for(php_name)
+  return nil unless json_class
+
+  value_expr = generate_typedef_value(php_name, typedef_defn, 0)
+  return nil unless value_expr
+
+  imports = collect_imports_from_expr(value_expr)
+  imports.add(php_name)
+  imports.add(json_class)
+
+  lines = []
+  lines << "    public function test#{php_name}TypedefJsonRoundTrip(): void"
+  lines << "    {"
+  lines << "        $original = #{value_expr};"
+  lines.concat(json_roundtrip_assertions(json_class, php_name))
+  lines << "    }"
+
+  { lines: lines, imports: imports }
 end
 
 # ---------------------------------------------------------------------------
@@ -1105,6 +1411,389 @@ def generate_union_tests(php_name, union_defn)
   end
 
   tests.empty? ? nil : tests
+end
+
+# ---------------------------------------------------------------------------
+# Slice 2: Union per-arm JSON round-trips
+#
+# Exercises every reconstructible match-arm of fromJsonValue. For each arm we
+# build a valid instance (discriminant + arm field assignment, against the Base
+# class so the constructor signature is always discriminant-only), call
+# toJsonValue() and run the JSON self-consistency oracle (which dispatches
+# fromJsonValue on the public wrapper). Void arms are covered too. Arms whose
+# value cannot be synthesised are skipped with a printed SKIP line so the gap is
+# visible. This covers both the per-arm reconstruction logic and the union's
+# top-level JSON entry points for fallback unions whose binary tests use a
+# single fallback instance and therefore only touch one arm.
+# ---------------------------------------------------------------------------
+
+# Returns the class used to *construct* per-arm union instances. The Base class
+# (when present) always has a discriminant-only constructor, so per-arm field
+# assignment works uniformly even for wrapper types with custom constructors.
+def union_construct_class(php_name)
+  if BASE_WRAPPER_TYPES.include?(php_name)
+    base_file = File.join("Soneso", "StellarSDK", "Xdr", "#{php_name}Base.php")
+    return "#{php_name}Base" if File.exist?(base_file)
+  end
+  php_name
+end
+
+# Build [label, value_expr] pairs for each reconstructible arm of a union,
+# constructing instances against the given construct_class. Prints SKIP lines
+# for arms whose value cannot be synthesised.
+def union_arm_json_instances(php_name, union_defn, construct_class)
+  disc_info = resolve_discriminant_info_test(union_defn, php_name)
+  # For fallback unions, per-arm field synthesis is unreliable because the JSON
+  # representation of a field may differ from its XDR/raw representation (e.g.
+  # XdrClaimableBalanceID stores its hash as a hex string for JSON but as raw
+  # bytes for the binary path). Seed with the curated fallback instance, which
+  # is known-good through the public wrapper, and only add per-arm instances
+  # that have an explicit override.
+  is_fallback = FALLBACK_VALUES.key?(php_name)
+  instances = []
+  if is_fallback
+    instances << ["fallback", FALLBACK_VALUES[php_name]]
+  end
+
+  union_defn.normal_arms.each do |arm|
+    # Build one instance per case value: arms that group several discriminant
+    # values (case A: case B: T field;) reconstruct identically but render a
+    # distinct toJsonValue key per value, so each value needs its own instance.
+    field_name = arm.void? ? nil : resolve_field_name(php_name, arm.name)
+    decl = arm.declaration
+
+    arm_value = nil
+    unless arm.void?
+      arm_php_type = nil
+      if FIELD_TYPE_OVERRIDES.key?(php_name) && FIELD_TYPE_OVERRIDES[php_name].key?(field_name)
+        arm_php_type = FIELD_TYPE_OVERRIDES[php_name][field_name]
+      else
+        arm_php_type = php_type_string(decl)
+      end
+
+      [[php_name, field_name], [construct_class, field_name]].each do |k|
+        if ARM_VALUE_OVERRIDES.key?(k)
+          arm_value = ARM_VALUE_OVERRIDES[k]
+          break
+        end
+      end
+      if arm_value.nil? && !ARM_JSON_NO_SYNTH.include?([php_name, field_name])
+        typespec = decl.respond_to?(:type) ? decl.type : nil
+        arm_value = test_value_for_type(arm_php_type, typespec, decl, 1)
+      end
+    end
+
+    arm.cases.each do |c|
+      case_value = c.value
+      disc_expr = arm_discriminant_expr(case_value, disc_info)
+      case_label = arm_case_label(case_value, disc_info)
+      safe_label = case_label.gsub("::", "_").gsub(/[^a-zA-Z0-9_]/, "")
+
+      if arm.void?
+        instances << [safe_label, "new #{construct_class}(#{disc_expr})"]
+        next
+      end
+
+      if arm_value.nil?
+        # Fallback unions already contribute one curated arm; only report a SKIP
+        # for non-fallback unions where a synthesisable arm was expected.
+        unless is_fallback
+          puts "  SKIP #{php_name} JSON arm #{safe_label}: cannot synthesise value for field #{field_name} (#{php_type_string(decl)})"
+        end
+        next
+      end
+
+      expr = "(function() { $u = new #{construct_class}(#{disc_expr}); $u->#{field_name} = #{arm_value}; return $u; })()"
+      instances << [safe_label, expr]
+    end
+  end
+
+  instances
+end
+
+# Emits one JSON round-trip test per union that has JSON methods, asserting the
+# self-consistency oracle for every reconstructible arm.
+def generate_union_json_test(php_name, union_defn)
+  json_class = json_class_for(php_name)
+  return nil unless json_class
+
+  construct_class = union_construct_class(php_name)
+  instances = union_arm_json_instances(php_name, union_defn, construct_class)
+  return nil if instances.empty?
+
+  imports = Set.new([php_name, json_class, construct_class])
+
+  lines = []
+  lines << "    public function test#{php_name}UnionJsonRoundTrip(): void"
+  lines << "    {"
+  instances.each_with_index do |(label, expr), i|
+    var = "$arm#{i}"
+    imports.merge(collect_imports_from_expr(expr))
+    lines << "        #{var} = #{expr};"
+    lines.concat(json_roundtrip_assertions(json_class, "#{php_name} arm #{label}", var))
+  end
+  lines << "    }"
+
+  { lines: lines, imports: imports }
+end
+
+# ---------------------------------------------------------------------------
+# Slice 3: Negative tests for fromJsonValue validation branches
+#
+# For each type that has fromJsonValue, build the valid JSON value (from a
+# constructed instance) then feed malformed variants that must trigger the
+# per-field / per-arm validation throws. One test method per type loops over
+# the corruption cases. Assertions are loose: we only require that an
+# InvalidArgumentException is raised (messages are brittle). The genuinely
+# unreachable `default` arms are wrapped in @codeCoverageIgnore in the
+# generated source and are not targeted here.
+# ---------------------------------------------------------------------------
+
+# Negative test for an enum's fromJsonValue: wrong scalar type and unknown
+# string value both reject.
+def generate_enum_negative_json_test(php_name, enum_defn)
+  json_class = json_class_for(php_name)
+  return nil unless json_class
+
+  imports = Set.new([php_name, json_class])
+
+  lines = []
+  lines << "    public function test#{php_name}EnumJsonRejectsInvalid(): void"
+  lines << "    {"
+  lines << "        $cases = [42, true, [], '__definitely_not_a_member__'];"
+  lines << "        foreach ($cases as $bad) {"
+  lines << "            $threw = false;"
+  lines << "            try { #{json_class}::fromJsonValue($bad); }"
+  lines << "            catch (\\InvalidArgumentException $e) { $threw = true; }"
+  lines << "            $this->assertTrue($threw, 'Expected rejection for #{php_name} JSON: ' . var_export($bad, true));"
+  lines << "        }"
+  lines << "    }"
+
+  { lines: lines, imports: imports }
+end
+
+# Returns the set of JSON keys of a type whose fromJsonValue performs NO
+# wrong-type validation (the value is coerced silently). These are the
+# BigInteger-backed int64/uint64 fields emitted as
+#   new BigInteger(is_string($value['key']) ? ... : (string)(int) $value['key'])
+# which accept any non-string without throwing, so a wrong-type corruption on
+# them is not a reachable reject branch. Read directly from the generated
+# source so it stays correct as the emitter evolves.
+def unvalidated_json_keys(php_name)
+  keys = Set.new
+  [
+    File.join("Soneso", "StellarSDK", "Xdr", "#{php_name}.php"),
+    File.join("Soneso", "StellarSDK", "Xdr", "#{php_name}Base.php"),
+  ].each do |path|
+    next unless File.exist?(path)
+    src = File.read(path)
+    src.scan(/new BigInteger\(is_string\(\$value\['([^']+)'\]\)/).flatten.each { |k| keys.add(k) }
+  end
+  keys
+end
+
+# Negative test for a struct's fromJsonValue. Corruptions, all data-driven off
+# the valid JSON value at runtime:
+#   - non-array top-level value (hits the Expected object throw)
+#   - each present key removed in turn (hits the per-field missing-key throws,
+#     which exist for required AND optional fields since the key must be present)
+#   - each non-null scalar/array value replaced with a wrong-typed value (hits
+#     the inline is_string / is_int / is_bool / is_array field validators);
+#     keys with no wrong-type validator are excluded from this case.
+def generate_struct_negative_json_test(php_name, struct_defn)
+  json_class = json_class_for(php_name)
+  return nil unless json_class
+
+  value_expr = generate_struct_value(php_name, struct_defn, 0)
+  return nil unless value_expr
+
+  imports = collect_imports_from_expr(value_expr)
+  imports.add(php_name)
+  imports.add(json_class)
+
+  skip_keys = unvalidated_json_keys(php_name)
+  skip_php = "[" + skip_keys.map { |k| "'#{k}' => true" }.join(", ") + "]"
+
+  lines = []
+  lines << "    public function test#{php_name}StructJsonRejectsInvalid(): void"
+  lines << "    {"
+  lines << "        $original = #{value_expr};"
+  lines << "        $valid = $original->toJsonValue();"
+  lines << "        $noWrongTypeCheck = #{skip_php};"
+  lines.concat(struct_negative_assertion_loop_lines(json_class))
+  lines << "    }"
+
+  { lines: lines, imports: imports }
+end
+
+# Shared runtime loop body for struct negative JSON corruption cases.
+def struct_negative_assertion_loop_lines(json_class)
+  [
+    "        $assertRejects = function ($bad, string $desc) {",
+    "            $threw = false;",
+    "            try { #{json_class}::fromJsonValue($bad); }",
+    "            catch (\\InvalidArgumentException $e) { $threw = true; }",
+    "            $this->assertTrue($threw, 'Expected rejection: ' . $desc);",
+    "        };",
+    "        if (!is_array($valid)) {",
+    "            // Some structs render as a single scalar (e.g. 128-bit integer",
+    "            // parts as one string); their fromJsonValue rejects the wrong",
+    "            // scalar type and malformed scalar payloads.",
+    "            if (is_string($valid)) {",
+    "                $assertRejects(42, 'non-string scalar struct value');",
+    "                $assertRejects([], 'array for scalar struct value');",
+    "                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');",
+    "            } else {",
+    "                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');",
+    "            }",
+    "            return;",
+    "        }",
+    "        $assertRejects('not-an-object', 'non-array top-level');",
+    "        foreach (array_keys($valid) as $k) {",
+    "            if ($k === '$schema') { continue; }",
+    "            $missing = $valid; unset($missing[$k]);",
+    "            $assertRejects($missing, 'missing field ' . $k);",
+    "            $v = $valid[$k];",
+    "            if ($v === null) { continue; }",
+    "            if (isset($noWrongTypeCheck[$k])) { continue; }",
+    "            $wrong = $valid;",
+    "            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }",
+    "            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }",
+    "            else { $wrong[$k] = []; }",
+    "            $assertRejects($wrong, 'wrong type for field ' . $k);",
+    "        }",
+  ]
+end
+
+# Negative test for a union's fromJsonValue. Two shapes exist:
+#   - StrKey/string-encoded unions (toJsonValue returns a string): reject
+#     non-string and empty / unknown-prefix strings.
+#   - generic single-key-object unions: reject non-array, wrong key count,
+#     non-string key, and an unknown arm key.
+# We detect the shape at runtime from the valid JSON value, so a single
+# generated method covers either form.
+def generate_union_negative_json_test(php_name, union_defn)
+  json_class = json_class_for(php_name)
+  return nil unless json_class
+
+  construct_class = union_construct_class(php_name)
+  instances = union_arm_json_instances(php_name, union_defn, construct_class)
+  return nil if instances.empty?
+
+  imports = Set.new([php_name, json_class, construct_class])
+  instances.each { |(_l, e)| imports.merge(collect_imports_from_expr(e)) }
+
+  # Emit every reconstructible arm's valid JSON value so the runtime can choose
+  # an object-form value (for the single-key-object guards) and/or a string-form
+  # value (for void/strkey unions) regardless of arm ordering.
+  lines = []
+  lines << "    public function test#{php_name}UnionJsonRejectsInvalid(): void"
+  lines << "    {"
+  lines << "        $samples = [];"
+  instances.each do |(_label, expr)|
+    lines << "        $samples[] = (#{expr})->toJsonValue();"
+  end
+  lines << "        $valid = $samples[0];"
+  lines << "        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }"
+  lines << "        $assertRejects = function ($bad, string $desc) {"
+  lines << "            $threw = false;"
+  lines << "            try { #{json_class}::fromJsonValue($bad); }"
+  lines << "            catch (\\InvalidArgumentException $e) { $threw = true; }"
+  lines << "            $this->assertTrue($threw, 'Expected rejection for #{php_name}: ' . $desc);"
+  lines << "        };"
+  lines << "        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }"
+  lines << "        if (is_string($valid)) {"
+  lines << "            $assertRejects(['not' => 'a string'], 'non-string union value');"
+  lines << "            $assertRejects('', 'empty string union value');"
+  lines << "            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');"
+  lines << "        } else {"
+  lines << "            if ($hasStringForm) {"
+  lines << "                // Extension-point hybrid: an unknown bare string is rejected."
+  lines << "                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');"
+  lines << "            }"
+  lines << "            $assertRejects('not-an-object', 'non-array union value');"
+  lines << "            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');"
+  lines << "            // Integer-keyed single-entry array hits the non-string arm key guard."
+  lines << "            $assertRejects([5 => 1], 'non-string arm key');"
+  lines << "            // Some extension-point unions also accept bare void-arm strings;"
+  lines << "            // an unrecognised bare string is rejected by those, and by the"
+  lines << "            // object-only unions via the non-array guard above (already tested)."
+  lines << "            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');"
+  lines << "            if (is_array($valid) && count($valid) === 1) {"
+  lines << "                $two = $valid; $two['__extra__'] = 1;"
+  lines << "                $assertRejects($two, 'too many arm keys');"
+  lines << "                $assertRejects([], 'zero arm keys');"
+  lines << "                // Extension-point unions reject a non-void arm name supplied"
+  lines << "                // as a bare string instead of a single-key object."
+  lines << "                $armKey = array_key_first($valid);"
+  lines << "                if (is_string($armKey)) {"
+  lines << "                    $threwArm = false;"
+  lines << "                    try { #{json_class}::fromJsonValue($armKey); } catch (\\InvalidArgumentException $e) { $threwArm = true; }"
+  lines << "                    $this->assertTrue($threwArm, 'Expected rejection for #{php_name}: non-void arm name as bare string');"
+  lines << "                }"
+  lines << "            }"
+  lines << "        }"
+  lines << "    }"
+
+  { lines: lines, imports: imports }
+end
+
+# Emits JSON-only tests (round-trip + negative) for a SKIP_TEST_TYPES type that
+# nonetheless exposes SEP-51 JSON methods. No binary/TxRep/getter tests are
+# produced for these types.
+def generate_json_only_tests(php_name, defn)
+  out = []
+  case defn
+  when AST::Definitions::Enum
+    t = generate_enum_json_test(php_name, defn);          out << t if t
+    t = generate_enum_negative_json_test(php_name, defn); out << t if t
+  when AST::Definitions::Struct
+    t = generate_struct_json_test(php_name, defn);                    out << t if t
+    t = generate_struct_json_optionals_present_test(php_name, defn);  out << t if t
+    t = generate_struct_negative_json_test(php_name, defn);           out << t if t
+  when AST::Definitions::Union
+    t = generate_union_json_test(php_name, defn);          out << t if t
+    t = generate_union_negative_json_test(php_name, defn); out << t if t
+  when AST::Definitions::Typedef
+    t = generate_typedef_json_test(php_name, defn);          out << t if t
+    t = generate_typedef_negative_json_test(php_name, defn); out << t if t
+  end
+  out.empty? ? nil : out
+end
+
+# Negative test for a typedef's fromJsonValue (wrong scalar type only — the
+# inner validation is delegated to the underlying type's fromJsonValue).
+def generate_typedef_negative_json_test(php_name, typedef_defn)
+  return nil if TYPE_OVERRIDES.key?(php_name)
+  json_class = json_class_for(php_name)
+  return nil unless json_class
+
+  value_expr = generate_typedef_value(php_name, typedef_defn, 0)
+  return nil unless value_expr
+
+  decl = typedef_defn.declaration
+  # Only opaque/string/array typedefs have a directly-checkable scalar shape we
+  # can reliably corrupt; for those the inner fromJsonValue rejects wrong types.
+  bad_case =
+    case decl
+    when AST::Declarations::Opaque, AST::Declarations::String then "42"
+    when AST::Declarations::Array then "'not-an-array'"
+    else nil
+    end
+  return nil if bad_case.nil?
+
+  imports = Set.new([php_name, json_class])
+
+  lines = []
+  lines << "    public function test#{php_name}TypedefJsonRejectsInvalid(): void"
+  lines << "    {"
+  lines << "        $threw = false;"
+  lines << "        try { #{json_class}::fromJsonValue(#{bad_case}); }"
+  lines << "        catch (\\InvalidArgumentException $e) { $threw = true; }"
+  lines << "        $this->assertTrue($threw, 'Expected rejection for #{php_name} typedef JSON');"
+  lines << "    }"
+
+  { lines: lines, imports: imports }
 end
 
 # ---------------------------------------------------------------------------

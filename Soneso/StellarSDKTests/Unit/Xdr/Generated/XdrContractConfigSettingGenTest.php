@@ -44,6 +44,25 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrEncodedLedgerKey');
     }
 
+    public function testXdrEncodedLedgerKeyTypedefJsonRoundTrip(): void
+    {
+        $original = new XdrEncodedLedgerKey("\x01\x02\x03\x04");
+        $j1 = $original->toJsonValue();
+        $back = XdrEncodedLedgerKey::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrEncodedLedgerKey');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrEncodedLedgerKey');
+        $back2 = XdrEncodedLedgerKey::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrEncodedLedgerKey');
+    }
+
+    public function testXdrEncodedLedgerKeyTypedefJsonRejectsInvalid(): void
+    {
+        $threw = false;
+        try { XdrEncodedLedgerKey::fromJsonValue(42); }
+        catch (\InvalidArgumentException $e) { $threw = true; }
+        $this->assertTrue($threw, 'Expected rejection for XdrEncodedLedgerKey typedef JSON');
+    }
+
     public function testXdrConfigSettingContractExecutionLanesV0StructRoundTrip(): void
     {
         $original = new XdrConfigSettingContractExecutionLanesV0(42);
@@ -52,6 +71,57 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrConfigSettingContractExecutionLanesV0');
         $b64Decoded = XdrConfigSettingContractExecutionLanesV0::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrConfigSettingContractExecutionLanesV0');
+    }
+
+    public function testXdrConfigSettingContractExecutionLanesV0StructJsonRoundTrip(): void
+    {
+        $original = new XdrConfigSettingContractExecutionLanesV0(42);
+        $j1 = $original->toJsonValue();
+        $back = XdrConfigSettingContractExecutionLanesV0::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingContractExecutionLanesV0');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingContractExecutionLanesV0');
+        $back2 = XdrConfigSettingContractExecutionLanesV0::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingContractExecutionLanesV0');
+    }
+
+    public function testXdrConfigSettingContractExecutionLanesV0StructJsonRejectsInvalid(): void
+    {
+        $original = new XdrConfigSettingContractExecutionLanesV0(42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrConfigSettingContractExecutionLanesV0::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrConfigSettingContractExecutionLanesV0EdgeCaseZeroRoundTrip(): void
@@ -79,6 +149,57 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrConfigSettingContractComputeV0');
         $b64Decoded = XdrConfigSettingContractComputeV0::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrConfigSettingContractComputeV0');
+    }
+
+    public function testXdrConfigSettingContractComputeV0StructJsonRoundTrip(): void
+    {
+        $original = new XdrConfigSettingContractComputeV0(42, 42, 42, 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrConfigSettingContractComputeV0::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingContractComputeV0');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingContractComputeV0');
+        $back2 = XdrConfigSettingContractComputeV0::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingContractComputeV0');
+    }
+
+    public function testXdrConfigSettingContractComputeV0StructJsonRejectsInvalid(): void
+    {
+        $original = new XdrConfigSettingContractComputeV0(42, 42, 42, 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrConfigSettingContractComputeV0::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrConfigSettingContractComputeV0EdgeCaseZeroRoundTrip(): void
@@ -120,6 +241,57 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrConfigSettingContractParallelComputeV0');
     }
 
+    public function testXdrConfigSettingContractParallelComputeV0StructJsonRoundTrip(): void
+    {
+        $original = new XdrConfigSettingContractParallelComputeV0(42);
+        $j1 = $original->toJsonValue();
+        $back = XdrConfigSettingContractParallelComputeV0::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingContractParallelComputeV0');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingContractParallelComputeV0');
+        $back2 = XdrConfigSettingContractParallelComputeV0::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingContractParallelComputeV0');
+    }
+
+    public function testXdrConfigSettingContractParallelComputeV0StructJsonRejectsInvalid(): void
+    {
+        $original = new XdrConfigSettingContractParallelComputeV0(42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrConfigSettingContractParallelComputeV0::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrConfigSettingContractParallelComputeV0EdgeCaseZeroRoundTrip(): void
     {
         $original = new XdrConfigSettingContractParallelComputeV0(0);
@@ -145,6 +317,57 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrConfigSettingContractLedgerCostV0');
         $b64Decoded = XdrConfigSettingContractLedgerCostV0::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrConfigSettingContractLedgerCostV0');
+    }
+
+    public function testXdrConfigSettingContractLedgerCostV0StructJsonRoundTrip(): void
+    {
+        $original = new XdrConfigSettingContractLedgerCostV0(42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrConfigSettingContractLedgerCostV0::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingContractLedgerCostV0');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingContractLedgerCostV0');
+        $back2 = XdrConfigSettingContractLedgerCostV0::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingContractLedgerCostV0');
+    }
+
+    public function testXdrConfigSettingContractLedgerCostV0StructJsonRejectsInvalid(): void
+    {
+        $original = new XdrConfigSettingContractLedgerCostV0(42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrConfigSettingContractLedgerCostV0::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrConfigSettingContractLedgerCostV0EdgeCaseZeroRoundTrip(): void
@@ -230,6 +453,57 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrConfigSettingContractLedgerCostExtV0');
     }
 
+    public function testXdrConfigSettingContractLedgerCostExtV0StructJsonRoundTrip(): void
+    {
+        $original = new XdrConfigSettingContractLedgerCostExtV0(42, 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrConfigSettingContractLedgerCostExtV0::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingContractLedgerCostExtV0');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingContractLedgerCostExtV0');
+        $back2 = XdrConfigSettingContractLedgerCostExtV0::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingContractLedgerCostExtV0');
+    }
+
+    public function testXdrConfigSettingContractLedgerCostExtV0StructJsonRejectsInvalid(): void
+    {
+        $original = new XdrConfigSettingContractLedgerCostExtV0(42, 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrConfigSettingContractLedgerCostExtV0::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrConfigSettingContractLedgerCostExtV0EdgeCaseZeroRoundTrip(): void
     {
         $original = new XdrConfigSettingContractLedgerCostExtV0(0, 42);
@@ -261,6 +535,57 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrConfigSettingContractHistoricalDataV0');
     }
 
+    public function testXdrConfigSettingContractHistoricalDataV0StructJsonRoundTrip(): void
+    {
+        $original = new XdrConfigSettingContractHistoricalDataV0(42);
+        $j1 = $original->toJsonValue();
+        $back = XdrConfigSettingContractHistoricalDataV0::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingContractHistoricalDataV0');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingContractHistoricalDataV0');
+        $back2 = XdrConfigSettingContractHistoricalDataV0::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingContractHistoricalDataV0');
+    }
+
+    public function testXdrConfigSettingContractHistoricalDataV0StructJsonRejectsInvalid(): void
+    {
+        $original = new XdrConfigSettingContractHistoricalDataV0(42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrConfigSettingContractHistoricalDataV0::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrConfigSettingContractHistoricalDataV0EdgeCaseZeroRoundTrip(): void
     {
         $original = new XdrConfigSettingContractHistoricalDataV0(0);
@@ -286,6 +611,57 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrConfigSettingContractEventsV0');
         $b64Decoded = XdrConfigSettingContractEventsV0::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrConfigSettingContractEventsV0');
+    }
+
+    public function testXdrConfigSettingContractEventsV0StructJsonRoundTrip(): void
+    {
+        $original = new XdrConfigSettingContractEventsV0(42, 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrConfigSettingContractEventsV0::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingContractEventsV0');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingContractEventsV0');
+        $back2 = XdrConfigSettingContractEventsV0::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingContractEventsV0');
+    }
+
+    public function testXdrConfigSettingContractEventsV0StructJsonRejectsInvalid(): void
+    {
+        $original = new XdrConfigSettingContractEventsV0(42, 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrConfigSettingContractEventsV0::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrConfigSettingContractEventsV0EdgeCaseZeroRoundTrip(): void
@@ -317,6 +693,57 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrConfigSettingContractBandwidthV0');
         $b64Decoded = XdrConfigSettingContractBandwidthV0::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrConfigSettingContractBandwidthV0');
+    }
+
+    public function testXdrConfigSettingContractBandwidthV0StructJsonRoundTrip(): void
+    {
+        $original = new XdrConfigSettingContractBandwidthV0(42, 42, 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrConfigSettingContractBandwidthV0::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingContractBandwidthV0');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingContractBandwidthV0');
+        $back2 = XdrConfigSettingContractBandwidthV0::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingContractBandwidthV0');
+    }
+
+    public function testXdrConfigSettingContractBandwidthV0StructJsonRejectsInvalid(): void
+    {
+        $original = new XdrConfigSettingContractBandwidthV0(42, 42, 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrConfigSettingContractBandwidthV0::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrConfigSettingContractBandwidthV0EdgeCaseZeroRoundTrip(): void
@@ -454,6 +881,31 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNotNull(XdrContractCostType::Bn254G1Msm());
     }
 
+    public function testXdrContractCostTypeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrContractCostType::WasmInsnExec, XdrContractCostType::MemAlloc, XdrContractCostType::MemCpy, XdrContractCostType::MemCmp, XdrContractCostType::DispatchHostFunction, XdrContractCostType::VisitObject, XdrContractCostType::ValSer, XdrContractCostType::ValDeser, XdrContractCostType::ComputeSha256Hash, XdrContractCostType::ComputeEd25519PubKey, XdrContractCostType::VerifyEd25519Sig, XdrContractCostType::VmInstantiation, XdrContractCostType::VmCachedInstantiation, XdrContractCostType::InvokeVMFunction, XdrContractCostType::ComputeKeccak256Hash, XdrContractCostType::DecodeEcdsaCurve256Sig, XdrContractCostType::RecoverEcdsaSecp256k1Key, XdrContractCostType::Int256AddSub, XdrContractCostType::Int256Mul, XdrContractCostType::Int256Div, XdrContractCostType::Int256Pow, XdrContractCostType::Int256Shift, XdrContractCostType::ChaCha20DrawBytes, XdrContractCostType::ParseWasmInstructions, XdrContractCostType::ParseWasmFunctions, XdrContractCostType::ParseWasmGlobals, XdrContractCostType::ParseWasmTableEntries, XdrContractCostType::ParseWasmTypes, XdrContractCostType::ParseWasmDataSegments, XdrContractCostType::ParseWasmElemSegments, XdrContractCostType::ParseWasmImports, XdrContractCostType::ParseWasmExports, XdrContractCostType::ParseWasmDataSegmentBytes, XdrContractCostType::InstantiateWasmInstructions, XdrContractCostType::InstantiateWasmFunctions, XdrContractCostType::InstantiateWasmGlobals, XdrContractCostType::InstantiateWasmTableEntries, XdrContractCostType::InstantiateWasmTypes, XdrContractCostType::InstantiateWasmDataSegments, XdrContractCostType::InstantiateWasmElemSegments, XdrContractCostType::InstantiateWasmImports, XdrContractCostType::InstantiateWasmExports, XdrContractCostType::InstantiateWasmDataSegmentBytes, XdrContractCostType::Sec1DecodePointUncompressed, XdrContractCostType::VerifyEcdsaSecp256r1Sig, XdrContractCostType::Bls12381EncodeFp, XdrContractCostType::Bls12381DecodeFp, XdrContractCostType::Bls12381G1CheckPointOnCurve, XdrContractCostType::Bls12381G1CheckPointInSubgroup, XdrContractCostType::Bls12381G2CheckPointOnCurve, XdrContractCostType::Bls12381G2CheckPointInSubgroup, XdrContractCostType::Bls12381G1ProjectiveToAffine, XdrContractCostType::Bls12381G2ProjectiveToAffine, XdrContractCostType::Bls12381G1Add, XdrContractCostType::Bls12381G1Mul, XdrContractCostType::Bls12381G1Msm, XdrContractCostType::Bls12381MapFpToG1, XdrContractCostType::Bls12381HashToG1, XdrContractCostType::Bls12381G2Add, XdrContractCostType::Bls12381G2Mul, XdrContractCostType::Bls12381G2Msm, XdrContractCostType::Bls12381MapFp2ToG2, XdrContractCostType::Bls12381HashToG2, XdrContractCostType::Bls12381Pairing, XdrContractCostType::Bls12381FrFromU256, XdrContractCostType::Bls12381FrToU256, XdrContractCostType::Bls12381FrAddSub, XdrContractCostType::Bls12381FrMul, XdrContractCostType::Bls12381FrPow, XdrContractCostType::Bls12381FrInv, XdrContractCostType::Bn254EncodeFp, XdrContractCostType::Bn254DecodeFp, XdrContractCostType::Bn254G1CheckPointOnCurve, XdrContractCostType::Bn254G2CheckPointOnCurve, XdrContractCostType::Bn254G2CheckPointInSubgroup, XdrContractCostType::Bn254G1ProjectiveToAffine, XdrContractCostType::Bn254G1Add, XdrContractCostType::Bn254G1Mul, XdrContractCostType::Bn254Pairing, XdrContractCostType::Bn254FrFromU256, XdrContractCostType::Bn254FrToU256, XdrContractCostType::Bn254FrAddSub, XdrContractCostType::Bn254FrMul, XdrContractCostType::Bn254FrPow, XdrContractCostType::Bn254FrInv, XdrContractCostType::Bn254G1Msm];
+        foreach ($values as $v) {
+            $original = new XdrContractCostType($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrContractCostType::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrContractCostType value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrContractCostType value ' . $v);
+            $back2 = XdrContractCostType::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrContractCostType value ' . $v);
+        }
+    }
+
+    public function testXdrContractCostTypeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrContractCostType::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrContractCostType JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrContractCostParamEntryStructRoundTrip(): void
     {
         $original = new XdrContractCostParamEntry(new XdrExtensionPoint(0), 42, 42);
@@ -462,6 +914,57 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrContractCostParamEntry');
         $b64Decoded = XdrContractCostParamEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrContractCostParamEntry');
+    }
+
+    public function testXdrContractCostParamEntryStructJsonRoundTrip(): void
+    {
+        $original = new XdrContractCostParamEntry(new XdrExtensionPoint(0), 42, 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrContractCostParamEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrContractCostParamEntry');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrContractCostParamEntry');
+        $back2 = XdrContractCostParamEntry::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrContractCostParamEntry');
+    }
+
+    public function testXdrContractCostParamEntryStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrContractCostParamEntry(new XdrExtensionPoint(0), 42, 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrContractCostParamEntry::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrContractCostParamEntryEdgeCaseZeroRoundTrip(): void
@@ -497,6 +1000,57 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrStateArchivalSettings');
         $b64Decoded = XdrStateArchivalSettings::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrStateArchivalSettings');
+    }
+
+    public function testXdrStateArchivalSettingsStructJsonRoundTrip(): void
+    {
+        $original = new XdrStateArchivalSettings(42, 42, 42, 42, 42, 42, 42, 42, 42, 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrStateArchivalSettings::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStateArchivalSettings');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrStateArchivalSettings');
+        $back2 = XdrStateArchivalSettings::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStateArchivalSettings');
+    }
+
+    public function testXdrStateArchivalSettingsStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrStateArchivalSettings(42, 42, 42, 42, 42, 42, 42, 42, 42, 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrStateArchivalSettings::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrStateArchivalSettingsEdgeCaseZeroRoundTrip(): void
@@ -562,6 +1116,57 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrEvictionIterator');
     }
 
+    public function testXdrEvictionIteratorStructJsonRoundTrip(): void
+    {
+        $original = new XdrEvictionIterator(42, true, 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrEvictionIterator::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrEvictionIterator');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrEvictionIterator');
+        $back2 = XdrEvictionIterator::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrEvictionIterator');
+    }
+
+    public function testXdrEvictionIteratorStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrEvictionIterator(42, true, 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrEvictionIterator::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrEvictionIteratorEdgeCaseZeroRoundTrip(): void
     {
         $original = new XdrEvictionIterator(0, true, 42);
@@ -591,6 +1196,57 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrConfigSettingSCPTiming');
         $b64Decoded = XdrConfigSettingSCPTiming::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrConfigSettingSCPTiming');
+    }
+
+    public function testXdrConfigSettingSCPTimingStructJsonRoundTrip(): void
+    {
+        $original = new XdrConfigSettingSCPTiming(42, 42, 42, 42, 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrConfigSettingSCPTiming::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingSCPTiming');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingSCPTiming');
+        $back2 = XdrConfigSettingSCPTiming::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingSCPTiming');
+    }
+
+    public function testXdrConfigSettingSCPTimingStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrConfigSettingSCPTiming(42, 42, 42, 42, 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrConfigSettingSCPTiming::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrConfigSettingSCPTimingEdgeCaseZeroRoundTrip(): void
@@ -636,6 +1292,57 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrFrozenLedgerKeys');
     }
 
+    public function testXdrFrozenLedgerKeysStructJsonRoundTrip(): void
+    {
+        $original = new XdrFrozenLedgerKeys([]);
+        $j1 = $original->toJsonValue();
+        $back = XdrFrozenLedgerKeys::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrFrozenLedgerKeys');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrFrozenLedgerKeys');
+        $back2 = XdrFrozenLedgerKeys::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrFrozenLedgerKeys');
+    }
+
+    public function testXdrFrozenLedgerKeysStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrFrozenLedgerKeys([]);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrFrozenLedgerKeys::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrFrozenLedgerKeysStructWithArraysRoundTrip(): void
     {
         $original = new XdrFrozenLedgerKeys([new XdrEncodedLedgerKey("\x01\x02\x03\x04")]);
@@ -660,6 +1367,57 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrFrozenLedgerKeysDelta');
         $b64Decoded = XdrFrozenLedgerKeysDelta::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrFrozenLedgerKeysDelta');
+    }
+
+    public function testXdrFrozenLedgerKeysDeltaStructJsonRoundTrip(): void
+    {
+        $original = new XdrFrozenLedgerKeysDelta([], []);
+        $j1 = $original->toJsonValue();
+        $back = XdrFrozenLedgerKeysDelta::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrFrozenLedgerKeysDelta');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrFrozenLedgerKeysDelta');
+        $back2 = XdrFrozenLedgerKeysDelta::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrFrozenLedgerKeysDelta');
+    }
+
+    public function testXdrFrozenLedgerKeysDeltaStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrFrozenLedgerKeysDelta([], []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrFrozenLedgerKeysDelta::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrFrozenLedgerKeysDeltaStructWithArraysRoundTrip(): void
@@ -689,6 +1447,57 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrFreezeBypassTxs');
     }
 
+    public function testXdrFreezeBypassTxsStructJsonRoundTrip(): void
+    {
+        $original = new XdrFreezeBypassTxs([]);
+        $j1 = $original->toJsonValue();
+        $back = XdrFreezeBypassTxs::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrFreezeBypassTxs');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrFreezeBypassTxs');
+        $back2 = XdrFreezeBypassTxs::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrFreezeBypassTxs');
+    }
+
+    public function testXdrFreezeBypassTxsStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrFreezeBypassTxs([]);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrFreezeBypassTxs::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrFreezeBypassTxsStructWithArraysRoundTrip(): void
     {
         $original = new XdrFreezeBypassTxs([str_repeat("\xAB", 32)]);
@@ -713,6 +1522,57 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrFreezeBypassTxsDelta');
         $b64Decoded = XdrFreezeBypassTxsDelta::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrFreezeBypassTxsDelta');
+    }
+
+    public function testXdrFreezeBypassTxsDeltaStructJsonRoundTrip(): void
+    {
+        $original = new XdrFreezeBypassTxsDelta([], []);
+        $j1 = $original->toJsonValue();
+        $back = XdrFreezeBypassTxsDelta::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrFreezeBypassTxsDelta');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrFreezeBypassTxsDelta');
+        $back2 = XdrFreezeBypassTxsDelta::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrFreezeBypassTxsDelta');
+    }
+
+    public function testXdrFreezeBypassTxsDeltaStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrFreezeBypassTxsDelta([], []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrFreezeBypassTxsDelta::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrFreezeBypassTxsDeltaStructWithArraysRoundTrip(): void
@@ -740,6 +1600,25 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrContractCostParams');
         $b64Decoded = XdrContractCostParams::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrContractCostParams');
+    }
+
+    public function testXdrContractCostParamsTypedefJsonRoundTrip(): void
+    {
+        $original = new XdrContractCostParams([]);
+        $j1 = $original->toJsonValue();
+        $back = XdrContractCostParams::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrContractCostParams');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrContractCostParams');
+        $back2 = XdrContractCostParams::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrContractCostParams');
+    }
+
+    public function testXdrContractCostParamsTypedefJsonRejectsInvalid(): void
+    {
+        $threw = false;
+        try { XdrContractCostParams::fromJsonValue('not-an-array'); }
+        catch (\InvalidArgumentException $e) { $threw = true; }
+        $this->assertTrue($threw, 'Expected rejection for XdrContractCostParams typedef JSON');
     }
 
     public function testXdrConfigSettingIDEnumRoundTrip(): void
@@ -785,6 +1664,31 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertNotNull(XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA());
         $this->assertNotNull(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS());
         $this->assertNotNull(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA());
+    }
+
+    public function testXdrConfigSettingIDEnumJsonRoundTrip(): void
+    {
+        $values = [XdrConfigSettingID::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COMPUTE_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EVENTS_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES, XdrConfigSettingID::CONFIG_SETTING_STATE_ARCHIVAL, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES, XdrConfigSettingID::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW, XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0, XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0, XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING, XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS, XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA, XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS, XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA];
+        foreach ($values as $v) {
+            $original = new XdrConfigSettingID($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrConfigSettingID::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingID value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingID value ' . $v);
+            $back2 = XdrConfigSettingID::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingID value ' . $v);
+        }
+    }
+
+    public function testXdrConfigSettingIDEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrConfigSettingID::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrConfigSettingID JSON: ' . var_export($bad, true));
+        }
     }
 
     public function testXdrConfigSettingEntry_XdrConfigSettingID_CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES_ArmRoundTrip(): void
@@ -1478,6 +2382,223 @@ class XdrContractConfigSettingGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrConfigSettingEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrConfigSettingEntryUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES)); $u->contractMaxSizeBytes = 42; return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES');
+        $back2 = XdrConfigSettingEntry::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES');
+        $arm1 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COMPUTE_V0)); $u->contractCompute = new XdrConfigSettingContractComputeV0(42, 42, 42, 42); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_COMPUTE_V0');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_COMPUTE_V0');
+        $back2 = XdrConfigSettingEntry::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_COMPUTE_V0');
+        $arm2 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_V0)); $u->contractLedgerCost = new XdrConfigSettingContractLedgerCostV0(42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_LEDGER_COST_V0');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_LEDGER_COST_V0');
+        $back2 = XdrConfigSettingEntry::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_LEDGER_COST_V0');
+        $arm3 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0)); $u->contractHistoricalData = new XdrConfigSettingContractHistoricalDataV0(42); return $u; })();
+        $j1 = $arm3->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0');
+        $back2 = XdrConfigSettingEntry::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0');
+        $arm4 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EVENTS_V0)); $u->contractEvents = new XdrConfigSettingContractEventsV0(42, 42); return $u; })();
+        $j1 = $arm4->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_EVENTS_V0');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_EVENTS_V0');
+        $back2 = XdrConfigSettingEntry::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_EVENTS_V0');
+        $arm5 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0)); $u->contractBandwidth = new XdrConfigSettingContractBandwidthV0(42, 42, 42); return $u; })();
+        $j1 = $arm5->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_BANDWIDTH_V0');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_BANDWIDTH_V0');
+        $back2 = XdrConfigSettingEntry::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_BANDWIDTH_V0');
+        $arm6 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS)); $u->contractCostParamsCpuInsns = new XdrContractCostParams([]); return $u; })();
+        $j1 = $arm6->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS');
+        $back2 = XdrConfigSettingEntry::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS');
+        $arm7 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES)); $u->contractCostParamsMemBytes = new XdrContractCostParams([]); return $u; })();
+        $j1 = $arm7->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES');
+        $this->assertSame($arm7->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES');
+        $back2 = XdrConfigSettingEntry::fromJson($arm7->toJson());
+        $this->assertSame($arm7->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES');
+        $arm8 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES)); $u->contractDataKeySizeBytes = 42; return $u; })();
+        $j1 = $arm8->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES');
+        $this->assertSame($arm8->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES');
+        $back2 = XdrConfigSettingEntry::fromJson($arm8->toJson());
+        $this->assertSame($arm8->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES');
+        $arm9 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES)); $u->contractDataEntrySizeBytes = 42; return $u; })();
+        $j1 = $arm9->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES');
+        $this->assertSame($arm9->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES');
+        $back2 = XdrConfigSettingEntry::fromJson($arm9->toJson());
+        $this->assertSame($arm9->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES');
+        $arm10 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_STATE_ARCHIVAL)); $u->stateArchivalSettings = new XdrStateArchivalSettings(42, 42, 42, 42, 42, 42, 42, 42, 42, 42); return $u; })();
+        $j1 = $arm10->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_STATE_ARCHIVAL');
+        $this->assertSame($arm10->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_STATE_ARCHIVAL');
+        $back2 = XdrConfigSettingEntry::fromJson($arm10->toJson());
+        $this->assertSame($arm10->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_STATE_ARCHIVAL');
+        $arm11 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES)); $u->contractExecutionLanes = new XdrConfigSettingContractExecutionLanesV0(42); return $u; })();
+        $j1 = $arm11->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_EXECUTION_LANES');
+        $this->assertSame($arm11->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_EXECUTION_LANES');
+        $back2 = XdrConfigSettingEntry::fromJson($arm11->toJson());
+        $this->assertSame($arm11->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_EXECUTION_LANES');
+        $arm12 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW)); $u->liveSorobanStateSizeWindow = []; return $u; })();
+        $j1 = $arm12->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW');
+        $this->assertSame($arm12->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW');
+        $back2 = XdrConfigSettingEntry::fromJson($arm12->toJson());
+        $this->assertSame($arm12->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW');
+        $arm13 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR)); $u->evictionIterator = new XdrEvictionIterator(42, true, 42); return $u; })();
+        $j1 = $arm13->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_EVICTION_ITERATOR');
+        $this->assertSame($arm13->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_EVICTION_ITERATOR');
+        $back2 = XdrConfigSettingEntry::fromJson($arm13->toJson());
+        $this->assertSame($arm13->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_EVICTION_ITERATOR');
+        $arm14 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0)); $u->contractParallelCompute = new XdrConfigSettingContractParallelComputeV0(42); return $u; })();
+        $j1 = $arm14->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0');
+        $this->assertSame($arm14->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0');
+        $back2 = XdrConfigSettingEntry::fromJson($arm14->toJson());
+        $this->assertSame($arm14->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0');
+        $arm15 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0)); $u->contractLedgerCostExt = new XdrConfigSettingContractLedgerCostExtV0(42, 42); return $u; })();
+        $j1 = $arm15->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0');
+        $this->assertSame($arm15->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0');
+        $back2 = XdrConfigSettingEntry::fromJson($arm15->toJson());
+        $this->assertSame($arm15->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0');
+        $arm16 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING)); $u->contractSCPTiming = new XdrConfigSettingSCPTiming(42, 42, 42, 42, 42); return $u; })();
+        $j1 = $arm16->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_SCP_TIMING');
+        $this->assertSame($arm16->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_SCP_TIMING');
+        $back2 = XdrConfigSettingEntry::fromJson($arm16->toJson());
+        $this->assertSame($arm16->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_SCP_TIMING');
+        $arm17 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS)); $u->frozenLedgerKeys = new XdrFrozenLedgerKeys([]); return $u; })();
+        $j1 = $arm17->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_FROZEN_LEDGER_KEYS');
+        $this->assertSame($arm17->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_FROZEN_LEDGER_KEYS');
+        $back2 = XdrConfigSettingEntry::fromJson($arm17->toJson());
+        $this->assertSame($arm17->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_FROZEN_LEDGER_KEYS');
+        $arm18 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA)); $u->frozenLedgerKeysDelta = new XdrFrozenLedgerKeysDelta([], []); return $u; })();
+        $j1 = $arm18->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA');
+        $this->assertSame($arm18->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA');
+        $back2 = XdrConfigSettingEntry::fromJson($arm18->toJson());
+        $this->assertSame($arm18->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA');
+        $arm19 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS)); $u->freezeBypassTxs = new XdrFreezeBypassTxs([]); return $u; })();
+        $j1 = $arm19->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_FREEZE_BYPASS_TXS');
+        $this->assertSame($arm19->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_FREEZE_BYPASS_TXS');
+        $back2 = XdrConfigSettingEntry::fromJson($arm19->toJson());
+        $this->assertSame($arm19->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_FREEZE_BYPASS_TXS');
+        $arm20 = (function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA)); $u->freezeBypassTxsDelta = new XdrFreezeBypassTxsDelta([], []); return $u; })();
+        $j1 = $arm20->toJsonValue();
+        $back = XdrConfigSettingEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA');
+        $this->assertSame($arm20->toJson(), $back->toJson(), 'JSON string not stable for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA');
+        $back2 = XdrConfigSettingEntry::fromJson($arm20->toJson());
+        $this->assertSame($arm20->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrConfigSettingEntry arm XdrConfigSettingID_CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA');
+    }
+
+    public function testXdrConfigSettingEntryUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES)); $u->contractMaxSizeBytes = 42; return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COMPUTE_V0)); $u->contractCompute = new XdrConfigSettingContractComputeV0(42, 42, 42, 42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_V0)); $u->contractLedgerCost = new XdrConfigSettingContractLedgerCostV0(42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0)); $u->contractHistoricalData = new XdrConfigSettingContractHistoricalDataV0(42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EVENTS_V0)); $u->contractEvents = new XdrConfigSettingContractEventsV0(42, 42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_BANDWIDTH_V0)); $u->contractBandwidth = new XdrConfigSettingContractBandwidthV0(42, 42, 42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS)); $u->contractCostParamsCpuInsns = new XdrContractCostParams([]); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES)); $u->contractCostParamsMemBytes = new XdrContractCostParams([]); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES)); $u->contractDataKeySizeBytes = 42; return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES)); $u->contractDataEntrySizeBytes = 42; return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_STATE_ARCHIVAL)); $u->stateArchivalSettings = new XdrStateArchivalSettings(42, 42, 42, 42, 42, 42, 42, 42, 42, 42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_EXECUTION_LANES)); $u->contractExecutionLanes = new XdrConfigSettingContractExecutionLanesV0(42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW)); $u->liveSorobanStateSizeWindow = []; return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_EVICTION_ITERATOR)); $u->evictionIterator = new XdrEvictionIterator(42, true, 42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0)); $u->contractParallelCompute = new XdrConfigSettingContractParallelComputeV0(42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0)); $u->contractLedgerCostExt = new XdrConfigSettingContractLedgerCostExtV0(42, 42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_SCP_TIMING)); $u->contractSCPTiming = new XdrConfigSettingSCPTiming(42, 42, 42, 42, 42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS)); $u->frozenLedgerKeys = new XdrFrozenLedgerKeys([]); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA)); $u->frozenLedgerKeysDelta = new XdrFrozenLedgerKeysDelta([], []); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS)); $u->freezeBypassTxs = new XdrFreezeBypassTxs([]); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrConfigSettingEntry(new XdrConfigSettingID(XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA)); $u->freezeBypassTxsDelta = new XdrFreezeBypassTxsDelta([], []); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrConfigSettingEntry::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrConfigSettingEntry: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrConfigSettingEntry::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrConfigSettingEntry: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrConfigSettingEntryGettersSetters(): void
