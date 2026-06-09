@@ -24,6 +24,57 @@ class XdrContractMetaGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCMetaV0');
     }
 
+    public function testXdrSCMetaV0StructJsonRoundTrip(): void
+    {
+        $original = new XdrSCMetaV0('test_string', 'test_string');
+        $j1 = $original->toJsonValue();
+        $back = XdrSCMetaV0::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCMetaV0');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSCMetaV0');
+        $back2 = XdrSCMetaV0::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCMetaV0');
+    }
+
+    public function testXdrSCMetaV0StructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSCMetaV0('test_string', 'test_string');
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSCMetaV0::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrSCMetaV0EdgeCaseEmptyStringRoundTrip(): void
     {
         $original = new XdrSCMetaV0('', 'test_string');
@@ -70,6 +121,31 @@ class XdrContractMetaGenTest extends TestCase
         $this->assertNotNull(XdrSCMetaKind::SC_META_V0());
     }
 
+    public function testXdrSCMetaKindEnumJsonRoundTrip(): void
+    {
+        $values = [XdrSCMetaKind::SC_META_V0];
+        foreach ($values as $v) {
+            $original = new XdrSCMetaKind($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrSCMetaKind::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCMetaKind value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSCMetaKind value ' . $v);
+            $back2 = XdrSCMetaKind::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCMetaKind value ' . $v);
+        }
+    }
+
+    public function testXdrSCMetaKindEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrSCMetaKind::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrSCMetaKind JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrSCMetaEntry_XdrSCMetaKind_SC_META_V0_ArmRoundTrip(): void
     {
         $original = new XdrSCMetaEntry(new XdrSCMetaKind(XdrSCMetaKind::SC_META_V0));
@@ -81,6 +157,63 @@ class XdrContractMetaGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed');
         $b64Decoded = XdrSCMetaEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
+    }
+
+    public function testXdrSCMetaEntryUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrSCMetaEntry(new XdrSCMetaKind(XdrSCMetaKind::SC_META_V0)); $u->v0 = new XdrSCMetaV0('test_string', 'test_string'); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrSCMetaEntry::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCMetaEntry arm XdrSCMetaKind_SC_META_V0');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrSCMetaEntry arm XdrSCMetaKind_SC_META_V0');
+        $back2 = XdrSCMetaEntry::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCMetaEntry arm XdrSCMetaKind_SC_META_V0');
+    }
+
+    public function testXdrSCMetaEntryUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrSCMetaEntry(new XdrSCMetaKind(XdrSCMetaKind::SC_META_V0)); $u->v0 = new XdrSCMetaV0('test_string', 'test_string'); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSCMetaEntry::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrSCMetaEntry: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrSCMetaEntry::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrSCMetaEntry: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrSCMetaEntryGettersSetters(): void

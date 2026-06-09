@@ -116,6 +116,11 @@ class XdrAsset {
             );
         }
         $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new InvalidArgumentException(
+                'Expected string arm key for XdrAsset, got ' . get_debug_type($key)
+            );
+        }
         if ($key === 'credit_alphanum4') {
             $result = new static(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4));
             $result->alphaNum4 = XdrAssetAlphaNum4::fromJsonValue($value['credit_alphanum4']);

@@ -16,6 +16,8 @@ use Soneso\StellarSDK\Xdr\XdrSCPEnvelope;
 use Soneso\StellarSDK\Xdr\XdrSCPNomination;
 use Soneso\StellarSDK\Xdr\XdrSCPQuorumSet;
 use Soneso\StellarSDK\Xdr\XdrSCPStatement;
+use Soneso\StellarSDK\Xdr\XdrSCPStatementConfirm;
+use Soneso\StellarSDK\Xdr\XdrSCPStatementExternalize;
 use Soneso\StellarSDK\Xdr\XdrSCPStatementPledges;
 use Soneso\StellarSDK\Xdr\XdrSCPStatementPrepare;
 use Soneso\StellarSDK\Xdr\XdrSCPStatementType;
@@ -33,6 +35,25 @@ class XdrScpGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrValue');
     }
 
+    public function testXdrValueTypedefJsonRoundTrip(): void
+    {
+        $original = new XdrValue(str_repeat("\xAB", 32));
+        $j1 = $original->toJsonValue();
+        $back = XdrValue::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrValue');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrValue');
+        $back2 = XdrValue::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrValue');
+    }
+
+    public function testXdrValueTypedefJsonRejectsInvalid(): void
+    {
+        $threw = false;
+        try { XdrValue::fromJsonValue(42); }
+        catch (\InvalidArgumentException $e) { $threw = true; }
+        $this->assertTrue($threw, 'Expected rejection for XdrValue typedef JSON');
+    }
+
     public function testXdrSCPBallotStructRoundTrip(): void
     {
         $original = new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32)));
@@ -41,6 +62,57 @@ class XdrScpGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSCPBallot');
         $b64Decoded = XdrSCPBallot::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCPBallot');
+    }
+
+    public function testXdrSCPBallotStructJsonRoundTrip(): void
+    {
+        $original = new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32)));
+        $j1 = $original->toJsonValue();
+        $back = XdrSCPBallot::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCPBallot');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSCPBallot');
+        $back2 = XdrSCPBallot::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCPBallot');
+    }
+
+    public function testXdrSCPBallotStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32)));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSCPBallot::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrSCPBallotGettersSetters(): void
@@ -84,6 +156,31 @@ class XdrScpGenTest extends TestCase
         $this->assertNotNull(XdrSCPStatementType::SCP_ST_NOMINATE());
     }
 
+    public function testXdrSCPStatementTypeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrSCPStatementType::SCP_ST_PREPARE, XdrSCPStatementType::SCP_ST_CONFIRM, XdrSCPStatementType::SCP_ST_EXTERNALIZE, XdrSCPStatementType::SCP_ST_NOMINATE];
+        foreach ($values as $v) {
+            $original = new XdrSCPStatementType($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrSCPStatementType::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCPStatementType value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSCPStatementType value ' . $v);
+            $back2 = XdrSCPStatementType::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCPStatementType value ' . $v);
+        }
+    }
+
+    public function testXdrSCPStatementTypeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrSCPStatementType::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrSCPStatementType JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrSCPNominationStructRoundTrip(): void
     {
         $original = new XdrSCPNomination(str_repeat("\0", 32), [], []);
@@ -92,6 +189,57 @@ class XdrScpGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSCPNomination');
         $b64Decoded = XdrSCPNomination::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCPNomination');
+    }
+
+    public function testXdrSCPNominationStructJsonRoundTrip(): void
+    {
+        $original = new XdrSCPNomination(str_repeat("\0", 32), [], []);
+        $j1 = $original->toJsonValue();
+        $back = XdrSCPNomination::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCPNomination');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSCPNomination');
+        $back2 = XdrSCPNomination::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCPNomination');
+    }
+
+    public function testXdrSCPNominationStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSCPNomination(str_repeat("\0", 32), [], []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSCPNomination::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrSCPNominationGettersSetters(): void
@@ -113,6 +261,57 @@ class XdrScpGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSCPStatement');
         $b64Decoded = XdrSCPStatement::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCPStatement');
+    }
+
+    public function testXdrSCPStatementStructJsonRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $pledges = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $pledges->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); return new XdrSCPStatement(new XdrNodeID($pk), 42, $pledges); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrSCPStatement::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCPStatement');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSCPStatement');
+        $back2 = XdrSCPStatement::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCPStatement');
+    }
+
+    public function testXdrSCPStatementStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $pledges = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $pledges->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); return new XdrSCPStatement(new XdrNodeID($pk), 42, $pledges); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSCPStatement::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrSCPStatementGettersSetters(): void
@@ -142,6 +341,95 @@ class XdrScpGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCPStatementPledges');
     }
 
+    public function testXdrSCPStatementPledgesUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $u->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrSCPStatementPledges::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCPStatementPledges arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrSCPStatementPledges arm fallback');
+        $back2 = XdrSCPStatementPledges::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCPStatementPledges arm fallback');
+        $arm1 = (function() { $u = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $u->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrSCPStatementPledges::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCPStatementPledges arm XdrSCPStatementType_SCP_ST_PREPARE');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrSCPStatementPledges arm XdrSCPStatementType_SCP_ST_PREPARE');
+        $back2 = XdrSCPStatementPledges::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCPStatementPledges arm XdrSCPStatementType_SCP_ST_PREPARE');
+        $arm2 = (function() { $u = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_CONFIRM)); $u->confirm = new XdrSCPStatementConfirm(new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0, 0, str_repeat("\0", 32)); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrSCPStatementPledges::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCPStatementPledges arm XdrSCPStatementType_SCP_ST_CONFIRM');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrSCPStatementPledges arm XdrSCPStatementType_SCP_ST_CONFIRM');
+        $back2 = XdrSCPStatementPledges::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCPStatementPledges arm XdrSCPStatementType_SCP_ST_CONFIRM');
+        $arm3 = (function() { $u = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_EXTERNALIZE)); $u->externalize = new XdrSCPStatementExternalize(new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, str_repeat("\0", 32)); return $u; })();
+        $j1 = $arm3->toJsonValue();
+        $back = XdrSCPStatementPledges::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCPStatementPledges arm XdrSCPStatementType_SCP_ST_EXTERNALIZE');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrSCPStatementPledges arm XdrSCPStatementType_SCP_ST_EXTERNALIZE');
+        $back2 = XdrSCPStatementPledges::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCPStatementPledges arm XdrSCPStatementType_SCP_ST_EXTERNALIZE');
+        $arm4 = (function() { $u = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_NOMINATE)); $u->nominate = new XdrSCPNomination(str_repeat("\0", 32), [], []); return $u; })();
+        $j1 = $arm4->toJsonValue();
+        $back = XdrSCPStatementPledges::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCPStatementPledges arm XdrSCPStatementType_SCP_ST_NOMINATE');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrSCPStatementPledges arm XdrSCPStatementType_SCP_ST_NOMINATE');
+        $back2 = XdrSCPStatementPledges::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCPStatementPledges arm XdrSCPStatementType_SCP_ST_NOMINATE');
+    }
+
+    public function testXdrSCPStatementPledgesUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $u->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $u->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_CONFIRM)); $u->confirm = new XdrSCPStatementConfirm(new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0, 0, str_repeat("\0", 32)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_EXTERNALIZE)); $u->externalize = new XdrSCPStatementExternalize(new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, str_repeat("\0", 32)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_NOMINATE)); $u->nominate = new XdrSCPNomination(str_repeat("\0", 32), [], []); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSCPStatementPledges::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrSCPStatementPledges: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrSCPStatementPledges::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrSCPStatementPledges: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrSCPStatementPledgesGettersSetters(): void
     {
         $obj = (function() { $u = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $u->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); return $u; })();
@@ -152,6 +440,265 @@ class XdrScpGenTest extends TestCase
         $obj->getNominate();
     }
 
+    public function testXdrSCPStatementPrepareStructRoundTrip(): void
+    {
+        $original = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0);
+        $encoded = $original->encode();
+        $decoded = XdrSCPStatementPrepare::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSCPStatementPrepare');
+        $b64Decoded = XdrSCPStatementPrepare::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCPStatementPrepare');
+    }
+
+    public function testXdrSCPStatementPrepareStructJsonRoundTrip(): void
+    {
+        $original = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0);
+        $j1 = $original->toJsonValue();
+        $back = XdrSCPStatementPrepare::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCPStatementPrepare');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSCPStatementPrepare');
+        $back2 = XdrSCPStatementPrepare::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCPStatementPrepare');
+    }
+
+    public function testXdrSCPStatementPrepareStructJsonOptionalsPresentRoundTrip(): void
+    {
+        $original = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0, new XdrSCPBallot(1, new XdrValue(str_repeat("\xCD", 16))), new XdrSCPBallot(2, new XdrValue(str_repeat("\xEF", 16))));
+        $j1 = $original->toJsonValue();
+        $back = XdrSCPStatementPrepare::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCPStatementPrepare optionals-present');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSCPStatementPrepare optionals-present');
+        $back2 = XdrSCPStatementPrepare::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCPStatementPrepare optionals-present');
+    }
+
+    public function testXdrSCPStatementPrepareStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSCPStatementPrepare::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrSCPStatementPrepareGettersSetters(): void
+    {
+        $obj = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0);
+        $obj->getQuorumSetHash();
+        $newVal = str_repeat("\xAB", 32);
+        $obj->setQuorumSetHash($newVal);
+        $this->assertSame($newVal, $obj->getQuorumSetHash());
+        $obj->getBallot();
+        $newVal = new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32)));
+        $obj->setBallot($newVal);
+        $this->assertSame($newVal, $obj->getBallot());
+        $obj->getPrepared();
+        $obj->getPreparedPrime();
+        $obj->getNC();
+        $newVal = 42;
+        $obj->setNC($newVal);
+        $this->assertSame($newVal, $obj->getNC());
+        $obj->getNH();
+        $newVal = 42;
+        $obj->setNH($newVal);
+        $this->assertSame($newVal, $obj->getNH());
+    }
+
+    public function testXdrSCPStatementConfirmStructRoundTrip(): void
+    {
+        $original = new XdrSCPStatementConfirm(new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0, 0, str_repeat("\0", 32));
+        $encoded = $original->encode();
+        $decoded = XdrSCPStatementConfirm::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSCPStatementConfirm');
+        $b64Decoded = XdrSCPStatementConfirm::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCPStatementConfirm');
+    }
+
+    public function testXdrSCPStatementConfirmStructJsonRoundTrip(): void
+    {
+        $original = new XdrSCPStatementConfirm(new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0, 0, str_repeat("\0", 32));
+        $j1 = $original->toJsonValue();
+        $back = XdrSCPStatementConfirm::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCPStatementConfirm');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSCPStatementConfirm');
+        $back2 = XdrSCPStatementConfirm::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCPStatementConfirm');
+    }
+
+    public function testXdrSCPStatementConfirmStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSCPStatementConfirm(new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0, 0, str_repeat("\0", 32));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSCPStatementConfirm::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrSCPStatementConfirmGettersSetters(): void
+    {
+        $obj = new XdrSCPStatementConfirm(new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0, 0, str_repeat("\0", 32));
+        $obj->getBallot();
+        $newVal = new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32)));
+        $obj->setBallot($newVal);
+        $this->assertSame($newVal, $obj->getBallot());
+        $obj->getNPrepared();
+        $newVal = 42;
+        $obj->setNPrepared($newVal);
+        $this->assertSame($newVal, $obj->getNPrepared());
+        $obj->getNCommit();
+        $newVal = 42;
+        $obj->setNCommit($newVal);
+        $this->assertSame($newVal, $obj->getNCommit());
+        $obj->getNH();
+        $newVal = 42;
+        $obj->setNH($newVal);
+        $this->assertSame($newVal, $obj->getNH());
+        $obj->getQuorumSetHash();
+        $newVal = str_repeat("\xAB", 32);
+        $obj->setQuorumSetHash($newVal);
+        $this->assertSame($newVal, $obj->getQuorumSetHash());
+    }
+
+    public function testXdrSCPStatementExternalizeStructRoundTrip(): void
+    {
+        $original = new XdrSCPStatementExternalize(new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, str_repeat("\0", 32));
+        $encoded = $original->encode();
+        $decoded = XdrSCPStatementExternalize::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSCPStatementExternalize');
+        $b64Decoded = XdrSCPStatementExternalize::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCPStatementExternalize');
+    }
+
+    public function testXdrSCPStatementExternalizeStructJsonRoundTrip(): void
+    {
+        $original = new XdrSCPStatementExternalize(new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, str_repeat("\0", 32));
+        $j1 = $original->toJsonValue();
+        $back = XdrSCPStatementExternalize::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCPStatementExternalize');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSCPStatementExternalize');
+        $back2 = XdrSCPStatementExternalize::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCPStatementExternalize');
+    }
+
+    public function testXdrSCPStatementExternalizeStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSCPStatementExternalize(new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, str_repeat("\0", 32));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSCPStatementExternalize::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrSCPStatementExternalizeGettersSetters(): void
+    {
+        $obj = new XdrSCPStatementExternalize(new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, str_repeat("\0", 32));
+        $obj->getCommit();
+        $newVal = new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32)));
+        $obj->setCommit($newVal);
+        $this->assertSame($newVal, $obj->getCommit());
+        $obj->getNH();
+        $newVal = 42;
+        $obj->setNH($newVal);
+        $this->assertSame($newVal, $obj->getNH());
+        $obj->getCommitQuorumSetHash();
+        $newVal = str_repeat("\xAB", 32);
+        $obj->setCommitQuorumSetHash($newVal);
+        $this->assertSame($newVal, $obj->getCommitQuorumSetHash());
+    }
+
     public function testXdrSCPEnvelopeStructRoundTrip(): void
     {
         $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $pledges = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $pledges->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); $stmt = new XdrSCPStatement(new XdrNodeID($pk), 42, $pledges); return new XdrSCPEnvelope($stmt, str_repeat("\xAB", 64)); })();
@@ -160,6 +707,57 @@ class XdrScpGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSCPEnvelope');
         $b64Decoded = XdrSCPEnvelope::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCPEnvelope');
+    }
+
+    public function testXdrSCPEnvelopeStructJsonRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $pledges = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $pledges->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); $stmt = new XdrSCPStatement(new XdrNodeID($pk), 42, $pledges); return new XdrSCPEnvelope($stmt, str_repeat("\xAB", 64)); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrSCPEnvelope::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCPEnvelope');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSCPEnvelope');
+        $back2 = XdrSCPEnvelope::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCPEnvelope');
+    }
+
+    public function testXdrSCPEnvelopeStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $pledges = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $pledges->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); $stmt = new XdrSCPStatement(new XdrNodeID($pk), 42, $pledges); return new XdrSCPEnvelope($stmt, str_repeat("\xAB", 64)); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSCPEnvelope::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrSCPEnvelopeGettersSetters(): void
@@ -183,6 +781,57 @@ class XdrScpGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSCPQuorumSet');
         $b64Decoded = XdrSCPQuorumSet::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCPQuorumSet');
+    }
+
+    public function testXdrSCPQuorumSetStructJsonRoundTrip(): void
+    {
+        $original = new XdrSCPQuorumSet(42, [], []);
+        $j1 = $original->toJsonValue();
+        $back = XdrSCPQuorumSet::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCPQuorumSet');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSCPQuorumSet');
+        $back2 = XdrSCPQuorumSet::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCPQuorumSet');
+    }
+
+    public function testXdrSCPQuorumSetStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSCPQuorumSet(42, [], []);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSCPQuorumSet::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrSCPQuorumSetGettersSetters(): void

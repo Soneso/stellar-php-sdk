@@ -6,6 +6,7 @@
 namespace Soneso\StellarSDKTests\Unit\Xdr\Generated;
 
 use PHPUnit\Framework\TestCase;
+use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Xdr\XdrAuth;
 use Soneso\StellarSDK\Xdr\XdrAuthCert;
 use Soneso\StellarSDK\Xdr\XdrAuthenticatedMessage;
@@ -15,10 +16,12 @@ use Soneso\StellarSDK\Xdr\XdrCurve25519Public;
 use Soneso\StellarSDK\Xdr\XdrDontHave;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrEncryptedBody;
+use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrError;
 use Soneso\StellarSDK\Xdr\XdrErrorCode;
 use Soneso\StellarSDK\Xdr\XdrFloodAdvert;
 use Soneso\StellarSDK\Xdr\XdrFloodDemand;
+use Soneso\StellarSDK\Xdr\XdrGeneralizedTransactionSet;
 use Soneso\StellarSDK\Xdr\XdrHello;
 use Soneso\StellarSDK\Xdr\XdrHmacSha256Mac;
 use Soneso\StellarSDK\Xdr\XdrIPAddrType;
@@ -29,8 +32,16 @@ use Soneso\StellarSDK\Xdr\XdrPeerAddressIp;
 use Soneso\StellarSDK\Xdr\XdrPeerStats;
 use Soneso\StellarSDK\Xdr\XdrPublicKey;
 use Soneso\StellarSDK\Xdr\XdrPublicKeyType;
+use Soneso\StellarSDK\Xdr\XdrSCPBallot;
+use Soneso\StellarSDK\Xdr\XdrSCPEnvelope;
+use Soneso\StellarSDK\Xdr\XdrSCPQuorumSet;
+use Soneso\StellarSDK\Xdr\XdrSCPStatement;
+use Soneso\StellarSDK\Xdr\XdrSCPStatementPledges;
+use Soneso\StellarSDK\Xdr\XdrSCPStatementPrepare;
+use Soneso\StellarSDK\Xdr\XdrSCPStatementType;
 use Soneso\StellarSDK\Xdr\XdrSendMore;
 use Soneso\StellarSDK\Xdr\XdrSendMoreExtended;
+use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
 use Soneso\StellarSDK\Xdr\XdrSignedTimeSlicedSurveyRequestMessage;
 use Soneso\StellarSDK\Xdr\XdrSignedTimeSlicedSurveyResponseMessage;
 use Soneso\StellarSDK\Xdr\XdrSignedTimeSlicedSurveyStartCollectingMessage;
@@ -49,8 +60,14 @@ use Soneso\StellarSDK\Xdr\XdrTimeSlicedSurveyResponseMessage;
 use Soneso\StellarSDK\Xdr\XdrTimeSlicedSurveyStartCollectingMessage;
 use Soneso\StellarSDK\Xdr\XdrTimeSlicedSurveyStopCollectingMessage;
 use Soneso\StellarSDK\Xdr\XdrTopologyResponseBodyV2;
+use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrTransactionSet;
+use Soneso\StellarSDK\Xdr\XdrTransactionSetV1;
+use Soneso\StellarSDK\Xdr\XdrTransactionV0;
+use Soneso\StellarSDK\Xdr\XdrTransactionV0Envelope;
 use Soneso\StellarSDK\Xdr\XdrTxAdvertVector;
 use Soneso\StellarSDK\Xdr\XdrTxDemandVector;
+use Soneso\StellarSDK\Xdr\XdrValue;
 
 class XdrOverlayGenTest extends TestCase
 {
@@ -83,6 +100,31 @@ class XdrOverlayGenTest extends TestCase
         $this->assertNotNull(XdrErrorCode::ERR_LOAD());
     }
 
+    public function testXdrErrorCodeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrErrorCode::ERR_MISC, XdrErrorCode::ERR_DATA, XdrErrorCode::ERR_CONF, XdrErrorCode::ERR_AUTH, XdrErrorCode::ERR_LOAD];
+        foreach ($values as $v) {
+            $original = new XdrErrorCode($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrErrorCode::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrErrorCode value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrErrorCode value ' . $v);
+            $back2 = XdrErrorCode::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrErrorCode value ' . $v);
+        }
+    }
+
+    public function testXdrErrorCodeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrErrorCode::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrErrorCode JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrErrorStructRoundTrip(): void
     {
         $original = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error');
@@ -91,6 +133,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrError');
         $b64Decoded = XdrError::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrError');
+    }
+
+    public function testXdrErrorStructJsonRoundTrip(): void
+    {
+        $original = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error');
+        $j1 = $original->toJsonValue();
+        $back = XdrError::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrError');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrError');
+        $back2 = XdrError::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrError');
+    }
+
+    public function testXdrErrorStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error');
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrError::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrErrorGettersSetters(): void
@@ -116,6 +209,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSendMore');
     }
 
+    public function testXdrSendMoreStructJsonRoundTrip(): void
+    {
+        $original = new XdrSendMore(42);
+        $j1 = $original->toJsonValue();
+        $back = XdrSendMore::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSendMore');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSendMore');
+        $back2 = XdrSendMore::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSendMore');
+    }
+
+    public function testXdrSendMoreStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSendMore(42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSendMore::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrSendMoreGettersSetters(): void
     {
         $obj = new XdrSendMore(42);
@@ -133,6 +277,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSendMoreExtended');
         $b64Decoded = XdrSendMoreExtended::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSendMoreExtended');
+    }
+
+    public function testXdrSendMoreExtendedStructJsonRoundTrip(): void
+    {
+        $original = new XdrSendMoreExtended(42, 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrSendMoreExtended::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSendMoreExtended');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSendMoreExtended');
+        $back2 = XdrSendMoreExtended::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSendMoreExtended');
+    }
+
+    public function testXdrSendMoreExtendedStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrSendMoreExtended(42, 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSendMoreExtended::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrSendMoreExtendedGettersSetters(): void
@@ -156,6 +351,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrAuthCert');
         $b64Decoded = XdrAuthCert::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrAuthCert');
+    }
+
+    public function testXdrAuthCertStructJsonRoundTrip(): void
+    {
+        $original = new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, str_repeat("\xAB", 64));
+        $j1 = $original->toJsonValue();
+        $back = XdrAuthCert::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAuthCert');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrAuthCert');
+        $back2 = XdrAuthCert::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAuthCert');
+    }
+
+    public function testXdrAuthCertStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, str_repeat("\xAB", 64));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrAuthCert::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrAuthCertGettersSetters(): void
@@ -183,6 +429,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrHello');
         $b64Decoded = XdrHello::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrHello');
+    }
+
+    public function testXdrHelloStructJsonRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrHello(42, 42, 42, str_repeat("\0", 32), 'test', 42, new XdrNodeID($pk), new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, str_repeat("\xAB", 64)), str_repeat("\xAB", 32)); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrHello::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrHello');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrHello');
+        $back2 = XdrHello::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrHello');
+    }
+
+    public function testXdrHelloStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrHello(42, 42, 42, str_repeat("\0", 32), 'test', 42, new XdrNodeID($pk), new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, str_repeat("\xAB", 64)), str_repeat("\xAB", 32)); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrHello::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrHelloGettersSetters(): void
@@ -236,6 +533,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrAuth');
     }
 
+    public function testXdrAuthStructJsonRoundTrip(): void
+    {
+        $original = new XdrAuth(42);
+        $j1 = $original->toJsonValue();
+        $back = XdrAuth::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAuth');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrAuth');
+        $back2 = XdrAuth::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAuth');
+    }
+
+    public function testXdrAuthStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrAuth(42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrAuth::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrAuthGettersSetters(): void
     {
         $obj = new XdrAuth(42);
@@ -271,6 +619,31 @@ class XdrOverlayGenTest extends TestCase
         $this->assertNotNull(XdrIPAddrType::IPv6());
     }
 
+    public function testXdrIPAddrTypeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrIPAddrType::IPv4, XdrIPAddrType::IPv6];
+        foreach ($values as $v) {
+            $original = new XdrIPAddrType($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrIPAddrType::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrIPAddrType value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrIPAddrType value ' . $v);
+            $back2 = XdrIPAddrType::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrIPAddrType value ' . $v);
+        }
+    }
+
+    public function testXdrIPAddrTypeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrIPAddrType::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrIPAddrType JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrPeerAddressStructRoundTrip(): void
     {
         $original = (function() { $ip = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4)); $ip->ipv4 = str_repeat("\xAB", 4); return new XdrPeerAddress($ip, 42, 0); })();
@@ -279,6 +652,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrPeerAddress');
         $b64Decoded = XdrPeerAddress::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrPeerAddress');
+    }
+
+    public function testXdrPeerAddressStructJsonRoundTrip(): void
+    {
+        $original = (function() { $ip = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4)); $ip->ipv4 = str_repeat("\xAB", 4); return new XdrPeerAddress($ip, 42, 0); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrPeerAddress::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPeerAddress');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrPeerAddress');
+        $back2 = XdrPeerAddress::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPeerAddress');
+    }
+
+    public function testXdrPeerAddressStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $ip = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4)); $ip->ipv4 = str_repeat("\xAB", 4); return new XdrPeerAddress($ip, 42, 0); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrPeerAddress::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrPeerAddressGettersSetters(): void
@@ -306,6 +730,79 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrPeerAddressIp');
         $b64Decoded = XdrPeerAddressIp::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrPeerAddressIp');
+    }
+
+    public function testXdrPeerAddressIpUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $ip = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4)); $ip->ipv4 = str_repeat("\xAB", 4); return $ip; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrPeerAddressIp::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPeerAddressIp arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrPeerAddressIp arm fallback');
+        $back2 = XdrPeerAddressIp::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPeerAddressIp arm fallback');
+        $arm1 = (function() { $u = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4)); $u->ipv4 = str_repeat("\xAB", 4); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrPeerAddressIp::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPeerAddressIp arm XdrIPAddrType_IPv4');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrPeerAddressIp arm XdrIPAddrType_IPv4');
+        $back2 = XdrPeerAddressIp::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPeerAddressIp arm XdrIPAddrType_IPv4');
+        $arm2 = (function() { $u = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv6)); $u->ipv6 = str_repeat("\xAB", 16); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrPeerAddressIp::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPeerAddressIp arm XdrIPAddrType_IPv6');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrPeerAddressIp arm XdrIPAddrType_IPv6');
+        $back2 = XdrPeerAddressIp::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPeerAddressIp arm XdrIPAddrType_IPv6');
+    }
+
+    public function testXdrPeerAddressIpUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $ip = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4)); $ip->ipv4 = str_repeat("\xAB", 4); return $ip; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4)); $u->ipv4 = str_repeat("\xAB", 4); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv6)); $u->ipv6 = str_repeat("\xAB", 16); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrPeerAddressIp::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrPeerAddressIp: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrPeerAddressIp::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrPeerAddressIp: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrPeerAddressIpGettersSetters(): void
@@ -361,6 +858,31 @@ class XdrOverlayGenTest extends TestCase
         $this->assertNotNull(XdrMessageType::TIME_SLICED_SURVEY_STOP_COLLECTING());
     }
 
+    public function testXdrMessageTypeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrMessageType::ERROR_MSG, XdrMessageType::AUTH, XdrMessageType::DONT_HAVE, XdrMessageType::PEERS, XdrMessageType::GET_TX_SET, XdrMessageType::TX_SET, XdrMessageType::GENERALIZED_TX_SET, XdrMessageType::TRANSACTION, XdrMessageType::GET_SCP_QUORUMSET, XdrMessageType::SCP_QUORUMSET, XdrMessageType::SCP_MESSAGE, XdrMessageType::GET_SCP_STATE, XdrMessageType::HELLO, XdrMessageType::SEND_MORE, XdrMessageType::SEND_MORE_EXTENDED, XdrMessageType::FLOOD_ADVERT, XdrMessageType::FLOOD_DEMAND, XdrMessageType::TIME_SLICED_SURVEY_REQUEST, XdrMessageType::TIME_SLICED_SURVEY_RESPONSE, XdrMessageType::TIME_SLICED_SURVEY_START_COLLECTING, XdrMessageType::TIME_SLICED_SURVEY_STOP_COLLECTING];
+        foreach ($values as $v) {
+            $original = new XdrMessageType($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrMessageType::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrMessageType value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrMessageType value ' . $v);
+            $back2 = XdrMessageType::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrMessageType value ' . $v);
+        }
+    }
+
+    public function testXdrMessageTypeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrMessageType::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrMessageType JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrDontHaveStructRoundTrip(): void
     {
         $original = new XdrDontHave(new XdrMessageType(XdrMessageType::ERROR_MSG), str_repeat("\0", 32));
@@ -369,6 +891,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrDontHave');
         $b64Decoded = XdrDontHave::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrDontHave');
+    }
+
+    public function testXdrDontHaveStructJsonRoundTrip(): void
+    {
+        $original = new XdrDontHave(new XdrMessageType(XdrMessageType::ERROR_MSG), str_repeat("\0", 32));
+        $j1 = $original->toJsonValue();
+        $back = XdrDontHave::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrDontHave');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrDontHave');
+        $back2 = XdrDontHave::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrDontHave');
+    }
+
+    public function testXdrDontHaveStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrDontHave(new XdrMessageType(XdrMessageType::ERROR_MSG), str_repeat("\0", 32));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrDontHave::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrDontHaveGettersSetters(): void
@@ -409,6 +982,31 @@ class XdrOverlayGenTest extends TestCase
         $this->assertNotNull(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY());
     }
 
+    public function testXdrSurveyMessageCommandTypeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY];
+        foreach ($values as $v) {
+            $original = new XdrSurveyMessageCommandType($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrSurveyMessageCommandType::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSurveyMessageCommandType value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSurveyMessageCommandType value ' . $v);
+            $back2 = XdrSurveyMessageCommandType::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSurveyMessageCommandType value ' . $v);
+        }
+    }
+
+    public function testXdrSurveyMessageCommandTypeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrSurveyMessageCommandType::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrSurveyMessageCommandType JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrSurveyMessageResponseTypeEnumRoundTrip(): void
     {
         $values = [XdrSurveyMessageResponseType::SURVEY_TOPOLOGY_RESPONSE_V2];
@@ -434,6 +1032,31 @@ class XdrOverlayGenTest extends TestCase
         $this->assertNotNull(XdrSurveyMessageResponseType::SURVEY_TOPOLOGY_RESPONSE_V2());
     }
 
+    public function testXdrSurveyMessageResponseTypeEnumJsonRoundTrip(): void
+    {
+        $values = [XdrSurveyMessageResponseType::SURVEY_TOPOLOGY_RESPONSE_V2];
+        foreach ($values as $v) {
+            $original = new XdrSurveyMessageResponseType($v);
+            $j1 = $original->toJsonValue();
+            $back = XdrSurveyMessageResponseType::fromJsonValue($j1);
+            $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSurveyMessageResponseType value ' . $v);
+            $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSurveyMessageResponseType value ' . $v);
+            $back2 = XdrSurveyMessageResponseType::fromJson($original->toJson());
+            $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSurveyMessageResponseType value ' . $v);
+        }
+    }
+
+    public function testXdrSurveyMessageResponseTypeEnumJsonRejectsInvalid(): void
+    {
+        $cases = [42, true, [], '__definitely_not_a_member__'];
+        foreach ($cases as $bad) {
+            $threw = false;
+            try { XdrSurveyMessageResponseType::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrSurveyMessageResponseType JSON: ' . var_export($bad, true));
+        }
+    }
+
     public function testXdrTimeSlicedSurveyStartCollectingMessageStructRoundTrip(): void
     {
         $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrTimeSlicedSurveyStartCollectingMessage(new XdrNodeID($pk), 42, 42); })();
@@ -442,6 +1065,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTimeSlicedSurveyStartCollectingMessage');
         $b64Decoded = XdrTimeSlicedSurveyStartCollectingMessage::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTimeSlicedSurveyStartCollectingMessage');
+    }
+
+    public function testXdrTimeSlicedSurveyStartCollectingMessageStructJsonRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrTimeSlicedSurveyStartCollectingMessage(new XdrNodeID($pk), 42, 42); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrTimeSlicedSurveyStartCollectingMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTimeSlicedSurveyStartCollectingMessage');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTimeSlicedSurveyStartCollectingMessage');
+        $back2 = XdrTimeSlicedSurveyStartCollectingMessage::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTimeSlicedSurveyStartCollectingMessage');
+    }
+
+    public function testXdrTimeSlicedSurveyStartCollectingMessageStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrTimeSlicedSurveyStartCollectingMessage(new XdrNodeID($pk), 42, 42); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTimeSlicedSurveyStartCollectingMessage::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrTimeSlicedSurveyStartCollectingMessageGettersSetters(): void
@@ -471,6 +1145,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSignedTimeSlicedSurveyStartCollectingMessage');
     }
 
+    public function testXdrSignedTimeSlicedSurveyStartCollectingMessageStructJsonRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $start = new XdrTimeSlicedSurveyStartCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStartCollectingMessage(str_repeat("\xAB", 64), $start); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrSignedTimeSlicedSurveyStartCollectingMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSignedTimeSlicedSurveyStartCollectingMessage');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSignedTimeSlicedSurveyStartCollectingMessage');
+        $back2 = XdrSignedTimeSlicedSurveyStartCollectingMessage::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSignedTimeSlicedSurveyStartCollectingMessage');
+    }
+
+    public function testXdrSignedTimeSlicedSurveyStartCollectingMessageStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $start = new XdrTimeSlicedSurveyStartCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStartCollectingMessage(str_repeat("\xAB", 64), $start); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSignedTimeSlicedSurveyStartCollectingMessage::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrSignedTimeSlicedSurveyStartCollectingMessageGettersSetters(): void
     {
         $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $start = new XdrTimeSlicedSurveyStartCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStartCollectingMessage(str_repeat("\xAB", 64), $start); })();
@@ -492,6 +1217,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTimeSlicedSurveyStopCollectingMessage');
         $b64Decoded = XdrTimeSlicedSurveyStopCollectingMessage::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTimeSlicedSurveyStopCollectingMessage');
+    }
+
+    public function testXdrTimeSlicedSurveyStopCollectingMessageStructJsonRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrTimeSlicedSurveyStopCollectingMessage(new XdrNodeID($pk), 42, 42); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrTimeSlicedSurveyStopCollectingMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTimeSlicedSurveyStopCollectingMessage');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTimeSlicedSurveyStopCollectingMessage');
+        $back2 = XdrTimeSlicedSurveyStopCollectingMessage::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTimeSlicedSurveyStopCollectingMessage');
+    }
+
+    public function testXdrTimeSlicedSurveyStopCollectingMessageStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrTimeSlicedSurveyStopCollectingMessage(new XdrNodeID($pk), 42, 42); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTimeSlicedSurveyStopCollectingMessage::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrTimeSlicedSurveyStopCollectingMessageGettersSetters(): void
@@ -521,6 +1297,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSignedTimeSlicedSurveyStopCollectingMessage');
     }
 
+    public function testXdrSignedTimeSlicedSurveyStopCollectingMessageStructJsonRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $stop = new XdrTimeSlicedSurveyStopCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStopCollectingMessage(str_repeat("\xAB", 64), $stop); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrSignedTimeSlicedSurveyStopCollectingMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSignedTimeSlicedSurveyStopCollectingMessage');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSignedTimeSlicedSurveyStopCollectingMessage');
+        $back2 = XdrSignedTimeSlicedSurveyStopCollectingMessage::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSignedTimeSlicedSurveyStopCollectingMessage');
+    }
+
+    public function testXdrSignedTimeSlicedSurveyStopCollectingMessageStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $stop = new XdrTimeSlicedSurveyStopCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStopCollectingMessage(str_repeat("\xAB", 64), $stop); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSignedTimeSlicedSurveyStopCollectingMessage::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrSignedTimeSlicedSurveyStopCollectingMessageGettersSetters(): void
     {
         $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $stop = new XdrTimeSlicedSurveyStopCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStopCollectingMessage(str_repeat("\xAB", 64), $stop); })();
@@ -542,6 +1369,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSurveyRequestMessage');
         $b64Decoded = XdrSurveyRequestMessage::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSurveyRequestMessage');
+    }
+
+    public function testXdrSurveyRequestMessageStructJsonRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrSurveyRequestMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSurveyRequestMessage');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSurveyRequestMessage');
+        $back2 = XdrSurveyRequestMessage::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSurveyRequestMessage');
+    }
+
+    public function testXdrSurveyRequestMessageStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSurveyRequestMessage::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrSurveyRequestMessageGettersSetters(): void
@@ -579,6 +1457,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTimeSlicedSurveyRequestMessage');
     }
 
+    public function testXdrTimeSlicedSurveyRequestMessageStructJsonRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $req = new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); return new XdrTimeSlicedSurveyRequestMessage($req, 42, 0, 0); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrTimeSlicedSurveyRequestMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTimeSlicedSurveyRequestMessage');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTimeSlicedSurveyRequestMessage');
+        $back2 = XdrTimeSlicedSurveyRequestMessage::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTimeSlicedSurveyRequestMessage');
+    }
+
+    public function testXdrTimeSlicedSurveyRequestMessageStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $req = new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); return new XdrTimeSlicedSurveyRequestMessage($req, 42, 0, 0); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTimeSlicedSurveyRequestMessage::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrTimeSlicedSurveyRequestMessageGettersSetters(): void
     {
         $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $req = new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); return new XdrTimeSlicedSurveyRequestMessage($req, 42, 0, 0); })();
@@ -610,6 +1539,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSignedTimeSlicedSurveyRequestMessage');
     }
 
+    public function testXdrSignedTimeSlicedSurveyRequestMessageStructJsonRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $req = new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); $tsReq = new XdrTimeSlicedSurveyRequestMessage($req, 42, 0, 0); return new XdrSignedTimeSlicedSurveyRequestMessage(str_repeat("\xAB", 64), $tsReq); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrSignedTimeSlicedSurveyRequestMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSignedTimeSlicedSurveyRequestMessage');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSignedTimeSlicedSurveyRequestMessage');
+        $back2 = XdrSignedTimeSlicedSurveyRequestMessage::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSignedTimeSlicedSurveyRequestMessage');
+    }
+
+    public function testXdrSignedTimeSlicedSurveyRequestMessageStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $req = new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); $tsReq = new XdrTimeSlicedSurveyRequestMessage($req, 42, 0, 0); return new XdrSignedTimeSlicedSurveyRequestMessage(str_repeat("\xAB", 64), $tsReq); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSignedTimeSlicedSurveyRequestMessage::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrSignedTimeSlicedSurveyRequestMessageGettersSetters(): void
     {
         $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $req = new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); $tsReq = new XdrTimeSlicedSurveyRequestMessage($req, 42, 0, 0); return new XdrSignedTimeSlicedSurveyRequestMessage(str_repeat("\xAB", 64), $tsReq); })();
@@ -633,6 +1613,25 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrEncryptedBody');
     }
 
+    public function testXdrEncryptedBodyTypedefJsonRoundTrip(): void
+    {
+        $original = new XdrEncryptedBody(str_repeat("\xAB", 64));
+        $j1 = $original->toJsonValue();
+        $back = XdrEncryptedBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrEncryptedBody');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrEncryptedBody');
+        $back2 = XdrEncryptedBody::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrEncryptedBody');
+    }
+
+    public function testXdrEncryptedBodyTypedefJsonRejectsInvalid(): void
+    {
+        $threw = false;
+        try { XdrEncryptedBody::fromJsonValue(42); }
+        catch (\InvalidArgumentException $e) { $threw = true; }
+        $this->assertTrue($threw, 'Expected rejection for XdrEncryptedBody typedef JSON');
+    }
+
     public function testXdrSurveyResponseMessageStructRoundTrip(): void
     {
         $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); })();
@@ -641,6 +1640,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSurveyResponseMessage');
         $b64Decoded = XdrSurveyResponseMessage::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSurveyResponseMessage');
+    }
+
+    public function testXdrSurveyResponseMessageStructJsonRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrSurveyResponseMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSurveyResponseMessage');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSurveyResponseMessage');
+        $back2 = XdrSurveyResponseMessage::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSurveyResponseMessage');
+    }
+
+    public function testXdrSurveyResponseMessageStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSurveyResponseMessage::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrSurveyResponseMessageGettersSetters(): void
@@ -678,6 +1728,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTimeSlicedSurveyResponseMessage');
     }
 
+    public function testXdrTimeSlicedSurveyResponseMessageStructJsonRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $resp = new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); return new XdrTimeSlicedSurveyResponseMessage($resp, 42); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrTimeSlicedSurveyResponseMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTimeSlicedSurveyResponseMessage');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTimeSlicedSurveyResponseMessage');
+        $back2 = XdrTimeSlicedSurveyResponseMessage::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTimeSlicedSurveyResponseMessage');
+    }
+
+    public function testXdrTimeSlicedSurveyResponseMessageStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $resp = new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); return new XdrTimeSlicedSurveyResponseMessage($resp, 42); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTimeSlicedSurveyResponseMessage::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrTimeSlicedSurveyResponseMessageGettersSetters(): void
     {
         $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $resp = new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); return new XdrTimeSlicedSurveyResponseMessage($resp, 42); })();
@@ -701,6 +1802,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSignedTimeSlicedSurveyResponseMessage');
     }
 
+    public function testXdrSignedTimeSlicedSurveyResponseMessageStructJsonRoundTrip(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $resp = new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); $tsResp = new XdrTimeSlicedSurveyResponseMessage($resp, 42); return new XdrSignedTimeSlicedSurveyResponseMessage(str_repeat("\xAB", 64), $tsResp); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrSignedTimeSlicedSurveyResponseMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSignedTimeSlicedSurveyResponseMessage');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrSignedTimeSlicedSurveyResponseMessage');
+        $back2 = XdrSignedTimeSlicedSurveyResponseMessage::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSignedTimeSlicedSurveyResponseMessage');
+    }
+
+    public function testXdrSignedTimeSlicedSurveyResponseMessageStructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $resp = new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); $tsResp = new XdrTimeSlicedSurveyResponseMessage($resp, 42); return new XdrSignedTimeSlicedSurveyResponseMessage(str_repeat("\xAB", 64), $tsResp); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSignedTimeSlicedSurveyResponseMessage::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrSignedTimeSlicedSurveyResponseMessageGettersSetters(): void
     {
         $obj = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $resp = new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); $tsResp = new XdrTimeSlicedSurveyResponseMessage($resp, 42); return new XdrSignedTimeSlicedSurveyResponseMessage(str_repeat("\xAB", 64), $tsResp); })();
@@ -722,6 +1874,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrPeerStats');
         $b64Decoded = XdrPeerStats::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrPeerStats');
+    }
+
+    public function testXdrPeerStatsStructJsonRoundTrip(): void
+    {
+        $original = new XdrPeerStats(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), 'test_string', 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrPeerStats::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrPeerStats');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrPeerStats');
+        $back2 = XdrPeerStats::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrPeerStats');
+    }
+
+    public function testXdrPeerStatsStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrPeerStats(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), 'test_string', 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrPeerStats::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrPeerStatsEdgeCaseEmptyStringRoundTrip(): void
@@ -807,6 +2010,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTimeSlicedNodeData');
     }
 
+    public function testXdrTimeSlicedNodeDataStructJsonRoundTrip(): void
+    {
+        $original = new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0);
+        $j1 = $original->toJsonValue();
+        $back = XdrTimeSlicedNodeData::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTimeSlicedNodeData');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTimeSlicedNodeData');
+        $back2 = XdrTimeSlicedNodeData::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTimeSlicedNodeData');
+    }
+
+    public function testXdrTimeSlicedNodeDataStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTimeSlicedNodeData::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrTimeSlicedNodeDataGettersSetters(): void
     {
         $obj = new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0);
@@ -858,6 +2112,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTimeSlicedPeerData');
     }
 
+    public function testXdrTimeSlicedPeerDataStructJsonRoundTrip(): void
+    {
+        $original = new XdrTimeSlicedPeerData(new XdrPeerStats(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), 'test_string', 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42), 42);
+        $j1 = $original->toJsonValue();
+        $back = XdrTimeSlicedPeerData::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTimeSlicedPeerData');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTimeSlicedPeerData');
+        $back2 = XdrTimeSlicedPeerData::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTimeSlicedPeerData');
+    }
+
+    public function testXdrTimeSlicedPeerDataStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrTimeSlicedPeerData(new XdrPeerStats(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), 'test_string', 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42), 42);
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTimeSlicedPeerData::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
     public function testXdrTimeSlicedPeerDataEdgeCaseZeroRoundTrip(): void
     {
         $original = new XdrTimeSlicedPeerData(new XdrPeerStats(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), 'test_string', 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42), 0);
@@ -889,6 +2194,25 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTimeSlicedPeerDataList');
     }
 
+    public function testXdrTimeSlicedPeerDataListTypedefJsonRoundTrip(): void
+    {
+        $original = new XdrTimeSlicedPeerDataList([]);
+        $j1 = $original->toJsonValue();
+        $back = XdrTimeSlicedPeerDataList::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTimeSlicedPeerDataList');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTimeSlicedPeerDataList');
+        $back2 = XdrTimeSlicedPeerDataList::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTimeSlicedPeerDataList');
+    }
+
+    public function testXdrTimeSlicedPeerDataListTypedefJsonRejectsInvalid(): void
+    {
+        $threw = false;
+        try { XdrTimeSlicedPeerDataList::fromJsonValue('not-an-array'); }
+        catch (\InvalidArgumentException $e) { $threw = true; }
+        $this->assertTrue($threw, 'Expected rejection for XdrTimeSlicedPeerDataList typedef JSON');
+    }
+
     public function testXdrTopologyResponseBodyV2StructRoundTrip(): void
     {
         $original = new XdrTopologyResponseBodyV2(new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0));
@@ -897,6 +2221,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTopologyResponseBodyV2');
         $b64Decoded = XdrTopologyResponseBodyV2::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTopologyResponseBodyV2');
+    }
+
+    public function testXdrTopologyResponseBodyV2StructJsonRoundTrip(): void
+    {
+        $original = new XdrTopologyResponseBodyV2(new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0));
+        $j1 = $original->toJsonValue();
+        $back = XdrTopologyResponseBodyV2::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTopologyResponseBodyV2');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTopologyResponseBodyV2');
+        $back2 = XdrTopologyResponseBodyV2::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTopologyResponseBodyV2');
+    }
+
+    public function testXdrTopologyResponseBodyV2StructJsonRejectsInvalid(): void
+    {
+        $original = new XdrTopologyResponseBodyV2(new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrTopologyResponseBodyV2::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrTopologyResponseBodyV2GettersSetters(): void
@@ -926,6 +2301,71 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSurveyResponseBody');
     }
 
+    public function testXdrSurveyResponseBodyUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrSurveyResponseBody(new XdrSurveyMessageResponseType(XdrSurveyMessageResponseType::SURVEY_TOPOLOGY_RESPONSE_V2)); $u->topologyResponseBodyV2 = new XdrTopologyResponseBodyV2(new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0)); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrSurveyResponseBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSurveyResponseBody arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrSurveyResponseBody arm fallback');
+        $back2 = XdrSurveyResponseBody::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSurveyResponseBody arm fallback');
+        $arm1 = (function() { $u = new XdrSurveyResponseBody(new XdrSurveyMessageResponseType(XdrSurveyMessageResponseType::SURVEY_TOPOLOGY_RESPONSE_V2)); $u->topologyResponseBodyV2 = new XdrTopologyResponseBodyV2(new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0)); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrSurveyResponseBody::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSurveyResponseBody arm XdrSurveyMessageResponseType_SURVEY_TOPOLOGY_RESPONSE_V2');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrSurveyResponseBody arm XdrSurveyMessageResponseType_SURVEY_TOPOLOGY_RESPONSE_V2');
+        $back2 = XdrSurveyResponseBody::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSurveyResponseBody arm XdrSurveyMessageResponseType_SURVEY_TOPOLOGY_RESPONSE_V2');
+    }
+
+    public function testXdrSurveyResponseBodyUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrSurveyResponseBody(new XdrSurveyMessageResponseType(XdrSurveyMessageResponseType::SURVEY_TOPOLOGY_RESPONSE_V2)); $u->topologyResponseBodyV2 = new XdrTopologyResponseBodyV2(new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrSurveyResponseBody(new XdrSurveyMessageResponseType(XdrSurveyMessageResponseType::SURVEY_TOPOLOGY_RESPONSE_V2)); $u->topologyResponseBodyV2 = new XdrTopologyResponseBodyV2(new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0)); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrSurveyResponseBody::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrSurveyResponseBody: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrSurveyResponseBody::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrSurveyResponseBody: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrSurveyResponseBodyGettersSetters(): void
     {
         $obj = (function() { $u = new XdrSurveyResponseBody(new XdrSurveyMessageResponseType(XdrSurveyMessageResponseType::SURVEY_TOPOLOGY_RESPONSE_V2)); $u->topologyResponseBodyV2 = new XdrTopologyResponseBodyV2(new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedPeerDataList([]), new XdrTimeSlicedNodeData(0, 0, 0, 0, 0, 0, 0, false, 0, 0)); return $u; })();
@@ -943,6 +2383,25 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTxAdvertVector');
     }
 
+    public function testXdrTxAdvertVectorTypedefJsonRoundTrip(): void
+    {
+        $original = new XdrTxAdvertVector([]);
+        $j1 = $original->toJsonValue();
+        $back = XdrTxAdvertVector::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTxAdvertVector');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTxAdvertVector');
+        $back2 = XdrTxAdvertVector::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTxAdvertVector');
+    }
+
+    public function testXdrTxAdvertVectorTypedefJsonRejectsInvalid(): void
+    {
+        $threw = false;
+        try { XdrTxAdvertVector::fromJsonValue('not-an-array'); }
+        catch (\InvalidArgumentException $e) { $threw = true; }
+        $this->assertTrue($threw, 'Expected rejection for XdrTxAdvertVector typedef JSON');
+    }
+
     public function testXdrFloodAdvertStructRoundTrip(): void
     {
         $original = new XdrFloodAdvert(new XdrTxAdvertVector([]));
@@ -951,6 +2410,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrFloodAdvert');
         $b64Decoded = XdrFloodAdvert::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrFloodAdvert');
+    }
+
+    public function testXdrFloodAdvertStructJsonRoundTrip(): void
+    {
+        $original = new XdrFloodAdvert(new XdrTxAdvertVector([]));
+        $j1 = $original->toJsonValue();
+        $back = XdrFloodAdvert::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrFloodAdvert');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrFloodAdvert');
+        $back2 = XdrFloodAdvert::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrFloodAdvert');
+    }
+
+    public function testXdrFloodAdvertStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrFloodAdvert(new XdrTxAdvertVector([]));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrFloodAdvert::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrFloodAdvertGettersSetters(): void
@@ -972,6 +2482,25 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTxDemandVector');
     }
 
+    public function testXdrTxDemandVectorTypedefJsonRoundTrip(): void
+    {
+        $original = new XdrTxDemandVector([]);
+        $j1 = $original->toJsonValue();
+        $back = XdrTxDemandVector::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTxDemandVector');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrTxDemandVector');
+        $back2 = XdrTxDemandVector::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrTxDemandVector');
+    }
+
+    public function testXdrTxDemandVectorTypedefJsonRejectsInvalid(): void
+    {
+        $threw = false;
+        try { XdrTxDemandVector::fromJsonValue('not-an-array'); }
+        catch (\InvalidArgumentException $e) { $threw = true; }
+        $this->assertTrue($threw, 'Expected rejection for XdrTxDemandVector typedef JSON');
+    }
+
     public function testXdrFloodDemandStructRoundTrip(): void
     {
         $original = new XdrFloodDemand(new XdrTxDemandVector([]));
@@ -980,6 +2509,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrFloodDemand');
         $b64Decoded = XdrFloodDemand::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrFloodDemand');
+    }
+
+    public function testXdrFloodDemandStructJsonRoundTrip(): void
+    {
+        $original = new XdrFloodDemand(new XdrTxDemandVector([]));
+        $j1 = $original->toJsonValue();
+        $back = XdrFloodDemand::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrFloodDemand');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrFloodDemand');
+        $back2 = XdrFloodDemand::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrFloodDemand');
+    }
+
+    public function testXdrFloodDemandStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrFloodDemand(new XdrTxDemandVector([]));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrFloodDemand::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrFloodDemandGettersSetters(): void
@@ -999,6 +2579,231 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrStellarMessage');
         $b64Decoded = XdrStellarMessage::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrStellarMessage');
+    }
+
+    public function testXdrStellarMessageUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $u->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm fallback');
+        $back2 = XdrStellarMessage::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm fallback');
+        $arm1 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $u->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_ERROR_MSG');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_ERROR_MSG');
+        $back2 = XdrStellarMessage::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_ERROR_MSG');
+        $arm2 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::HELLO)); $u->hello = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrHello(42, 42, 42, str_repeat("\0", 32), 'test', 42, new XdrNodeID($pk), new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, str_repeat("\xAB", 64)), str_repeat("\xAB", 32)); })(); return $u; })();
+        $j1 = $arm2->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_HELLO');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_HELLO');
+        $back2 = XdrStellarMessage::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_HELLO');
+        $arm3 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::AUTH)); $u->auth = new XdrAuth(42); return $u; })();
+        $j1 = $arm3->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_AUTH');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_AUTH');
+        $back2 = XdrStellarMessage::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_AUTH');
+        $arm4 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::DONT_HAVE)); $u->dontHave = new XdrDontHave(new XdrMessageType(XdrMessageType::ERROR_MSG), str_repeat("\0", 32)); return $u; })();
+        $j1 = $arm4->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_DONT_HAVE');
+        $this->assertSame($arm4->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_DONT_HAVE');
+        $back2 = XdrStellarMessage::fromJson($arm4->toJson());
+        $this->assertSame($arm4->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_DONT_HAVE');
+        $arm5 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::PEERS)); $u->peers = []; return $u; })();
+        $j1 = $arm5->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_PEERS');
+        $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_PEERS');
+        $back2 = XdrStellarMessage::fromJson($arm5->toJson());
+        $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_PEERS');
+        $arm6 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::GET_TX_SET)); $u->txSetHash = str_repeat("\xAB", 32); return $u; })();
+        $j1 = $arm6->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_GET_TX_SET');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_GET_TX_SET');
+        $back2 = XdrStellarMessage::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_GET_TX_SET');
+        $arm7 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::TX_SET)); $u->txSet = new XdrTransactionSet(str_repeat("\0", 32), []); return $u; })();
+        $j1 = $arm7->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_TX_SET');
+        $this->assertSame($arm7->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_TX_SET');
+        $back2 = XdrStellarMessage::fromJson($arm7->toJson());
+        $this->assertSame($arm7->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_TX_SET');
+        $arm8 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::GENERALIZED_TX_SET)); $u->generalizedTxSet = (function() { $u = new XdrGeneralizedTransactionSet(1); $u->v1TxSet = new XdrTransactionSetV1(str_repeat("\0", 32), []); return $u; })(); return $u; })();
+        $j1 = $arm8->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_GENERALIZED_TX_SET');
+        $this->assertSame($arm8->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_GENERALIZED_TX_SET');
+        $back2 = XdrStellarMessage::fromJson($arm8->toJson());
+        $this->assertSame($arm8->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_GENERALIZED_TX_SET');
+        $arm9 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::TRANSACTION)); $u->transaction = (function() { $u = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0)); $u->v0 = new XdrTransactionV0Envelope(new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []), []); return $u; })(); return $u; })();
+        $j1 = $arm9->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_TRANSACTION');
+        $this->assertSame($arm9->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_TRANSACTION');
+        $back2 = XdrStellarMessage::fromJson($arm9->toJson());
+        $this->assertSame($arm9->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_TRANSACTION');
+        $arm10 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::TIME_SLICED_SURVEY_REQUEST)); $u->signedTimeSlicedSurveyRequestMessage = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $req = new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); $tsReq = new XdrTimeSlicedSurveyRequestMessage($req, 42, 0, 0); return new XdrSignedTimeSlicedSurveyRequestMessage(str_repeat("\xAB", 64), $tsReq); })(); return $u; })();
+        $j1 = $arm10->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_TIME_SLICED_SURVEY_REQUEST');
+        $this->assertSame($arm10->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_TIME_SLICED_SURVEY_REQUEST');
+        $back2 = XdrStellarMessage::fromJson($arm10->toJson());
+        $this->assertSame($arm10->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_TIME_SLICED_SURVEY_REQUEST');
+        $arm11 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::TIME_SLICED_SURVEY_RESPONSE)); $u->signedTimeSlicedSurveyResponseMessage = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $resp = new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); $tsResp = new XdrTimeSlicedSurveyResponseMessage($resp, 42); return new XdrSignedTimeSlicedSurveyResponseMessage(str_repeat("\xAB", 64), $tsResp); })(); return $u; })();
+        $j1 = $arm11->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_TIME_SLICED_SURVEY_RESPONSE');
+        $this->assertSame($arm11->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_TIME_SLICED_SURVEY_RESPONSE');
+        $back2 = XdrStellarMessage::fromJson($arm11->toJson());
+        $this->assertSame($arm11->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_TIME_SLICED_SURVEY_RESPONSE');
+        $arm12 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::TIME_SLICED_SURVEY_START_COLLECTING)); $u->signedTimeSlicedSurveyStartCollectingMessage = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $start = new XdrTimeSlicedSurveyStartCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStartCollectingMessage(str_repeat("\xAB", 64), $start); })(); return $u; })();
+        $j1 = $arm12->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_TIME_SLICED_SURVEY_START_COLLECTING');
+        $this->assertSame($arm12->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_TIME_SLICED_SURVEY_START_COLLECTING');
+        $back2 = XdrStellarMessage::fromJson($arm12->toJson());
+        $this->assertSame($arm12->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_TIME_SLICED_SURVEY_START_COLLECTING');
+        $arm13 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::TIME_SLICED_SURVEY_STOP_COLLECTING)); $u->signedTimeSlicedSurveyStopCollectingMessage = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $stop = new XdrTimeSlicedSurveyStopCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStopCollectingMessage(str_repeat("\xAB", 64), $stop); })(); return $u; })();
+        $j1 = $arm13->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_TIME_SLICED_SURVEY_STOP_COLLECTING');
+        $this->assertSame($arm13->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_TIME_SLICED_SURVEY_STOP_COLLECTING');
+        $back2 = XdrStellarMessage::fromJson($arm13->toJson());
+        $this->assertSame($arm13->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_TIME_SLICED_SURVEY_STOP_COLLECTING');
+        $arm14 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::GET_SCP_QUORUMSET)); $u->qSetHash = str_repeat("\xAB", 32); return $u; })();
+        $j1 = $arm14->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_GET_SCP_QUORUMSET');
+        $this->assertSame($arm14->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_GET_SCP_QUORUMSET');
+        $back2 = XdrStellarMessage::fromJson($arm14->toJson());
+        $this->assertSame($arm14->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_GET_SCP_QUORUMSET');
+        $arm15 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::SCP_QUORUMSET)); $u->qSet = new XdrSCPQuorumSet(42, [], []); return $u; })();
+        $j1 = $arm15->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_SCP_QUORUMSET');
+        $this->assertSame($arm15->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_SCP_QUORUMSET');
+        $back2 = XdrStellarMessage::fromJson($arm15->toJson());
+        $this->assertSame($arm15->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_SCP_QUORUMSET');
+        $arm16 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::SCP_MESSAGE)); $u->envelope = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $pledges = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $pledges->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); $stmt = new XdrSCPStatement(new XdrNodeID($pk), 42, $pledges); return new XdrSCPEnvelope($stmt, str_repeat("\xAB", 64)); })(); return $u; })();
+        $j1 = $arm16->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_SCP_MESSAGE');
+        $this->assertSame($arm16->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_SCP_MESSAGE');
+        $back2 = XdrStellarMessage::fromJson($arm16->toJson());
+        $this->assertSame($arm16->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_SCP_MESSAGE');
+        $arm17 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::GET_SCP_STATE)); $u->getSCPLedgerSeq = 42; return $u; })();
+        $j1 = $arm17->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_GET_SCP_STATE');
+        $this->assertSame($arm17->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_GET_SCP_STATE');
+        $back2 = XdrStellarMessage::fromJson($arm17->toJson());
+        $this->assertSame($arm17->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_GET_SCP_STATE');
+        $arm18 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::SEND_MORE)); $u->sendMoreMessage = new XdrSendMore(42); return $u; })();
+        $j1 = $arm18->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_SEND_MORE');
+        $this->assertSame($arm18->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_SEND_MORE');
+        $back2 = XdrStellarMessage::fromJson($arm18->toJson());
+        $this->assertSame($arm18->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_SEND_MORE');
+        $arm19 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::SEND_MORE_EXTENDED)); $u->sendMoreExtendedMessage = new XdrSendMoreExtended(42, 42); return $u; })();
+        $j1 = $arm19->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_SEND_MORE_EXTENDED');
+        $this->assertSame($arm19->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_SEND_MORE_EXTENDED');
+        $back2 = XdrStellarMessage::fromJson($arm19->toJson());
+        $this->assertSame($arm19->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_SEND_MORE_EXTENDED');
+        $arm20 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::FLOOD_ADVERT)); $u->floodAdvert = new XdrFloodAdvert(new XdrTxAdvertVector([])); return $u; })();
+        $j1 = $arm20->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_FLOOD_ADVERT');
+        $this->assertSame($arm20->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_FLOOD_ADVERT');
+        $back2 = XdrStellarMessage::fromJson($arm20->toJson());
+        $this->assertSame($arm20->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_FLOOD_ADVERT');
+        $arm21 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::FLOOD_DEMAND)); $u->floodDemand = new XdrFloodDemand(new XdrTxDemandVector([])); return $u; })();
+        $j1 = $arm21->toJsonValue();
+        $back = XdrStellarMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_FLOOD_DEMAND');
+        $this->assertSame($arm21->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_FLOOD_DEMAND');
+        $back2 = XdrStellarMessage::fromJson($arm21->toJson());
+        $this->assertSame($arm21->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_FLOOD_DEMAND');
+    }
+
+    public function testXdrStellarMessageUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $u->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $u->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::HELLO)); $u->hello = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return new XdrHello(42, 42, 42, str_repeat("\0", 32), 'test', 42, new XdrNodeID($pk), new XdrAuthCert(new XdrCurve25519Public(str_repeat("\xAB", 32)), 42, str_repeat("\xAB", 64)), str_repeat("\xAB", 32)); })(); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::AUTH)); $u->auth = new XdrAuth(42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::DONT_HAVE)); $u->dontHave = new XdrDontHave(new XdrMessageType(XdrMessageType::ERROR_MSG), str_repeat("\0", 32)); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::PEERS)); $u->peers = []; return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::GET_TX_SET)); $u->txSetHash = str_repeat("\xAB", 32); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::TX_SET)); $u->txSet = new XdrTransactionSet(str_repeat("\0", 32), []); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::GENERALIZED_TX_SET)); $u->generalizedTxSet = (function() { $u = new XdrGeneralizedTransactionSet(1); $u->v1TxSet = new XdrTransactionSetV1(str_repeat("\0", 32), []); return $u; })(); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::TRANSACTION)); $u->transaction = (function() { $u = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0)); $u->v0 = new XdrTransactionV0Envelope(new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []), []); return $u; })(); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::TIME_SLICED_SURVEY_REQUEST)); $u->signedTimeSlicedSurveyRequestMessage = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $req = new XdrSurveyRequestMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrCurve25519Public(str_repeat("\xAB", 32)), new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY)); $tsReq = new XdrTimeSlicedSurveyRequestMessage($req, 42, 0, 0); return new XdrSignedTimeSlicedSurveyRequestMessage(str_repeat("\xAB", 64), $tsReq); })(); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::TIME_SLICED_SURVEY_RESPONSE)); $u->signedTimeSlicedSurveyResponseMessage = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $resp = new XdrSurveyResponseMessage(new XdrNodeID($pk), new XdrNodeID($pk), 42, new XdrSurveyMessageCommandType(XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY), new XdrEncryptedBody(str_repeat("\xAB", 64))); $tsResp = new XdrTimeSlicedSurveyResponseMessage($resp, 42); return new XdrSignedTimeSlicedSurveyResponseMessage(str_repeat("\xAB", 64), $tsResp); })(); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::TIME_SLICED_SURVEY_START_COLLECTING)); $u->signedTimeSlicedSurveyStartCollectingMessage = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $start = new XdrTimeSlicedSurveyStartCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStartCollectingMessage(str_repeat("\xAB", 64), $start); })(); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::TIME_SLICED_SURVEY_STOP_COLLECTING)); $u->signedTimeSlicedSurveyStopCollectingMessage = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $stop = new XdrTimeSlicedSurveyStopCollectingMessage(new XdrNodeID($pk), 42, 42); return new XdrSignedTimeSlicedSurveyStopCollectingMessage(str_repeat("\xAB", 64), $stop); })(); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::GET_SCP_QUORUMSET)); $u->qSetHash = str_repeat("\xAB", 32); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::SCP_QUORUMSET)); $u->qSet = new XdrSCPQuorumSet(42, [], []); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::SCP_MESSAGE)); $u->envelope = (function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); $pledges = new XdrSCPStatementPledges(new XdrSCPStatementType(XdrSCPStatementType::SCP_ST_PREPARE)); $pledges->prepare = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0); $stmt = new XdrSCPStatement(new XdrNodeID($pk), 42, $pledges); return new XdrSCPEnvelope($stmt, str_repeat("\xAB", 64)); })(); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::GET_SCP_STATE)); $u->getSCPLedgerSeq = 42; return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::SEND_MORE)); $u->sendMoreMessage = new XdrSendMore(42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::SEND_MORE_EXTENDED)); $u->sendMoreExtendedMessage = new XdrSendMoreExtended(42, 42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::FLOOD_ADVERT)); $u->floodAdvert = new XdrFloodAdvert(new XdrTxAdvertVector([])); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::FLOOD_DEMAND)); $u->floodDemand = new XdrFloodDemand(new XdrTxDemandVector([])); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrStellarMessage::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrStellarMessage: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrStellarMessage::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrStellarMessage: non-void arm name as bare string');
+                }
+            }
+        }
     }
 
     public function testXdrStellarMessageGettersSetters(): void
@@ -1038,6 +2843,71 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrAuthenticatedMessage');
     }
 
+    public function testXdrAuthenticatedMessageUnionJsonRoundTrip(): void
+    {
+        $arm0 = (function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); $u = new XdrAuthenticatedMessage(0); $u->v0 = new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat("\xAB", 32))); return $u; })();
+        $j1 = $arm0->toJsonValue();
+        $back = XdrAuthenticatedMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAuthenticatedMessage arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrAuthenticatedMessage arm fallback');
+        $back2 = XdrAuthenticatedMessage::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAuthenticatedMessage arm fallback');
+        $arm1 = (function() { $u = new XdrAuthenticatedMessage(0); $u->v0 = (function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat("\xAB", 32))); })(); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrAuthenticatedMessage::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAuthenticatedMessage arm 0');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrAuthenticatedMessage arm 0');
+        $back2 = XdrAuthenticatedMessage::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAuthenticatedMessage arm 0');
+    }
+
+    public function testXdrAuthenticatedMessageUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = ((function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); $u = new XdrAuthenticatedMessage(0); $u->v0 = new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat("\xAB", 32))); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrAuthenticatedMessage(0); $u->v0 = (function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat("\xAB", 32))); })(); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrAuthenticatedMessage::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrAuthenticatedMessage: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrAuthenticatedMessage::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrAuthenticatedMessage: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
     public function testXdrAuthenticatedMessageGettersSetters(): void
     {
         $obj = (function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); $u = new XdrAuthenticatedMessage(0); $u->v0 = new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat("\xAB", 32))); return $u; })();
@@ -1053,6 +2923,57 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrAuthenticatedMessageV0');
         $b64Decoded = XdrAuthenticatedMessageV0::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrAuthenticatedMessageV0');
+    }
+
+    public function testXdrAuthenticatedMessageV0StructJsonRoundTrip(): void
+    {
+        $original = (function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat("\xAB", 32))); })();
+        $j1 = $original->toJsonValue();
+        $back = XdrAuthenticatedMessageV0::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrAuthenticatedMessageV0');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrAuthenticatedMessageV0');
+        $back2 = XdrAuthenticatedMessageV0::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrAuthenticatedMessageV0');
+    }
+
+    public function testXdrAuthenticatedMessageV0StructJsonRejectsInvalid(): void
+    {
+        $original = (function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat("\xAB", 32))); })();
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrAuthenticatedMessageV0::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
     }
 
     public function testXdrAuthenticatedMessageV0GettersSetters(): void

@@ -148,6 +148,11 @@ class XdrMemo {
             );
         }
         $key = array_key_first($value);
+        if (!is_string($key)) {
+            throw new InvalidArgumentException(
+                'Expected string arm key for XdrMemo, got ' . get_debug_type($key)
+            );
+        }
         if ($key === 'text') {
             if (!is_string($value['text'])) {
                 throw new InvalidArgumentException(
