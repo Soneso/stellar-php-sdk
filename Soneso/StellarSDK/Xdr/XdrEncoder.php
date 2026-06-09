@@ -16,6 +16,8 @@ use phpseclib3\Math\BigInteger;
  */
 class XdrEncoder
 {
+    private static ?bool $nativeIsBigEndian = null; // used for caching whether the current platform is big endian.
+
     /**
      * @param string $value
      * @param int|null $expectedLength in bytes
@@ -282,6 +284,9 @@ class XdrEncoder
      */
     private static function nativeIsBigEndian(): bool
     {
-        return pack('L', 1) === pack('N', 1);
+        if (null === self::$nativeIsBigEndian) {
+            self::$nativeIsBigEndian = pack('L', 1) === pack('N', 1);
+        }
+        return self::$nativeIsBigEndian;
     }
 }
