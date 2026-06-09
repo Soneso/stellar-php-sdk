@@ -43,6 +43,33 @@ class PayloadSignerTest extends TestCase
         $this->assertEquals(implode(array_map("chr", $arr)),$signature->getHint());
     }
 
+    public function testSignPayloadSignerHintComputation(): void
+    {
+        $seedBytes = hex2bin($this->seed);
+        $keypair = KeyPair::fromPrivateKey($seedBytes);
+        $keyHint = $keypair->getHint();
+        // The hint is the last 4 bytes of the payload (the whole payload, right
+        // padded with zeros, when shorter than 4) XORed byte-for-byte with the
+        // key hint (CAP-40). Covers the empty edge, the sub-4-byte padding, the
+        // 4-byte boundary, and the longer-than-4 slice, with high bytes to
+        // confirm binary safety.
+        $source = "\xff\x80\x01\x7f\x00\xfe\x42\x99";
+        foreach ([0, 1, 2, 3, 4, 8] as $len) {
+            $payload = substr($source, 0, $len);
+            $payloadHint = $len >= 4
+                ? substr($payload, $len - 4, 4)
+                : $payload . str_repeat("\x00", 4 - $len);
+            $expected = '';
+            for ($i = 0; $i < 4; $i++) {
+                $expected .= chr(ord($payloadHint[$i]) ^ ord($keyHint[$i]));
+            }
+            $signature = $keypair->signPayloadDecorated($payload);
+            $this->assertEquals($expected, $signature->getHint(), "hint mismatch for payload length $len");
+        }
+        // An empty payload leaves the key hint unchanged.
+        $this->assertEquals($keyHint, $keypair->signPayloadDecorated("")->getHint());
+    }
+
     public function testItCreatesSignedPayloadSigner(): void {
         $accountStrKey = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
         $p16 = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20";

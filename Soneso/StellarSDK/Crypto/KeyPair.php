@@ -242,20 +242,19 @@ class KeyPair
     public function signPayloadDecorated(string $signerPayload): XdrDecoratedSignature
     {
         $payloadSignature = $this->signDecorated($signerPayload);
-        $payloadSignatureHint = str_split($payloadSignature->getHint());
-        $hintArr = str_split($signerPayload,1);
-        $lenBytes = count($hintArr);
-        if ($lenBytes >= 4) {
-            $hintArr = array_slice($hintArr, $lenBytes - 4,4);
-        } else {
-            while (count($hintArr) < 4) {
-                $hintArr[] = 0;
-            }
+        $keyHint = $payloadSignature->getHint();
+        // Take the last 4 bytes of the payload, right-padding with zeros when the
+        // payload is shorter than the 4-byte hint, then XOR byte-for-byte with the
+        // key hint (CAP-40). Padded positions keep the key-hint byte.
+        $len = strlen($signerPayload);
+        $payloadHint = $len >= 4
+            ? substr($signerPayload, $len - 4, 4)
+            : $signerPayload . str_repeat("\x00", 4 - $len);
+        $hint = '';
+        for ($x = 0; $x < 4; $x++) {
+            $hint .= chr(ord($payloadHint[$x]) ^ ord($keyHint[$x]));
         }
-        for ($x = 0; $x < count($hintArr); $x++) {
-            $hintArr[$x] ^= $payloadSignatureHint[$x];
-        }
-        $payloadSignature->setHint(implode($hintArr));
+        $payloadSignature->setHint($hint);
         return $payloadSignature;
     }
 
