@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDKTests\Unit\Crypto;
 
 use Exception;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Crypto\CryptoException;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -577,6 +578,57 @@ class KeyPairTest extends TestCase
         $signature = hex2bin($hexSignature);
 
         assertTrue($keyPair->verifyMessage($binaryMessage, $signature));
+    }
+
+    public function testConstructorRejectsShortPublicKey()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Public key must be 32 bytes, got 31');
+        new KeyPair(str_repeat("\xAB", 31));
+    }
+
+    public function testConstructorRejectsLongPublicKey()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Public key must be 32 bytes, got 33');
+        new KeyPair(str_repeat("\xAB", 33));
+    }
+
+    public function testConstructorRejectsShortPrivateKey()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Private key must be 32 bytes, got 16');
+        new KeyPair(str_repeat("\xAB", 32), str_repeat("\xCD", 16));
+    }
+
+    public function testFromPublicKeyRejectsWrongLength()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Public key must be 32 bytes');
+        KeyPair::fromPublicKey(str_repeat("\xAB", 16));
+    }
+
+    public function testFromPublicKeyRejectsEmptyKey()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Public key must be 32 bytes, got 0');
+        KeyPair::fromPublicKey('');
+    }
+
+    public function testFromPrivateKeyRejectsWrongLength()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Private key must be 32 bytes, got 16');
+        KeyPair::fromPrivateKey(str_repeat("\xCD", 16));
+    }
+
+    public function testConstructorAcceptsValidKeyLengths()
+    {
+        $random = KeyPair::random();
+        $keyPair = new KeyPair($random->getPublicKey(), $random->getPrivateKey());
+
+        assertEquals($random->getAccountId(), $keyPair->getAccountId());
+        assertEquals($random->getSecretSeed(), $keyPair->getSecretSeed());
     }
 
 }

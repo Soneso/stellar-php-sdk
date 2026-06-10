@@ -7,7 +7,9 @@
 namespace Soneso\StellarSDK\Crypto;
 
 use Exception;
+use InvalidArgumentException;
 use SodiumException;
+use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\SEP\Derivation\HDNode;
 use Soneso\StellarSDK\SEP\Derivation\Mnemonic;
@@ -88,9 +90,18 @@ class KeyPair
      *
      * @param string $publicKey Raw 32-byte Ed25519 public key
      * @param string|null $privateKey Optional raw 32-byte Ed25519 private key (seed)
+     * @throws InvalidArgumentException If a key does not consist of exactly 32 bytes
      */
     public function __construct(string $publicKey, ?string $privateKey = null)
     {
+        if (strlen($publicKey) !== StellarConstants::ED25519_PUBLIC_KEY_LENGTH_BYTES) {
+            throw new InvalidArgumentException(
+                'Public key must be 32 bytes, got ' . strlen($publicKey));
+        }
+        if ($privateKey && strlen($privateKey) !== StellarConstants::ED25519_PUBLIC_KEY_LENGTH_BYTES) {
+            throw new InvalidArgumentException(
+                'Private key must be 32 bytes, got ' . strlen($privateKey));
+        }
         $this->publicKey = $publicKey;
         $this->accountId = StrKey::encodeAccountId($publicKey);
         if ($privateKey) {
@@ -153,8 +164,13 @@ class KeyPair
      *
      * @param string $privateKey Raw 32-byte Ed25519 private key seed
      * @return KeyPair A complete keypair derived from the private key
+     * @throws InvalidArgumentException If the private key does not consist of exactly 32 bytes
      */
     public static function fromPrivateKey(string $privateKey): KeyPair{
+        if (strlen($privateKey) !== StellarConstants::ED25519_PUBLIC_KEY_LENGTH_BYTES) {
+            throw new InvalidArgumentException(
+                'Private key must be 32 bytes, got ' . strlen($privateKey));
+        }
         return new KeyPair(StrKey::publicKeyFromPrivateKey($privateKey), $privateKey);
     }
 
