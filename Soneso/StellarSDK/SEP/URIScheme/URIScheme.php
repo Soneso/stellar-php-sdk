@@ -450,11 +450,13 @@ class URIScheme
      * @return bool True if signature is valid, false otherwise
      */
     private function verify(string $url, string $urlEncodedBase64Signature, KeyPair $signerPublicKey) : bool {
-        $sigParam = '&'.URIScheme::signatureParameterName.'='.$urlEncodedBase64Signature;
-        $pos = strrpos($url, $sigParam);
-        $urlSignatureLess = ($pos !== false)
-            ? substr_replace($url, '', $pos, strlen($sigParam))
-            : $url;
+        // The signature is the trailing parameter (SEP-7), so the signed payload
+        // is everything before "&signature=". Stripping by the marker rather than
+        // by the exact encoded value makes verification independent of how the
+        // signature was URL-encoded.
+        $sigMarker = '&'.URIScheme::signatureParameterName.'=';
+        $pos = strpos($url, $sigMarker);
+        $urlSignatureLess = ($pos !== false) ? substr($url, 0, $pos) : $url;
         $payloadBytes = $this->getPayload($urlSignatureLess);
         $base64Signature = urldecode($urlEncodedBase64Signature);
         $signature = base64_decode($base64Signature, true);
