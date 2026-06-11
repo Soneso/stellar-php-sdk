@@ -429,6 +429,30 @@ class SorobanClientTest extends TestCase
         $this->assertSame(0, $mock->count());
     }
 
+    public function testInstallForcePollsUntilTransactionFound(): void
+    {
+        $keyPair = HttpInjectingKeyPair::fromBaseKeyPair(KeyPair::fromSeed(self::TEST_SECRET_SEED));
+
+        // The first getTransaction poll reports NOT_FOUND; the status polling
+        // retries with backoff until the transaction is found.
+        $mock = new MockHandler([
+            $this->accountEntryResponse(),
+            $this->simulateResponse(XdrSCVal::forBytes(hex2bin(self::TEST_WASM_HASH))),
+            $this->sendTransactionResponse(),
+            $this->getTransactionRpcResponse(GetTransactionResponse::STATUS_NOT_FOUND, null),
+            $this->getTransactionRpcResponse(
+                GetTransactionResponse::STATUS_SUCCESS,
+                XdrSCVal::forBytes(hex2bin(self::TEST_WASM_HASH)),
+            ),
+        ]);
+        $keyPair->setHttpClientToInject($this->createHttpClient($mock));
+
+        $wasmHash = SorobanClient::install($this->createInstallRequest($keyPair), true);
+
+        $this->assertSame(self::TEST_WASM_HASH, $wasmHash);
+        $this->assertSame(0, $mock->count());
+    }
+
     public function testInstallForceThrowsWhenWasmHashMissing(): void
     {
         $keyPair = HttpInjectingKeyPair::fromBaseKeyPair(KeyPair::fromSeed(self::TEST_SECRET_SEED));

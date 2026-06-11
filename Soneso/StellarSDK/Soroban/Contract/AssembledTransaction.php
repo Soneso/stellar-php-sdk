@@ -733,8 +733,9 @@ class AssembledTransaction
     /**
      * Polls the transaction status until it reaches a terminal state
      *
-     * Repeatedly queries getTransaction until the transaction is found or the configured
-     * timeout is exceeded. Uses a 3-second delay between polls.
+     * Queries getTransaction immediately, then retries with exponential backoff
+     * (1 second initial delay, factor 1.5) until the transaction is found or the
+     * configured timeout is exceeded.
      *
      * @internal This is an internal helper method used by send()
      *
@@ -744,21 +745,22 @@ class AssembledTransaction
      * @throws Exception If the timeout is exceeded before the transaction completes
      */
     private function pollStatus(string $transactionId) : GetTransactionResponse {
-        $statusResponse = null;
-        $status = GetTransactionResponse::STATUS_NOT_FOUND;
-        $waitTime = 3;
-        $waited = 0;
-        while ($status === GetTransactionResponse::STATUS_NOT_FOUND) {
-            if ($waited > $this->options->methodOptions->timeoutInSeconds) {
-                throw new Exception("Interrupted after waiting {$this->options->methodOptions->timeoutInSeconds} 
+        $deadline = microtime(true) + $this->options->methodOptions->timeoutInSeconds;
+        $waitTimeSeconds = 1.0;
+        while (true) {
+            $statusResponse = $this->server->getTransaction($transactionId);
+            if ($statusResponse->status !== GetTransactionResponse::STATUS_NOT_FOUND) {
+                return $statusResponse;
+            }
+            $remainingSeconds = $deadline - microtime(true);
+            if ($remainingSeconds <= 0) {
+                throw new Exception("Interrupted after waiting {$this->options->methodOptions->timeoutInSeconds}
                 seconds (options->timeoutInSeconds) for the transaction {$transactionId} to complete.");
             }
-            sleep($waitTime);
-            $waited += $waitTime;
-            $statusResponse = $this->server->getTransaction($transactionId);
-            $status = $statusResponse->status;
+            // Never sleep past the deadline.
+            usleep((int)(min($waitTimeSeconds, $remainingSeconds) * 1000000));
+            $waitTimeSeconds *= 1.5;
         }
-        return $statusResponse;
     }
     /**
      * Fetches the source account from the ledger
