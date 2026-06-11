@@ -35,6 +35,8 @@ use Soneso\StellarSDK\Soroban\SorobanAuthorizedFunction;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizedInvocation;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Soroban\SorobanCredentials;
+use Soneso\StellarSDK\Soroban\SorobanServer;
+use Soneso\StellarSDK\Soroban\Responses\GetLatestLedgerResponse;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
 use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
@@ -69,6 +71,19 @@ class WebAuthForContractsTest extends TestCase
     protected function setUp(): void
     {
         $this->serverKeyPair = KeyPair::fromSeed($this->serverSecretSeed);
+    }
+
+    /**
+     * Creates a mocked Soroban RPC server whose getLatestLedger always answers,
+     * so the signature expiration ledger lookup never reaches the network.
+     */
+    private function createMockSorobanServer(): SorobanServer
+    {
+        $latestLedger = new GetLatestLedgerResponse([]);
+        $latestLedger->sequence = 123456;
+        $server = $this->createMock(SorobanServer::class);
+        $server->method('getLatestLedger')->willReturn($latestLedger);
+        return $server;
     }
 
     /**
@@ -276,6 +291,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         $token = $webAuth->jwtToken(
@@ -320,6 +336,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         // Note: not passing $homeDomain parameter - should default to $this->domain
@@ -385,6 +402,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         $webAuth->jwtToken(
@@ -446,6 +464,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         $webAuth->jwtToken(
@@ -497,6 +516,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         $webAuth->jwtToken(
@@ -549,6 +569,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         $webAuth->jwtToken(
@@ -611,6 +632,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         $webAuth->jwtToken(
@@ -692,6 +714,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         $webAuth->jwtToken(
@@ -764,6 +787,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         $webAuth->jwtToken(
@@ -827,6 +851,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         $webAuth->jwtToken(
@@ -890,6 +915,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         $webAuth->jwtToken(
@@ -953,6 +979,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         $webAuth->jwtToken(
@@ -1001,6 +1028,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         $token = $webAuth->jwtToken(
@@ -1074,6 +1102,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         // Track whether the callback was invoked
         $callbackInvoked = false;
@@ -1140,6 +1169,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         $webAuth->jwtToken(
@@ -1172,6 +1202,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         $webAuth->jwtToken(
@@ -1216,6 +1247,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         $webAuth->jwtToken(
@@ -1258,6 +1290,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
 
         $clientSigner = KeyPair::random();
         $webAuth->jwtToken(
@@ -1386,6 +1419,7 @@ class WebAuthForContractsTest extends TestCase
             Network::testnet()
         );
         $webAuth->setMockHandler($mock);
+        $webAuth->setSorobanServer($this->createMockSorobanServer());
         $webAuth->setUseFormUrlEncoded(true);
 
         $clientSigner = KeyPair::random();

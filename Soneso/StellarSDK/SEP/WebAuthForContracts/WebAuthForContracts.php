@@ -116,6 +116,7 @@ class WebAuthForContracts
     private Client $httpClient;
     private bool $useFormUrlEncoded = true;
     private string $sorobanRpcUrl;
+    private ?SorobanServer $sorobanServer = null;
 
     /**
      * Constructor.
@@ -342,7 +343,7 @@ class WebAuthForContracts
         // Auto-fill signatureExpirationLedger if not provided
         $effectiveExpirationLedger = $signatureExpirationLedger;
         if (count($signers) > 0 && $effectiveExpirationLedger === null) {
-            $sorobanServer = new SorobanServer($this->sorobanRpcUrl);
+            $sorobanServer = $this->sorobanServer ?? new SorobanServer($this->sorobanRpcUrl);
             $latestLedgerResponse = $sorobanServer->getLatestLedger();
             if ($latestLedgerResponse->sequence === null) {
                 throw new RuntimeException("Failed to get current ledger from Soroban RPC");
@@ -969,5 +970,19 @@ class WebAuthForContracts
     {
         $handlerStack = HandlerStack::create($handler);
         $this->httpClient = new Client(['handler' => $handlerStack]);
+    }
+
+    /**
+     * Sets the Soroban RPC server instance used to look up the latest ledger.
+     *
+     * When not set, a server is created automatically from the Soroban RPC URL.
+     * Provide a preconfigured instance to customize the underlying HTTP client.
+     *
+     * @param SorobanServer $sorobanServer The RPC server instance to use
+     * @return void
+     */
+    public function setSorobanServer(SorobanServer $sorobanServer): void
+    {
+        $this->sorobanServer = $sorobanServer;
     }
 }
