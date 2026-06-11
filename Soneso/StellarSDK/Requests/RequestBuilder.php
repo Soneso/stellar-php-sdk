@@ -200,24 +200,37 @@ abstract class RequestBuilder
                     ]
                 ]);
 
-                $body = $response->getBody();
+                $resource = $response->getBody()->detach();
+                if ($resource === null) {
+                    continue;
+                }
+                // Deliver lines as soon as they arrive: with the default chunk
+                // size the stream layer waits to fill 8 KiB internally before
+                // releasing data, which stalls sparse event streams.
+                stream_set_chunk_size($resource, 1);
                 $buffer = '';
 
-                while (!$body->eof()) {
-                    $chunk = $body->read(8192);
-                    // An empty read means the stream has been closed; reconnect.
-                    if ($chunk === '') {
-                        break;
-                    }
-                    $buffer .= $chunk;
+                try {
+                    while (!feof($resource)) {
+                        $line = fgets($resource);
+                        // A failed read means the stream has been closed; reconnect.
+                        if ($line === false) {
+                            break;
+                        }
+                        $buffer .= $line;
 
-                    $result = self::consumeStreamEvents($buffer);
-                    foreach ($result['events'] as $event) {
-                        $callback($event);
+                        $result = self::consumeStreamEvents($buffer);
+                        foreach ($result['events'] as $event) {
+                            $callback($event);
+                        }
+                        // A "data: byebye" line was received; restart the connection.
+                        if ($result['stop']) {
+                            break;
+                        }
                     }
-                    // A "data: byebye" line was received; restart the connection.
-                    if ($result['stop']) {
-                        break;
+                } finally {
+                    if (is_resource($resource)) {
+                        fclose($resource);
                     }
                 }
             }
