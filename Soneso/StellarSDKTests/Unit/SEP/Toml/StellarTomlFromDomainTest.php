@@ -140,4 +140,51 @@ display_decimals=2';
         $this->expectExceptionMessage("Service URL must use HTTPS");
         StellarToml::currencyFromUrl("http://example.com/.well-known/USD.toml");
     }
+
+    public function testCurrencyFromUrlSuccess(): void
+    {
+        $currencyToml = 'code = "USD"' . "\n"
+            . 'issuer = "GAKL4XMWLXQKYNYR6ZDVLZT5FXQK3PKC4GZW7OKJX4KQLJKRWBWDXNYK"' . "\n"
+            . 'display_decimals = 2' . "\n"
+            . 'name = "US Dollar"' . "\n";
+        $mock = new MockHandler([
+            new Response(200, [], $currencyToml),
+        ]);
+        $client = new Client(['handler' => HandlerStack::create($mock)]);
+
+        $currency = StellarToml::currencyFromUrl("https://example.com/.well-known/USD.toml", $client);
+
+        $this->assertEquals("USD", $currency->code);
+        $this->assertEquals("GAKL4XMWLXQKYNYR6ZDVLZT5FXQK3PKC4GZW7OKJX4KQLJKRWBWDXNYK", $currency->issuer);
+        $this->assertEquals(2, $currency->displayDecimals);
+        $this->assertEquals("US Dollar", $currency->name);
+        $this->assertSame(0, $mock->count());
+    }
+
+    public function testCurrencyFromUrlNotFound(): void
+    {
+        $mock = new MockHandler([
+            new Response(404, [], 'not found'),
+        ]);
+        $client = new Client(['handler' => HandlerStack::create($mock)]);
+
+        $exception = false;
+        try {
+            StellarToml::currencyFromUrl("https://example.com/.well-known/USD.toml", $client);
+        } catch (Exception $e) {
+            $exception = str_contains($e->getMessage(), 'Currency toml not found');
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testCurrencyFromUrlMalformedToml(): void
+    {
+        $mock = new MockHandler([
+            new Response(200, [], 'this is = not [ valid toml ==='),
+        ]);
+        $client = new Client(['handler' => HandlerStack::create($mock)]);
+
+        $this->expectException(ParseException::class);
+        StellarToml::currencyFromUrl("https://example.com/.well-known/USD.toml", $client);
+    }
 }

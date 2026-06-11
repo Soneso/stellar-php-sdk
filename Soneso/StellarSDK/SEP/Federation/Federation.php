@@ -44,7 +44,7 @@ class Federation {
 
         $array = explode("*",$address);
         $domain = $array[count($array) - 1];
-        $stellarToml = StellarToml::fromDomain($domain);
+        $stellarToml = StellarToml::fromDomain($domain, $httpClient);
         $federationServerUrl = $stellarToml->getGeneralInformation()->federationServer;
 
         if (!$federationServerUrl) {

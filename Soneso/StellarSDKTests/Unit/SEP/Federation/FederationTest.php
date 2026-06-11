@@ -219,4 +219,39 @@ class FederationTest extends TestCase
             "http://fedtest.io/federation"
         );
     }
+
+    public function testResolveStellarAddressFullFlowWithInjectedClient(): void
+    {
+        // The injected client serves both requests: the stellar.toml fetch that
+        // resolves the federation server, and the federation query itself.
+        $toml = "FEDERATION_SERVER=\"https://stellarid.io/federation\"\n";
+        $mock = new MockHandler([
+            new Response(200, [], $toml),
+            new Response(200, [], $this->successResponse()),
+        ]);
+        $client = new Client(['handler' => HandlerStack::create($mock)]);
+
+        $response = Federation::resolveStellarAddress("bob*soneso.com", $client);
+
+        $this->assertEquals("bob*soneso.com", $response->getStellarAddress());
+        $this->assertEquals("GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI", $response->getAccountId());
+        $this->assertSame(0, $mock->count());
+    }
+
+    public function testResolveStellarAddressWithoutFederationServerInToml(): void
+    {
+        $toml = "SIGNING_KEY=\"GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI\"\n";
+        $mock = new MockHandler([
+            new Response(200, [], $toml),
+        ]);
+        $client = new Client(['handler' => HandlerStack::create($mock)]);
+
+        $exception = false;
+        try {
+            Federation::resolveStellarAddress("bob*soneso.com", $client);
+        } catch (Exception $e) {
+            $exception = str_contains($e->getMessage(), 'no federation server found');
+        }
+        $this->assertTrue($exception);
+    }
 }

@@ -254,12 +254,15 @@ class StellarToml
      * as the currency's only field. This method loads the currency data from that URL.
      *
      * @param string $toml The URL to the currency TOML file
+     * @param Client|null $httpClient Optional HTTP client to use for the request. Default is Guzzle.
      * @return Currency The parsed currency data
      * @throws Exception If the currency TOML file cannot be fetched or parsed
      */
-    public static function currencyFromUrl(string $toml) : Currency {
+    public static function currencyFromUrl(string $toml, ?Client $httpClient = null) : Currency {
         UrlValidator::validateHttpsRequired($toml);
-        $httpClient = new Client();
+        if ($httpClient === null) {
+            $httpClient = new Client();
+        }
         try {
             $request = new Request('GET', $toml, RequestBuilder::HEADERS);
             $response = $httpClient->send($request);

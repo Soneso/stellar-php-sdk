@@ -623,4 +623,32 @@ class CrossBorderPaymentsTest extends TestCase
             $this->assertEquals(500, $e->getCode());
         }
     }
+
+    public function testPostTransactionsInfoNeededWithoutFields(): void {
+        // A transaction_info_needed error body without a fields key is valid;
+        // the typed exception is raised with null fields and no PHP warning.
+        $mock = new MockHandler([
+            new Response(400, [], json_encode(['error' => 'transaction_info_needed'])),
+        ]);
+
+        $httpClient = new Client(['handler' => HandlerStack::create($mock)]);
+        $service = new CrossBorderPaymentsService($this->serviceAddress, $httpClient);
+        $request = new SEP31PostTransactionsRequest(
+            amount: 100.0,
+            assetCode: 'USDC',
+        );
+
+        // Surface any warning (such as an undefined array key access) as a failure.
+        set_error_handler(static function (int $errno, string $errstr): bool {
+            throw new \ErrorException($errstr, 0, $errno);
+        });
+        try {
+            $service->postTransactions($request, $this->jwtToken);
+            $this->fail('Expected SEP31TransactionInfoNeededException was not thrown');
+        } catch (SEP31TransactionInfoNeededException $e) {
+            $this->assertNull($e->fields);
+        } finally {
+            restore_error_handler();
+        }
+    }
 }
