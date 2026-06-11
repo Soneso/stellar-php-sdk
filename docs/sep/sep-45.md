@@ -161,6 +161,10 @@ $webAuth = WebAuthForContracts::fromDomain("anchor.example.com", Network::testne
 $jwtToken = $webAuth->jwtToken($contractId, [$signer]);
 ```
 
+The lookup uses a `SorobanServer` created from the configured Soroban RPC URL.
+To use a preconfigured server instead (custom HTTP client, or a mock in
+tests), inject it with `setSorobanServer()`.
+
 ### Custom expiration
 
 You can also set a custom expiration ledger when you need more control over the signature validity window.
