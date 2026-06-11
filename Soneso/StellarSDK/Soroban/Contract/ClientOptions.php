@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK\Soroban\Contract;
 use Psr\Log\LoggerInterface;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\SorobanServer;
 
 /**
  * Client configuration options for Soroban smart contract interactions
@@ -32,6 +33,9 @@ class ClientOptions
      * @param Network $network The Stellar network this contract is deployed to.
      * @param string $rpcUrl The URL of the RPC instance that will be used to interact with this contract.
      * @param LoggerInterface|null $logger PSR-3 logger for debug output. Default: null (no logging).
+     * @param SorobanServer|null $server RPC server instance to use. When null, one is created
+     *                                   automatically from $rpcUrl. Provide a preconfigured instance
+     *                                   to customize the underlying HTTP client.
      *
      * @see MethodOptions::$restore For automatic restore configuration
      */
@@ -41,6 +45,7 @@ class ClientOptions
         public Network $network,
         public string $rpcUrl,
         public ?LoggerInterface $logger = null,
+        public ?SorobanServer $server = null,
     ) {
     }
 }

@@ -19,6 +19,7 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperation;
 use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Contract\AssembledTransaction;
 use Soneso\StellarSDK\Soroban\Contract\ClientOptions;
 use Soneso\StellarSDK\Soroban\Contract\ContractSpec;
@@ -32,12 +33,22 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\Xdr\XdrAccountEntry;
 use Soneso\StellarSDK\Xdr\XdrAccountEntryExt;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
+use Soneso\StellarSDK\Xdr\XdrContractCodeEntry;
+use Soneso\StellarSDK\Xdr\XdrContractCodeEntryExt;
+use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
+use Soneso\StellarSDK\Xdr\XdrContractDataEntry;
+use Soneso\StellarSDK\Xdr\XdrContractExecutable;
+use Soneso\StellarSDK\Xdr\XdrDataValueMandatory;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryData;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyAccount;
+use Soneso\StellarSDK\Xdr\XdrSCContractInstance;
+use Soneso\StellarSDK\Xdr\XdrSCEnvMetaEntry;
+use Soneso\StellarSDK\Xdr\XdrSCEnvMetaEntryInterfaceVersion;
+use Soneso\StellarSDK\Xdr\XdrSCEnvMetaKind;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind;
 use Soneso\StellarSDK\Xdr\XdrSCSpecFunctionV0;
@@ -55,61 +66,13 @@ use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
 use Soneso\StellarSDK\Xdr\XdrTransactionMetaV3;
 
 /**
- * Test keypair that injects a mocked Guzzle HTTP client into internally created SorobanServer instances.
- *
- * SorobanClient and AssembledTransaction construct their SorobanServer internally from the rpcUrl,
- * so there is no public seam for replacing the HTTP client before the first RPC call is made inside
- * static factory flows such as SorobanClient::install(), SorobanClient::deploy() and
- * AssembledTransaction::build(). All of those flows call sourceAccountKeyPair->getAccountId() from
- * AssembledTransaction::getSourceAccount() right before the first RPC request. This subclass uses
- * that deterministic call to locate the AssembledTransaction on the call stack and replace the
- * private httpClient of its SorobanServer with the prepared mock client. The injection is idempotent;
- * repeated calls simply re-assign the same client.
- */
-class HttpInjectingKeyPair extends KeyPair
-{
-    private ?Client $httpClientToInject = null;
-
-    public static function fromBaseKeyPair(KeyPair $base): HttpInjectingKeyPair
-    {
-        return new HttpInjectingKeyPair($base->getPublicKey(), $base->getPrivateKey());
-    }
-
-    public function setHttpClientToInject(Client $client): void
-    {
-        $this->httpClientToInject = $client;
-    }
-
-    public function getAccountId(): string
-    {
-        if ($this->httpClientToInject !== null) {
-            foreach (debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 20) as $frame) {
-                $object = $frame['object'] ?? null;
-                if ($object instanceof AssembledTransaction) {
-                    $serverProperty = new ReflectionProperty(AssembledTransaction::class, 'server');
-                    $serverProperty->setAccessible(true);
-                    $server = $serverProperty->getValue($object);
-                    $httpClientProperty = new ReflectionProperty(SorobanServer::class, 'httpClient');
-                    $httpClientProperty->setAccessible(true);
-                    $httpClientProperty->setValue($server, $this->httpClientToInject);
-                }
-            }
-        }
-        return parent::getAccountId();
-    }
-}
-
-/**
  * Unit tests for the SorobanClient high-level contract client.
  *
  * All RPC interactions are mocked with Guzzle MockHandler responses; no network access is required.
- * The MockHandler queue doubles as a guard: any HTTP request beyond the queued responses fails the
- * test, and an exhausted queue (count 0) proves that exactly the expected requests were made.
- *
- * Not covered here (no unit-test seam, requires a live RPC server):
- * - SorobanClient::forClientOptions() constructs a SorobanServer directly and immediately performs
- *   RPC calls, with no hook between construction and the first request.
- * - SorobanClient::deploy() success path, because it ends with a forClientOptions() call.
+ * A SorobanServer whose private httpClient is replaced with a mock-backed Guzzle client is passed
+ * through the server option of ClientOptions, InstallRequest and DeployRequest. The MockHandler
+ * queue doubles as a guard: any HTTP request beyond the queued responses fails the test, and an
+ * exhausted queue (count 0) proves that exactly the expected requests were made.
  */
 class SorobanClientTest extends TestCase
 {
@@ -184,14 +147,13 @@ class SorobanClientTest extends TestCase
 
     public function testBuildInvokeMethodTxBuildsAndSimulatesTransaction(): void
     {
-        $keyPair = HttpInjectingKeyPair::fromBaseKeyPair(KeyPair::fromAccountId(self::TEST_ACCOUNT_ID));
-        $client = $this->createClient($this->createClientOptions($keyPair));
-
         $mock = new MockHandler([
             $this->accountEntryResponse(),
             $this->simulateResponse(XdrSCVal::forSymbol('ok')),
         ]);
-        $keyPair->setHttpClientToInject($this->createHttpClient($mock));
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromAccountId(self::TEST_ACCOUNT_ID);
+        $client = $this->createClient($this->createClientOptions($keyPair, $server));
 
         $args = [XdrSCVal::forU32(42)];
         $tx = $client->buildInvokeMethodTx('hello', $args);
@@ -221,12 +183,11 @@ class SorobanClientTest extends TestCase
 
     public function testBuildInvokeMethodTxHonorsMethodOptionsWithoutSimulation(): void
     {
-        $keyPair = HttpInjectingKeyPair::fromBaseKeyPair(KeyPair::fromAccountId(self::TEST_ACCOUNT_ID));
-        $client = $this->createClient($this->createClientOptions($keyPair));
-
         // only getAccount is expected; with simulate=false no simulateTransaction request may happen
         $mock = new MockHandler([$this->accountEntryResponse()]);
-        $keyPair->setHttpClientToInject($this->createHttpClient($mock));
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromAccountId(self::TEST_ACCOUNT_ID);
+        $client = $this->createClient($this->createClientOptions($keyPair, $server));
 
         $methodOptions = new MethodOptions(fee: 500, timeoutInSeconds: 60, simulate: false);
         $tx = $client->buildInvokeMethodTx('add', null, $methodOptions);
@@ -244,15 +205,14 @@ class SorobanClientTest extends TestCase
 
     public function testInvokeMethodReadCallReturnsSimulationResultWithoutSending(): void
     {
-        $keyPair = HttpInjectingKeyPair::fromBaseKeyPair(KeyPair::fromAccountId(self::TEST_ACCOUNT_ID));
-        $client = $this->createClient($this->createClientOptions($keyPair));
-
         // a read call must trigger exactly getAccount + simulateTransaction, never sendTransaction
         $mock = new MockHandler([
             $this->accountEntryResponse(),
             $this->simulateResponse(XdrSCVal::forU32(1234)),
         ]);
-        $keyPair->setHttpClientToInject($this->createHttpClient($mock));
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromAccountId(self::TEST_ACCOUNT_ID);
+        $client = $this->createClient($this->createClientOptions($keyPair, $server));
 
         $result = $client->invokeMethod('hello');
 
@@ -376,17 +336,16 @@ class SorobanClientTest extends TestCase
 
     public function testInstallReturnsWasmHashFromSimulationWhenAlreadyInstalled(): void
     {
-        $keyPair = HttpInjectingKeyPair::fromBaseKeyPair(KeyPair::fromAccountId(self::TEST_ACCOUNT_ID));
-
         // upload simulation of already installed code is a read call returning the wasm hash;
         // no transaction may be submitted, so only getAccount + simulateTransaction are queued
         $mock = new MockHandler([
             $this->accountEntryResponse(),
             $this->simulateResponse(XdrSCVal::forBytes(hex2bin(self::TEST_WASM_HASH))),
         ]);
-        $keyPair->setHttpClientToInject($this->createHttpClient($mock));
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromAccountId(self::TEST_ACCOUNT_ID);
 
-        $wasmHash = SorobanClient::install($this->createInstallRequest($keyPair));
+        $wasmHash = SorobanClient::install($this->createInstallRequest($keyPair, $server));
 
         $this->assertSame(self::TEST_WASM_HASH, $wasmHash);
         $this->assertSame(0, $mock->count());
@@ -394,24 +353,21 @@ class SorobanClientTest extends TestCase
 
     public function testInstallThrowsWhenSimulationReturnsNoBytes(): void
     {
-        $keyPair = HttpInjectingKeyPair::fromBaseKeyPair(KeyPair::fromAccountId(self::TEST_ACCOUNT_ID));
-
         $mock = new MockHandler([
             $this->accountEntryResponse(),
             $this->simulateResponse(XdrSCVal::forU32(5)),
         ]);
-        $keyPair->setHttpClientToInject($this->createHttpClient($mock));
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromAccountId(self::TEST_ACCOUNT_ID);
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Could not extract wasm hash from simulation result');
 
-        SorobanClient::install($this->createInstallRequest($keyPair));
+        SorobanClient::install($this->createInstallRequest($keyPair, $server));
     }
 
     public function testInstallForceSubmitsTransaction(): void
     {
-        $keyPair = HttpInjectingKeyPair::fromBaseKeyPair(KeyPair::fromSeed(self::TEST_SECRET_SEED));
-
         $mock = new MockHandler([
             $this->accountEntryResponse(),
             $this->simulateResponse(XdrSCVal::forBytes(hex2bin(self::TEST_WASM_HASH))),
@@ -421,9 +377,10 @@ class SorobanClientTest extends TestCase
                 XdrSCVal::forBytes(hex2bin(self::TEST_WASM_HASH)),
             ),
         ]);
-        $keyPair->setHttpClientToInject($this->createHttpClient($mock));
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
 
-        $wasmHash = SorobanClient::install($this->createInstallRequest($keyPair), true);
+        $wasmHash = SorobanClient::install($this->createInstallRequest($keyPair, $server), true);
 
         $this->assertSame(self::TEST_WASM_HASH, $wasmHash);
         $this->assertSame(0, $mock->count());
@@ -431,8 +388,6 @@ class SorobanClientTest extends TestCase
 
     public function testInstallForcePollsUntilTransactionFound(): void
     {
-        $keyPair = HttpInjectingKeyPair::fromBaseKeyPair(KeyPair::fromSeed(self::TEST_SECRET_SEED));
-
         // The first getTransaction poll reports NOT_FOUND; the status polling
         // retries with backoff until the transaction is found.
         $mock = new MockHandler([
@@ -445,9 +400,10 @@ class SorobanClientTest extends TestCase
                 XdrSCVal::forBytes(hex2bin(self::TEST_WASM_HASH)),
             ),
         ]);
-        $keyPair->setHttpClientToInject($this->createHttpClient($mock));
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
 
-        $wasmHash = SorobanClient::install($this->createInstallRequest($keyPair), true);
+        $wasmHash = SorobanClient::install($this->createInstallRequest($keyPair, $server), true);
 
         $this->assertSame(self::TEST_WASM_HASH, $wasmHash);
         $this->assertSame(0, $mock->count());
@@ -455,8 +411,6 @@ class SorobanClientTest extends TestCase
 
     public function testInstallForceThrowsWhenWasmHashMissing(): void
     {
-        $keyPair = HttpInjectingKeyPair::fromBaseKeyPair(KeyPair::fromSeed(self::TEST_SECRET_SEED));
-
         // transaction succeeds but contains no result meta, so no wasm hash can be extracted
         $mock = new MockHandler([
             $this->accountEntryResponse(),
@@ -464,12 +418,13 @@ class SorobanClientTest extends TestCase
             $this->sendTransactionResponse(),
             $this->getTransactionRpcResponse(GetTransactionResponse::STATUS_SUCCESS, null),
         ]);
-        $keyPair->setHttpClientToInject($this->createHttpClient($mock));
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Could not get wasm hash for installed contract');
 
-        SorobanClient::install($this->createInstallRequest($keyPair), true);
+        SorobanClient::install($this->createInstallRequest($keyPair, $server), true);
     }
 
     // ---------------------------------------------------------------------
@@ -478,15 +433,14 @@ class SorobanClientTest extends TestCase
 
     public function testDeployThrowsWhenNoContractIdReturned(): void
     {
-        $keyPair = HttpInjectingKeyPair::fromBaseKeyPair(KeyPair::fromSeed(self::TEST_SECRET_SEED));
-
         $mock = new MockHandler([
             $this->accountEntryResponse(),
             $this->simulateResponse(XdrSCVal::forVoid(), true),
             $this->sendTransactionResponse(),
             $this->getTransactionRpcResponse(GetTransactionResponse::STATUS_FAILED, null),
         ]);
-        $keyPair->setHttpClientToInject($this->createHttpClient($mock));
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
 
         $deployRequest = new DeployRequest(
             rpcUrl: self::TEST_RPC_URL,
@@ -494,12 +448,53 @@ class SorobanClientTest extends TestCase
             sourceAccountKeyPair: $keyPair,
             wasmHash: self::TEST_WASM_HASH,
             constructorArgs: [XdrSCVal::forU32(1)],
+            server: $server,
         );
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Could not get contract id for deployed contract');
 
         SorobanClient::deploy($deployRequest);
+    }
+
+    // ---------------------------------------------------------------------
+    // forClientOptions
+    // ---------------------------------------------------------------------
+
+    public function testForClientOptionsLoadsSpecFromChain(): void
+    {
+        $wasmHash = hash('sha256', 'test-wasm', true);
+        $byteCode = $this->createContractByteCode('hello');
+
+        // forClientOptions loads the contract instance entry first to resolve the wasm id,
+        // then the contract code entry containing the byte code with the embedded spec
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->contractInstanceEntryData($wasmHash)),
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $byteCode)),
+        ]);
+        $server = $this->createMockedServer($mock);
+
+        $client = SorobanClient::forClientOptions($this->createClientOptions(server: $server));
+
+        $this->assertContains('hello', $client->getMethodNames());
+        $this->assertSame(self::TEST_CONTRACT_ID, $client->getContractId());
+        $this->assertSame(0, $mock->count());
+    }
+
+    public function testForClientOptionsThrowsWhenContractNotFound(): void
+    {
+        $mock = new MockHandler([
+            $this->jsonRpcResponse([
+                'entries' => [],
+                'latestLedger' => 1000,
+            ]),
+        ]);
+        $server = $this->createMockedServer($mock);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Could not load contract info for the contract');
+
+        SorobanClient::forClientOptions($this->createClientOptions(server: $server));
     }
 
     // ---------------------------------------------------------------------
@@ -548,24 +543,39 @@ class SorobanClientTest extends TestCase
         return $client;
     }
 
-    private function createClientOptions(?KeyPair $keyPair = null): ClientOptions
+    private function createClientOptions(?KeyPair $keyPair = null, ?SorobanServer $server = null): ClientOptions
     {
         return new ClientOptions(
             sourceAccountKeyPair: $keyPair ?? KeyPair::fromAccountId(self::TEST_ACCOUNT_ID),
             contractId: self::TEST_CONTRACT_ID,
             network: $this->testNetwork,
             rpcUrl: self::TEST_RPC_URL,
+            server: $server,
         );
     }
 
-    private function createInstallRequest(KeyPair $keyPair): InstallRequest
+    private function createInstallRequest(KeyPair $keyPair, ?SorobanServer $server = null): InstallRequest
     {
         return new InstallRequest(
             wasmBytes: "\x00asm\x01\x00\x00\x00",
             rpcUrl: self::TEST_RPC_URL,
             network: $this->testNetwork,
             sourceAccountKeyPair: $keyPair,
+            server: $server,
         );
+    }
+
+    /**
+     * SorobanServer whose private httpClient is replaced with a Guzzle client backed by the
+     * given mock handler, so that all RPC requests are served from the queued responses.
+     */
+    private function createMockedServer(MockHandler $mock): SorobanServer
+    {
+        $server = new SorobanServer(self::TEST_RPC_URL);
+        $httpClientProperty = new ReflectionProperty(SorobanServer::class, 'httpClient');
+        $httpClientProperty->setAccessible(true);
+        $httpClientProperty->setValue($server, $this->createHttpClient($mock));
+        return $server;
     }
 
     /**
@@ -606,6 +616,68 @@ class SorobanClientTest extends TestCase
     private function createHttpClient(MockHandler $mock): Client
     {
         return new Client(['handler' => HandlerStack::create($mock)]);
+    }
+
+    /**
+     * Synthetic contract byte code containing an env meta section followed by a spec section
+     * with a single function entry, as parsed by SorobanContractParser.
+     */
+    private function createContractByteCode(string $functionName): string
+    {
+        $envMeta = new XdrSCEnvMetaEntry(new XdrSCEnvMetaKind(XdrSCEnvMetaKind::SC_ENV_META_KIND_INTERFACE_VERSION));
+        $envMeta->interfaceVersion = new XdrSCEnvMetaEntryInterfaceVersion(23, 0);
+        $specEntry = $this->createFunctionEntry($functionName);
+        return 'contractenvmetav0' . $envMeta->encode() . 'contractspecv0' . $specEntry->encode();
+    }
+
+    /**
+     * CONTRACT_DATA ledger entry holding the contract instance with a wasm executable.
+     */
+    private function contractInstanceEntryData(string $wasmHash): XdrLedgerEntryData
+    {
+        $instance = new XdrSCContractInstance(XdrContractExecutable::forWasmId(bin2hex($wasmHash)));
+        $dataEntry = new XdrContractDataEntry(
+            new XdrExtensionPoint(0),
+            Address::fromContractId(self::TEST_CONTRACT_ID)->toXdr(),
+            XdrSCVal::forLedgerKeyContractInstance(),
+            XdrContractDataDurability::PERSISTENT(),
+            XdrSCVal::forContractInstance($instance),
+        );
+        $entryData = new XdrLedgerEntryData(XdrLedgerEntryType::CONTRACT_DATA());
+        $entryData->contractData = $dataEntry;
+        return $entryData;
+    }
+
+    /**
+     * CONTRACT_CODE ledger entry holding the given byte code under the given wasm hash.
+     */
+    private function contractCodeEntryData(string $wasmHash, string $byteCode): XdrLedgerEntryData
+    {
+        $codeEntry = new XdrContractCodeEntry(
+            new XdrContractCodeEntryExt(0),
+            $wasmHash,
+            new XdrDataValueMandatory($byteCode),
+        );
+        $entryData = new XdrLedgerEntryData(XdrLedgerEntryType::CONTRACT_CODE());
+        $entryData->contractCode = $codeEntry;
+        return $entryData;
+    }
+
+    /**
+     * getLedgerEntries response containing the given ledger entry as its single result.
+     */
+    private function ledgerEntryResponse(XdrLedgerEntryData $entryData): Response
+    {
+        return $this->jsonRpcResponse([
+            'entries' => [
+                [
+                    'key' => 'AAAABgAAAAA=',
+                    'xdr' => $entryData->toBase64Xdr(),
+                    'lastModifiedLedgerSeq' => 1000,
+                ],
+            ],
+            'latestLedger' => 1000,
+        ]);
     }
 
     /**

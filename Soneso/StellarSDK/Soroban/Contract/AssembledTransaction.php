@@ -272,7 +272,8 @@ class AssembledTransaction
     private function __construct(AssembledTransactionOptions $options)
     {
         $this->options= $options;
-        $this->server = new SorobanServer(endpoint: $options->clientOptions->rpcUrl);
+        $this->server = $options->clientOptions->server
+            ?? new SorobanServer(endpoint: $options->clientOptions->rpcUrl);
         if ($options->logger !== null) {
             $this->server->setLogger($options->logger);
         }

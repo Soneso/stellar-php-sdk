@@ -96,7 +96,7 @@ class SorobanClient
      * @throws Exception If the contract is not found or spec parsing fails
      */
     public static function forClientOptions(ClientOptions $options) : SorobanClient {
-        $server = new SorobanServer($options->rpcUrl);
+        $server = $options->server ?? new SorobanServer($options->rpcUrl);
         if ($options->logger !== null) {
             $server->setLogger($options->logger);
         }
@@ -138,7 +138,8 @@ class SorobanClient
             contractId: "ignored",
             network: $deployRequest->network,
             rpcUrl: $deployRequest->rpcUrl,
-            logger: $deployRequest->logger
+            logger: $deployRequest->logger,
+            server: $deployRequest->server
         );
         $options = new AssembledTransactionOptions(
             clientOptions:$clientOptions,
@@ -179,7 +180,8 @@ class SorobanClient
             contractId: "ignored",
             network: $installRequest->network,
             rpcUrl: $installRequest->rpcUrl,
-            logger: $installRequest->logger
+            logger: $installRequest->logger,
+            server: $installRequest->server
         );
         $options = new AssembledTransactionOptions(
             clientOptions:$clientOptions,
