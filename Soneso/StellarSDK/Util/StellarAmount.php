@@ -53,7 +53,49 @@ class StellarAmount
      * @var BigInteger Maximum value that fits in a signed 64-bit integer (9223372036854775807)
      */
     protected BigInteger $maxSignedStroops64;
-    
+
+    /**
+     * @var BigInteger|null Shared, lazily created stroop scale factor.
+     */
+    private static ?BigInteger $stroopScaleCache = null;
+
+    /**
+     * @var BigInteger|null Shared, lazily created maximum signed 64-bit stroops value.
+     */
+    private static ?BigInteger $maxStroopsCache = null;
+
+    /**
+     * @var BigInteger|null Shared, lazily created zero value.
+     */
+    private static ?BigInteger $zeroCache = null;
+
+    /**
+     * Returns the shared stroop scale factor (10,000,000).
+     *
+     * BigInteger is immutable, so a single instance is reused across all
+     * StellarAmount objects instead of re-parsing the constant on each call.
+     */
+    private static function stroopScale(): BigInteger
+    {
+        return self::$stroopScaleCache ??= new BigInteger(StellarConstants::STROOP_SCALE);
+    }
+
+    /**
+     * Returns the shared maximum signed 64-bit stroops value (9223372036854775807).
+     */
+    private static function maxStroops(): BigInteger
+    {
+        return self::$maxStroopsCache ??= new BigInteger('9223372036854775807');
+    }
+
+    /**
+     * Returns the shared zero value.
+     */
+    private static function zero(): BigInteger
+    {
+        return self::$zeroCache ??= new BigInteger('0');
+    }
+
     /**
      * Returns the maximum supported amount
      *
@@ -62,7 +104,7 @@ class StellarAmount
      */
     public static function maximum() : StellarAmount
     {
-        return new StellarAmount(new BigInteger('9223372036854775807'));
+        return new StellarAmount(self::maxStroops());
     }
     
     /**
@@ -86,19 +128,18 @@ class StellarAmount
      */
     public function __construct(BigInteger $stroops)
     {
-        $this->stroopScaleBignum = new BigInteger(StellarConstants::STROOP_SCALE);
-        $this->maxSignedStroops64 = new BigInteger('9223372036854775807');
+        $this->stroopScaleBignum = self::stroopScale();
+        $this->maxSignedStroops64 = self::maxStroops();
         $this->stroops = $stroops;
-        
+
         // Ensure amount of stroops doesn't exceed the maximum
         $compared = $this->stroops->compare($this->maxSignedStroops64);
         if ($compared > 0) {
             throw new \InvalidArgumentException('Maximum value exceeded. Value cannot be larger than 9223372036854775807 stroops (922337203685.4775807 XLM)');
         }
-        
+
         // Ensure amount is not negative
-        $zero = new BigInteger('0');
-        $compared = $this->stroops->compare($zero);
+        $compared = $this->stroops->compare(self::zero());
         if ($compared < 0) {
             throw new \InvalidArgumentException('Amount cannot be negative');
         }
@@ -131,11 +172,11 @@ class StellarAmount
         $amountStr = str_replace(',', '', $decimalAmount);
         $amountStr = str_replace(' ', '', $amountStr);
         $parts = explode('.', $amountStr);
-        $unscaledAmount = new BigInteger('0');
+        $unscaledAmount = self::zero();
 
         // Everything to the left of the decimal point
         if ($parts[0]) {
-            $unscaledAmountLeft = (new BigInteger($parts[0]))->multiply(new BigInteger(StellarConstants::STROOP_SCALE));
+            $unscaledAmountLeft = (new BigInteger($parts[0]))->multiply(self::stroopScale());
             $unscaledAmount = $unscaledAmount->add($unscaledAmountLeft);
         }
 

@@ -47,7 +47,7 @@ abstract class Asset {
     public const TYPE_NATIVE = "native";
     public const TYPE_CREDIT_ALPHANUM_4 = "credit_alphanum4";
     public const TYPE_CREDIT_ALPHANUM_12 = "credit_alphanum12";
-    public const TYPE_POOL_SHARE = "liquidty_pool_shares";
+    public const TYPE_POOL_SHARE = "liquidity_pool_shares";
 
     /**
      * Returns the type of this asset
@@ -59,11 +59,15 @@ abstract class Asset {
     /**
      * Creates an asset from its type, code, and issuer
      *
-     * @param string $type One of the TYPE_* constants
+     * Pool share assets cannot be created here because they are composed of two
+     * assets rather than a code and issuer; construct an AssetTypePoolShare directly.
+     *
+     * @param string $type TYPE_NATIVE, TYPE_CREDIT_ALPHANUM_4 or TYPE_CREDIT_ALPHANUM_12
      * @param string|null $code Asset code (required for non-native assets)
      * @param string|null $issuer Issuer account ID (required for non-native assets)
      * @return Asset The created asset
      * @throws \RuntimeException If parameters are invalid or type is unsupported
+     * @see AssetTypePoolShare For liquidity pool share assets
      */
     public static function create(string $type, ?string $code = null, ?string $issuer = null) : Asset {
         if (Asset::TYPE_NATIVE == $type) {
@@ -79,6 +83,10 @@ abstract class Asset {
 
             return Asset::createNonNativeAsset($code, $issuer);
 
+        }
+        if (Asset::TYPE_POOL_SHARE == $type) {
+            throw new \RuntimeException(
+                "pool share assets are composed of two assets and can not be created from a code and issuer; construct AssetTypePoolShare directly");
         }
         throw new \RuntimeException("unsupported asset type: " . $type);
     }

@@ -13,6 +13,7 @@ use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
 use Soneso\StellarSDK\AssetTypeNative;
+use Soneso\StellarSDK\AssetTypePoolShare;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertNotNull;
 use function PHPUnit\Framework\assertNull;
@@ -266,5 +267,27 @@ class AssetTest extends TestCase
 
         $asset5 = Asset::createNonNativeAsset("EUR", $this->issuerAccountId);
         assertTrue($asset3->getCode() !== $asset5->getCode());
+    }
+
+    public function testPoolShareTypeConstantMatchesHorizonValue()
+    {
+        // Horizon reports liquidity pool share balances with this asset type string.
+        assertEquals("liquidity_pool_shares", Asset::TYPE_POOL_SHARE);
+    }
+
+    public function testPoolShareAssetTypeMatchesConstant()
+    {
+        $assetA = new AssetTypeNative();
+        $assetB = Asset::createNonNativeAsset("USD", $this->issuerAccountId);
+        $poolShare = new AssetTypePoolShare($assetA, $assetB);
+
+        assertEquals(Asset::TYPE_POOL_SHARE, $poolShare->getType());
+    }
+
+    public function testCreateRejectsPoolShareTypeWithClearMessage()
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('construct AssetTypePoolShare directly');
+        Asset::create(Asset::TYPE_POOL_SHARE);
     }
 }

@@ -452,6 +452,101 @@ class URISchemeTest extends TestCase
         $this->assertTrue($result);
     }
 
+    public function testCheckURISchemeIsValidWithSpecialCharacterSignature(): void
+    {
+        // The SEP-7 spec test vector produces a signature containing base64
+        // '+', '/' and '==' characters, which must survive URL-encoding during
+        // verification. The payload is reconstructed by stripping at the
+        // "&signature=" marker, independent of the signature value's encoding.
+        $uriScheme = new URIScheme();
+        $signer = KeyPair::fromSeed('SBPOVRVKTTV7W3IOX2FJPSMPCJ5L2WU2YKTP3HCLYPXNI5MDIGREVNYC');
+        $uri = 'web+stellar:pay?destination=GCALNQQBXAPZ2WIRSDDBMSTAKCUH5SG6U76YBFLQLIXJTF7FE5AX7AOO'
+            . '&amount=120.1234567&memo=skdjfasf&memo_type=MEMO_TEXT'
+            . '&msg=pay%20me%20with%20lumens&origin_domain=someDomain.com';
+        $signedUri = $uriScheme->signURI($uri, $signer);
+        // Sanity: the signature value is URL-encoded (contains %2F for '/').
+        $this->assertStringContainsString('&signature=', $signedUri);
+        $this->assertStringContainsString('%2F', $signedUri);
+
+        $tomlContent = "URI_REQUEST_SIGNING_KEY = \"" . $signer->getAccountId() . "\"\n";
+        $mock = new MockHandler([
+            new Response(200, [], $tomlContent)
+        ]);
+        $uriScheme->setMockHandlerStack(HandlerStack::create($mock));
+
+        $this->assertTrue($uriScheme->checkUIRSchemeIsValid($signedUri));
+    }
+
+    public function testCheckURISchemeRejectsTamperedUri(): void
+    {
+        $uriScheme = new URIScheme();
+        $signer = KeyPair::fromSeed(self::TEST_SECRET);
+        $uri = $uriScheme->generateSignTransactionURI(self::TEST_XDR, originDomain: 'example.com');
+        $signedUri = $uriScheme->signURI($uri, $signer);
+
+        // Tamper with the payload after signing: the signature must no longer verify.
+        $tamperedUri = str_replace('origin_domain=example.com', 'origin_domain=evil.com', $signedUri);
+
+        $tomlContent = "URI_REQUEST_SIGNING_KEY = \"" . self::TEST_SIGNER_ACCOUNT . "\"\n";
+        $mock = new MockHandler([
+            new Response(200, [], $tomlContent)
+        ]);
+        $uriScheme->setMockHandlerStack(HandlerStack::create($mock));
+
+        $exception = false;
+        try {
+            $uriScheme->checkUIRSchemeIsValid($tamperedUri);
+        } catch (URISchemeError $e) {
+            $exception = ($e->getCode() === URISchemeError::invalidSignature);
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testCheckURISchemeRejectsInvalidBase64Signature(): void
+    {
+        $uriScheme = new URIScheme();
+        // The signature value is not valid base64.
+        $uri = $uriScheme->generateSignTransactionURI(
+            self::TEST_XDR,
+            originDomain: 'example.com',
+            signature: '@@@invalid@@@'
+        );
+
+        $tomlContent = "URI_REQUEST_SIGNING_KEY = \"" . self::TEST_SIGNER_ACCOUNT . "\"\n";
+        $mock = new MockHandler([
+            new Response(200, [], $tomlContent)
+        ]);
+        $uriScheme->setMockHandlerStack(HandlerStack::create($mock));
+
+        $exception = false;
+        try {
+            $uriScheme->checkUIRSchemeIsValid($uri);
+        } catch (URISchemeError $e) {
+            $exception = ($e->getCode() === URISchemeError::invalidSignature);
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testCheckURISchemeIsValidForSignedPayUri(): void
+    {
+        $uriScheme = new URIScheme();
+        $signer = KeyPair::fromSeed(self::TEST_SECRET);
+        $uri = $uriScheme->generatePayOperationURI(
+            self::TEST_DESTINATION,
+            amount: '10',
+            originDomain: 'example.com'
+        );
+        $signedUri = $uriScheme->signURI($uri, $signer);
+
+        $tomlContent = "URI_REQUEST_SIGNING_KEY = \"" . self::TEST_SIGNER_ACCOUNT . "\"\n";
+        $mock = new MockHandler([
+            new Response(200, [], $tomlContent)
+        ]);
+        $uriScheme->setMockHandlerStack(HandlerStack::create($mock));
+
+        $this->assertTrue($uriScheme->checkUIRSchemeIsValid($signedUri));
+    }
+
     // ==================== setMockHandlerStack Tests ====================
 
     public function testSetMockHandlerStack(): void

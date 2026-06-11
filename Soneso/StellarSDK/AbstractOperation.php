@@ -103,7 +103,7 @@ abstract class AbstractOperation
         }
         $type = $body->getType()->getValue();
         $result = match ($type) {
-            XdrOperationType::CREATE_ACCOUNT => self::creatAccountOperation($body),
+            XdrOperationType::CREATE_ACCOUNT => self::createAccountOperation($body),
             XdrOperationType::PAYMENT => self::paymentOperation($body),
             XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE => self::pathPaymentStrictReceiveOperation($body),
             XdrOperationType::MANAGE_SELL_OFFER => self::manageSellOfferOperation($body),
@@ -117,7 +117,7 @@ abstract class AbstractOperation
             XdrOperationType::MANAGE_BUY_OFFER => self::manageBuyOfferOperation($body),
             XdrOperationType::PATH_PAYMENT_STRICT_SEND => self::pathPaymentStrictSendOperation($body),
             XdrOperationType::CREATE_CLAIMABLE_BALANCE => self::createClaimableBalance($body),
-            XdrOperationType::CLAIM_CLAIMABLE_BALANCE => self::claimClaimableClaimableBalance($body),
+            XdrOperationType::CLAIM_CLAIMABLE_BALANCE => self::claimClaimableBalance($body),
             XdrOperationType::BEGIN_SPONSORING_FUTURE_RESERVES => self::beginSponsoringFutureReserves($body),
             XdrOperationType::END_SPONSORING_FUTURE_RESERVES => new EndSponsoringFutureReservesOperation(),
             XdrOperationType::REVOKE_SPONSORSHIP => self::revokeSponsorship($body),
@@ -140,7 +140,7 @@ abstract class AbstractOperation
         if ($op !== null) {
             return RestoreFootprintOperation::fromXdrOperation($op);
         } else {
-            throw new InvalidArgumentException("missing invoke host function operation in xdr operation body");
+            throw new InvalidArgumentException("missing restore footprint operation in xdr operation body");
         }
     }
 
@@ -149,7 +149,7 @@ abstract class AbstractOperation
         if ($op !== null) {
             return ExtendFootprintTTLOperation::fromXdrOperation($op);
         } else {
-            throw new InvalidArgumentException("missing invoke host function operation in xdr operation body");
+            throw new InvalidArgumentException("missing extend footprint TTL operation in xdr operation body");
         }
     }
 
@@ -225,7 +225,7 @@ abstract class AbstractOperation
         }
     }
 
-    private static function claimClaimableClaimableBalance(XdrOperationBody $body) : ClaimClaimableBalanceOperation {
+    private static function claimClaimableBalance(XdrOperationBody $body) : ClaimClaimableBalanceOperation {
         $op = $body->getClaimClaimableBalanceOperation();
         if ($op !== null) {
             return ClaimClaimableBalanceOperation::fromXdrOperation($op);
@@ -288,7 +288,7 @@ abstract class AbstractOperation
         }
     }
 
-    private static function creatAccountOperation(XdrOperationBody $body) : CreateAccountOperation {
+    private static function createAccountOperation(XdrOperationBody $body) : CreateAccountOperation {
         $caOp = $body->getCreateAccountOp();
         if ($caOp !== null) {
             return CreateAccountOperation::fromXdrOperation($caOp);

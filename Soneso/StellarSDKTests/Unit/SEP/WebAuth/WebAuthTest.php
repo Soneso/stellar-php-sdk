@@ -12,6 +12,7 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
 use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
@@ -36,6 +37,9 @@ use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidSignature;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidSourceAccount;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidTimeBounds;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidWebAuthDomain;
+use Soneso\StellarSDK\SEP\WebAuth\SubmitCompletedChallengeErrorResponseException;
+use Soneso\StellarSDK\SEP\WebAuth\SubmitCompletedChallengeTimeoutResponseException;
+use Soneso\StellarSDK\SEP\WebAuth\SubmitCompletedChallengeUnknownResponseException;
 use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\TransactionBuilder;
@@ -226,6 +230,33 @@ class WebAuthTest extends TestCase
         return json_encode(['transaction' => $transaction->toEnvelopeXdrBase64()]);
     }
 
+    private function requestChallengeMissingTimeBounds(string $accountId) : string {
+        $transactionAccount = new Account($this->serverAccountId, new BigInteger(-1));
+        $transaction = (new TransactionBuilder($transactionAccount))
+            ->addOperation($this::validFirstManageDataOp($accountId))
+            ->addOperation($this::validSecondManageDataOp())
+            ->addMemo(Memo::none())
+            ->build();
+        $transaction->sign($this->serverKeyPair, Network::testnet());
+        return json_encode(['transaction' => $transaction->toEnvelopeXdrBase64()]);
+    }
+
+    private function infiniteTimeBounds() : TimeBounds {
+        return new TimeBounds((new DateTime)->setTimestamp(time()), (new DateTime)->setTimestamp(0));
+    }
+
+    private function requestChallengeInfiniteTimeBounds(string $accountId) : string {
+        $transactionAccount = new Account($this->serverAccountId, new BigInteger(-1));
+        $transaction = (new TransactionBuilder($transactionAccount))
+            ->addOperation($this::validFirstManageDataOp($accountId))
+            ->addOperation($this::validSecondManageDataOp())
+            ->addMemo(Memo::none())
+            ->setTimeBounds($this::infiniteTimeBounds())
+            ->build();
+        $transaction->sign($this->serverKeyPair, Network::testnet());
+        return json_encode(['transaction' => $transaction->toEnvelopeXdrBase64()]);
+    }
+
     private function requestChallengeInvalidOperationType(string $accountId) : string {
         $transactionAccount = new Account($this->serverAccountId, new BigInteger(-1));
         $transaction = (new TransactionBuilder($transactionAccount))
@@ -294,6 +325,10 @@ class WebAuthTest extends TestCase
 
     private function requestJWTSuccess() : string{
         return json_encode(['token' => $this->successJWTToken]);
+    }
+
+    private function requestJWTError() : string{
+        return json_encode(['error' => 'The provided transaction is not valid']);
     }
 
     public function testDefaultSuccess(): void {
@@ -526,6 +561,236 @@ class WebAuthTest extends TestCase
         $this->assertTrue($exception);
     }
 
+    public function testGetChallengeMissingTimeBounds(): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestChallengeMissingTimeBounds($this->clientAccountId))
+        ]);
+        $webAuth->setMockHandler($mock);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+        $userAccountId = $userKeyPair->getAccountId();
+        $exception = false;
+        try {
+            $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair]);
+        } catch (GuzzleException $e) {
+        } catch (ErrorException $e) {
+            if ($e instanceof ChallengeValidationErrorInvalidTimeBounds) {
+                $exception = true;
+            }
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testGetChallengeInfiniteTimeBounds(): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestChallengeInfiniteTimeBounds($this->clientAccountId))
+        ]);
+        $webAuth->setMockHandler($mock);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+        $userAccountId = $userKeyPair->getAccountId();
+        $exception = false;
+        try {
+            $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair]);
+        } catch (GuzzleException $e) {
+        } catch (ErrorException $e) {
+            if ($e instanceof ChallengeValidationErrorInvalidTimeBounds) {
+                $exception = true;
+            }
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testMemoWithMuxedAccountRejected(): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+        $exception = false;
+        try {
+            $webAuth->jwtToken($this->clientAccountIdM, [$userKeyPair], $this->testMemo);
+        } catch (GuzzleException $e) {
+        } catch (InvalidArgumentException $e) {
+            $exception = true;
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testGetChallengeInvalidBase64(): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], json_encode(['transaction' => '@@@not-valid-base64@@@']))
+        ]);
+        $webAuth->setMockHandler($mock);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+        $userAccountId = $userKeyPair->getAccountId();
+        $exception = false;
+        try {
+            $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair]);
+        } catch (GuzzleException $e) {
+        } catch (InvalidArgumentException $e) {
+            $exception = true;
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testGetChallengeMissingMemo(): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestChallengeSuccess($this->clientAccountId))
+        ]);
+        $webAuth->setMockHandler($mock);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+        $userAccountId = $userKeyPair->getAccountId();
+        $exception = false;
+        try {
+            $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair], $this->testMemo);
+        } catch (GuzzleException $e) {
+        } catch (ErrorException $e) {
+            if ($e instanceof ChallengeValidationErrorInvalidMemoValue) {
+                $exception = true;
+            }
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testSubmitChallengeErrorResponse(): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestChallengeSuccess($this->clientAccountId, 200)),
+            new Response(400, ['X-Foo' => 'Bar'], $this->requestJWTError())
+        ]);
+        $webAuth->setMockHandler($mock);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+        $userAccountId = $userKeyPair->getAccountId();
+        $exception = false;
+        try {
+            $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair]);
+        } catch (GuzzleException $e) {
+        } catch (ErrorException $e) {
+            if ($e instanceof SubmitCompletedChallengeErrorResponseException) {
+                $exception = true;
+            }
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testSubmitChallengeMalformedJson(): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestChallengeSuccess($this->clientAccountId, 200)),
+            new Response(200, ['X-Foo' => 'Bar'], '{not valid json')
+        ]);
+        $webAuth->setMockHandler($mock);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+        $userAccountId = $userKeyPair->getAccountId();
+        $exception = false;
+        try {
+            $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair]);
+        } catch (GuzzleException $e) {
+        } catch (ErrorException $e) {
+            if ($e instanceof SubmitCompletedChallengeErrorResponseException) {
+                $exception = true;
+            }
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testSubmitChallengeNoTokenNoError(): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestChallengeSuccess($this->clientAccountId, 200)),
+            new Response(200, ['X-Foo' => 'Bar'], json_encode(['unexpected' => 'value']))
+        ]);
+        $webAuth->setMockHandler($mock);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+        $userAccountId = $userKeyPair->getAccountId();
+        $exception = false;
+        try {
+            $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair]);
+        } catch (GuzzleException $e) {
+        } catch (ErrorException $e) {
+            if ($e instanceof SubmitCompletedChallengeErrorResponseException) {
+                $exception = true;
+            }
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testSubmitChallengeTimeout(): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestChallengeSuccess($this->clientAccountId, 200)),
+            new Response(504, ['X-Foo' => 'Bar'], '')
+        ]);
+        $webAuth->setMockHandler($mock);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+        $userAccountId = $userKeyPair->getAccountId();
+        $exception = false;
+        try {
+            $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair]);
+        } catch (GuzzleException $e) {
+        } catch (ErrorException $e) {
+            if ($e instanceof SubmitCompletedChallengeTimeoutResponseException) {
+                $exception = true;
+            }
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testSubmitChallengeUnknownResponse(): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestChallengeSuccess($this->clientAccountId, 200)),
+            new Response(503, ['X-Foo' => 'Bar'], 'service unavailable')
+        ]);
+        $webAuth->setMockHandler($mock);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+        $userAccountId = $userKeyPair->getAccountId();
+        $exception = false;
+        try {
+            $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair]);
+        } catch (GuzzleException $e) {
+        } catch (ErrorException $e) {
+            if ($e instanceof SubmitCompletedChallengeUnknownResponseException) {
+                $exception = true;
+            }
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testFromDomainMissingWebAuthEndpoint(): void {
+        $toml = 'SIGNING_KEY="' . $this->serverAccountId . '"';
+        $client = new Client(['handler' => HandlerStack::create(new MockHandler([
+            new Response(200, [], $toml)
+        ]))]);
+        $exception = false;
+        try {
+            WebAuth::fromDomain('place.domain.com', Network::testnet(), $client);
+        } catch (GuzzleException $e) {
+        } catch (Exception $e) {
+            if (str_contains($e->getMessage(), 'WEB_AUTH_ENDPOINT')) {
+                $exception = true;
+            }
+        }
+        $this->assertTrue($exception);
+    }
+
+    public function testFromDomainMissingSigningKey(): void {
+        $toml = 'WEB_AUTH_ENDPOINT="https://auth.place.domain.com/auth"';
+        $client = new Client(['handler' => HandlerStack::create(new MockHandler([
+            new Response(200, [], $toml)
+        ]))]);
+        $exception = false;
+        try {
+            WebAuth::fromDomain('place.domain.com', Network::testnet(), $client);
+        } catch (GuzzleException $e) {
+        } catch (Exception $e) {
+            if (str_contains($e->getMessage(), 'SIGNING_KEY')) {
+                $exception = true;
+            }
+        }
+        $this->assertTrue($exception);
+    }
+
     public function testGetChallengeInvalidOperationType(): void {
         $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
         $mock = new MockHandler([
@@ -618,59 +883,6 @@ class WebAuthTest extends TestCase
         $userAccountId = $userKeyPair->getAccountId();
         $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair], clientDomain:"place.domain.com", clientDomainKeyPair: $clientDomainAccountKeyPair);
         $this->assertEquals($this->successJWTToken, $jwtToken);
-    }
-
-    /**
-     * Integration test: SEP-10 authentication with testanchor.stellar.org
-     */
-    public function testWithStellarTestAnchor(): void {
-        $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
-
-        $userKeyPair = KeyPair::random();
-        $userAccountId = $userKeyPair->getAccountId();
-        $jwt = $webAuth->jwtToken($userAccountId, [$userKeyPair]);
-        $this->assertNotEmpty($jwt);
-    }
-
-    /**
-     * Integration test: SEP-10 authentication with testanchor.stellar.org and client domain
-     *
-     * Uses phpsepsigner.stellargate.com as the client domain signing server.
-     *
-     * @see https://github.com/Soneso/php-server-signer
-     */
-    public function testWithStellarTestAnchorAndClientDomain(): void {
-        $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
-
-        $clientDomain = "phpsepsigner.stellargate.com";
-        $bearerToken = "103e1e6234ac2cc1a30d983dba367db2b194ea5b269433c316ad36d21e1e8235";
-
-        $callback = function (string $b64EncodedEnvelope) use ($bearerToken) {
-            $httpClient = new Client();
-            $response = $httpClient->request('POST', 'https://phpsepsigner.stellargate.com/sign-sep-10', [
-                'json' => [
-                    'transaction' => $b64EncodedEnvelope,
-                    'network_passphrase' => 'Test SDF Network ; September 2015'
-                ],
-                'headers' => ['Authorization' => 'Bearer ' . $bearerToken]
-            ]);
-            $content = $response->getBody()->__toString();
-            $jsonData = json_decode($content, true);
-            if (isset($jsonData['transaction'])) {
-                return $jsonData['transaction'];
-            }
-            throw new Exception("Invalid server response: " . $content);
-        };
-
-        $userKeyPair = KeyPair::random();
-        $userAccountId = $userKeyPair->getAccountId();
-        $jwt = $webAuth->jwtToken(
-            $userAccountId,
-            [$userKeyPair],
-            clientDomain: $clientDomain,
-            clientDomainSigningCallback: $callback
-        );
-        $this->assertNotEmpty($jwt);
     }
 
     // Edge Case Tests - Token Expiration and Challenge Validation

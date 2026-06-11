@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK\Soroban\Contract;
 use Psr\Log\LoggerInterface;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
@@ -75,6 +76,13 @@ class DeployRequest
     public ?LoggerInterface $logger = null;
 
     /**
+     * @var SorobanServer|null $server RPC server instance to use. When null, one is created
+     * automatically from $rpcUrl. Provide a preconfigured instance to customize the underlying
+     * HTTP client.
+     */
+    public ?SorobanServer $server = null;
+
+    /**
      * Constructor.
      *
      * @param string $rpcUrl The URL of the RPC instance that will be used to deploy the contract.
@@ -86,6 +94,8 @@ class DeployRequest
      * @param string|null $salt Salt used to generate the contract's ID. Default: random.
      * @param MethodOptions|null $methodOptions method options used to fine tune the transaction. Default: new MethodOptions()
      * @param LoggerInterface|null $logger PSR-3 logger for debug output. Default: null (no logging).
+     * @param SorobanServer|null $server RPC server instance to use. When null, one is created
+     * automatically from $rpcUrl.
      */
     public function __construct(string $rpcUrl,
                                 Network $network,
@@ -94,7 +104,8 @@ class DeployRequest
                                 ?array $constructorArgs = null,
                                 ?string $salt = null,
                                 ?MethodOptions $methodOptions = null,
-                                ?LoggerInterface $logger = null)
+                                ?LoggerInterface $logger = null,
+                                ?SorobanServer $server = null)
     {
         $this->sourceAccountKeyPair = $sourceAccountKeyPair;
         $this->network = $network;
@@ -104,6 +115,7 @@ class DeployRequest
         $this->constructorArgs = $constructorArgs;
         $this->salt = $salt;
         $this->logger = $logger;
+        $this->server = $server;
     }
 
 }

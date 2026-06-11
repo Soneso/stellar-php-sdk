@@ -142,7 +142,7 @@ class CrossBorderPaymentsService
                     }
                     throw new SEP31CustomerInfoNeededException(type: $type);
                 } else if ($errorMsg === 'transaction_info_needed') {
-                    throw new SEP31TransactionInfoNeededException(fields: $jsonData['fields']);
+                    throw new SEP31TransactionInfoNeededException(fields: $jsonData['fields'] ?? null);
                 }
                 throw new SEP31BadRequestException($errorMsg, $statusCode);
             } else {

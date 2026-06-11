@@ -1,0 +1,39 @@
+name: Dependency Audit
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: composer audit (production)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # v2.37.1
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, ctype, json, bcmath, gmp, pcntl, sodium
+          coverage: none
+          tools: composer:v2
+
+      # composer.lock is intentionally gitignored (library), so dependencies are
+      # resolved fresh here; do not add --locked to the audit step.
+      - name: Install production dependencies
+        run: composer install --no-dev --prefer-dist --no-progress
+
+      # Fail only on security advisories in production dependencies; abandoned
+      # packages are reported but do not fail the build.
+      - name: Audit production dependencies
+        run: composer audit --no-dev --abandoned=report

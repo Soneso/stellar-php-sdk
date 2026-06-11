@@ -54,7 +54,10 @@ class AssembledTransactionTest extends TestCase
 {
     private const TEST_ACCOUNT_ID = "GD56FXQWEQ34GBKJLU52QD3YB4CJSJCVPLOKISGZDRCYVIWZK5TMVDT3";
     private const TEST_CONTRACT_ID = "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA";
-    private const TEST_RPC_URL = "https://soroban-testnet.stellar.org:443";
+    // Unroutable on purpose: all HTTP is served by injected mock handlers, and
+    // if a test ever issues an unmocked request it errors out locally instead
+    // of reaching a live server.
+    private const TEST_RPC_URL = "http://localhost:1";
 
     // Test account secret key for signing tests - corresponds to TEST_ACCOUNT_ID
     private const TEST_SECRET_KEY = "SAMKI63THJER2XVJA5LQXIPBWIV6FEFSS5ILURYGSCHFKZVDE5YVQWC7";
@@ -91,6 +94,41 @@ class AssembledTransactionTest extends TestCase
                         'xdr' => XdrSCVal::forVoid()->toBase64Xdr()
                     ]
                 ]
+            ]
+        ]));
+    }
+
+    /**
+     * Creates a mock HTTP response for sendTransaction with PENDING status.
+     */
+    private function createSendTransactionResponse(): Response
+    {
+        return new Response(200, [], json_encode([
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'result' => [
+                'status' => 'PENDING',
+                'hash' => str_repeat('ab', 32),
+                'latestLedger' => 1000,
+                'latestLedgerCloseTime' => '1700000000',
+            ]
+        ]));
+    }
+
+    /**
+     * Creates a mock HTTP response for getTransaction with SUCCESS status.
+     */
+    private function createGetTransactionSuccessResponse(): Response
+    {
+        return new Response(200, [], json_encode([
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'result' => [
+                'status' => GetTransactionResponse::STATUS_SUCCESS,
+                'latestLedger' => 1001,
+                'latestLedgerCloseTime' => '1700000001',
+                'oldestLedger' => 990,
+                'oldestLedgerCloseTime' => '1699999000',
             ]
         ]));
     }
@@ -148,8 +186,10 @@ class AssembledTransactionTest extends TestCase
 
     /**
      * Injects a mocked HTTP client into an AssembledTransaction's server.
+     *
+     * Returns the mock handler so tests can assert the queue was fully consumed.
      */
-    private function injectMockedServer(AssembledTransaction $tx, array $responses): void
+    private function injectMockedServer(AssembledTransaction $tx, array $responses): MockHandler
     {
         $mock = new MockHandler($responses);
         $handlerStack = HandlerStack::create($mock);
@@ -164,6 +204,8 @@ class AssembledTransactionTest extends TestCase
         $httpClientProperty = $serverReflection->getProperty('httpClient');
         $httpClientProperty->setAccessible(true);
         $httpClientProperty->setValue($server, $client);
+
+        return $mock;
     }
 
     public function testAssembledTransactionOptionsConstruction(): void
@@ -789,10 +831,17 @@ class AssembledTransactionTest extends TestCase
         );
         $property->setValue($tx, $mockResult);
 
-        // This should throw because we haven't set up send mocks (connection refused)
-        $this->expectException(Exception::class);
+        $mock = $this->injectMockedServer($tx, [
+            $this->createSendTransactionResponse(),
+            $this->createGetTransactionSuccessResponse(),
+        ]);
 
-        $tx->signAndSend();
+        $response = $tx->signAndSend();
+
+        $this->assertSame(GetTransactionResponse::STATUS_SUCCESS, $response->status);
+        $this->assertNotNull($tx->signed);
+        $this->assertCount(1, $tx->signed->getSignatures());
+        $this->assertSame(0, $mock->count());
     }
 
     public function testIsReadOnlyReturnsFalseWithoutSimulation(): void

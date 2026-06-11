@@ -201,35 +201,23 @@ abstract class RequestBuilder
                 ]);
 
                 $body = $response->getBody();
+                $buffer = '';
 
                 while (!$body->eof()) {
-                    $line = '';
-
-                    $char = null;
-                    while ($char != "\n") {
-                        $line .= $char;
-                        $char = $body->read(1);
+                    $chunk = $body->read(8192);
+                    // An empty read means the stream has been closed; reconnect.
+                    if ($chunk === '') {
+                        break;
                     }
+                    $buffer .= $chunk;
 
-                    // Ignore empty lines
-                    if (!$line) continue;
-
-                    // Ignore "data: hello" handshake
-                    if (str_starts_with($line, 'data: "hello"')) continue;
-
-                    // "data: byebye" if closed, restart
-                    if (str_starts_with($line, 'data: "byebye"')) break;
-
-                    // Ignore lines that don't start with "data: "
-                    $sentinel = 'data: ';
-                    if (!str_starts_with($line, $sentinel)) continue;
-
-                    // Remove sentinel prefix
-                    $json = substr($line, strlen($sentinel));
-
-                    $decoded = json_decode($json, true);
-                    if ($decoded) {
-                        $callback($decoded);
+                    $result = self::consumeStreamEvents($buffer);
+                    foreach ($result['events'] as $event) {
+                        $callback($event);
+                    }
+                    // A "data: byebye" line was received; restart the connection.
+                    if ($result['stop']) {
+                        break;
                     }
                 }
             }
@@ -240,5 +228,49 @@ abstract class RequestBuilder
                 sleep(10);
             }
         }
+    }
+
+    /**
+     * Consumes complete, newline-terminated SSE lines from the buffer and
+     * returns the decoded "data:" events to dispatch.
+     *
+     * Complete lines are removed from $buffer; any trailing partial line (not
+     * yet terminated by a newline) is left in place so it can be completed by
+     * the next read. Empty lines, the "hello" handshake, and non-"data:" lines
+     * are ignored. A "byebye" line stops consumption and sets the stop flag,
+     * signalling the caller to reconnect.
+     *
+     * @param string $buffer Accumulated stream bytes; mutated in place.
+     * @return array{events: array<int, mixed>, stop: bool}
+     */
+    private static function consumeStreamEvents(string &$buffer): array
+    {
+        $events = [];
+        $sentinel = 'data: ';
+        while (($pos = strpos($buffer, "\n")) !== false) {
+            $line = substr($buffer, 0, $pos);
+            $buffer = substr($buffer, $pos + 1);
+
+            // Ignore empty lines
+            if ($line === '') continue;
+
+            // Ignore "data: hello" handshake
+            if (str_starts_with($line, 'data: "hello"')) continue;
+
+            // "data: byebye" if closed, restart
+            if (str_starts_with($line, 'data: "byebye"')) {
+                return ['events' => $events, 'stop' => true];
+            }
+
+            // Ignore lines that don't start with "data: "
+            if (!str_starts_with($line, $sentinel)) continue;
+
+            // Remove sentinel prefix and decode
+            $decoded = json_decode(substr($line, strlen($sentinel)), true);
+            if ($decoded) {
+                $events[] = $decoded;
+            }
+        }
+        return ['events' => $events, 'stop' => false];
     }
 }

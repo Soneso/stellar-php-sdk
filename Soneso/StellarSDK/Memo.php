@@ -8,6 +8,7 @@
 namespace Soneso\StellarSDK;
 
 use InvalidArgumentException;
+use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Xdr\XdrMemo;
 use Soneso\StellarSDK\Xdr\XdrMemoType;
@@ -22,7 +23,7 @@ use Soneso\StellarSDK\Xdr\XdrMemoType;
  * Supported memo types:
  * - NONE: No memo (default)
  * - TEXT: UTF-8 text string up to 28 bytes
- * - ID: Unsigned 64-bit integer
+ * - ID: Unsigned 64-bit integer (values above PHP_INT_MAX are represented as decimal strings)
  * - HASH: 32-byte hash (e.g., for hash preimages)
  * - RETURN: 32-byte hash for return payments
  *
@@ -36,6 +37,9 @@ class Memo
     const MEMO_TYPE_ID = 2;
     const MEMO_TYPE_HASH = 3;
     const MEMO_TYPE_RETURN = 4;
+
+    private const UINT64_MAX = '18446744073709551615';
+    private const UINT64_MODULUS = '18446744073709551616';
 
     /**
      * See the MEMO_TYPE constants
@@ -73,11 +77,27 @@ class Memo
     /**
      * Gets the memo value
      *
+     * For id memos the value is an int, or an unsigned decimal string when the
+     * id is above PHP_INT_MAX. Use getIdAsString() for a uniform representation.
+     *
      * @return mixed The memo value (type depends on memo type)
      */
     public function getValue(): mixed
     {
         return $this->value;
+    }
+
+    /**
+     * Gets the id memo value as an unsigned decimal string
+     *
+     * @return string|null The id as a decimal string, or null if this memo is not of type ID
+     */
+    public function getIdAsString(): ?string
+    {
+        if ($this->type != static::MEMO_TYPE_ID || $this->value === null) {
+            return null;
+        }
+        return strval($this->value);
     }
 
     /**
@@ -103,11 +123,14 @@ class Memo
     /**
      * Creates an ID memo
      *
-     * @param int $id The unsigned 64-bit integer value
+     * The id is an unsigned 64-bit integer. Values above PHP_INT_MAX must be
+     * passed as a decimal string.
+     *
+     * @param int|string $id The id as a non-negative int or unsigned decimal string
      * @return Memo A memo of type ID
-     * @throws InvalidArgumentException If ID is negative or exceeds maximum
+     * @throws InvalidArgumentException If the id is negative, not a decimal string, or exceeds 2^64-1
      */
-    public static function id(int $id) : Memo {
+    public static function id(int|string $id) : Memo {
         return new Memo(self::MEMO_TYPE_ID, $id);
     }
 
@@ -149,8 +172,20 @@ class Memo
             }
         }
         if ($this->type == static::MEMO_TYPE_ID) {
-            if ($this->value < 0) throw new InvalidArgumentException('value cannot be negative');
-            if ($this->value > PHP_INT_MAX) throw new InvalidArgumentException(sprintf('value cannot be larger than %s', PHP_INT_MAX));
+            // The id is an unsigned 64-bit integer: a non-negative int, or an
+            // unsigned decimal string for values above PHP_INT_MAX.
+            if (is_int($this->value)) {
+                if ($this->value < 0) throw new InvalidArgumentException('value cannot be negative');
+            } else if (is_string($this->value)) {
+                if (!preg_match('/\A(0|[1-9][0-9]*)\z/', $this->value)) {
+                    throw new InvalidArgumentException('id memo value must be an unsigned decimal integer');
+                }
+                if ((new BigInteger($this->value))->compare(new BigInteger(self::UINT64_MAX)) > 0) {
+                    throw new InvalidArgumentException(sprintf('value cannot be larger than %s', self::UINT64_MAX));
+                }
+            } else {
+                throw new InvalidArgumentException('id memo value must be an int or an unsigned decimal string');
+            }
         }
         if ($this->type == static::MEMO_TYPE_HASH || $this->type == static::MEMO_TYPE_RETURN) {
             if (strlen($this->value) !== StellarConstants::MEMO_HASH_LENGTH) throw new InvalidArgumentException(sprintf('hash values must be %s bytes, got %s bytes', StellarConstants::MEMO_HASH_LENGTH, strlen($this->value)));
@@ -180,8 +215,8 @@ class Memo
      *
      * @return string|null the value of this memo as a string if any. If the memo type is 'return' or 'hash' it
      * returns a base 64 encoded string of the memo value. If the memo type is 'text' it just returns the value.
-     * If the memo type is 'id' it returns the string representation of the int value. If the memo typ is 'none',
-     * it returns null.
+     * If the memo type is 'id' it returns the unsigned decimal string representation of the id. If the memo type
+     * is 'none', it returns null.
      */
     public function valueAsString(): ?string
     {
@@ -220,7 +255,7 @@ class Memo
                 $xdr->setHash($this->getValue());
                 break;
             case static::MEMO_TYPE_ID:
-                $xdr->setId($this->getValue());
+                $xdr->setId(self::idValueToXdrInt($this->value));
                 break;
             case static::MEMO_TYPE_RETURN:
                 $xdr->setReturnHash($this->getValue());
@@ -244,7 +279,10 @@ class Memo
             $value = $xdr->getText();
         }
         else if ($type == static::MEMO_TYPE_ID) {
-            $value = $xdr->getId();
+            // Ids above PHP_INT_MAX decode as negative ints; expose them as
+            // unsigned decimal strings instead.
+            $raw = $xdr->getId();
+            $value = $raw < 0 ? sprintf('%u', $raw) : $raw;
         }
         else if ($type == static::MEMO_TYPE_HASH) {
             $value = $xdr->getHash();
@@ -252,5 +290,23 @@ class Memo
             $value = $xdr->getReturnHash();
         }
         return new Memo($type, $value);
+    }
+
+    /**
+     * Converts an id memo value to the raw 64-bit integer used by XDR.
+     *
+     * Decimal strings above PHP_INT_MAX wrap to their two's complement int
+     * representation, which encodes to the correct unsigned bytes.
+     */
+    private static function idValueToXdrInt(int|string $value): int
+    {
+        if (is_int($value)) {
+            return $value;
+        }
+        $big = new BigInteger($value);
+        if ($big->compare(new BigInteger(strval(PHP_INT_MAX))) > 0) {
+            $big = $big->subtract(new BigInteger(self::UINT64_MODULUS));
+        }
+        return (int)$big->toString();
     }
 }

@@ -121,6 +121,14 @@ class UtilTest extends TestCase
         StellarAmount::fromString("922337203686");
     }
 
+    public function testStellarAmountExceedsMaximumByOneStroop()
+    {
+        // The maximum is 9223372036854775807 stroops; one stroop more must be rejected.
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Maximum value exceeded");
+        new StellarAmount(new \phpseclib3\Math\BigInteger('9223372036854775808'));
+    }
+
     public function testStellarAmountNegative()
     {
         $this->expectException(InvalidArgumentException::class);

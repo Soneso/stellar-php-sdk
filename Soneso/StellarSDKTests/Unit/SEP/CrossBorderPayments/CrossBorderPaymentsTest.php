@@ -6,11 +6,13 @@
 
 namespace Soneso\StellarSDKTests\Unit\SEP\CrossBorderPayments;
 
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use Soneso\StellarSDK\SEP\CrossBorderPayments\CrossBorderPaymentsService;
@@ -20,6 +22,7 @@ use Soneso\StellarSDK\SEP\CrossBorderPayments\SEP31PostTransactionsRequest;
 use Soneso\StellarSDK\SEP\CrossBorderPayments\SEP31TransactionCallbackNotSupportedException;
 use Soneso\StellarSDK\SEP\CrossBorderPayments\SEP31TransactionInfoNeededException;
 use Soneso\StellarSDK\SEP\CrossBorderPayments\SEP31TransactionNotFoundException;
+use Soneso\StellarSDK\SEP\CrossBorderPayments\SEP31UnknownResponseException;
 
 class CrossBorderPaymentsTest extends TestCase
 {
@@ -391,5 +394,261 @@ class CrossBorderPaymentsTest extends TestCase
             $thrown = true;
         }
         $this->assertTrue($thrown);
+    }
+
+    public function testFromDomain(): void {
+        $toml = 'DIRECT_PAYMENT_SERVER="https://test.direct-payment.com"';
+        $mock = new MockHandler([
+            new Response(200, [], $toml),
+            new Response(200, [], $this->infoResponse),
+        ]);
+
+        $httpClient = new Client(['handler' => HandlerStack::create($mock)]);
+        $service = CrossBorderPaymentsService::fromDomain('example.com', $httpClient);
+        $response = $service->info($this->jwtToken);
+        $this->assertArrayHasKey('USDC', $response->receiveAssets);
+    }
+
+    public function testFromDomainWithoutDirectPaymentServer(): void {
+        $toml = 'VERSION="2.0.0"';
+        $mock = new MockHandler([
+            new Response(200, [], $toml),
+        ]);
+
+        $httpClient = new Client(['handler' => HandlerStack::create($mock)]);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('No anchor direct payment service found in stellar.toml');
+        CrossBorderPaymentsService::fromDomain('example.com', $httpClient);
+    }
+
+    // Error path tests
+
+    public function testConstructorRejectsHttpServiceAddress(): void {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Service URL must use HTTPS');
+        new CrossBorderPaymentsService('http://api.stellar.org/direct-payment');
+    }
+
+    public function testInfoWithBadRequestError(): void {
+        $mock = new MockHandler([
+            new Response(400, [], json_encode(['error' => 'invalid lang code'])),
+        ]);
+
+        $httpClient = new Client(['handler' => HandlerStack::create($mock)]);
+        $service = new CrossBorderPaymentsService($this->serviceAddress, $httpClient);
+
+        try {
+            $service->info($this->jwtToken);
+            $this->fail('Expected SEP31BadRequestException was not thrown');
+        } catch (SEP31BadRequestException $e) {
+            $this->assertEquals('invalid lang code', $e->getMessage());
+            $this->assertEquals(400, $e->getCode());
+        }
+    }
+
+    public function testInfoWithForbiddenError(): void {
+        $mock = new MockHandler([
+            new Response(403, [], json_encode(['error' => 'account not authorized'])),
+        ]);
+
+        $httpClient = new Client(['handler' => HandlerStack::create($mock)]);
+        $service = new CrossBorderPaymentsService($this->serviceAddress, $httpClient);
+
+        try {
+            $service->info($this->jwtToken);
+            $this->fail('Expected SEP31UnknownResponseException was not thrown');
+        } catch (SEP31UnknownResponseException $e) {
+            $this->assertEquals('account not authorized', $e->getMessage());
+            $this->assertEquals(403, $e->getCode());
+        }
+    }
+
+    public function testInfoWithServerErrorAndNonJsonBody(): void {
+        // A non-JSON body must surface as the raw response content.
+        $mock = new MockHandler([
+            new Response(500, [], 'internal server error'),
+        ]);
+
+        $httpClient = new Client(['handler' => HandlerStack::create($mock)]);
+        $service = new CrossBorderPaymentsService($this->serviceAddress, $httpClient);
+
+        try {
+            $service->info($this->jwtToken);
+            $this->fail('Expected SEP31UnknownResponseException was not thrown');
+        } catch (SEP31UnknownResponseException $e) {
+            $this->assertEquals('internal server error', $e->getMessage());
+            $this->assertEquals(500, $e->getCode());
+        }
+    }
+
+    public function testPostTransactionsWithServerError(): void {
+        $mock = new MockHandler([
+            new Response(500, [], json_encode(['error' => 'database unavailable'])),
+        ]);
+
+        $httpClient = new Client(['handler' => HandlerStack::create($mock)]);
+        $service = new CrossBorderPaymentsService($this->serviceAddress, $httpClient);
+        $request = new SEP31PostTransactionsRequest(
+            amount: 100.0,
+            assetCode: 'USDC',
+        );
+
+        try {
+            $service->postTransactions($request, $this->jwtToken);
+            $this->fail('Expected SEP31UnknownResponseException was not thrown');
+        } catch (SEP31UnknownResponseException $e) {
+            $this->assertEquals('database unavailable', $e->getMessage());
+            $this->assertEquals(500, $e->getCode());
+        }
+    }
+
+    public function testGetTransactionWithBadRequestError(): void {
+        $mock = new MockHandler([
+            new Response(400, [], json_encode(['error' => 'invalid transaction id'])),
+        ]);
+
+        $httpClient = new Client(['handler' => HandlerStack::create($mock)]);
+        $service = new CrossBorderPaymentsService($this->serviceAddress, $httpClient);
+
+        try {
+            $service->getTransaction('82fhs729f63dh0v4', $this->jwtToken);
+            $this->fail('Expected SEP31BadRequestException was not thrown');
+        } catch (SEP31BadRequestException $e) {
+            $this->assertEquals('invalid transaction id', $e->getMessage());
+            $this->assertEquals(400, $e->getCode());
+        }
+    }
+
+    public function testGetTransactionWithServerError(): void {
+        $mock = new MockHandler([
+            new Response(500, [], json_encode(['error' => 'unexpected failure'])),
+        ]);
+
+        $httpClient = new Client(['handler' => HandlerStack::create($mock)]);
+        $service = new CrossBorderPaymentsService($this->serviceAddress, $httpClient);
+
+        try {
+            $service->getTransaction('82fhs729f63dh0v4', $this->jwtToken);
+            $this->fail('Expected SEP31UnknownResponseException was not thrown');
+        } catch (SEP31UnknownResponseException $e) {
+            $this->assertEquals('unexpected failure', $e->getMessage());
+            $this->assertEquals(500, $e->getCode());
+        }
+    }
+
+    public function testGetTransactionRejectsPathTraversalId(): void {
+        $mock = new MockHandler([]);
+        $httpClient = new Client(['handler' => HandlerStack::create($mock)]);
+        $service = new CrossBorderPaymentsService($this->serviceAddress, $httpClient);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid value for');
+        $service->getTransaction('../admin', $this->jwtToken);
+    }
+
+    public function testPutTransactionCallbackWithBadRequestError(): void {
+        $mock = new MockHandler([
+            new Response(400, [], json_encode(['error' => 'invalid callback url'])),
+        ]);
+
+        $httpClient = new Client(['handler' => HandlerStack::create($mock)]);
+        $service = new CrossBorderPaymentsService($this->serviceAddress, $httpClient);
+
+        try {
+            $service->putTransactionCallback(
+                '82fhs729f63dh0v4',
+                'https://sendinganchor.com/statusCallback',
+                $this->jwtToken
+            );
+            $this->fail('Expected SEP31BadRequestException was not thrown');
+        } catch (SEP31BadRequestException $e) {
+            $this->assertEquals('invalid callback url', $e->getMessage());
+            $this->assertEquals(400, $e->getCode());
+        }
+    }
+
+    public function testPutTransactionCallbackWithServerError(): void {
+        $mock = new MockHandler([
+            new Response(500, [], json_encode(['error' => 'callback registration failed'])),
+        ]);
+
+        $httpClient = new Client(['handler' => HandlerStack::create($mock)]);
+        $service = new CrossBorderPaymentsService($this->serviceAddress, $httpClient);
+
+        try {
+            $service->putTransactionCallback(
+                '82fhs729f63dh0v4',
+                'https://sendinganchor.com/statusCallback',
+                $this->jwtToken
+            );
+            $this->fail('Expected SEP31UnknownResponseException was not thrown');
+        } catch (SEP31UnknownResponseException $e) {
+            $this->assertEquals('callback registration failed', $e->getMessage());
+            $this->assertEquals(500, $e->getCode());
+        }
+    }
+
+    public function testPutTransactionCallbackRejectsHttpCallbackUrl(): void {
+        $mock = new MockHandler([]);
+        $httpClient = new Client(['handler' => HandlerStack::create($mock)]);
+        $service = new CrossBorderPaymentsService($this->serviceAddress, $httpClient);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Service URL must use HTTPS');
+        $service->putTransactionCallback(
+            '82fhs729f63dh0v4',
+            'http://sendinganchor.com/statusCallback',
+            $this->jwtToken
+        );
+    }
+
+    public function testPatchTransactionWithServerError(): void {
+        $mock = new MockHandler([
+            new Response(500, [], json_encode(['error' => 'update failed'])),
+        ]);
+
+        $httpClient = new Client(['handler' => HandlerStack::create($mock)]);
+        $service = new CrossBorderPaymentsService($this->serviceAddress, $httpClient);
+
+        try {
+            $service->patchTransaction(
+                '82fhs729f63dh0v4',
+                ['transaction' => ['receiver_bank_account' => '12345678901234']],
+                $this->jwtToken
+            );
+            $this->fail('Expected SEP31UnknownResponseException was not thrown');
+        } catch (SEP31UnknownResponseException $e) {
+            $this->assertEquals('update failed', $e->getMessage());
+            $this->assertEquals(500, $e->getCode());
+        }
+    }
+
+    public function testPostTransactionsInfoNeededWithoutFields(): void {
+        // A transaction_info_needed error body without a fields key is valid;
+        // the typed exception is raised with null fields and no PHP warning.
+        $mock = new MockHandler([
+            new Response(400, [], json_encode(['error' => 'transaction_info_needed'])),
+        ]);
+
+        $httpClient = new Client(['handler' => HandlerStack::create($mock)]);
+        $service = new CrossBorderPaymentsService($this->serviceAddress, $httpClient);
+        $request = new SEP31PostTransactionsRequest(
+            amount: 100.0,
+            assetCode: 'USDC',
+        );
+
+        // Surface any warning (such as an undefined array key access) as a failure.
+        set_error_handler(static function (int $errno, string $errstr): bool {
+            throw new \ErrorException($errstr, 0, $errno);
+        });
+        try {
+            $service->postTransactions($request, $this->jwtToken);
+            $this->fail('Expected SEP31TransactionInfoNeededException was not thrown');
+        } catch (SEP31TransactionInfoNeededException $e) {
+            $this->assertNull($e->fields);
+        } finally {
+            restore_error_handler();
+        }
     }
 }

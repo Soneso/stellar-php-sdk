@@ -431,7 +431,7 @@ class WebAuth
             }
 
             if ($count == 0 && $dataName != ($this->serverHomeDomain . " auth")) {
-                throw new ChallengeValidationErrorInvalidHomeDomain("invalid source account in operation[".$count."]");
+                throw new ChallengeValidationErrorInvalidHomeDomain("invalid home domain in operation[".$count."]");
             }
 
             $dataValue = $operation->getBody()->getManageDataOperation()->getValue();
@@ -443,39 +443,53 @@ class WebAuth
                 }
             }
 
-            // check timebounds
-            $timeBounds = $transaction->getTimeBounds();
-            if ($timeBounds) {
-                $grace = 0;
-                if ($timeBoundsGracePeriod) {
-                    $grace = $timeBoundsGracePeriod;
-                }
-                $currentTime = round(microtime(true));
-                if ($currentTime < $timeBounds->getMinTimestamp() - $grace ||
-                    $currentTime > $timeBounds->getMaxTimestamp() + $grace) {
-                    throw new ChallengeValidationErrorInvalidTimeBounds(
-                        "Invalid transaction, invalid time bounds");
-                }
-            }
-
-            // the envelope must have one signature and it must be valid: transaction signed by the server
-            $signatures = $envelopeXdr->getV1()->getSignatures();
-            if (count($signatures) != 1) {
-                throw new ChallengeValidationErrorInvalidSignature("Invalid transaction envelope, invalid number of signatures");
-            }
-            $firstSignature = $signatures[0];
-
-            if (!$firstSignature instanceof XdrDecoratedSignature) {
-                throw new ChallengeValidationErrorInvalidSignature("Invalid transaction envelope, invalid signature type");
-            }
-            // validate signature
-            $serverKeyPair = KeyPair::fromAccountId($this->serverSigningKey);
-            $transactionHash = (AbstractTransaction::fromEnvelopeXdr($envelopeXdr))->hash($this->network);
-            $valid = $serverKeyPair->verifySignature($firstSignature->getSignature(), $transactionHash);
-            if (!$valid) {
-                throw new ChallengeValidationErrorInvalidSignature("Invalid transaction envelope, invalid signature");
-            }
             $count += 1;
+        }
+
+        // Time bounds are a transaction-level property and are validated once,
+        // after the per-operation checks. SEP-10 requires the challenge to carry
+        // time bounds, so their absence is rejected (an unbounded challenge could
+        // otherwise be replayed indefinitely).
+        $timeBounds = $transaction->getTimeBounds();
+        if ($timeBounds === null) {
+            throw new ChallengeValidationErrorInvalidTimeBounds(
+                "Invalid transaction, missing time bounds");
+        }
+        // A maximum timestamp of 0 means unbounded, which would keep the
+        // challenge valid forever and defeat replay protection.
+        if ($timeBounds->getMaxTimestamp() == 0) {
+            throw new ChallengeValidationErrorInvalidTimeBounds(
+                "Invalid transaction, requires non-infinite time bounds");
+        }
+        $grace = 0;
+        if ($timeBoundsGracePeriod) {
+            $grace = $timeBoundsGracePeriod;
+        }
+        $currentTime = round(microtime(true));
+        if ($currentTime < $timeBounds->getMinTimestamp() - $grace ||
+            $currentTime > $timeBounds->getMaxTimestamp() + $grace) {
+            throw new ChallengeValidationErrorInvalidTimeBounds(
+                "Invalid transaction, invalid time bounds");
+        }
+
+        // The envelope is signed at the transaction level, so its signature is
+        // verified once: it must carry exactly one signature, produced by the
+        // server signing key over the transaction hash.
+        $signatures = $envelopeXdr->getV1()->getSignatures();
+        if (count($signatures) != 1) {
+            throw new ChallengeValidationErrorInvalidSignature("Invalid transaction envelope, invalid number of signatures");
+        }
+        $firstSignature = $signatures[0];
+
+        if (!$firstSignature instanceof XdrDecoratedSignature) {
+            throw new ChallengeValidationErrorInvalidSignature("Invalid transaction envelope, invalid signature type");
+        }
+        // validate signature
+        $serverKeyPair = KeyPair::fromAccountId($this->serverSigningKey);
+        $transactionHash = (AbstractTransaction::fromEnvelopeXdr($envelopeXdr))->hash($this->network);
+        $valid = $serverKeyPair->verifySignature($firstSignature->getSignature(), $transactionHash);
+        if (!$valid) {
+            throw new ChallengeValidationErrorInvalidSignature("Invalid transaction envelope, invalid signature");
         }
     }
 
