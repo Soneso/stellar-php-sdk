@@ -12,8 +12,10 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
+use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\SEP\Federation\Federation;
 use Soneso\StellarSDK\SEP\Federation\FederationRequestBuilder;
 
@@ -127,5 +129,94 @@ class FederationTest extends TestCase
         $this->assertEquals("text", $response->getMemoType());
         $this->assertEquals("hello memo text", $response->getMemo());
 
+    }
+
+    public function testResolveStellarAddressRejectsAddressWithoutSeparator(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid federation address");
+        Federation::resolveStellarAddress("bobsoneso.com");
+    }
+
+    public function testResolveStellarAddressRejectsUnsafeDomain(): void
+    {
+        // The domain part is validated before any network request is made.
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid domain");
+        Federation::resolveStellarAddress("bob*soneso.com/evil path");
+    }
+
+    public function testResolveStellarAccountIdNotFound(): void
+    {
+        $mock = new MockHandler([
+            new Response(404, [], "{\"detail\": \"not found\"}")
+        ]);
+
+        try {
+            Federation::resolveStellarAccountId(
+                "GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI",
+                "https://stellarid.io/federation",
+                httpClient: new Client(['handler' => HandlerStack::create($mock)])
+            );
+            $this->fail("Expected HorizonRequestException was not thrown");
+        } catch (HorizonRequestException $e) {
+            $this->assertEquals(404, $e->getStatusCode());
+        }
+    }
+
+    public function testResolveStellarAccountIdInvalidJsonResponse(): void
+    {
+        $mock = new MockHandler([
+            new Response(200, [], "not json {{{")
+        ]);
+
+        try {
+            Federation::resolveStellarAccountId(
+                "GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI",
+                "https://stellarid.io/federation",
+                httpClient: new Client(['handler' => HandlerStack::create($mock)])
+            );
+            $this->fail("Expected HorizonRequestException was not thrown");
+        } catch (HorizonRequestException $e) {
+            $this->assertStringContainsString("Error in json_decode", $e->getMessage());
+        }
+    }
+
+    public function testResolveStellarTransactionIdServerError(): void
+    {
+        $mock = new MockHandler([
+            new Response(500, [], "internal server error")
+        ]);
+
+        try {
+            Federation::resolveStellarTransactionId(
+                txId: "ae05181b239bd4a64ba2fb8086901479a0bde86f8e912150e74241fe4f5f0948",
+                federationServerUrl: "https://fedtest.io/federation",
+                httpClient: new Client(['handler' => HandlerStack::create($mock)])
+            );
+            $this->fail("Expected HorizonRequestException was not thrown");
+        } catch (HorizonRequestException $e) {
+            $this->assertEquals(500, $e->getStatusCode());
+        }
+    }
+
+    public function testResolveStellarAccountIdRejectsHttpServerUrl(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Service URL must use HTTPS");
+        Federation::resolveStellarAccountId(
+            "GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI",
+            "http://stellarid.io/federation"
+        );
+    }
+
+    public function testResolveForwardRejectsHttpServerUrl(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Service URL must use HTTPS");
+        Federation::resolveForward(
+            ["forward_type" => "bank_account", "swift" => "BOPBPHMM", "acct" => "2382376"],
+            "http://fedtest.io/federation"
+        );
     }
 }
