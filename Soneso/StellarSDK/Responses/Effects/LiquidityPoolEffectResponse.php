@@ -24,7 +24,7 @@ use Soneso\StellarSDK\Responses\LiquidityPools\ReservesResponse;
 class LiquidityPoolEffectResponse extends EffectResponse
 {
     private string $poolId;
-    private int $fee; // TODO: Bigint
+    private int $fee; // fee in basis points (fee_bp), int32 on chain
     private string $type;
     private string $totalTrustlines;
     private string $totalShares;
