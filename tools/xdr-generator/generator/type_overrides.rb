@@ -131,6 +131,21 @@ SKIP_TYPES = %w[
 ].freeze
 
 # ---------------------------------------------------------------------------
+# RECURSIVE_STRUCT_TYPES
+# Struct types whose XDR decode method recurses into itself (directly or via a
+# field of the same type). The generator wraps the decode body with
+# XdrBuffer::enterRecursion / leaveRecursion so that hostile deeply-nested data
+# received from the network cannot overflow the PHP call stack.
+#
+# Each entry triggers an enterRecursion() at the start of decode() and a
+# leaveRecursion() in a finally block before the return. The cap is
+# XdrBuffer::RECURSION_LIMIT (128).
+# ---------------------------------------------------------------------------
+RECURSIVE_STRUCT_TYPES = %w[
+  XdrSorobanDelegateSignature
+].freeze
+
+# ---------------------------------------------------------------------------
 # EXTENSION_POINT_FIELDS
 # Maps struct names to field names that are void-only extension unions.
 # These are simplified to `public int $fieldName = 0` instead of full unions.

@@ -499,6 +499,133 @@ $tx->signAuthEntries(
 $response = $tx->signAndSend();
 ```
 
+### Protocol 27 Credentials (CAP-71)
+
+Protocol 27 adds two address-credential arms to `SorobanCredentials`:
+
+- `ADDRESS_V2` carries the same `SorobanAddressCredentials` body as the legacy `ADDRESS` arm, but the signature payload additionally binds the credential address.
+- `ADDRESS_WITH_DELEGATES` extends V2 with a tree of delegate signatures, letting additional addresses co-sign one authorization entry.
+
+The legacy `ADDRESS` arm remains the default everywhere and stays fully valid. The new arms are opt-in: emitting them on a network below protocol 27 invalidates the transaction.
+
+All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry::sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry. Use `$credentials->getAddressCredentials()` to read the inner `SorobanAddressCredentials` of any address arm (it returns `null` only for source-account credentials), and `$credentials->getCredentialType()` / `$credentials->isSourceAccount()` to inspect the arm. Factories `SorobanCredentials::forAddressCredentialsV2()` and `SorobanCredentials::forAddressWithDelegates()` build the new arms directly.
+
+#### Requesting V2 Entries from Simulation
+
+Set `authV2` to request `ADDRESS_V2` credential arms in the simulation response. RPC servers without support silently ignore the flag and return legacy `ADDRESS` entries — detect support by inspecting the credential arm of the returned entries, never by expecting an error. When `authV2` is `false` (the default), the key is omitted from the JSON-RPC params entirely.
+
+```php
+<?php
+use Soneso\StellarSDK\Soroban\Contract\MethodOptions;
+use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
+use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
+
+// Contract client: opt in via MethodOptions
+$tx = $client->buildInvokeMethodTx(
+    name: 'swap',
+    args: $args,
+    methodOptions: new MethodOptions(authV2: true),
+);
+
+// Detect whether the RPC honored the flag
+$entries = $tx->getSimulationData()->auth ?? [];
+$gotV2 = false;
+foreach ($entries as $entry) {
+    if ($entry->credentials->getCredentialType()
+        === XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2) {
+        $gotV2 = true;
+    }
+}
+
+// Low-level: opt in on the simulate request
+$request = new SimulateTransactionRequest($transaction, authV2: true);
+$response = $server->simulateTransaction($request);
+```
+
+#### Delegated Authorization
+
+A `WITH_DELEGATES` entry lets delegate addresses co-sign a single authorization entry. Simulation never returns `WITH_DELEGATES` entries; clients assemble the tree from an `ADDRESS` or `ADDRESS_V2` entry using `SorobanAuthorizationEntry::withDelegates`.
+
+Rules enforced by the host and handled by the SDK builder:
+
+- Every delegate array must be sorted ascending by the XDR-encoded bytes of the delegate address, with no duplicates within one array. The builder sorts automatically and throws on duplicates — always construct trees through `withDelegates` rather than assembling the XDR by hand.
+- Every signer in the tree — top-level and delegates at any depth — signs the same payload, which is bound to the top-level credential address. Delegates carry no nonce and no expiration; only the top-level credentials do.
+- A void top-level signature is legitimate when the delegates sign (the delegates-only pattern); such an entry passes the send precheck once every delegate is signed.
+
+```php
+<?php
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\SorobanAddressCredentials;
+use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
+use Soneso\StellarSDK\Soroban\SorobanAuthorizedFunction;
+use Soneso\StellarSDK\Soroban\SorobanAuthorizedInvocation;
+use Soneso\StellarSDK\Soroban\SorobanCredentials;
+use Soneso\StellarSDK\Soroban\SorobanDelegateDescriptor;
+use Soneso\StellarSDK\Soroban\SorobanServer;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
+
+$server = new SorobanServer('https://soroban-testnet.stellar.org');
+
+// Top-level credential account and a delegate signer's account
+$topLevelKeyPair = KeyPair::fromSeed('STOPLEVEL...');
+$delegateKeyPair = KeyPair::fromSeed('SDELEGATE...');
+
+// An ADDRESS or ADDRESS_V2 entry bound to the top-level account. In practice
+// this comes from simulation ($tx->getSimulationData()->auth[0]);
+// it is built explicitly here so the snippet is self-contained.
+$sourceEntry = new SorobanAuthorizationEntry(
+    SorobanCredentials::forAddressCredentialsV2(new SorobanAddressCredentials(
+        Address::fromAccountId($topLevelKeyPair->getAccountId()),
+        1234,             // nonce
+        0,                // signatureExpirationLedger (set by withDelegates below)
+        XdrSCVal::forVoid(),
+    )),
+    new SorobanAuthorizedInvocation(
+        SorobanAuthorizedFunction::forContractFunction(
+            Address::fromContractId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE'),
+            'swap',
+            [],
+        ),
+    ),
+);
+
+// Latest ledger sequence, used to set the signature expiration
+$latestLedger = $server->getLatestLedger();
+$expirationLedger = $latestLedger->getSequence() + 100;
+
+// Build the WITH_DELEGATES entry. The builder sorts the delegate array,
+// rejects duplicates, and resets the top-level signature to void.
+$delegated = SorobanAuthorizationEntry::withDelegates(
+    $sourceEntry,
+    $expirationLedger,
+    [new SorobanDelegateDescriptor($delegateKeyPair->getAccountId())],
+);
+
+// Optional top-level signature (skip this for the delegates-only pattern).
+// When one node needs multiple classical (G-address) signatures, add them in
+// ascending public-key order — the host requires that order and the SDK
+// appends signatures in the order you call sign().
+$delegated->sign($topLevelKeyPair, Network::testnet());
+
+// Delegate signer: forAddress routes the signature into the matching node
+// (top-level or any delegate, depth-first) and throws when no node matches.
+$delegated->sign(
+    $delegateKeyPair,
+    Network::testnet(),
+    forAddress: $delegateKeyPair->getAccountId(),
+);
+```
+
+`SorobanDelegateDescriptor` supports nesting via `nestedDelegates` and accepts a pre-built `signature` (default void) for nodes signed externally, such as contract addresses.
+
+After attaching a `WITH_DELEGATES` entry to the transaction with `$transaction->setSorobanAuth(...)`, re-simulate before submitting: the first simulation did not include the delegate authorization, so its resource fees are understated. Call `$server->simulateTransaction(...)` again with the delegated entry attached, then apply the returned data before signing — assign `$response->getTransactionData()` via `$transaction->setSorobanTransactionData(...)` and add `$response->getMinResourceFee()` via `$transaction->addResourceFee(...)`.
+
+#### Source Compatibility
+
+The `SorobanCredentials` constructor's first parameter was generalized to `int|SorobanAddressCredentials` and renamed. Positional callers passing a `SorobanAddressCredentials` are unaffected, but a caller using the named argument `new SorobanCredentials(addressCredentials: ...)` must switch to positional or use the `SorobanCredentials::forAddressCredentials(...)` factory. The XDR types (`XdrSorobanCredentialsType`, `XdrEnvelopeType`, `XdrHashIDPreimage`) gain new cases for the V2 and delegated arms; any exhaustive `match`/`switch` over them needs a `default` arm.
+
 ## Type Conversions
 
 Convert between PHP native types and Soroban XDR values.

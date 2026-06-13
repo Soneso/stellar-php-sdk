@@ -217,6 +217,8 @@ if ($simResponse->error === null) {
 }
 ```
 
+Protocol 27 (CAP-71): pass `authV2: true` to request `ADDRESS_V2` credential entries (`new SimulateTransactionRequest($tx, authV2: true)`). The `authV2` key is omitted from the JSON-RPC params when false (the default). RPCs without protocol 27 support silently ignore it and return legacy `ADDRESS` entries — detect support by inspecting the returned credential arm, not by expecting an error.
+
 ### sendTransaction
 
 Submit a signed transaction to the network. This method returns immediately after validation -- it does not wait for ledger inclusion. Poll with `getTransaction()` to check the result.

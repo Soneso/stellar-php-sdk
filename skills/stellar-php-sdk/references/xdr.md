@@ -349,6 +349,8 @@ $decoded = SorobanAuthorizationEntry::fromBase64Xdr($base64);
 $signedBase64 = $decoded->toBase64Xdr();
 ```
 
+Roundtrip preserves all four `SorobanCredentials` arms, including the protocol 27 (CAP-71) `ADDRESS_V2` and `ADDRESS_WITH_DELEGATES` arms.
+
 ## XDR Ledger Key Base64
 
 Encode ledger keys for use with the `getLedgerEntries` RPC method.

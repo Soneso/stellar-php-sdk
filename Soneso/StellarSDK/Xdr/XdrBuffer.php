@@ -11,14 +11,32 @@ use phpseclib3\Math\BigInteger;
 
 
 /**
- * Enables easy iteration through a blob of XDR data
+ * Enables easy iteration through a blob of XDR data.
+ *
+ * Provides an optional recursion-depth guard for XDR types that decode themselves
+ * recursively (e.g. XdrSorobanDelegateSignature). Call enterRecursion() at the start
+ * of each recursive call and leaveRecursion() on return. The guard throws
+ * InvalidArgumentException when the depth exceeds RECURSION_LIMIT (128), preventing
+ * stack exhaustion from hostile deep-nesting in data received from the network.
+ *
+ * The guard counts true nesting depth, not array width or sequential fields, so wide
+ * transactions and large maps are unaffected.
  */
 class XdrBuffer
 {
+    /**
+     * Maximum allowed decode recursion depth (prevents stack exhaustion from hostile data).
+     */
+    public const RECURSION_LIMIT = 128;
 
     protected string $xdrBytes;
     protected int $position; // Current position within the bytes
     protected int $size;
+
+    /**
+     * @var int current recursion depth tracked via enterRecursion/leaveRecursion
+     */
+    private int $recursionDepth = 0;
 
     public function __construct(string $xdrBytes)
     {
@@ -193,6 +211,47 @@ class XdrBuffer
         }
     }
     
+    /**
+     * Signals entry into one level of recursive XDR decoding.
+     *
+     * Increments the depth counter and throws InvalidArgumentException when the limit
+     * is exceeded. Pair every call with a corresponding leaveRecursion() call.
+     *
+     * @throws InvalidArgumentException when depth exceeds RECURSION_LIMIT
+     */
+    public function enterRecursion(): void
+    {
+        $this->recursionDepth++;
+        if ($this->recursionDepth > self::RECURSION_LIMIT) {
+            throw new InvalidArgumentException(
+                'XDR decode recursion limit (' . self::RECURSION_LIMIT . ') exceeded — possible hostile nesting'
+            );
+        }
+    }
+
+    /**
+     * Signals exit from one level of recursive XDR decoding.
+     *
+     * Decrements the depth counter. Must be called once for every successful
+     * enterRecursion() call, including on exception paths (use try/finally).
+     */
+    public function leaveRecursion(): void
+    {
+        if ($this->recursionDepth > 0) {
+            $this->recursionDepth--;
+        }
+    }
+
+    /**
+     * Returns the current recursion depth.
+     *
+     * @return int current depth (0 at top level)
+     */
+    public function getRecursionDepth(): int
+    {
+        return $this->recursionDepth;
+    }
+
     /**
      * rounds $number up to the nearest value that's a multiple of 4
      *

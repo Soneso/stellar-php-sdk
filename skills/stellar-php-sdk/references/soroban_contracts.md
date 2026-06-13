@@ -386,6 +386,31 @@ $response = $tx->signAndSend(); // returns GetTransactionResponse
 echo $response->getStatus();     // e.g. "SUCCESS"
 ```
 
+## Protocol 27 Credentials (CAP-71)
+
+`SorobanCredentials` has four arms: source-account, legacy `ADDRESS` (default, valid on all protocols), and the opt-in `ADDRESS_V2` and `ADDRESS_WITH_DELEGATES` (protocol 27+; invalid below 27). All signing APIs handle every arm; `getAddressCredentials()` returns the inner `SorobanAddressCredentials` for any address arm (null only for source-account); `getCredentialType()` / `isSourceAccount()` inspect the arm.
+
+Request V2 entries from simulation with the `authV2` flag (`MethodOptions(authV2: true)` or `new SimulateTransactionRequest($tx, authV2: true)`). RPCs without protocol 27 support silently ignore it and return legacy `ADDRESS` entries — detect support by checking the returned credential arm, not by expecting an error.
+
+`ADDRESS_WITH_DELEGATES` lets delegate addresses co-sign one entry. Simulation never returns this arm; build it from an `ADDRESS`/`ADDRESS_V2` entry via `SorobanAuthorizationEntry::withDelegates($source, $expirationLedger, $delegates)`, passing `SorobanDelegateDescriptor` objects. The builder sorts the delegate array and rejects duplicates. All nodes (top-level + delegates at any depth) sign the same payload bound to the top-level address; delegates carry no nonce/expiration. `sign($kp, $network, forAddress: $strkey)` routes a signature to matching nodes depth-first; `null` signs top-level. A void top-level with all delegates signed is valid (delegates-only). After attaching a delegated entry, re-simulate and apply the returned `transactionData` / `minResourceFee` before submitting, since the first simulation excluded the delegate authorization. For multiple classical signatures on one node, call `sign()` in ascending public-key order (the SDK appends in call order and does not sort).
+
+```php
+<?php
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
+use Soneso\StellarSDK\Soroban\SorobanDelegateDescriptor;
+
+// $sourceEntry is an ADDRESS/ADDRESS_V2 entry; $expirationLedger from $server->getLatestLedger()->getSequence()
+$delegated = SorobanAuthorizationEntry::withDelegates(
+    $sourceEntry,
+    $expirationLedger,
+    [new SorobanDelegateDescriptor($delegateKeyPair->getAccountId())],
+);
+$delegated->sign($delegateKeyPair, Network::testnet(), forAddress: $delegateKeyPair->getAccountId());
+```
+
+Source compatibility: the `SorobanCredentials` constructor's first parameter is now `int|SorobanAddressCredentials` and renamed; positional `SorobanAddressCredentials` callers are unaffected, but named-argument `new SorobanCredentials(addressCredentials: ...)` must switch to positional or `forAddressCredentials(...)`. New XDR enum/union cases mean exhaustive `match`/`switch` over them needs a `default` arm.
+
 ## TTL Extension and Restore
 
 ### Extend Footprint TTL

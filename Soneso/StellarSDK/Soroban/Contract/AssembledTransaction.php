@@ -26,8 +26,10 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
+use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
+use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 
 /**
@@ -357,7 +359,12 @@ class AssembledTransaction
 
         $shouldRestore = $restore ?? $this->options->methodOptions->restore;
         $this->simulationResult = null;
-        $this->simulationResponse = $this->server->simulateTransaction(new SimulateTransactionRequest(transaction: $this->tx));
+        // Thread authV2 from MethodOptions into the request; "authV2" appears in RPC params
+        // only when true. RPCs without Protocol 27 support silently ignore the flag.
+        $this->simulationResponse = $this->server->simulateTransaction(new SimulateTransactionRequest(
+            transaction: $this->tx,
+            authV2: $this->options->methodOptions->authV2,
+        ));
         if ($shouldRestore && $this->simulationResponse->restorePreamble !== null) {
             if ($this->options->clientOptions->sourceAccountKeyPair->getPrivateKey() === null) {
                 throw new Exception('Source account keypair has no private key, but needed for automatic restore.');
@@ -469,17 +476,11 @@ class AssembledTransaction
             throw new Exception('Source account keypair has no private key, but needed for signing.');
         }
 
-        $allNeededSigners = $this->needsNonInvokerSigningBy();
-        /**
-         * @var array<string> $neededAccountSigners
-         */
-        $neededAccountSigners = array();
-        foreach ($allNeededSigners as $signer) {
-            if (!str_starts_with($signer, 'C')) {
-                array_push($neededAccountSigners, $signer);
-            }
-        }
-        if (count($neededAccountSigners) > 0) {
+        // Determine which G-address signers are BLOCKING submission. A WITH_DELEGATES entry
+        // whose top-level signature is void but all delegate nodes are signed is the legitimate
+        // "delegates-only" pattern; the void top-level does not block the send.
+        $blockingSigners = $this->getBlockingNonInvokerSigners();
+        if (count($blockingSigners) > 0) {
             throw new Exception("Transaction requires signatures from multiple signers. " .
                 "See `needsNonInvokerSigningBy` for details.");
         }
@@ -552,75 +553,326 @@ class AssembledTransaction
         $invokeHostFuncOp = $ops[0];
         if ($invokeHostFuncOp instanceof InvokeHostFunctionOperation) {
             $authEntries = $invokeHostFuncOp->auth;
-            for($i = 0; $i < count($authEntries); $i++) {
+            for ($i = 0; $i < count($authEntries); $i++) {
                 $entry = $authEntries[$i];
-                $addressCredentials = $entry->credentials->addressCredentials;
-                if ($addressCredentials === null ||
-                    $addressCredentials->address->accountId === null ||
-                    $addressCredentials->address->accountId !== $signerAddress) {
+                $credType = $entry->credentials->credentialType;
+
+                // Source-account entries require no signature; skip them.
+                if ($credType === XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT) {
                     continue;
                 }
-                $entry->credentials->addressCredentials->signatureExpirationLedger = $expirationLedger;
+
+                // Reject unknown arms rather than silently skipping them.
+                if ($credType !== XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS
+                    && $credType !== XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2
+                    && $credType !== XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+                    throw new Exception("Unsupported SorobanCredentials arm ({$credType}) in auth entry {$i}");
+                }
+
+                // Determine whether the signer address appears in this entry: check the top-level
+                // address and every delegate node address (depth-first). For ADDRESS_WITH_DELEGATES
+                // the top-level address may differ from any delegate's address; both are valid matches.
+                $entryMatchesTopLevel = false;
+                $entryMatchesDelegate = false;
+
+                $topLevelAddressCreds = $entry->credentials->getAddressCredentials();
+                if ($topLevelAddressCreds !== null) {
+                    $topStrkey = $topLevelAddressCreds->address->accountId
+                        ?? $topLevelAddressCreds->address->contractId;
+                    if ($topStrkey === $signerAddress) {
+                        $entryMatchesTopLevel = true;
+                    }
+                }
+
+                if ($credType === XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+                    $withDelegates = $entry->credentials->addressWithDelegates;
+                    if ($withDelegates !== null && $this->delegateTreeContainsAddress($withDelegates->delegates, $signerAddress, 0)) {
+                        $entryMatchesDelegate = true;
+                    }
+                }
+
+                if (!$entryMatchesTopLevel && !$entryMatchesDelegate) {
+                    // This entry does not involve the signer; skip it.
+                    continue;
+                }
+
                 if ($authorizeEntryCallback !== null) {
                     $authorized = $authorizeEntryCallback($entry, $this->options->clientOptions->network);
                 } else {
-                    $entry->sign(signer: $signerKeyPair, network: $this->options->clientOptions->network);
+                    // Set expiration on the top-level credentials via the arm-preserving helper.
+                    $topCreds = $entry->credentials->getAddressCredentials();
+                    if ($topCreds !== null) {
+                        $topCreds->signatureExpirationLedger = $expirationLedger;
+                        $entry->credentials->writeBackAddressCredentials($topCreds);
+                    }
+
+                    if ($entryMatchesDelegate) {
+                        // Route the signature to the matching delegate node(s) via forAddress.
+                        $entry->sign(
+                            signer:   $signerKeyPair,
+                            network:  $this->options->clientOptions->network,
+                            forAddress: $signerAddress,
+                        );
+                    } else {
+                        // Top-level match: sign the top-level credentials (forAddress = null).
+                        $entry->sign(
+                            signer:  $signerKeyPair,
+                            network: $this->options->clientOptions->network,
+                        );
+                    }
                     $authorized = $entry;
                 }
                 $authEntries[$i] = $authorized;
             }
             $this->tx->setSorobanAuth($authEntries);
-        }  else {
+        } else {
             throw new Exception("Unexpected Transaction type; no invoke host function operations found.");
         }
     }
 
+    /**
+     * Recursively checks whether $address appears in any node within a flat delegate array.
+     *
+     * Respects the depth limit applied during delegate tree traversal. Returns true as soon
+     * as one match is found.
+     *
+     * @param array<\Soneso\StellarSDK\Soroban\SorobanDelegateSignature> $delegates the delegates to search
+     * @param string $address the strkey to match against node addresses
+     * @param int $depth current nesting depth
+     * @return bool true if any node in the subtree matches $address
+     */
+    private function delegateTreeContainsAddress(array $delegates, string $address, int $depth): bool
+    {
+        if ($depth > 128) {
+            return false;
+        }
+        foreach ($delegates as $delegate) {
+            if ($delegate->address->toStrKey() === $address) {
+                return true;
+            }
+            if ($this->delegateTreeContainsAddress($delegate->nestedDelegates, $address, $depth + 1)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     /**
-     * Get a list of accounts, other than the invoker of the simulation, that
-     *  need to sign auth entries in this transaction.
+     * Returns the set of G-address signers that are BLOCKING submission.
      *
-     * Soroban allows multiple people to sign a transaction. Someone needs to
-     *  sign the final transaction envelope; this person/account is called the
-     *  _invoker_, or _source_. Other accounts might need to sign individual auth
-     *  entries in the transaction, if they're not also the invoker.
+     * An address is blocking if:
+     * - It appears as the top-level address of an ADDRESS or ADDRESS_V2 entry with a void signature, OR
+     * - It appears as the top-level address of a WITH_DELEGATES entry with a void top-level signature
+     *   AND at least one delegate node is also unsigned (the full entry is not yet satisfied), OR
+     * - It appears as a delegate node with a void signature in a WITH_DELEGATES entry whose top-level
+     *   signature is also void.
      *
-     *  This function returns a list of accounts that need to sign auth entries,
-     *  assuming that the same invoker/source account will sign the final
-     *  transaction envelope as signed the initial simulation.
+     * A WITH_DELEGATES entry where the top-level signature is void but every delegate node carries
+     * a signature is the "delegates-only" pattern and does NOT block the send.
      *
-     * @param bool $includeAlreadySigned if the list should include the needed signers that already signed their auth entries.
-     * @return array<string> the list of account ids of the accounts that need to sign auth entries.
+     * Contract (C-prefixed) addresses are excluded: they cannot sign independently.
      *
-     * @throws Exception
+     * @return array<string> G-address strkeys that block submission
+     * @throws Exception if the transaction has not yet been simulated
      */
-    public function needsNonInvokerSigningBy(bool $includeAlreadySigned = false) : array {
-        if($this->tx === null) {
+    private function getBlockingNonInvokerSigners(): array
+    {
+        if ($this->tx === null) {
             throw new Exception("Transaction has not yet been simulated");
         }
         $ops = $this->tx->getOperations();
-        if(count($ops) === 0) {
+        if (count($ops) === 0) {
+            return [];
+        }
+        $invokeHostFuncOp = $ops[0];
+        if (!($invokeHostFuncOp instanceof InvokeHostFunctionOperation)) {
+            return [];
+        }
+
+        /** @var array<string> $blocking */
+        $blocking = [];
+        $authEntries = $invokeHostFuncOp->auth;
+
+        foreach ($authEntries as $entry) {
+            $credType = $entry->credentials->credentialType;
+            if ($credType === XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT) {
+                continue;
+            }
+
+            if ($credType === XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+                $withDelegates = $entry->credentials->addressWithDelegates;
+                if ($withDelegates === null) {
+                    continue;
+                }
+                $topIsVoid = $withDelegates->addressCredentials->signature->type->value === XdrSCValType::SCV_VOID;
+
+                // Check whether all delegate nodes are signed.
+                $allDelegatesSigned = $this->allDelegateNodesSigned($withDelegates->delegates, 0);
+
+                if ($topIsVoid && $allDelegatesSigned) {
+                    // Delegates-only pattern: top-level void is acceptable; nothing blocks.
+                    continue;
+                }
+
+                // Entry not yet satisfied — collect unsigned G-address nodes.
+                if ($topIsVoid) {
+                    $topStrkey = $withDelegates->addressCredentials->getAddress()->accountId;
+                    if ($topStrkey !== null && !in_array($topStrkey, $blocking, true)) {
+                        $blocking[] = $topStrkey;
+                    }
+                }
+                $this->collectUnsignedDelegateGAddresses($withDelegates->delegates, $blocking, 0);
+            } else {
+                // ADDRESS or ADDRESS_V2: top-level only.
+                $topCreds = $entry->credentials->getAddressCredentials();
+                if ($topCreds !== null && $topCreds->signature->type->value === XdrSCValType::SCV_VOID) {
+                    $topStrkey = $topCreds->getAddress()->accountId;
+                    if ($topStrkey !== null && !in_array($topStrkey, $blocking, true)) {
+                        $blocking[] = $topStrkey;
+                    }
+                }
+            }
+        }
+        return $blocking;
+    }
+
+    /**
+     * Returns true when every node in the delegate array (and all their children) carries a
+     * non-void signature.
+     *
+     * @param array<\Soneso\StellarSDK\Soroban\SorobanDelegateSignature> $delegates
+     * @param int $depth guard against hostile deep trees
+     */
+    private function allDelegateNodesSigned(array $delegates, int $depth): bool
+    {
+        if ($depth > 128) {
+            return true; // Truncate at limit; overly deep trees are rejected on decode.
+        }
+        foreach ($delegates as $delegate) {
+            if ($delegate->signature->type->value === XdrSCValType::SCV_VOID) {
+                return false;
+            }
+            if (!$this->allDelegateNodesSigned($delegate->nestedDelegates, $depth + 1)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Walks a delegate array and appends G-address strkeys with void signatures to $blocking.
+     *
+     * Only G-address (account) nodes are included; contract (C-address) nodes cannot sign independently.
+     *
+     * @param array<\Soneso\StellarSDK\Soroban\SorobanDelegateSignature> $delegates
+     * @param array<string> $blocking accumulator (modified in place)
+     * @param int $depth current nesting depth
+     */
+    private function collectUnsignedDelegateGAddresses(array $delegates, array &$blocking, int $depth): void
+    {
+        if ($depth > 128) {
+            return;
+        }
+        foreach ($delegates as $delegate) {
+            if ($delegate->signature->type->value === XdrSCValType::SCV_VOID) {
+                $nodeStrkey = $delegate->address->toStrKey();
+                // Only G-address (account) nodes block submission; C-address contracts cannot sign.
+                if (str_starts_with($nodeStrkey, 'G') && !in_array($nodeStrkey, $blocking, true)) {
+                    $blocking[] = $nodeStrkey;
+                }
+            }
+            $this->collectUnsignedDelegateGAddresses($delegate->nestedDelegates, $blocking, $depth + 1);
+        }
+    }
+
+    /**
+     * Returns a list of addresses — other than the invoker — that still need to sign auth entries.
+     *
+     * Reports EVERY node whose signature is void: the top-level address of any address-arm entry
+     * AND each unsigned delegate node within a WITH_DELEGATES entry. A top-level signature
+     * alongside delegates is a legal pattern; both may appear in the returned list independently.
+     *
+     * Note: a WITH_DELEGATES entry where the top-level signature is void but every delegate node
+     * is signed is the "delegates-only" pattern; the top-level address still appears in the list
+     * because its own slot is void. The send precheck in sign() treats such entries as satisfied
+     * (all required delegate signatures are present) and does not block submission.
+     *
+     * @param bool $includeAlreadySigned when true, includes signers whose nodes already carry signatures.
+     * @return array<string> strkeys of addresses that need (or needed) to sign auth entries.
+     * @throws Exception if the transaction has not yet been simulated.
+     */
+    public function needsNonInvokerSigningBy(bool $includeAlreadySigned = false) : array {
+        if ($this->tx === null) {
+            throw new Exception("Transaction has not yet been simulated");
+        }
+        $ops = $this->tx->getOperations();
+        if (count($ops) === 0) {
             throw new Exception("Unexpected Transaction type; no operations found.");
         }
         /**
          * @var array<string> $needed
          */
-        $needed = array();
+        $needed = [];
         $invokeHostFuncOp = $ops[0];
-        if ($invokeHostFuncOp instanceof InvokeHostFunctionOperation) {
-            $authEntries = $invokeHostFuncOp->auth;
-            foreach ($authEntries as $entry) {
-                $addressCredentials = $entry->credentials->addressCredentials;
-                if($addressCredentials !== null) {
-                    if($includeAlreadySigned || $addressCredentials->signature->type->value === XdrSCValType::SCV_VOID) {
-                        array_push($needed, $addressCredentials->getAddress()->accountId ?? $addressCredentials->getAddress()->contractId);
+        if (!($invokeHostFuncOp instanceof InvokeHostFunctionOperation)) {
+            return $needed;
+        }
+
+        $authEntries = $invokeHostFuncOp->auth;
+        foreach ($authEntries as $entry) {
+            $credType = $entry->credentials->credentialType;
+            if ($credType === XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT) {
+                continue;
+            }
+
+            // Top-level address node.
+            $topCreds = $entry->credentials->getAddressCredentials();
+            if ($topCreds !== null) {
+                $isVoid = $topCreds->signature->type->value === XdrSCValType::SCV_VOID;
+                if ($includeAlreadySigned || $isVoid) {
+                    $addrStr = $topCreds->getAddress()->accountId ?? $topCreds->getAddress()->contractId;
+                    if ($addrStr !== null && !in_array($addrStr, $needed, true)) {
+                        $needed[] = $addrStr;
                     }
                 }
             }
-        } else {
-            return $needed;
+
+            // Delegate nodes (ADDRESS_WITH_DELEGATES only).
+            if ($credType === XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+                $withDelegates = $entry->credentials->addressWithDelegates;
+                if ($withDelegates !== null) {
+                    $this->collectUnsignedDelegateAddresses($withDelegates->delegates, $needed, $includeAlreadySigned, 0);
+                }
+            }
         }
         return $needed;
+    }
+
+    /**
+     * Walks a delegate array depth-first and appends unsigned (or all, when $includeAlreadySigned)
+     * delegate node addresses to $needed.
+     *
+     * @param array<\Soneso\StellarSDK\Soroban\SorobanDelegateSignature> $delegates the delegate array to walk
+     * @param array<string> $needed accumulator (modified in place via reference)
+     * @param bool $includeAlreadySigned when true, includes signed nodes too
+     * @param int $depth current nesting depth (guard against hostile deep trees)
+     */
+    private function collectUnsignedDelegateAddresses(array $delegates, array &$needed, bool $includeAlreadySigned, int $depth): void
+    {
+        if ($depth > 128) {
+            return;
+        }
+        foreach ($delegates as $delegate) {
+            $isVoid = $delegate->signature->type->value === XdrSCValType::SCV_VOID;
+            if ($includeAlreadySigned || $isVoid) {
+                $nodeStrkey = $delegate->address->toStrKey();
+                if (!in_array($nodeStrkey, $needed, true)) {
+                    $needed[] = $nodeStrkey;
+                }
+            }
+            $this->collectUnsignedDelegateAddresses($delegate->nestedDelegates, $needed, $includeAlreadySigned, $depth + 1);
+        }
     }
 
     /**
