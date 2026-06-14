@@ -811,18 +811,23 @@ class P27CoverageClosureTest extends TestCase
         // Delegate must also be signed.
         $this->assertNotNull($result->delegates[0]->signature->vec,
             'Delegate signature must be written when address matches both top-level and delegate');
+
+        // The requested expiration must have been stamped before signing.
+        $this->assertSame(9999, $result->addressCredentials->signatureExpirationLedger,
+            'signAuthEntries must stamp the requested expiration before signing');
     }
 
     /**
-     * Callback-based signing in signAuthEntries passes the entry and network to the callback.
-     *
-     * Exercises the `$authorizeEntryCallback !== null` branch (line 600).
+     * Callback-based signing in signAuthEntries stamps the expiration on the
+     * entry BEFORE handing it to the callback, so the callback signs over the
+     * intended expiration ledger rather than the entry's original value.
      */
-    public function testSignAuthEntriesCallbackBranchIsInvoked(): void
+    public function testSignAuthEntriesStampsExpirationBeforeCallback(): void
     {
         $signerKp = KeyPair::fromSeed(self::TEST_SECRET);
         $invokerKp = KeyPair::fromSeed(self::TEST_SECRET);
 
+        // Entry starts with expiration 100; signAuthEntries is called with 9999.
         $address      = Address::fromAccountId($signerKp->getAccountId());
         $addressCreds = new SorobanAddressCredentials($address, 1, 100, XdrSCVal::forVoid());
         $validEntry   = new SorobanAuthorizationEntry(
@@ -834,10 +839,15 @@ class P27CoverageClosureTest extends TestCase
         $this->injectMockedServerResponses($tx, [$this->makeLatestLedgerResponse(1000)]);
 
         $callbackInvoked = false;
+        $expirationSeenByCallback = null;
         $tx->signAuthEntries(
             signerKeyPair: $signerKp,
-            authorizeEntryCallback: static function (SorobanAuthorizationEntry $e, Network $n) use (&$callbackInvoked, $signerKp): SorobanAuthorizationEntry {
+            // The callback signs WITHOUT setting an expiration itself, so the
+            // signature is made over whatever the SDK stamped beforehand.
+            authorizeEntryCallback: static function (SorobanAuthorizationEntry $e, Network $n) use (&$callbackInvoked, &$expirationSeenByCallback, $signerKp): SorobanAuthorizationEntry {
                 $callbackInvoked = true;
+                $expirationSeenByCallback =
+                    $e->credentials->getAddressCredentials()?->signatureExpirationLedger;
                 $e->sign($signerKp, $n);
                 return $e;
             },
@@ -845,6 +855,18 @@ class P27CoverageClosureTest extends TestCase
         );
 
         $this->assertTrue($callbackInvoked, 'Authorize entry callback must be invoked for matching entries');
+        // If the stamp were skipped on the callback path, the callback would see
+        // (and sign over) the original 100 and this would fail.
+        $this->assertEquals(9999, $expirationSeenByCallback,
+            'signAuthEntries must stamp the expiration before invoking the callback');
+
+        $signedEntry = $tx->tx?->getOperations()[0]->auth[0];
+        $this->assertEquals(9999,
+            $signedEntry->credentials->getAddressCredentials()->signatureExpirationLedger,
+            'the signed entry must carry the stamped expiration');
+        $this->assertNotNull(
+            $signedEntry->credentials->getAddressCredentials()->signature->vec,
+            'the callback-signed entry must carry a signature');
     }
 
     // =========================================================================

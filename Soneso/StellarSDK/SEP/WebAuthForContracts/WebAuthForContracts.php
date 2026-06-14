@@ -654,8 +654,18 @@ class WebAuthForContracts
                 );
             }
 
-            // Send only the client domain entry to the callback
+            // Send only the client domain entry to the callback. Stamp the
+            // expiration first — as the client and client-domain-keypair
+            // branches do through sign() — so the remote signer signs over the
+            // intended expiration ledger rather than the challenge default.
             $clientDomainEntry = $signedEntries[$clientDomainEntryIndex];
+            if ($signatureExpirationLedger !== null) {
+                $cdCreds = $clientDomainEntry->credentials->getAddressCredentials();
+                if ($cdCreds !== null) {
+                    $cdCreds->signatureExpirationLedger = $signatureExpirationLedger;
+                    $clientDomainEntry->credentials->writeBackAddressCredentials($cdCreds);
+                }
+            }
             $signedEntry = $clientDomainSigningCallback($clientDomainEntry);
 
             // Validate callback return value

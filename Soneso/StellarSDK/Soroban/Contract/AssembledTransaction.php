@@ -596,16 +596,19 @@ class AssembledTransaction
                     continue;
                 }
 
+                // Stamp expiration on the top-level credentials before signing — the
+                // preimage is built from the current expiration value. This applies to
+                // the callback path too, otherwise a delegated signer would sign over
+                // the simulation default and the host would reject it as expired.
+                $topCreds = $entry->credentials->getAddressCredentials();
+                if ($topCreds !== null) {
+                    $topCreds->signatureExpirationLedger = $expirationLedger;
+                    $entry->credentials->writeBackAddressCredentials($topCreds);
+                }
+
                 if ($authorizeEntryCallback !== null) {
                     $authorized = $authorizeEntryCallback($entry, $this->options->clientOptions->network);
                 } else {
-                    // Set expiration on the top-level credentials via the arm-preserving helper.
-                    $topCreds = $entry->credentials->getAddressCredentials();
-                    if ($topCreds !== null) {
-                        $topCreds->signatureExpirationLedger = $expirationLedger;
-                        $entry->credentials->writeBackAddressCredentials($topCreds);
-                    }
-
                     if ($entryMatchesDelegate) {
                         // Route the signature to the matching delegate node(s) via forAddress.
                         $entry->sign(

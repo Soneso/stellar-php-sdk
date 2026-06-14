@@ -384,6 +384,15 @@ class P27AuthorizationTest extends TestCase
         $this->assertNotNull($sig);
         $this->assertNotNull($sig->vec);
         $this->assertCount(1, $sig->vec);
+
+        // The signature must verify against the golden V2 (WITH_ADDRESS) payload
+        // hash, proving sign() used the address-bound preimage, not the legacy
+        // one (which hashes to a different payload and would fail verification).
+        $sigBytes = hex2bin($this->extractSignatureHex($entry));
+        $this->assertTrue(
+            $signer->verifySignature($sigBytes, hex2bin(self::GOLDEN_V2_PAYLOAD_HEX)),
+            'V2 signature must verify against the WITH_ADDRESS preimage payload',
+        );
     }
 
     /**

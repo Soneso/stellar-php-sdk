@@ -457,6 +457,82 @@ class P27WebAuthForContractsTest extends TestCase
         );
         $this->assertNotNull($innerCreds->signature->vec);
         $this->assertCount(1, $innerCreds->signature->vec);
+
+        // The signature must verify against the preimage rebuilt from the signed
+        // entry (which now carries expiration 999999) — proving the signature was
+        // made over the stamped expiration, i.e. the expiration was applied
+        // before hashing, not after.
+        $payload  = Hash::generate($clientSigned->buildPreimage(Network::testnet())->encode());
+        $sigBytes = null;
+        foreach ($innerCreds->signature->vec[0]->map ?? [] as $mapEntry) {
+            if ($mapEntry->key->sym === 'signature') {
+                $sigBytes = $mapEntry->val->bytes?->getValue();
+                break;
+            }
+        }
+        $this->assertNotNull($sigBytes);
+        $this->assertTrue($clientKeyPair->verifySignature($sigBytes, $payload),
+            'client signature must verify against the preimage built with the stamped expiration');
+    }
+
+    /**
+     * The client-domain signing callback receives the entry with the expiration
+     * already stamped, so the remote signer signs over the intended expiration
+     * ledger rather than the challenge default.
+     */
+    public function testSignAuthorizationEntriesStampsExpirationBeforeClientDomainCallback(): void
+    {
+        $clientKeyPair         = KeyPair::random();
+        $clientDomainKeyPair   = KeyPair::random();
+        $clientDomainAccountId = $clientDomainKeyPair->getAccountId();
+
+        $argsMap = $this->buildArgsMap(
+            $this->clientContractId,
+            $this->domain,
+            'auth.example.stellar.org',
+            $this->serverAccountId,
+            'nonce_cd_callback',
+        );
+
+        // The client-domain entry starts with expiration 111; the call passes 888888.
+        $clientDomainEntry = $this->buildAuthEntry(
+            $clientDomainAccountId,
+            $this->webAuthContractId,
+            'web_auth_verify',
+            $argsMap,
+            88001,
+            111,
+        );
+
+        $webAuth = $this->makeWebAuth();
+
+        $expirationSeenByCallback = null;
+        $signed = $webAuth->signAuthorizationEntries(
+            [$clientDomainEntry],
+            $clientKeyPair->getAccountId(), // clientAccountId — does not match the entry
+            [],
+            888888,
+            null, // no clientDomainKeyPair: exercise the callback branch
+            // The callback signs WITHOUT setting an expiration itself, so it
+            // signs over whatever the SDK stamped beforehand.
+            function (SorobanAuthorizationEntry $entry) use (&$expirationSeenByCallback, $clientDomainKeyPair): SorobanAuthorizationEntry {
+                $expirationSeenByCallback =
+                    $entry->credentials->getAddressCredentials()?->signatureExpirationLedger;
+                $entry->sign($clientDomainKeyPair, Network::testnet());
+                return $entry;
+            },
+            $clientDomainAccountId,
+        );
+
+        // If the SDK skipped stamping before the callback, the callback would see
+        // the original 111 and this would fail.
+        $this->assertSame(888888, $expirationSeenByCallback,
+            'signAuthorizationEntries must stamp the expiration before invoking the client-domain callback');
+
+        $innerCreds = $signed[0]->credentials->getAddressCredentials();
+        $this->assertNotNull($innerCreds);
+        $this->assertSame(888888, $innerCreds->signatureExpirationLedger,
+            'the client-domain entry must carry the stamped expiration');
     }
 
     /**
