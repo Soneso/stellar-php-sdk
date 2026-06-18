@@ -422,12 +422,27 @@ class Generator < Xdrgen::Generators::Base
   def render_struct_decode(out, struct_name, class_name, fields, is_base)
     _, _, return_type, _ = resolve_class_info(struct_name)
     decode_class = is_base ? "static" : struct_name
+    is_recursive = defined?(RECURSIVE_STRUCT_TYPES) && RECURSIVE_STRUCT_TYPES.include?(struct_name)
     out.puts "    public static function decode(XdrBuffer $xdr): #{return_type} {"
+    if is_recursive
+      out.puts "        $xdr->enterRecursion();"
+      out.puts "        try {"
+      indent = "    "
+    else
+      indent = ""
+    end
     fields.each do |f|
       if f[:is_ext_point]
-        out.puts "        $xdr->readInteger32(); // extension point"
+        out.puts "        #{indent}$xdr->readInteger32(); // extension point"
       else
-        render_decode_field_php(out, f[:name], f)
+        if is_recursive
+          # Temporarily redirect output to a buffer to add indentation
+          buf = StringIO.new
+          render_decode_field_php(buf, f[:name], f)
+          buf.string.each_line { |line| out.puts "    #{line.rstrip}" }
+        else
+          render_decode_field_php(out, f[:name], f)
+        end
       end
     end
     # Build constructor call using non-ext fields, reordered to match constructor
@@ -437,7 +452,14 @@ class Generator < Xdrgen::Generators::Base
     optional_fields = constructor_fields.select { |f| f[:is_optional] }
     ordered_fields = required_fields + optional_fields
     args = ordered_fields.map { |f| "$#{f[:name]}" }.join(", ")
-    out.puts "        return new #{decode_class}(#{args});"
+    if is_recursive
+      out.puts "            return new #{decode_class}(#{args});"
+      out.puts "        } finally {"
+      out.puts "            $xdr->leaveRecursion();"
+      out.puts "        }"
+    else
+      out.puts "        return new #{decode_class}(#{args});"
+    end
     out.puts "    }"
   end
 

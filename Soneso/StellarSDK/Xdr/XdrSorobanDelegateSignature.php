@@ -32,14 +32,19 @@ class XdrSorobanDelegateSignature {
     }
 
     public static function decode(XdrBuffer $xdr): XdrSorobanDelegateSignature {
-        $address = XdrSCAddress::decode($xdr);
-        $signature = XdrSCVal::decode($xdr);
-        $nestedDelegates = [];
-        $nestedDelegatesSize = $xdr->readInteger32();
-        for ($i = 0; $i < $nestedDelegatesSize; $i++) {
-            $nestedDelegates[] = XdrSorobanDelegateSignature::decode($xdr);
+        $xdr->enterRecursion();
+        try {
+            $address = XdrSCAddress::decode($xdr);
+            $signature = XdrSCVal::decode($xdr);
+            $nestedDelegates = [];
+            $nestedDelegatesSize = $xdr->readInteger32();
+            for ($i = 0; $i < $nestedDelegatesSize; $i++) {
+                $nestedDelegates[] = XdrSorobanDelegateSignature::decode($xdr);
+            }
+            return new XdrSorobanDelegateSignature($address, $signature, $nestedDelegates);
+        } finally {
+            $xdr->leaveRecursion();
         }
-        return new XdrSorobanDelegateSignature($address, $signature, $nestedDelegates);
     }
 
     public function getAddress(): XdrSCAddress { return $this->address; }

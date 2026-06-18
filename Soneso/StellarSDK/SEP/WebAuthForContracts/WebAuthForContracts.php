@@ -26,12 +26,8 @@ use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Util\Hash;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
-use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
-use Soneso\StellarSDK\Xdr\XdrHashIDPreimage;
-use Soneso\StellarSDK\Xdr\XdrHashIDPreimageSorobanAuthorization;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntry;
-use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 
 /**
  * Implements SEP-45 Web Authentication for Contract Accounts protocol
@@ -534,11 +530,18 @@ class WebAuthForContracts
                 }
             }
 
-            // Check which entry this is (server, client, or client domain)
+            // Check which entry this is (server, client, or client domain).
+            // All three address arms (ADDRESS, ADDRESS_V2, ADDRESS_WITH_DELEGATES) are recognized.
+            // Source-account credentials cannot carry an address and are rejected.
             $credentials = $entry->credentials;
-            if ($credentials->addressCredentials !== null) {
-                $credentialsAddress = $credentials->addressCredentials->address;
-                $credentialsAddressStr = $credentialsAddress->toStrKey();
+            if ($credentials->isSourceAccount()) {
+                throw new ContractChallengeValidationError(
+                    "Authorization entry uses source-account credentials; an address credential arm is required"
+                );
+            }
+            $innerCreds = $credentials->getAddressCredentials();
+            if ($innerCreds !== null) {
+                $credentialsAddressStr = $innerCreds->address->toStrKey();
 
                 if ($credentialsAddressStr === $this->serverSigningKey) {
                     $serverEntryFound = true;
@@ -614,34 +617,27 @@ class WebAuthForContracts
 
         foreach ($authEntries as $index => $entry) {
             $credentials = $entry->credentials;
-            if ($credentials->addressCredentials !== null) {
-                $credentialsAddress = $credentials->addressCredentials->address;
-                $credentialsAddressStr = $credentialsAddress->toStrKey();
+            // Resolve the inner address credentials for all three address arms.
+            // Source-account entries have no address and are passed through unsigned.
+            $innerCreds = $credentials->getAddressCredentials();
+            if ($innerCreds !== null) {
+                $credentialsAddressStr = $innerCreds->address->toStrKey();
 
-                // Sign client entry
+                // Sign client entry — pass expiration to sign() so it is applied before hashing.
                 if ($credentialsAddressStr === $clientAccountId) {
-                    // Set signature expiration ledger if provided
-                    if ($signatureExpirationLedger !== null) {
-                        $credentials->addressCredentials->signatureExpirationLedger = $signatureExpirationLedger;
-                    }
-
-                    // Sign with all provided signers
                     foreach ($signers as $signer) {
                         if ($signer instanceof KeyPair) {
-                            $entry->sign($signer, $this->network);
+                            $entry->sign($signer, $this->network, $signatureExpirationLedger);
                         }
                     }
                 }
 
-                // Sign client domain entry with local keypair
+                // Sign client domain entry with local keypair.
                 if ($clientDomainKeyPair !== null && $credentialsAddressStr === $clientDomainKeyPair->getAccountId()) {
-                    if ($signatureExpirationLedger !== null) {
-                        $credentials->addressCredentials->signatureExpirationLedger = $signatureExpirationLedger;
-                    }
-                    $entry->sign($clientDomainKeyPair, $this->network);
+                    $entry->sign($clientDomainKeyPair, $this->network, $signatureExpirationLedger);
                 }
 
-                // Track client domain entry index for callback
+                // Track client domain entry index for callback.
                 if ($clientDomainAccountId !== null && $credentialsAddressStr === $clientDomainAccountId) {
                     $clientDomainEntryIndex = $index;
                 }
@@ -658,8 +654,18 @@ class WebAuthForContracts
                 );
             }
 
-            // Send only the client domain entry to the callback
+            // Send only the client domain entry to the callback. Stamp the
+            // expiration first — as the client and client-domain-keypair
+            // branches do through sign() — so the remote signer signs over the
+            // intended expiration ledger rather than the challenge default.
             $clientDomainEntry = $signedEntries[$clientDomainEntryIndex];
+            if ($signatureExpirationLedger !== null) {
+                $cdCreds = $clientDomainEntry->credentials->getAddressCredentials();
+                if ($cdCreds !== null) {
+                    $cdCreds->signatureExpirationLedger = $signatureExpirationLedger;
+                    $clientDomainEntry->credentials->writeBackAddressCredentials($cdCreds);
+                }
+            }
             $signedEntry = $clientDomainSigningCallback($clientDomainEntry);
 
             // Validate callback return value
@@ -864,30 +870,20 @@ class WebAuthForContracts
     private function verifyServerSignature(SorobanAuthorizationEntry $entry, Network $network): bool
     {
         try {
-            $xdrCredentials = $entry->credentials->toXdr();
-            if ($entry->credentials->addressCredentials === null ||
-                $xdrCredentials->type->value != XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS ||
-                $xdrCredentials->address === null) {
+            // All three address arms are accepted; source-account credentials cannot carry a signature.
+            $innerCreds = $entry->credentials->getAddressCredentials();
+            if ($innerCreds === null) {
                 return false;
             }
 
-            // Build authorization preimage
-            $networkId = Hash::generate($network->getNetworkPassphrase());
-            $authPreimageXdr = new XdrHashIDPreimageSorobanAuthorization(
-                $networkId,
-                $xdrCredentials->address->nonce,
-                $xdrCredentials->address->signatureExpirationLedger,
-                $entry->rootInvocation->toXdr()
-            );
-            $rootInvocationPreimage = new XdrHashIDPreimage(
-                new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_SOROBAN_AUTHORIZATION)
-            );
-            $rootInvocationPreimage->sorobanAuthorization = $authPreimageXdr;
+            // Build the arm-correct preimage and hash it.
+            // ADDRESS -> ENVELOPE_TYPE_SOROBAN_AUTHORIZATION
+            // ADDRESS_V2 / ADDRESS_WITH_DELEGATES -> ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS
+            $preimage = $entry->buildPreimage($network);
+            $payload = Hash::generate($preimage->encode());
 
-            $payload = Hash::generate($rootInvocationPreimage->encode());
-
-            // Get signature from credentials
-            $signatureVal = $entry->credentials->addressCredentials->signature;
+            // Get signature from inner credentials (arm-agnostic accessor).
+            $signatureVal = $innerCreds->signature;
             if ($signatureVal->type->value !== XdrSCValType::SCV_VEC || $signatureVal->vec === null || count($signatureVal->vec) == 0) {
                 return false;
             }

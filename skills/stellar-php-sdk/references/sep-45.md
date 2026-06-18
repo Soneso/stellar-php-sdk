@@ -180,6 +180,8 @@ $jwtToken = $webAuth->jwtToken(
 
 **Signature expiration:** When signers are provided and `$signatureExpirationLedger` is `null`, the SDK calls `SorobanServer::getLatestLedger()` and sets expiration to `sequence + 10` (~50–60 seconds). If the signers array is empty this Soroban RPC call is skipped entirely.
 
+**Protocol 27 (CAP-71):** `jwtToken()` signs whichever credential arm the server returns — `ADDRESS`, `ADDRESS_V2`, or `ADDRESS_WITH_DELEGATES` — and preserves the arm on write-back, so no flow change is needed. For `ADDRESS_WITH_DELEGATES` entries, supply every signer the contract's `__check_auth` rules require, including delegate signers.
+
 ---
 
 ## Contracts Without Signature Requirements
