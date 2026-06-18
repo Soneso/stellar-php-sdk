@@ -14,6 +14,9 @@ use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Contract\DeployRequest;
+use Soneso\StellarSDK\Soroban\Contract\InstallRequest;
+use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Soroban\SorobanCredentials;
@@ -46,7 +49,7 @@ class P27AddressV2RoundTripTest extends TestCase
      *
      * This gate follows the same convention used throughout the integration suite.
      */
-    private string $testOn = 'skip'; // Change to 'testnet' to enable
+    private string $testOn = 'testnet';
 
     private Network $network;
     private SorobanServer $server;
@@ -92,8 +95,20 @@ class P27AddressV2RoundTripTest extends TestCase
         FriendBot::fundTestAccount($invokerId);
         sleep(5);
 
-        // Deploy the auth contract.
-        $contractId = $this->deployContract($this->server, self::AUTH_CONTRACT_PATH, $submitterKeyPair);
+        // Deploy the auth contract via the high-level client.
+        $wasmHash = SorobanClient::install(new InstallRequest(
+            wasmBytes: file_get_contents(self::AUTH_CONTRACT_PATH),
+            rpcUrl: self::TESTNET_SERVER_URL,
+            network: $this->network,
+            sourceAccountKeyPair: $submitterKeyPair,
+        ));
+        $contractClient = SorobanClient::deploy(new DeployRequest(
+            rpcUrl: self::TESTNET_SERVER_URL,
+            network: $this->network,
+            sourceAccountKeyPair: $submitterKeyPair,
+            wasmHash: $wasmHash,
+        ));
+        $contractId = $contractClient->getContractId();
 
         // Build the invoke transaction.
         $invokerAddress = Address::fromAccountId($invokerId);
@@ -213,77 +228,4 @@ class P27AddressV2RoundTripTest extends TestCase
         return $statusResponse;
     }
 
-    private function deployContract(SorobanServer $server, string $wasmPath, KeyPair $accountKeyPair): string
-    {
-        // Load WASM.
-        $wasm = file_get_contents($wasmPath);
-        if ($wasm === false) {
-            throw new Exception("Could not load WASM from $wasmPath");
-        }
-
-        $accountId = $accountKeyPair->getAccountId();
-        $account   = $server->getAccount($accountId);
-        $this->assertNotNull($account);
-
-        // Upload WASM.
-        $uploadHostFunction = new \Soneso\StellarSDK\UploadContractWasmHostFunction($wasm);
-        $op = (new \Soneso\StellarSDK\InvokeHostFunctionOperationBuilder($uploadHostFunction))->build();
-
-        $transaction = (new TransactionBuilder($account))->addOperation($op)->build();
-
-        $uploadRequest       = new SimulateTransactionRequest($transaction);
-        $simulateResponse    = $server->simulateTransaction($uploadRequest);
-
-        $this->assertNull($simulateResponse->error);
-        $transactionData = $simulateResponse->getTransactionData();
-        $transaction->setSorobanTransactionData($transactionData);
-        $transaction->addResourceFee($simulateResponse->minResourceFee);
-        $transaction->sign($accountKeyPair, $this->network);
-
-        $sendResponse = $server->sendTransaction($transaction);
-        $this->assertNull($sendResponse->error);
-
-        $statusResponse = $this->pollStatus($server, $sendResponse->hash);
-        $this->assertNotNull($statusResponse);
-
-        $wasmId = $statusResponse->getResultValue()?->bytes?->getValue();
-        $this->assertNotNull($wasmId);
-
-        // Re-fetch account (sequence updated).
-        $account = $server->getAccount($accountId);
-        $this->assertNotNull($account);
-
-        // Create contract.
-        $createHostFunction = new \Soneso\StellarSDK\CreateContractHostFunction(
-            new \Soneso\StellarSDK\Soroban\Address(
-                \Soneso\StellarSDK\Soroban\Address::TYPE_ACCOUNT,
-                accountId: $accountId,
-            ),
-            bin2hex($wasmId),
-        );
-        $op2 = (new \Soneso\StellarSDK\InvokeHostFunctionOperationBuilder($createHostFunction))->build();
-
-        $transaction2 = (new TransactionBuilder($account))->addOperation($op2)->build();
-
-        $createRequest     = new SimulateTransactionRequest($transaction2);
-        $simulateResponse2 = $server->simulateTransaction($createRequest);
-
-        $this->assertNull($simulateResponse2->error);
-        $transactionData2 = $simulateResponse2->getTransactionData();
-        $transaction2->setSorobanTransactionData($transactionData2);
-        $transaction2->addResourceFee($simulateResponse2->minResourceFee);
-        $transaction2->setSorobanAuth($simulateResponse2->getSorobanAuth());
-        $transaction2->sign($accountKeyPair, $this->network);
-
-        $sendResponse2 = $server->sendTransaction($transaction2);
-        $this->assertNull($sendResponse2->error);
-
-        $statusResponse2 = $this->pollStatus($server, $sendResponse2->hash);
-        $this->assertNotNull($statusResponse2);
-
-        $contractIdBytes = $statusResponse2->getResultValue()?->address?->contractId;
-        $this->assertNotNull($contractIdBytes);
-
-        return \Soneso\StellarSDK\Crypto\StrKey::encodeContractIdHex($contractIdBytes);
-    }
 }
