@@ -1,8 +1,8 @@
 # SEP-24: Hosted Deposit and Withdrawal
 
 **Status:** ✅ Supported  
-**SDK Version:** 1.9.8  
-**Generated:** 2026-06-11 16:49 UTC  
+**SDK Version:** 1.10.0  
+**Generated:** 2026-06-18 22:26 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
 
 ## Overall Coverage
