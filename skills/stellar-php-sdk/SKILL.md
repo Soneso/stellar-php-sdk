@@ -351,7 +351,7 @@ $result = $client->invokeMethod('expensive_operation', [XdrSCVal::forSymbol('dat
     methodOptions: new MethodOptions(fee: 10000, timeoutInSeconds: 60));
 ```
 
-Protocol 27 (CAP-71) adds opt-in `ADDRESS_V2` and `ADDRESS_WITH_DELEGATES` credential arms (legacy `ADDRESS` stays default); request V2 from simulation via `MethodOptions(authV2: true)`, build delegate trees with `SorobanAuthorizationEntry::withDelegates(...)`.
+Protocol 27 (CAP-71) adds opt-in `ADDRESS_V2` and `ADDRESS_WITH_DELEGATES` credential arms (legacy `ADDRESS` stays default); build delegate trees with `SorobanAuthorizationEntry::withDelegates(...)`.
 
 For contract authorization, multi-auth workflows, delegated auth, and remote signing:
 [Smart Contracts Guide](./references/soroban_contracts.md)

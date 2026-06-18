@@ -28,13 +28,10 @@ use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 /**
  * Protocol 27 (CAP-71) ADDRESS_V2 round-trip integration test.
  *
- * Tests the full simulate -> inspect-credential-arm -> sign -> submit flow when the
- * RPC returns ADDRESS_V2 credentials (after Protocol 27 upgrade). Until the testnet
- * upgrades to Protocol 27 (2026-06-18) and an RPC server supporting the authV2 flag
- * is released (stellar-rpc #783), the RPC returns legacy ADDRESS credentials even when
- * authV2=true is sent. This test tolerates that: it inspects the credential arm of the
- * returned entries and adapts its assertions accordingly so that it exercises the
- * correct P27 code paths once available without blocking CI before then.
+ * Tests the full simulate -> assemble ADDRESS_V2 -> sign -> submit flow. Simulation
+ * returns legacy ADDRESS credentials; the ADDRESS_V2 credential arm is assembled
+ * client-side so the round-trip exercises the address-bound V2 signing and submission
+ * path. Submission succeeds only once the network runs Protocol 27.
  *
  * The test requires network access to the testnet RPC and is gated by $testOn.
  * It will only run when explicitly invoked via the integration suite.
@@ -65,12 +62,12 @@ class P27AddressV2RoundTripTest extends TestCase
     }
 
     /**
-     * ADDRESS_V2 round-trip: simulate with authV2=true, inspect the returned credential arm,
-     * sign using the correct preimage for the detected arm, and submit.
+     * ADDRESS_V2 round-trip: simulate, assemble the ADDRESS_V2 arm client-side, sign using
+     * the address-bound preimage, and submit.
      *
-     * Detection: the credential arm of the returned entry reveals whether the RPC honored the
-     * authV2 flag. We assert the correct arm-specific preimage was used for signing without
-     * hard-requiring V2 — no released RPC supports authV2 yet (stellar-rpc #783).
+     * Simulation returns a legacy ADDRESS entry for the invoker (the invoker differs from the
+     * transaction source). That entry is converted to the ADDRESS_V2 arm before signing, and a
+     * hard assertion guarantees a V2 entry is present so the V2 path is genuinely exercised.
      *
      * @throws Exception
      * @throws GuzzleException
@@ -81,8 +78,7 @@ class P27AddressV2RoundTripTest extends TestCase
             $this->markTestSkipped(
                 'P27 ADDRESS_V2 integration test requires testnet access. '
                 . 'Set $testOn = "testnet" to enable. '
-                . 'Note: authV2 RPC support is gated on stellar-rpc #783 (unreleased). '
-                . 'This test tolerates legacy ADDRESS responses until V2 RPC support is released.'
+                . 'Submission succeeds only once the network runs Protocol 27.'
             );
         }
 
@@ -110,9 +106,7 @@ class P27AddressV2RoundTripTest extends TestCase
         $this->assertNotNull($submitterAccount);
         $transaction = (new TransactionBuilder($submitterAccount))->addOperation($op)->build();
 
-        // Simulate with authV2=true to request V2 credential entries.
-        // RPCs without authV2 support silently ignore the flag and return legacy ADDRESS entries.
-        $request = new SimulateTransactionRequest(transaction: $transaction, authV2: true);
+        $request = new SimulateTransactionRequest(transaction: $transaction);
         $simulateResponse = $this->server->simulateTransaction($request);
 
         $this->assertNull($simulateResponse->error);
@@ -127,12 +121,30 @@ class P27AddressV2RoundTripTest extends TestCase
         $auth = $simulateResponse->getSorobanAuth();
         $this->assertNotNull($auth);
 
+        // Simulation returns a legacy ADDRESS entry for the invoker. Assemble the ADDRESS_V2
+        // arm client-side so the round-trip exercises the address-bound V2 signing path.
+        foreach ($auth as $entry) {
+            if ($entry->credentials->credentialType === XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS) {
+                $inner = $entry->credentials->getAddressCredentials();
+                if ($inner !== null && $inner->address->accountId === $invokerId) {
+                    $entry->credentials = SorobanCredentials::forAddressCredentialsV2($inner);
+                }
+            }
+        }
+
+        $hasV2 = false;
+        foreach ($auth as $entry) {
+            if ($entry->credentials->credentialType === XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2) {
+                $hasV2 = true;
+            }
+        }
+        $this->assertTrue($hasV2, 'Expected an ADDRESS_V2 auth entry after the client-side rewrite');
+
         $latestLedgerResponse = $this->server->getLatestLedger();
         $this->assertNotNull($latestLedgerResponse->sequence);
 
-        // Inspect the credential arm and sign correctly for each arm.
-        // We do NOT assert that the RPC returned V2 — it may still return legacy ADDRESS
-        // until stellar-rpc #783 is released and deployed.
+        // Sign each entry; sign() selects the correct preimage based on the credential arm,
+        // so the V2 entry uses the address-bound preimage.
         foreach ($auth as $entry) {
             $this->assertInstanceOf(SorobanAuthorizationEntry::class, $entry);
 

@@ -53,10 +53,10 @@ use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
 /**
  * Protocol 27 (CAP-71) coverage closure tests.
  *
- * Targets executable lines missed by Batches B, C, and D unit tests:
+ * Targets executable lines missed by the other P27 unit tests:
  * error-guard paths in SorobanCredentials / SorobanAuthorizationEntry, getters/setters
- * on the new wrapper types, depth-limit signing, deep delegate-tree XDR round-trip,
- * getBlockingNonInvokerSigners, and the authV2 MethodOptions constructor.
+ * on the new wrapper types, depth-limit signing, deep delegate-tree XDR round-trip, and
+ * getBlockingNonInvokerSigners.
  *
  * No test here duplicates an assertion already present in P27AuthorizationTest,
  * P27AssembledTransactionTest, or P27WebAuthForContractsTest.
@@ -586,22 +586,6 @@ class P27CoverageClosureTest extends TestCase
         // Already at 0, leaving must not throw and must stay at 0.
         $buf->leaveRecursion();
         $this->assertSame(0, $buf->getRecursionDepth());
-    }
-
-    // =========================================================================
-    // MethodOptions — authV2 constructor (covers lines 39-50)
-    // =========================================================================
-
-    /**
-     * MethodOptions authV2 property defaults to false and can be set via constructor.
-     */
-    public function testMethodOptionsAuthV2PropertyDefault(): void
-    {
-        $default = new MethodOptions();
-        $this->assertFalse($default->authV2);
-
-        $enabled = new MethodOptions(authV2: true);
-        $this->assertTrue($enabled->authV2);
     }
 
     // =========================================================================

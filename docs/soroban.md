@@ -510,38 +510,6 @@ The legacy `ADDRESS` arm remains the default everywhere and stays fully valid. T
 
 All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry::sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry. Use `$credentials->getAddressCredentials()` to read the inner `SorobanAddressCredentials` of any address arm (it returns `null` only for source-account credentials), and `$credentials->getCredentialType()` / `$credentials->isSourceAccount()` to inspect the arm. Factories `SorobanCredentials::forAddressCredentialsV2()` and `SorobanCredentials::forAddressWithDelegates()` build the new arms directly.
 
-#### Requesting V2 Entries from Simulation
-
-Set `authV2` to request `ADDRESS_V2` credential arms in the simulation response. RPC servers without support silently ignore the flag and return legacy `ADDRESS` entries — detect support by inspecting the credential arm of the returned entries, never by expecting an error. When `authV2` is `false` (the default), the key is omitted from the JSON-RPC params entirely.
-
-```php
-<?php
-use Soneso\StellarSDK\Soroban\Contract\MethodOptions;
-use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
-use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
-
-// Contract client: opt in via MethodOptions
-$tx = $client->buildInvokeMethodTx(
-    name: 'swap',
-    args: $args,
-    methodOptions: new MethodOptions(authV2: true),
-);
-
-// Detect whether the RPC honored the flag
-$entries = $tx->getSimulationData()->auth ?? [];
-$gotV2 = false;
-foreach ($entries as $entry) {
-    if ($entry->credentials->getCredentialType()
-        === XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2) {
-        $gotV2 = true;
-    }
-}
-
-// Low-level: opt in on the simulate request
-$request = new SimulateTransactionRequest($transaction, authV2: true);
-$response = $server->simulateTransaction($request);
-```
-
 #### Delegated Authorization
 
 A `WITH_DELEGATES` entry lets delegate addresses co-sign a single authorization entry. Simulation never returns `WITH_DELEGATES` entries; clients assemble the tree from an `ADDRESS` or `ADDRESS_V2` entry using `SorobanAuthorizationEntry::withDelegates`.

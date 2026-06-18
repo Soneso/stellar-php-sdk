@@ -359,11 +359,8 @@ class AssembledTransaction
 
         $shouldRestore = $restore ?? $this->options->methodOptions->restore;
         $this->simulationResult = null;
-        // Thread authV2 from MethodOptions into the request; "authV2" appears in RPC params
-        // only when true. RPCs without Protocol 27 support silently ignore the flag.
         $this->simulationResponse = $this->server->simulateTransaction(new SimulateTransactionRequest(
             transaction: $this->tx,
-            authV2: $this->options->methodOptions->authV2,
         ));
         if ($shouldRestore && $this->simulationResponse->restorePreamble !== null) {
             if ($this->options->clientOptions->sourceAccountKeyPair->getPrivateKey() === null) {

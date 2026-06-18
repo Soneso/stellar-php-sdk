@@ -6,7 +6,6 @@
 
 namespace Soneso\StellarSDKTests\Unit\Soroban;
 
-use DateTime;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
@@ -15,7 +14,6 @@ use GuzzleHttp\Psr7\Response;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Account;
-use Soneso\StellarSDK\Constants\NetworkConstants;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\InvokeContractHostFunction;
@@ -36,18 +34,13 @@ use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizedFunction;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizedInvocation;
 use Soneso\StellarSDK\Soroban\SorobanCredentials;
-use Soneso\StellarSDK\Soroban\SorobanDelegateDescriptor;
 use Soneso\StellarSDK\Soroban\SorobanDelegateSignature;
 use Soneso\StellarSDK\Soroban\SorobanServer;
-use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
-use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
-use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrSorobanResources;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
@@ -56,7 +49,7 @@ use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 /**
  * Protocol 27 (CAP-71) simulation and AssembledTransaction tests.
  *
- * Covers SimulateTransactionRequest.authV2 wire flag, MethodOptions.authV2 thread-through,
+ * Covers SimulateTransactionRequest / MethodOptions serialization,
  * signAuthEntries and needsNonInvokerSigningBy across all three address arms, the
  * delegates-only send-precheck reconciliation, and arm preservation.
  */
@@ -84,54 +77,13 @@ class P27AssembledTransactionTest extends TestCase
     }
 
     // =========================================================================
-    // TASK 1 — SimulateTransactionRequest.authV2 wire flag
+    // SimulateTransactionRequest param serialization
     // =========================================================================
 
     /**
-     * The "authV2" key must be ABSENT from request params when $authV2 is false (default).
+     * Request params serialize transaction, resourceConfig, and authMode.
      */
-    public function testAuthV2KeyAbsentByDefault(): void
-    {
-        $tx      = $this->buildMockTx();
-        $request = new SimulateTransactionRequest(transaction: $tx);
-
-        $params = $request->getRequestParams();
-
-        $this->assertArrayNotHasKey('authV2', $params, '"authV2" key must not appear when flag is false (default)');
-        $this->assertArrayHasKey('transaction', $params);
-    }
-
-    /**
-     * The "authV2" key must be ABSENT when explicitly set to false.
-     */
-    public function testAuthV2KeyAbsentWhenExplicitFalse(): void
-    {
-        $tx      = $this->buildMockTx();
-        $request = new SimulateTransactionRequest(transaction: $tx, authV2: false);
-
-        $params = $request->getRequestParams();
-
-        $this->assertArrayNotHasKey('authV2', $params, '"authV2" key must not appear when explicitly false');
-    }
-
-    /**
-     * The "authV2" key must be present and equal to boolean true when opted in.
-     */
-    public function testAuthV2KeyPresentAsBooleanTrueWhenOptedIn(): void
-    {
-        $tx      = $this->buildMockTx();
-        $request = new SimulateTransactionRequest(transaction: $tx, authV2: true);
-
-        $params = $request->getRequestParams();
-
-        $this->assertArrayHasKey('authV2', $params, '"authV2" key must appear when flag is true');
-        $this->assertSame(true, $params['authV2'], '"authV2" must be boolean true (not a string or int)');
-    }
-
-    /**
-     * Existing params (transaction, resourceConfig, authMode) must be unaffected by authV2.
-     */
-    public function testExistingParamsUnaffectedByAuthV2(): void
+    public function testRequestParamsSerializeExistingFields(): void
     {
         $tx             = $this->buildMockTx();
         $resourceConfig = new \Soneso\StellarSDK\Soroban\Requests\ResourceConfig(5000000);
@@ -139,7 +91,6 @@ class P27AssembledTransactionTest extends TestCase
             transaction:    $tx,
             resourceConfig: $resourceConfig,
             authMode:       'record',
-            authV2:         true,
         );
 
         $params = $request->getRequestParams();
@@ -147,84 +98,22 @@ class P27AssembledTransactionTest extends TestCase
         $this->assertArrayHasKey('transaction', $params);
         $this->assertArrayHasKey('resourceConfig', $params);
         $this->assertEquals('record', $params['authMode']);
-        $this->assertSame(true, $params['authV2']);
-    }
-
-    /**
-     * Setter/getter round-trip for authV2.
-     */
-    public function testAuthV2SetterGetterRoundTrip(): void
-    {
-        $tx      = $this->buildMockTx();
-        $request = new SimulateTransactionRequest(transaction: $tx);
-
-        $this->assertFalse($request->getAuthV2());
-
-        $request->setAuthV2(true);
-        $this->assertTrue($request->getAuthV2());
-        $this->assertArrayHasKey('authV2', $request->getRequestParams());
-
-        $request->setAuthV2(false);
-        $this->assertFalse($request->getAuthV2());
-        $this->assertArrayNotHasKey('authV2', $request->getRequestParams());
     }
 
     // =========================================================================
-    // TASK 2 — MethodOptions.authV2 threads into the simulate() request
+    // MethodOptions fields
     // =========================================================================
 
     /**
-     * When MethodOptions.authV2 = true, the simulate() call must send "authV2": true in the
-     * RPC request body. Verified by intercepting the mock HTTP request body.
+     * MethodOptions stores the values passed to the constructor.
      */
-    public function testMethodOptionsAuthV2TrueThreadsIntoSimulateRequest(): void
+    public function testMethodOptionsFieldsAreSet(): void
     {
-        $capturedBodies = [];
-        $tx = $this->buildAssembledTransactionWithMock(
-            methodOptions: new MethodOptions(simulate: false, restore: false, authV2: true),
-            mockResponses: [$this->createSimulateResponse()],
-            capturedBodies: $capturedBodies,
-        );
-
-        $tx->simulate();
-
-        $this->assertCount(1, $capturedBodies, 'Expected exactly one RPC request');
-        $body = json_decode($capturedBodies[0], true);
-        $this->assertIsArray($body);
-        // The SorobanServer prepareRequest() places getRequestParams() directly under 'params'.
-        $params = $body['params'] ?? [];
-        $this->assertArrayHasKey('authV2', $params, '"authV2" must appear in RPC params when MethodOptions.authV2 = true');
-        $this->assertSame(true, $params['authV2']);
-    }
-
-    /**
-     * Mirror: default MethodOptions must NOT include "authV2" in the RPC request body.
-     */
-    public function testMethodOptionsDefaultOmitsAuthV2FromSimulateRequest(): void
-    {
-        $capturedBodies = [];
-        $tx = $this->buildAssembledTransactionWithMock(
-            methodOptions: new MethodOptions(simulate: false, restore: false),
-            mockResponses: [$this->createSimulateResponse()],
-            capturedBodies: $capturedBodies,
-        );
-
-        $tx->simulate();
-
-        $this->assertCount(1, $capturedBodies, 'Expected exactly one RPC request');
-        $body = json_decode($capturedBodies[0], true);
-        $this->assertIsArray($body);
-        $params = $body['params'] ?? [];
-        $this->assertArrayNotHasKey('authV2', $params, '"authV2" must NOT appear in RPC params by default');
-    }
-
-    /**
-     * MethodOptions default values include authV2 = false.
-     */
-    public function testMethodOptionsAuthV2DefaultIsFalse(): void
-    {
-        $options = new MethodOptions();
-        $this->assertFalse($options->authV2);
+        $options = new MethodOptions(fee: 500, timeoutInSeconds: 120, simulate: false, restore: false);
+        $this->assertSame(500, $options->fee);
+        $this->assertSame(120, $options->timeoutInSeconds);
+        $this->assertFalse($options->simulate);
+        $this->assertFalse($options->restore);
     }
 
     // =========================================================================
@@ -622,80 +511,6 @@ class P27AssembledTransactionTest extends TestCase
     }
 
     /**
-     * Builds an AssembledTransaction with a mocked HTTP server and request-body capture.
-     *
-     * @param MethodOptions $methodOptions
-     * @param array<Response> $mockResponses
-     * @param array<string> $capturedBodies output: bodies of HTTP POST requests
-     */
-    private function buildAssembledTransactionWithMock(
-        MethodOptions $methodOptions,
-        array         $mockResponses,
-        array         &$capturedBodies,
-    ): AssembledTransaction {
-        $capturedBodiesRef = &$capturedBodies;
-        $mock = new MockHandler($mockResponses);
-        $stack = HandlerStack::create($mock);
-        // Middleware to capture request bodies.
-        $stack->push(static function (callable $handler) use (&$capturedBodiesRef): callable {
-            return static function ($request, $options) use ($handler, &$capturedBodiesRef) {
-                $capturedBodiesRef[] = (string) $request->getBody();
-                return $handler($request, $options);
-            };
-        });
-        $client = new Client(['handler' => $stack]);
-
-        $invokerKp     = KeyPair::fromSeed(self::TEST_SECRET_KEY);
-        $clientOptions = new ClientOptions(
-            sourceAccountKeyPair: $invokerKp,
-            contractId:           self::TEST_CONTRACT_ID,
-            network:              $this->network,
-            rpcUrl:               self::TEST_RPC_URL,
-        );
-        $txOptions = new AssembledTransactionOptions(
-            clientOptions: $clientOptions,
-            methodOptions: $methodOptions,
-            method:        'test',
-            arguments:     [],
-        );
-
-        $reflection = new \ReflectionClass(AssembledTransaction::class);
-        $tx         = $reflection->newInstanceWithoutConstructor();
-
-        $optionsProp = $reflection->getProperty('options');
-        $optionsProp->setAccessible(true);
-        $optionsProp->setValue($tx, $txOptions);
-
-        $server = new SorobanServer($txOptions->clientOptions->rpcUrl);
-        $serverReflection = new \ReflectionClass($server);
-        $httpClientProp   = $serverReflection->getProperty('httpClient');
-        $httpClientProp->setAccessible(true);
-        $httpClientProp->setValue($server, $client);
-
-        $serverProp = $reflection->getProperty('server');
-        $serverProp->setAccessible(true);
-        $serverProp->setValue($tx, $server);
-
-        // Build the raw transaction builder (no network).
-        $account   = new Account($invokerKp->getAccountId(), new BigInteger(123456789));
-        $hostFn    = new InvokeContractHostFunction(self::TEST_CONTRACT_ID, 'test', []);
-        $op        = (new InvokeHostFunctionOperationBuilder($hostFn))->build();
-        $txBuilder = new TransactionBuilder(sourceAccount: $account);
-        $txBuilder->setTimeBounds(new TimeBounds(
-            (new DateTime())->modify('- ' . NetworkConstants::DEFAULT_TIME_BOUNDS_OFFSET_SECONDS . ' seconds'),
-            (new DateTime())->modify('+ ' . $methodOptions->timeoutInSeconds . ' seconds')
-        ));
-        $txBuilder->addOperation($op);
-        $txBuilder->setMaxOperationFee($methodOptions->fee);
-
-        $rawProp = $reflection->getProperty('raw');
-        $rawProp->setAccessible(true);
-        $rawProp->setValue($tx, $txBuilder);
-
-        return $tx;
-    }
-
-    /**
      * Injects mock responses into the SorobanServer inside an AssembledTransaction.
      *
      * @param array<Response> $responses
@@ -715,33 +530,6 @@ class P27AssembledTransactionTest extends TestCase
         $httpClientProp   = $serverReflection->getProperty('httpClient');
         $httpClientProp->setAccessible(true);
         $httpClientProp->setValue($server, $client);
-    }
-
-    /**
-     * Creates a mock simulateTransaction response (success, no auth).
-     */
-    private function createSimulateResponse(): Response
-    {
-        $footprint  = new XdrLedgerFootprint([], []);
-        $resources  = new XdrSorobanResources($footprint, 0, 0, 0);
-        $ext        = new XdrSorobanTransactionDataExt(0);
-        $txData     = new XdrSorobanTransactionData($ext, $resources, 0);
-
-        return new Response(200, [], json_encode([
-            'jsonrpc' => '2.0',
-            'id'      => 1,
-            'result'  => [
-                'minResourceFee'  => '100',
-                'latestLedger'    => 1000,
-                'transactionData' => $txData->toBase64Xdr(),
-                'results'         => [
-                    [
-                        'auth' => [],
-                        'xdr'  => XdrSCVal::forVoid()->toBase64Xdr(),
-                    ],
-                ],
-            ],
-        ]));
     }
 
     /**

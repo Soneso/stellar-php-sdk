@@ -36,18 +36,12 @@ class MethodOptions
      *                       builder before simulation. Default true.
      * @param bool $restore If true, will automatically attempt to restore archived ledger entries
      *                      that need renewal. Requires source account with private key. Default true.
-     * @param bool $authV2 When true, the simulate call requests ADDRESS_V2 credential entries
-     *                     (Protocol 27, CAP-71). The flag is forwarded to SimulateTransactionRequest
-     *                     and passed as "authV2": true in the RPC params only when enabled. RPCs
-     *                     without Protocol 27 support silently ignore it and return legacy ADDRESS
-     *                     entries. Do not enable on pre-27 networks. Default false.
      */
     public function __construct(
         public int $fee = StellarConstants::MIN_BASE_FEE_STROOPS,
         public int $timeoutInSeconds = NetworkConstants::DEFAULT_SOROBAN_TIMEOUT_SECONDS,
         public bool $simulate = true,
         public bool $restore = true,
-        public bool $authV2 = false,
     ) {
     }
 
