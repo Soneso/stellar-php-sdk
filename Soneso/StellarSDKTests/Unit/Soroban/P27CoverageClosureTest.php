@@ -55,8 +55,8 @@ use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
  *
  * Targets executable lines missed by the other P27 unit tests:
  * error-guard paths in SorobanCredentials / SorobanAuthorizationEntry, getters/setters
- * on the new wrapper types, depth-limit signing, deep delegate-tree XDR round-trip, and
- * getBlockingNonInvokerSigners.
+ * on the new wrapper types, depth-limit signing, deep delegate-tree XDR round-trip,
+ * getBlockingNonInvokerSigners, and the useUpgradedAuth MethodOptions constructor.
  *
  * No test here duplicates an assertion already present in P27AuthorizationTest,
  * P27AssembledTransactionTest, or P27WebAuthForContractsTest.
@@ -586,6 +586,22 @@ class P27CoverageClosureTest extends TestCase
         // Already at 0, leaving must not throw and must stay at 0.
         $buf->leaveRecursion();
         $this->assertSame(0, $buf->getRecursionDepth());
+    }
+
+    // =========================================================================
+    // MethodOptions — useUpgradedAuth constructor
+    // =========================================================================
+
+    /**
+     * MethodOptions useUpgradedAuth property defaults to false and can be set via constructor.
+     */
+    public function testMethodOptionsUseUpgradedAuthPropertyDefault(): void
+    {
+        $default = new MethodOptions();
+        $this->assertFalse($default->useUpgradedAuth);
+
+        $enabled = new MethodOptions(useUpgradedAuth: true);
+        $this->assertTrue($enabled->useUpgradedAuth);
     }
 
     // =========================================================================

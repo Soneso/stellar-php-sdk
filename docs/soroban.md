@@ -510,6 +510,38 @@ The legacy `ADDRESS` arm remains the default everywhere and stays fully valid. T
 
 All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry::sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry. Use `$credentials->getAddressCredentials()` to read the inner `SorobanAddressCredentials` of any address arm (it returns `null` only for source-account credentials), and `$credentials->getCredentialType()` / `$credentials->isSourceAccount()` to inspect the arm. Factories `SorobanCredentials::forAddressCredentialsV2()` and `SorobanCredentials::forAddressWithDelegates()` build the new arms directly.
 
+#### Requesting V2 Entries from Simulation
+
+Set `useUpgradedAuth` to request `ADDRESS_V2` credential arms in the simulation response. The flag is honored only on RPC servers that support it and only in recording mode: `authMode` "record" or "record_allow_nonroot", or `authMode` unset on a transaction without attached auth entries — the RPC then defaults to recording, as in the examples below. RPC servers without support silently ignore it and return legacy `ADDRESS` entries — detect support by inspecting the credential arm of the returned entries, never by expecting an error. When `useUpgradedAuth` is `false` (the default), the key is omitted from the JSON-RPC params entirely.
+
+```php
+<?php
+use Soneso\StellarSDK\Soroban\Contract\MethodOptions;
+use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
+use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
+
+// Contract client: opt in via MethodOptions
+$tx = $client->buildInvokeMethodTx(
+    name: 'swap',
+    args: $args,
+    methodOptions: new MethodOptions(useUpgradedAuth: true),
+);
+
+// Detect whether the RPC honored the flag
+$entries = $tx->getSimulationData()->auth ?? [];
+$gotV2 = false;
+foreach ($entries as $entry) {
+    if ($entry->credentials->getCredentialType()
+        === XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2) {
+        $gotV2 = true;
+    }
+}
+
+// Low-level: opt in on the simulate request
+$request = new SimulateTransactionRequest($transaction, useUpgradedAuth: true);
+$response = $server->simulateTransaction($request);
+```
+
 #### Delegated Authorization
 
 A `WITH_DELEGATES` entry lets delegate addresses co-sign a single authorization entry. Simulation never returns `WITH_DELEGATES` entries; clients assemble the tree from an `ADDRESS` or `ADDRESS_V2` entry using `SorobanAuthorizationEntry::withDelegates`.
@@ -588,7 +620,7 @@ $delegated->sign(
 
 `SorobanDelegateDescriptor` supports nesting via `nestedDelegates` and accepts a pre-built `signature` (default void) for nodes signed externally, such as contract addresses.
 
-`SorobanCredentials::forAddressCredentialsV2` and the delegated arms are built client-side: simulation and the high-level client only ever return legacy `ADDRESS` entries, so the V2 and `WITH_DELEGATES` arms are assembled and submitted at the `SorobanServer` level.
+`SorobanCredentials::forAddressCredentialsV2` and the delegated arms are built client-side: by default simulation returns legacy `ADDRESS` entries (set `useUpgradedAuth` to request `ADDRESS_V2` from a supporting RPC), and `WITH_DELEGATES` entries are never returned by simulation, so the V2 and `WITH_DELEGATES` arms are assembled and submitted at the `SorobanServer` level.
 
 After attaching the signed entries with `$transaction->setSorobanAuth(...)`, re-simulate in enforcing mode before submitting. The first (recording) simulation does not run the authorizing account's `__check_auth`, so it understates the resource fee and — for a custom (contract) account whose `__check_auth` reads storage or calls into delegates — omits the footprint entries that authorization touches. Re-simulate with the signed entry attached and `authMode` set to `enforce` (`new SimulateTransactionRequest(transaction: $transaction, authMode: 'enforce')`), then apply the returned data before signing: `$transaction->setSorobanTransactionData($response->getTransactionData())` and `$transaction->addResourceFee($response->getMinResourceFee())`. The already-signed auth is preserved.
 

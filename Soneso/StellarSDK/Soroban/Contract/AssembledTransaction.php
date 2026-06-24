@@ -359,8 +359,11 @@ class AssembledTransaction
 
         $shouldRestore = $restore ?? $this->options->methodOptions->restore;
         $this->simulationResult = null;
+        // Thread useUpgradedAuth from MethodOptions into the request; "useUpgradedAuth" appears in RPC params
+        // only when true. RPCs without Protocol 27 support silently ignore the flag.
         $this->simulationResponse = $this->server->simulateTransaction(new SimulateTransactionRequest(
             transaction: $this->tx,
+            useUpgradedAuth: $this->options->methodOptions->useUpgradedAuth,
         ));
         if ($shouldRestore && $this->simulationResponse->restorePreamble !== null) {
             if ($this->options->clientOptions->sourceAccountKeyPair->getPrivateKey() === null) {
