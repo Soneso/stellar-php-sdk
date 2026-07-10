@@ -1081,6 +1081,7 @@ The generated client provides type-safe method calls with native PHP types.
 <?php
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Contract\ClientOptions;
 use MyApp\Contracts\TokenClient;
 
@@ -1092,8 +1093,12 @@ $client = TokenClient::forClientOptions(new ClientOptions(
 ));
 
 // Type-safe calls with native PHP types
-$balance = $client->balance('GABC...');  // Returns BigInteger
-$client->transfer('GFROM...', 'GTO...', 1000);  // Amount as int
+$balance = $client->balance(Address::fromAccountId('GABC...'));  // i128 as decimal string
+$client->transfer(
+    Address::fromAccountId('GFROM...'),
+    Address::fromAccountId('GTO...'),
+    '1000',  // i128 amount as decimal string
+);
 ```
 
 ## Low-Level Operations
