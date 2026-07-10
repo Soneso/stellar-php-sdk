@@ -12,6 +12,7 @@ use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
+use Soneso\StellarSDK\Xdr\XdrSCValType;
 
 /**
  * Soroban address representing accounts, contracts, and other Stellar entities
@@ -177,7 +178,7 @@ class Address
      * @throws RuntimeException if the given XdrSCVal is not of type address
      */
     public static function fromXdrSCVal(XdrSCVal $val) : Address {
-        if ($val->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT && $val->address !== null) {
+        if ($val->type->value === XdrSCValType::SCV_ADDRESS && $val->address !== null) {
             return self::fromXdr($val->address);
         } else {
             throw new RuntimeException("Given XdrSCVal is not of type address.");
