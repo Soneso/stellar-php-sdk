@@ -1,6 +1,6 @@
 <?php  declare(strict_types=1);
 
-// Copyright 2025 The Stellar PHP SDK Authors. All rights reserved.
+// Copyright 2026 The Stellar PHP SDK Authors. All rights reserved.
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
@@ -107,12 +107,12 @@ class BindingsSpecTestContractTest extends TestCase
         // of order to confirm the encoder sorts them.
         $map = [7 => true, 1 => true, 2 => false];
         $mapResult = $contract->map($map);
-        assertEquals([1 => true, 2 => false, 7 => true], $mapResult);
+        assertSame([1 => true, 2 => false, 7 => true], $mapResult);
         print("map<u32,bool> unsorted-input round trip: " . json_encode($mapResult) . PHP_EOL);
 
         // tuple (Symbol, u32): tuples encode as an SCV_VEC
         $tuple = ["hello", 42];
-        assertEquals($tuple, $contract->tuple($tuple));
+        assertSame($tuple, $contract->tuple($tuple));
         print("tuple (Symbol,u32) round trip: " . json_encode($tuple) . PHP_EOL);
 
         // vec<u32>: element order is preserved
@@ -236,14 +236,14 @@ class BindingsSpecTestContractTest extends TestCase
     /**
      * @throws GuzzleException
      */
-    private function deployContract(string $wasmHash, ?array $constructorArgs = null): SorobanClient
+    private function deployContract(string $wasmHash): SorobanClient
     {
         $deployRequest = new DeployRequest(
             rpcUrl: self::TESTNET_RPC_URL,
             network: $this->network,
             sourceAccountKeyPair: $this->sourceAccountKeyPair,
             wasmHash: $wasmHash,
-            constructorArgs: $constructorArgs,
+            constructorArgs: null,
             logger: new PrintLogger()
         );
         return SorobanClient::deploy($deployRequest);

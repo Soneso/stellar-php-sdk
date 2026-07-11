@@ -1405,7 +1405,7 @@ class BindingsSpecTestContract
             args: $args,
             methodOptions: $methodOptions
         );
-        return ($result->type !== XdrSCValType::SCV_VOID ? $result->u32 : null);
+        return ($result->type->value !== XdrSCValType::SCV_VOID ? $result->u32 : null);
     }
 
     /**
