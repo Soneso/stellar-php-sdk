@@ -167,7 +167,7 @@ METHOD_NOTES: dict[str, str] = {
     "getNetwork": "Returns friendbotUrl (optional), passphrase, and protocolVersion.",
     "getVersionInfo": "Protocol 22+ compliant (camelCase fields; also reads snake_case for backward compat).",
     "getFeeStats": "Full support for sorobanInclusionFee and inclusionFee statistics.",
-    "getHealth": "Full support for status, ledgerRetentionWindow, oldestLedger, latestLedger.",
+    "getHealth": "Full support for status, ledgerRetentionWindow, oldestLedger, latestLedger, latestLedgerCloseTime, oldestLedgerCloseTime.",
 }
 
 

@@ -101,6 +101,37 @@ class SorobanServerTest extends TestCase
 
     public function testGetHealthSuccess(): void
     {
+        // Full v27.1.0+ response shape: the ledger close times are int64 values
+        // serialized as JSON strings.
+        $mockResponse = new Response(200, [], json_encode([
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'result' => [
+                'status' => 'healthy',
+                'ledgerRetentionWindow' => 17280,
+                'oldestLedger' => 100000,
+                'oldestLedgerCloseTime' => '1783345758',
+                'latestLedger' => 117280,
+                'latestLedgerCloseTime' => '1783951566'
+            ]
+        ]));
+
+        $server = $this->createMockedSorobanServer([$mockResponse]);
+        $response = $server->getHealth();
+
+        $this->assertInstanceOf(GetHealthResponse::class, $response);
+        $this->assertEquals('healthy', $response->getStatus());
+        $this->assertEquals(17280, $response->getLedgerRetentionWindow());
+        $this->assertEquals(100000, $response->getOldestLedger());
+        $this->assertEquals(117280, $response->getLatestLedger());
+        $this->assertSame('1783951566', $response->getLatestLedgerCloseTime());
+        $this->assertSame('1783345758', $response->getOldestLedgerCloseTime());
+        $this->assertNull($response->error);
+    }
+
+    public function testGetHealthCloseTimesNullWhenAbsent(): void
+    {
+        // RPC servers below v27.1.0 do not return the ledger close-time fields.
         $mockResponse = new Response(200, [], json_encode([
             'jsonrpc' => '2.0',
             'id' => 1,
@@ -117,9 +148,8 @@ class SorobanServerTest extends TestCase
 
         $this->assertInstanceOf(GetHealthResponse::class, $response);
         $this->assertEquals('healthy', $response->getStatus());
-        $this->assertEquals(17280, $response->getLedgerRetentionWindow());
-        $this->assertEquals(100000, $response->getOldestLedger());
-        $this->assertEquals(117280, $response->getLatestLedger());
+        $this->assertNull($response->getLatestLedgerCloseTime());
+        $this->assertNull($response->getOldestLedgerCloseTime());
         $this->assertNull($response->error);
     }
 

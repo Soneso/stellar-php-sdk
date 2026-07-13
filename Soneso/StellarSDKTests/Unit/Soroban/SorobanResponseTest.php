@@ -1353,10 +1353,39 @@ class SorobanResponseTest extends TestCase
         $this->assertEquals(1000, $response->latestLedger);
     }
 
-    // GetHealthResponse Tests (9 methods: fromJson, 4 getters, 4 setters, HEALTHY constant)
+    // GetHealthResponse Tests (13 methods: fromJson, 6 getters, 6 setters, HEALTHY constant)
 
     public function testGetHealthResponseHealthy(): void
     {
+        // Full v27.1.0+ response shape: the ledger close times are int64 values
+        // serialized as JSON strings.
+        $json = [
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'result' => [
+                'status' => 'healthy',
+                'ledgerRetentionWindow' => 10000,
+                'oldestLedger' => 1000,
+                'oldestLedgerCloseTime' => '1783345758',
+                'latestLedger' => 11000,
+                'latestLedgerCloseTime' => '1783951566'
+            ]
+        ];
+
+        $response = GetHealthResponse::fromJson($json);
+
+        $this->assertEquals('healthy', $response->getStatus());
+        $this->assertEquals(GetHealthResponse::HEALTHY, $response->getStatus());
+        $this->assertEquals(10000, $response->getLedgerRetentionWindow());
+        $this->assertEquals(1000, $response->getOldestLedger());
+        $this->assertEquals(11000, $response->getLatestLedger());
+        $this->assertSame('1783951566', $response->getLatestLedgerCloseTime());
+        $this->assertSame('1783345758', $response->getOldestLedgerCloseTime());
+    }
+
+    public function testGetHealthResponseCloseTimesNullWhenAbsent(): void
+    {
+        // RPC servers below v27.1.0 do not return the ledger close-time fields.
         $json = [
             'jsonrpc' => '2.0',
             'id' => 1,
@@ -1371,10 +1400,8 @@ class SorobanResponseTest extends TestCase
         $response = GetHealthResponse::fromJson($json);
 
         $this->assertEquals('healthy', $response->getStatus());
-        $this->assertEquals(GetHealthResponse::HEALTHY, $response->getStatus());
-        $this->assertEquals(10000, $response->getLedgerRetentionWindow());
-        $this->assertEquals(1000, $response->getOldestLedger());
-        $this->assertEquals(11000, $response->getLatestLedger());
+        $this->assertNull($response->getLatestLedgerCloseTime());
+        $this->assertNull($response->getOldestLedgerCloseTime());
     }
 
     public function testGetHealthResponseSetters(): void
@@ -1386,11 +1413,15 @@ class SorobanResponseTest extends TestCase
         $response->setLedgerRetentionWindow(20000);
         $response->setOldestLedger(5000);
         $response->setLatestLedger(25000);
+        $response->setLatestLedgerCloseTime('1783951566');
+        $response->setOldestLedgerCloseTime('1783345758');
 
         $this->assertEquals('unhealthy', $response->getStatus());
         $this->assertEquals(20000, $response->getLedgerRetentionWindow());
         $this->assertEquals(5000, $response->getOldestLedger());
         $this->assertEquals(25000, $response->getLatestLedger());
+        $this->assertSame('1783951566', $response->getLatestLedgerCloseTime());
+        $this->assertSame('1783345758', $response->getOldestLedgerCloseTime());
     }
 
     // GetNetworkResponse Tests (7 methods: fromJson, 3 getters, 3 setters)

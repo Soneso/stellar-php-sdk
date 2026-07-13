@@ -37,6 +37,18 @@ class GetHealthResponse extends SorobanRpcResponse
     public ?int $latestLedger = null;
 
     /**
+     * @var string|null $latestLedgerCloseTime Unix timestamp (seconds) at which the latest known ledger
+     *  closed. Returned by RPC servers from v27.1.0; null when the server does not provide it.
+     */
+    public ?string $latestLedgerCloseTime = null;
+
+    /**
+     * @var string|null $oldestLedgerCloseTime Unix timestamp (seconds) at which the oldest ledger kept
+     *  in history closed. Returned by RPC servers from v27.1.0; null when the server does not provide it.
+     */
+    public ?string $oldestLedgerCloseTime = null;
+
+    /**
      * Creates an instance from JSON-RPC response data
      *
      * @param array<string,mixed> $json The JSON response data
@@ -56,6 +68,12 @@ class GetHealthResponse extends SorobanRpcResponse
             }
             if (isset($json['result']['latestLedger'])) {
                 $result->latestLedger = $json['result']['latestLedger'];
+            }
+            if (isset($json['result']['latestLedgerCloseTime'])) {
+                $result->latestLedgerCloseTime = $json['result']['latestLedgerCloseTime'];
+            }
+            if (isset($json['result']['oldestLedgerCloseTime'])) {
+                $result->oldestLedgerCloseTime = $json['result']['oldestLedgerCloseTime'];
             }
         } else if (isset($json['error'])) {
             $result->error = SorobanRpcErrorResponse::fromJson($json);
@@ -129,5 +147,39 @@ class GetHealthResponse extends SorobanRpcResponse
     public function setLatestLedger(?int $latestLedger): void
     {
         $this->latestLedger = $latestLedger;
+    }
+
+    /**
+     * @return string|null Unix timestamp (seconds) at which the latest known ledger closed
+     */
+    public function getLatestLedgerCloseTime(): ?string
+    {
+        return $this->latestLedgerCloseTime;
+    }
+
+    /**
+     * @param string|null $latestLedgerCloseTime Unix timestamp (seconds) at which the latest known ledger closed
+     * @return void
+     */
+    public function setLatestLedgerCloseTime(?string $latestLedgerCloseTime): void
+    {
+        $this->latestLedgerCloseTime = $latestLedgerCloseTime;
+    }
+
+    /**
+     * @return string|null Unix timestamp (seconds) at which the oldest ledger kept in history closed
+     */
+    public function getOldestLedgerCloseTime(): ?string
+    {
+        return $this->oldestLedgerCloseTime;
+    }
+
+    /**
+     * @param string|null $oldestLedgerCloseTime Unix timestamp (seconds) at which the oldest ledger kept in history closed
+     * @return void
+     */
+    public function setOldestLedgerCloseTime(?string $oldestLedgerCloseTime): void
+    {
+        $this->oldestLedgerCloseTime = $oldestLedgerCloseTime;
     }
 }

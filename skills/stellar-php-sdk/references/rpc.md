@@ -34,6 +34,11 @@ printf("Status: %s\n", $healthResponse->status);              // "healthy"
 printf("Oldest ledger: %d\n", $healthResponse->oldestLedger);
 printf("Latest ledger: %d\n", $healthResponse->latestLedger);
 printf("Ledger retention: %d\n", $healthResponse->ledgerRetentionWindow);
+
+// Unix timestamps (seconds) of the ledger close times; returned by RPC v27.1.0+,
+// null on older servers:
+printf("Latest ledger closed at: %s\n", $healthResponse->latestLedgerCloseTime ?? 'N/A');
+printf("Oldest ledger closed at: %s\n", $healthResponse->oldestLedgerCloseTime ?? 'N/A');
 ```
 
 ### getNetwork
