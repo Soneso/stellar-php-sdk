@@ -19,7 +19,6 @@ use Soneso\StellarSDK\Soroban\Contract\InstallRequest;
 use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
-use Soneso\StellarSDK\Soroban\SorobanCredentials;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\TransactionBuilder;
@@ -31,10 +30,10 @@ use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 /**
  * Protocol 27 (CAP-71) ADDRESS_V2 round-trip integration test.
  *
- * Tests the full simulate -> assemble ADDRESS_V2 -> sign -> submit flow. Simulation
- * returns legacy ADDRESS credentials; the ADDRESS_V2 credential arm is assembled
- * client-side so the round-trip exercises the address-bound V2 signing and submission
- * path. Submission succeeds only once the network runs Protocol 27.
+ * Tests the full simulate -> sign -> submit flow with useUpgradedAuth set: simulation
+ * on stellar-rpc v27.1.0+ records ADDRESS_V2 credential entries, which are then signed
+ * using the address-bound preimage and submitted. A hard assertion guarantees the entry
+ * arrives as ADDRESS_V2 from the server, so the flag is proven honored end-to-end.
  *
  * The test requires network access to the testnet RPC and is gated by $testOn.
  * It will only run when explicitly invoked via the integration suite.
@@ -65,12 +64,12 @@ class P27AddressV2RoundTripTest extends TestCase
     }
 
     /**
-     * ADDRESS_V2 round-trip: simulate, assemble the ADDRESS_V2 arm client-side, sign using
-     * the address-bound preimage, and submit.
+     * ADDRESS_V2 round-trip: simulate with useUpgradedAuth, sign the returned ADDRESS_V2
+     * entry using the address-bound preimage, and submit.
      *
-     * Simulation returns a legacy ADDRESS entry for the invoker (the invoker differs from the
-     * transaction source). That entry is converted to the ADDRESS_V2 arm before signing, and a
-     * hard assertion guarantees a V2 entry is present so the V2 path is genuinely exercised.
+     * Simulation returns an ADDRESS_V2 entry for the invoker (the invoker differs from the
+     * transaction source); a hard assertion guarantees the entry arrives as ADDRESS_V2 from
+     * the server, so the useUpgradedAuth flag is genuinely exercised end-to-end.
      *
      * @throws Exception
      * @throws GuzzleException
@@ -121,7 +120,10 @@ class P27AddressV2RoundTripTest extends TestCase
         $this->assertNotNull($submitterAccount);
         $transaction = (new TransactionBuilder($submitterAccount))->addOperation($op)->build();
 
-        $request = new SimulateTransactionRequest(transaction: $transaction);
+        // Request upgraded (ADDRESS_V2) auth credentials from the RPC. stellar-rpc v27.1.0+
+        // honors the flag in recording mode and records ADDRESS_V2 entries; servers without
+        // support silently ignore it and return legacy ADDRESS entries.
+        $request = new SimulateTransactionRequest(transaction: $transaction, useUpgradedAuth: true);
         $simulateResponse = $this->server->simulateTransaction($request);
 
         $this->assertNull($simulateResponse->error);
@@ -136,24 +138,19 @@ class P27AddressV2RoundTripTest extends TestCase
         $auth = $simulateResponse->getSorobanAuth();
         $this->assertNotNull($auth);
 
-        // Simulation returns a legacy ADDRESS entry for the invoker. Assemble the ADDRESS_V2
-        // arm client-side so the round-trip exercises the address-bound V2 signing path.
-        foreach ($auth as $entry) {
-            if ($entry->credentials->credentialType === XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS) {
-                $inner = $entry->credentials->getAddressCredentials();
-                if ($inner !== null && $inner->address->accountId === $invokerId) {
-                    $entry->credentials = SorobanCredentials::forAddressCredentialsV2($inner);
-                }
-            }
-        }
-
+        // Testnet runs stellar-rpc v27.1.0+, so the invoker's entry must come back from
+        // simulation with the ADDRESS_V2 arm already set — this proves the flag was sent
+        // on the wire and honored by the server.
         $hasV2 = false;
         foreach ($auth as $entry) {
             if ($entry->credentials->credentialType === XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2) {
                 $hasV2 = true;
             }
         }
-        $this->assertTrue($hasV2, 'Expected an ADDRESS_V2 auth entry after the client-side rewrite');
+        $this->assertTrue(
+            $hasV2,
+            'Simulation must return an ADDRESS_V2 auth entry when useUpgradedAuth is set (requires stellar-rpc v27.1.0+)',
+        );
 
         $latestLedgerResponse = $this->server->getLatestLedger();
         $this->assertNotNull($latestLedgerResponse->sequence);
