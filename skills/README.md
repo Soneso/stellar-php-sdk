@@ -14,10 +14,10 @@ Download [stellar-php-sdk.zip](stellar-php-sdk.zip) and extract it into your age
 
 ```bash
 # Claude Code
-unzip stellar-php-sdk.zip -d .claude/skills/
+unzip stellar-php-sdk.zip -d .claude/skills/stellar-php-sdk/
 
 # Codex CLI
-unzip stellar-php-sdk.zip -d .codex/skills/
+unzip stellar-php-sdk.zip -d .codex/skills/stellar-php-sdk/
 ```
 
 ### Claude Code (via marketplace)

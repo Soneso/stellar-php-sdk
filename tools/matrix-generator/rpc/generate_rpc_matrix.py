@@ -157,7 +157,7 @@ PHP_PROPERTY_TO_JSON_KEY: dict[str, str] = {
 # Human-readable method notes for fully-supported methods
 METHOD_NOTES: dict[str, str] = {
     "sendTransaction": "Full support including diagnosticEventsXdr and errorResultXdr.",
-    "simulateTransaction": "Supports transaction, resourceConfig (instructionLeeway), and authMode (protocol 23+).",
+    "simulateTransaction": "Supports transaction, resourceConfig (instructionLeeway), authMode (protocol 23+), and useUpgradedAuth (RPC v27.1.0+).",
     "getTransaction": "Full support including protocol 22+ txHash, protocol 23+ events, diagnosticEventsXdr.",
     "getTransactions": "Full pagination support with cursor and limit.",
     "getLatestLedger": "Returns id, protocolVersion, sequence, closeTime, headerXdr, metadataXdr.",

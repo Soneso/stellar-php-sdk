@@ -1,8 +1,8 @@
 # SEP-38: Anchor RFQ API
 
 **Status:** ✅ Supported  
-**SDK Version:** 1.10.0  
-**Generated:** 2026-06-18 22:26 UTC  
+**SDK Version:** 1.11.0  
+**Generated:** 2026-07-13 16:25 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md)
 
 ## Overall Coverage

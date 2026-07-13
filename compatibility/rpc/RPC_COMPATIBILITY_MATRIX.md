@@ -1,9 +1,9 @@
 # Soroban RPC vs PHP SDK Compatibility Matrix
 
-**RPC Version:** v27.0.0 (released 2026-06-11)  
-**RPC Source:** [v27.0.0](https://github.com/stellar/stellar-rpc/releases/tag/v27.0.0)  
-**SDK Version:** 1.10.0  
-**Generated:** 2026-06-26 11:33 UTC
+**RPC Version:** v27.1.1 (released 2026-07-07)  
+**RPC Source:** [v27.1.1](https://github.com/stellar/stellar-rpc/releases/tag/v27.1.1)  
+**SDK Version:** 1.11.0  
+**Generated:** 2026-07-13 16:26 UTC
 
 ## Overall Coverage
 
@@ -22,7 +22,7 @@
 | getTransaction | Full | `getTransaction($transactionId)` | GetTransactionResponse | Full support including protocol 22+ txHash, protocol 23+ events, diagnosticEventsXdr. |
 | getTransactions | Full | `getTransactions($request)` | GetTransactionsResponse | Full pagination support with cursor and limit. |
 | sendTransaction | Full | `sendTransaction($transaction)` | SendTransactionResponse | Full support including diagnosticEventsXdr and errorResultXdr. |
-| simulateTransaction | Full | `simulateTransaction($request)` | SimulateTransactionResponse | Supports transaction, resourceConfig (instructionLeeway), and authMode (protocol 23+). |
+| simulateTransaction | Full | `simulateTransaction($request)` | SimulateTransactionResponse | Supports transaction, resourceConfig (instructionLeeway), authMode (protocol 23+), and useUpgradedAuth (RPC v27.1.0+). |
 
 ### Ledger Methods
 
@@ -43,7 +43,7 @@
 | RPC Method | Status | SDK Method | Response Class | Notes |
 |------------|--------|------------|----------------|-------|
 | getFeeStats | Full | `getFeeStats()` | GetFeeStatsResponse | Full support for sorobanInclusionFee and inclusionFee statistics. |
-| getHealth | Full | `getHealth()` | GetHealthResponse | Full support for status, ledgerRetentionWindow, oldestLedger, latestLedger. |
+| getHealth | Full | `getHealth()` | GetHealthResponse | Full support for status, ledgerRetentionWindow, oldestLedger, latestLedger, latestLedgerCloseTime, oldestLedgerCloseTime. |
 | getNetwork | Full | `getNetwork()` | GetNetworkResponse | Returns friendbotUrl (optional), passphrase, and protocolVersion. |
 | getVersionInfo | Full | `getVersionInfo()` | GetVersionInfoResponse | Protocol 22+ compliant (camelCase fields; also reads snake_case for backward compat). |
 
@@ -74,7 +74,7 @@ Detailed breakdown of response field support per method.
 |------------|------------|------------|---------|
 | getEvents | 6 | 7 | - |
 | getFeeStats | 3 | 4 | - |
-| getHealth | 4 | 5 | - |
+| getHealth | 4 | 7 | - |
 | getLatestLedger | 6 | 7 | - |
 | getLedgerEntries | 2 | 3 | - |
 | getLedgers | 6 | 7 | - |
