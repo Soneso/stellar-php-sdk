@@ -32,7 +32,7 @@ class AddressTest extends TestCase
         $this->testAccountId = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
         $this->testContractIdHex = '3f0918bf77f7e30fe942e4bc2ce903ffa2d80e7f3e1f82ba58877f0eb73df0b7';
         $this->testContractIdStrKey = StrKey::encodeContractIdHex($this->testContractIdHex);
-        $this->testMuxedAccountId = 'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITKNOG';
+        $this->testMuxedAccountId = 'MA5SRA3BGOEN6ASL33AVTC2QV7G2PV3DU4A3VDMPEIEZVF2H4Z5YUAAAAAAACL7RNP5CM';
 
         // 32-byte hex IDs for claimable balance and liquidity pool
         $this->testClaimableBalanceIdHex = '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
@@ -150,23 +150,19 @@ class AddressTest extends TestCase
 
     /**
      * Test Address XDR encoding and decoding for muxed account type
-     * Note: Muxed account ID needs to be valid for XDR conversion
      */
     public function testMuxedAccountXdrRoundtrip(): void
     {
         $original = Address::fromMuxedAccountId($this->testMuxedAccountId);
+        $xdr = $original->toXdr();
 
-        try {
-            $xdr = $original->toXdr();
-            $this->assertInstanceOf(XdrSCAddress::class, $xdr);
+        $this->assertInstanceOf(XdrSCAddress::class, $xdr);
+        $this->assertEquals(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT, $xdr->type->value);
 
-            $decoded = Address::fromXdr($xdr);
-            // Verify the decoded address
-            $this->assertNotNull($decoded);
-        } catch (\InvalidArgumentException $e) {
-            // If the test muxed account ID is not valid, this is expected
-            $this->assertStringContainsString('checksum', $e->getMessage());
-        }
+        $decoded = Address::fromXdr($xdr);
+
+        $this->assertEquals(Address::TYPE_MUXED_ACCOUNT, $decoded->getType());
+        $this->assertEquals($this->testMuxedAccountId, $decoded->getMuxedAccountId());
     }
 
     /**
@@ -217,29 +213,54 @@ class AddressTest extends TestCase
     }
 
     /**
-     * Test Address from XdrSCVal
-     * Note: The implementation has a bug checking for wrong type constant
+     * Test Address from XdrSCVal round-trip for an account address
      */
     public function testFromXdrSCVal(): void
     {
         $original = Address::fromAccountId($this->testAccountId);
         $scVal = $original->toXdrSCVal();
 
-        // Verify the SCVal has the correct type
         $this->assertEquals(XdrSCValType::SCV_ADDRESS, $scVal->type->value);
         $this->assertNotNull($scVal->address);
 
-        // Due to implementation bug (checks XdrSCAddressType instead of XdrSCValType),
-        // this will throw an exception. Testing the expected behavior.
-        try {
-            $decoded = Address::fromXdrSCVal($scVal);
-            // If it works, verify correctness
-            $this->assertEquals(Address::TYPE_ACCOUNT, $decoded->getType());
-            $this->assertEquals($this->testAccountId, $decoded->getAccountId());
-        } catch (\RuntimeException $e) {
-            // Expected due to implementation bug - checking wrong type enum
-            $this->assertStringContainsString('not of type address', $e->getMessage());
-        }
+        $decoded = Address::fromXdrSCVal($scVal);
+
+        $this->assertEquals(Address::TYPE_ACCOUNT, $decoded->getType());
+        $this->assertEquals($this->testAccountId, $decoded->getAccountId());
+    }
+
+    /**
+     * Test Address from XdrSCVal round-trip for a contract address
+     */
+    public function testFromXdrSCValForContract(): void
+    {
+        $original = Address::fromContractId($this->testContractIdHex);
+        $scVal = $original->toXdrSCVal();
+
+        $this->assertEquals(XdrSCValType::SCV_ADDRESS, $scVal->type->value);
+        $this->assertNotNull($scVal->address);
+
+        $decoded = Address::fromXdrSCVal($scVal);
+
+        $this->assertEquals(Address::TYPE_CONTRACT, $decoded->getType());
+        $this->assertEquals($this->testContractIdHex, $decoded->getContractId());
+    }
+
+    /**
+     * Test Address from XdrSCVal round-trip for a muxed account address
+     */
+    public function testFromXdrSCValForMuxedAccount(): void
+    {
+        $original = Address::fromMuxedAccountId($this->testMuxedAccountId);
+        $scVal = $original->toXdrSCVal();
+
+        $this->assertEquals(XdrSCValType::SCV_ADDRESS, $scVal->type->value);
+        $this->assertNotNull($scVal->address);
+
+        $decoded = Address::fromXdrSCVal($scVal);
+
+        $this->assertEquals(Address::TYPE_MUXED_ACCOUNT, $decoded->getType());
+        $this->assertEquals($this->testMuxedAccountId, $decoded->getMuxedAccountId());
     }
 
     /**
@@ -279,21 +300,15 @@ class AddressTest extends TestCase
     }
 
     /**
-     * Test fromAnyId with muxed account ID
-     * Note: fromAnyId may not support muxed account IDs depending on implementation
+     * Test fromAnyId with a muxed account ID (M-prefixed StrKey).
      */
     public function testFromAnyIdWithMuxedAccountId(): void
     {
         $address = Address::fromAnyId($this->testMuxedAccountId);
 
-        // If muxed accounts are supported, verify the result
-        if ($address !== null) {
-            $this->assertEquals(Address::TYPE_MUXED_ACCOUNT, $address->getType());
-            $this->assertEquals($this->testMuxedAccountId, $address->getMuxedAccountId());
-        } else {
-            // Otherwise, verify that it correctly returns null for unsupported format
-            $this->assertNull($address);
-        }
+        $this->assertNotNull($address);
+        $this->assertEquals(Address::TYPE_MUXED_ACCOUNT, $address->getType());
+        $this->assertEquals($this->testMuxedAccountId, $address->getMuxedAccountId());
     }
 
     /**
