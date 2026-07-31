@@ -73,7 +73,7 @@ class PayloadSignerTest extends TestCase
     public function testItCreatesSignedPayloadSigner(): void {
         $accountStrKey = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
         $p16 = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20";
-        $payload = base_convert($p16, 16, 2);
+        $payload = hex2bin($p16);
         $xdrAccountID = new XdrAccountID($accountStrKey);
         $signedPayloadSigner = new SignedPayloadSigner($xdrAccountID, $payload);
         $signerKey = Signer::signedPayload($signedPayloadSigner);
