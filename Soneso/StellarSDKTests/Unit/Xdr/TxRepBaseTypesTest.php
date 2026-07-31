@@ -99,6 +99,8 @@ use Soneso\StellarSDK\Xdr\XdrTrustlineAssetBase;
 use Soneso\StellarSDK\Xdr\XdrUInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrUInt256Parts;
 use Soneso\StellarSDK\Xdr\XdrClaimantType;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableBase;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableExternalRef;
 use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrPublicKeyType;
@@ -779,6 +781,25 @@ class TxRepBaseTypesTest extends TestCase
         $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
         $this->assertNotNull($restored->getNonceKey());
         $this->assertEquals(12345678, $restored->getNonceKey()->getNonce());
+    }
+
+    public function testSCValBaseExecutableTagRoundtrip(): void
+    {
+        $original = new XdrSCValBase(XdrSCValType::EXECUTABLE_TAG());
+        $original->setExecutableTag('release-v2');
+        $this->assertEquals('release-v2', $original->getExecutableTag());
+
+        $lines = [];
+        $original->toTxRep('val', $lines);
+
+        $this->assertEquals('SCV_EXECUTABLE_TAG', $lines['val.type']);
+        $this->assertArrayHasKey('val.executable_tag', $lines);
+        $this->assertEquals('"release-v2"', $lines['val.executable_tag']);
+
+        $restored = XdrSCValBase::fromTxRep($lines, 'val');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals('release-v2', $restored->getExecutableTag());
     }
 
     // ------------------------------------------------------------------
@@ -1534,6 +1555,36 @@ class TxRepBaseTypesTest extends TestCase
             $restored->getType()->getValue()
         );
         $this->assertNotNull($restored->getCreateContract());
+    }
+
+    // ------------------------------------------------------------------
+    // XdrContractExecutableBase — EXTERNAL_REF arm
+    // ------------------------------------------------------------------
+
+    public function testContractExecutableBaseExternalRefRoundtrip(): void
+    {
+        $owner = XdrSCAddress::forContractId($this->randomHex());
+        $original = new XdrContractExecutableBase(
+            XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF()
+        );
+        $original->setExternalRef(new XdrContractExecutableExternalRef($owner, 'audited-v1'));
+
+        $lines = [];
+        $original->toTxRep('executable', $lines);
+
+        $this->assertEquals('CONTRACT_EXECUTABLE_EXTERNAL_REF', $lines['executable.type']);
+        $this->assertEquals('"audited-v1"', $lines['executable.external_ref.tag']);
+
+        $restored = XdrContractExecutableBase::fromTxRep($lines, 'executable');
+
+        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
+        $this->assertEquals(
+            XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF,
+            $restored->getType()->getValue()
+        );
+        $this->assertNotNull($restored->getExternalRef());
+        $this->assertEquals('audited-v1', $restored->getExternalRef()->getTag());
+        $this->assertEquals($owner->encode(), $restored->getExternalRef()->getExecutableOwner()->encode());
     }
 
     // ------------------------------------------------------------------

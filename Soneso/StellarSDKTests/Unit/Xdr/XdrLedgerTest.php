@@ -14,6 +14,7 @@ use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntry;
+use Soneso\StellarSDK\Xdr\XdrLedgerCloseValueSignature;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryData;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryExt;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
@@ -21,9 +22,15 @@ use Soneso\StellarSDK\Xdr\XdrLedgerEntryV1;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryV1Ext;
 use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
+use Soneso\StellarSDK\Xdr\XdrNodeID;
+use Soneso\StellarSDK\Xdr\XdrPublicKey;
+use Soneso\StellarSDK\Xdr\XdrPublicKeyType;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
+use Soneso\StellarSDK\Xdr\XdrStellarValueExt;
+use Soneso\StellarSDK\Xdr\XdrStellarValueProposedValue;
+use Soneso\StellarSDK\Xdr\XdrStellarValueType;
 
 class XdrLedgerTest extends TestCase
 {
@@ -222,5 +229,113 @@ class XdrLedgerTest extends TestCase
             $sponsoringId->getAccountId(),
             $decoded->getV1()->getSponsoringId()->getAccountId()
         );
+    }
+
+    private function createTestLcValueSignature(): XdrLedgerCloseValueSignature
+    {
+        $publicKey = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519));
+        $publicKey->ed25519 = str_repeat("\xab", 32);
+        return new XdrLedgerCloseValueSignature(new XdrNodeID($publicKey), "\x01\x02\x03\x04");
+    }
+
+    private function createTestProposedValue(): XdrStellarValueProposedValue
+    {
+        return new XdrStellarValueProposedValue(
+            str_repeat("\x11", 32),
+            str_repeat("\x22", 32),
+            7,
+            $this->createTestLcValueSignature()
+        );
+    }
+
+    public function testXdrStellarValueExtProposedValueRoundtrip(): void
+    {
+        $type = XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET();
+        $this->assertEquals(XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET, $type->getValue());
+
+        $proposedValue = $this->createTestProposedValue();
+        $ext = new XdrStellarValueExt($type);
+        $ext->setProposedValue($proposedValue);
+        $this->assertSame($proposedValue, $ext->getProposedValue());
+
+        $decoded = XdrStellarValueExt::fromBase64Xdr($ext->toBase64Xdr());
+
+        $this->assertEquals($ext->encode(), $decoded->encode());
+        $this->assertEquals(XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET, $decoded->getV()->getValue());
+        $this->assertNotNull($decoded->getProposedValue());
+        $this->assertEquals(7, $decoded->getProposedValue()->getPreviousLedgerVersion());
+        $this->assertEquals(str_repeat("\x11", 32), $decoded->getProposedValue()->getTxSetHash());
+    }
+
+    public function testXdrStellarValueProposedValueAccessors(): void
+    {
+        $proposedValue = $this->createTestProposedValue();
+
+        $newTxSetHash = str_repeat("\x33", 32);
+        $newPreviousLedgerHash = str_repeat("\x44", 32);
+        $newSignature = $this->createTestLcValueSignature();
+        $newSignature->setSignature("\x09\x08\x07");
+
+        $proposedValue->setTxSetHash($newTxSetHash);
+        $proposedValue->setPreviousLedgerHash($newPreviousLedgerHash);
+        $proposedValue->setPreviousLedgerVersion(42);
+        $proposedValue->setLcValueSignature($newSignature);
+
+        $this->assertSame($newTxSetHash, $proposedValue->getTxSetHash());
+        $this->assertSame($newPreviousLedgerHash, $proposedValue->getPreviousLedgerHash());
+        $this->assertSame(42, $proposedValue->getPreviousLedgerVersion());
+        $this->assertSame($newSignature, $proposedValue->getLcValueSignature());
+
+        $decoded = XdrStellarValueProposedValue::fromBase64Xdr($proposedValue->toBase64Xdr());
+        $this->assertEquals($proposedValue->encode(), $decoded->encode());
+        $this->assertEquals(42, $decoded->getPreviousLedgerVersion());
+        $this->assertEquals("\x09\x08\x07", $decoded->getLcValueSignature()->getSignature());
+    }
+
+    public function testXdrStellarValueProposedValueJsonRoundtripIgnoresSchemaKey(): void
+    {
+        $proposedValue = $this->createTestProposedValue();
+
+        $jsonValue = $proposedValue->toJsonValue();
+        $this->assertEquals(str_repeat('11', 32), $jsonValue['tx_set_hash']);
+        $this->assertEquals(str_repeat('22', 32), $jsonValue['previous_ledger_hash']);
+        $this->assertEquals(7, $jsonValue['previous_ledger_version']);
+
+        $jsonValue['$schema'] = 'https://example.org/schema.json';
+        $restored = XdrStellarValueProposedValue::fromJsonValue($jsonValue);
+
+        $this->assertEquals($proposedValue->encode(), $restored->encode());
+    }
+
+    public function testXdrStellarValueProposedValueFromJsonValueRejectsMalformedInput(): void
+    {
+        // Non-object input.
+        try {
+            XdrStellarValueProposedValue::fromJsonValue('not-an-object');
+            $this->fail('Expected InvalidArgumentException for non-object input');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString('Expected object for XdrStellarValueProposedValue', $e->getMessage());
+        }
+
+        // Missing required fields, one at a time.
+        $valid = $this->createTestProposedValue()->toJsonValue();
+        $requiredFields = ['tx_set_hash', 'previous_ledger_hash', 'previous_ledger_version', 'lc_value_signature'];
+        foreach ($requiredFields as $field) {
+            $incomplete = $valid;
+            unset($incomplete[$field]);
+            try {
+                XdrStellarValueProposedValue::fromJsonValue($incomplete);
+                $this->fail('Expected InvalidArgumentException for missing ' . $field);
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringContainsString('Missing required field ' . $field, $e->getMessage());
+            }
+        }
+    }
+
+    public function testXdrStellarValueProposedValueFromBase64XdrRejectsInvalidBase64(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid base64-encoded XDR');
+        XdrStellarValueProposedValue::fromBase64Xdr('%%%not-base64%%%');
     }
 }

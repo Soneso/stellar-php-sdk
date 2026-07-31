@@ -429,6 +429,20 @@ class XdrSCValTest extends TestCase
             $this->assertEquals(XdrSCValType::SCV_EXECUTABLE_TAG, $decoded->getType()->getValue());
             $this->assertEquals($value, $decoded->getExecutableTag());
             $this->assertEquals($encoded, $decoded->encode());
+
+            // Building via constructor plus setExecutableTag must yield the same bytes.
+            $viaSetter = new XdrSCVal(XdrSCValType::EXECUTABLE_TAG());
+            $viaSetter->setExecutableTag($value);
+            $this->assertEquals($value, $viaSetter->getExecutableTag());
+            $this->assertEquals($encoded, $viaSetter->encode());
+
+            // JSON arm: single-key {"executable_tag": <string>} in both directions.
+            $jsonValue = $original->toJsonValue();
+            $this->assertEquals(['executable_tag' => $value], $jsonValue);
+            $fromJson = XdrSCVal::fromJsonValue($jsonValue);
+            $this->assertEquals(XdrSCValType::SCV_EXECUTABLE_TAG, $fromJson->getType()->getValue());
+            $this->assertEquals($value, $fromJson->getExecutableTag());
+            $this->assertEquals($encoded, $fromJson->encode());
         }
     }
 
