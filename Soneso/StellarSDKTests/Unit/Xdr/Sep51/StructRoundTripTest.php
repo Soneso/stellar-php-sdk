@@ -902,7 +902,7 @@ public function testRoundTrip_XdrCreateClaimableBalanceOperation(): void
 
 public function testRoundTrip_XdrCreateContractArgs(): void
 {
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=';
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
     $instance = \Soneso\StellarSDK\Xdr\XdrCreateContractArgs::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
@@ -923,7 +923,7 @@ public function testRoundTrip_XdrCreateContractArgs(): void
 
 public function testRoundTrip_XdrCreateContractArgsV2(): void
 {
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAA';
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrCreateContractArgsV2::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
@@ -5132,7 +5132,7 @@ public function testRoundTrip_XdrValue(): void
     public function testRoundTrip_XdrSCContractInstance_optset_0(): void
     {
             // optset mask=0 selects no optional fields
-        $base64 = 'AAAAAQAAAAA=';
+        $base64 = 'AAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
         $instance = \Soneso\StellarSDK\Xdr\XdrSCContractInstance::fromBase64Xdr($base64);
         $jsonValue = $instance->toJsonValue();
         $decoded = \Soneso\StellarSDK\Xdr\XdrSCContractInstance::fromJsonValue($jsonValue);
@@ -5149,7 +5149,7 @@ public function testRoundTrip_XdrValue(): void
     {
 // optset mask=1 selects optional fields:
 //   storage
-        $base64 = 'AAAAAQAAAAA=';
+        $base64 = 'AAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
         $instance = \Soneso\StellarSDK\Xdr\XdrSCContractInstance::fromBase64Xdr($base64);
         $jsonValue = $instance->toJsonValue();
         $decoded = \Soneso\StellarSDK\Xdr\XdrSCContractInstance::fromJsonValue($jsonValue);

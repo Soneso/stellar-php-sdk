@@ -2756,7 +2756,7 @@ public function testRoundTrip_XdrContractDataEntry(): void
 
 public function testRoundTrip_XdrContractExecutable(): void
 {
-    $base64 = 'AAAAAQ==';
+    $base64 = 'AAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
     $instance = \Soneso\StellarSDK\Xdr\XdrContractExecutable::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
