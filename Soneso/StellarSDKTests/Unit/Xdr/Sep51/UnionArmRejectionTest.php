@@ -208,6 +208,25 @@ public function testRejectsBareStringFor_XdrClaimPredicate_or(): void
     }
 }
 
+public function testRejectsBareStringFor_XdrContractExecutable_external_ref(): void
+{
+    // Per-non-void-arm rejection: round-trip tests pass valid
+    // payloads only, so the per-arm rejection throw inside
+    // fromJsonValue stays uncovered. This test exercises that
+    // branch directly by passing a bare string for an arm that
+    // requires a single-key object payload, then asserts the
+    // resulting message contains both the arm token and the
+    // canonical "non-void" phrase to prove the per-arm branch
+    // fired (not the catch-all default arm).
+    try {
+        \Soneso\StellarSDK\Xdr\XdrContractExecutable::fromJson('"external_ref"');
+        $this->fail('Expected InvalidArgumentException for bare string "external_ref" on XdrContractExecutable');
+    } catch (\InvalidArgumentException $e) {
+        $this->assertStringContainsString('external_ref', $e->getMessage());
+        $this->assertStringContainsString('non-void', $e->getMessage());
+    }
+}
+
 public function testRejectsBareStringFor_XdrContractExecutable_wasm(): void
 {
     // Per-non-void-arm rejection: round-trip tests pass valid
@@ -1234,6 +1253,25 @@ public function testRejectsBareStringFor_XdrSCVal_error(): void
     }
 }
 
+public function testRejectsBareStringFor_XdrSCVal_executable_tag(): void
+{
+    // Per-non-void-arm rejection: round-trip tests pass valid
+    // payloads only, so the per-arm rejection throw inside
+    // fromJsonValue stays uncovered. This test exercises that
+    // branch directly by passing a bare string for an arm that
+    // requires a single-key object payload, then asserts the
+    // resulting message contains both the arm token and the
+    // canonical "non-void" phrase to prove the per-arm branch
+    // fired (not the catch-all default arm).
+    try {
+        \Soneso\StellarSDK\Xdr\XdrSCVal::fromJson('"executable_tag"');
+        $this->fail('Expected InvalidArgumentException for bare string "executable_tag" on XdrSCVal');
+    } catch (\InvalidArgumentException $e) {
+        $this->assertStringContainsString('executable_tag', $e->getMessage());
+        $this->assertStringContainsString('non-void', $e->getMessage());
+    }
+}
+
 public function testRejectsBareStringFor_XdrSCVal_i128(): void
 {
     // Per-non-void-arm rejection: round-trip tests pass valid
@@ -1553,6 +1591,25 @@ public function testRejectsBareStringFor_XdrSorobanCredentials_address_with_dele
         $this->fail('Expected InvalidArgumentException for bare string "address_with_delegates" on XdrSorobanCredentials');
     } catch (\InvalidArgumentException $e) {
         $this->assertStringContainsString('address_with_delegates', $e->getMessage());
+        $this->assertStringContainsString('non-void', $e->getMessage());
+    }
+}
+
+public function testRejectsBareStringFor_XdrStellarValueExt_empty_tx_set(): void
+{
+    // Per-non-void-arm rejection: round-trip tests pass valid
+    // payloads only, so the per-arm rejection throw inside
+    // fromJsonValue stays uncovered. This test exercises that
+    // branch directly by passing a bare string for an arm that
+    // requires a single-key object payload, then asserts the
+    // resulting message contains both the arm token and the
+    // canonical "non-void" phrase to prove the per-arm branch
+    // fired (not the catch-all default arm).
+    try {
+        \Soneso\StellarSDK\Xdr\XdrStellarValueExt::fromJson('"empty_tx_set"');
+        $this->fail('Expected InvalidArgumentException for bare string "empty_tx_set" on XdrStellarValueExt');
+    } catch (\InvalidArgumentException $e) {
+        $this->assertStringContainsString('empty_tx_set', $e->getMessage());
         $this->assertStringContainsString('non-void', $e->getMessage());
     }
 }

@@ -12,6 +12,7 @@ class XdrContractExecutableBase {
 
     public XdrContractExecutableType $type;
     public ?string $wasmIdHex = null;
+    public ?XdrContractExecutableExternalRef $externalRef = null;
 
     public function __construct(?XdrContractExecutableType $type = null) {
         if ($type !== null) {
@@ -27,6 +28,9 @@ class XdrContractExecutableBase {
                 break;
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
                 break;
+            case XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF:
+                $bytes .= $this->externalRef->encode();
+                break;
             default:
                 break;
         }
@@ -41,6 +45,9 @@ class XdrContractExecutableBase {
                 break;
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
                 break;
+            case XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF:
+                $result->externalRef = XdrContractExecutableExternalRef::decode($xdr);
+                break;
             default:
                 break;
         }
@@ -51,6 +58,8 @@ class XdrContractExecutableBase {
     public function setType(XdrContractExecutableType $type): void { $this->type = $type; }
     public function getWasmIdHex(): ?string { return $this->wasmIdHex; }
     public function setWasmIdHex(?string $wasmIdHex): void { $this->wasmIdHex = $wasmIdHex; }
+    public function getExternalRef(): ?XdrContractExecutableExternalRef { return $this->externalRef; }
+    public function setExternalRef(?XdrContractExecutableExternalRef $externalRef): void { $this->externalRef = $externalRef; }
 
     public function toBase64Xdr(): string {
         return base64_encode($this->encode());
@@ -68,6 +77,7 @@ class XdrContractExecutableBase {
         return match ($this->type->getValue()) {
             XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM => ['wasm' => XdrJsonHelper::bytesToHex($this->wasmIdHex)],
             XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET => 'stellar_asset',
+            XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF => ['external_ref' => $this->externalRef->toJsonValue()],
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown discriminant for type on XdrContractExecutableType'
@@ -85,6 +95,9 @@ class XdrContractExecutableBase {
                 'stellar_asset' => new static(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET)),
                 'wasm' => throw new InvalidArgumentException(
                     "Arm 'wasm' on XdrContractExecutableBase is non-void; supply a single-key object {\"wasm\": <payload>} instead of a bare string."
+                ),
+                'external_ref' => throw new InvalidArgumentException(
+                    "Arm 'external_ref' on XdrContractExecutableBase is non-void; supply a single-key object {\"external_ref\": <payload>} instead of a bare string."
                 ),
                 default => throw new InvalidArgumentException(
                     'Unknown XdrContractExecutableBase void arm string: ' . XdrJsonHelper::safePreview($value)
@@ -105,6 +118,7 @@ class XdrContractExecutableBase {
         $arm = $value[$key];
         return match ($key) {
             'wasm' => (static function () use ($arm) { $r = new static(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM)); $r->wasmIdHex = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($arm); return $r; })(),
+            'external_ref' => (static function () use ($arm) { $r = new static(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF)); $r->externalRef = XdrContractExecutableExternalRef::fromJsonValue($arm); return $r; })(),
             default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrContractExecutableBase: ' . XdrJsonHelper::safePreview($key)
             ),
@@ -137,6 +151,9 @@ class XdrContractExecutableBase {
                 break;
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
                 break;
+            case XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF:
+                $this->externalRef->toTxRep($prefix . '.external_ref', $lines);
+                break;
             default:
                 break;
         }
@@ -150,6 +167,9 @@ class XdrContractExecutableBase {
                 $result->wasmIdHex = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.wasm_hash') ?? '');
                 break;
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
+                break;
+            case XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF:
+                $result->externalRef = XdrContractExecutableExternalRef::fromTxRep($map, $prefix . '.external_ref');
                 break;
             default:
                 break;

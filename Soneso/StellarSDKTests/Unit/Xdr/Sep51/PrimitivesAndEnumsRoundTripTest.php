@@ -95,7 +95,7 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
     }
 
     // =========================================================================
-    // Positive round-trip — XdrSCValType (22 arms)
+    // Positive round-trip — XdrSCValType (23 arms)
     // =========================================================================
 
     public function testSCValType_allArms(): void
@@ -123,8 +123,9 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
             XdrSCValType::SCV_CONTRACT_INSTANCE             => 'contract_instance',
             XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE  => 'ledger_key_contract_instance',
             XdrSCValType::SCV_LEDGER_KEY_NONCE              => 'ledger_key_nonce',
+            XdrSCValType::SCV_EXECUTABLE_TAG                => 'executable_tag',
         ];
-        $this->assertCount(22, $cases, 'SCValType has 22 arms — keep this in sync with the IDL');
+        $this->assertCount(23, $cases, 'SCValType has 23 arms — keep this in sync with the IDL');
         foreach ($cases as $value => $expected) {
             $this->assertSame($expected, (new XdrSCValType($value))->toJsonValue(),
                 "SCVal arm value=$value");

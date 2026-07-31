@@ -407,6 +407,32 @@ class XdrSCValTest extends TestCase
     }
 
     /**
+     * Test XdrSCVal for executable tag
+     */
+    public function testXdrSCValExecutableTag(): void
+    {
+        $testValues = [
+            "",
+            "v1",
+            "my-executable-tag",
+        ];
+
+        foreach ($testValues as $value) {
+            $original = XdrSCVal::forExecutableTag($value);
+
+            $this->assertEquals(XdrSCValType::SCV_EXECUTABLE_TAG, $original->getType()->getValue());
+            $this->assertEquals($value, $original->getExecutableTag());
+
+            $encoded = $original->encode();
+            $decoded = XdrSCVal::decode(new XdrBuffer($encoded));
+
+            $this->assertEquals(XdrSCValType::SCV_EXECUTABLE_TAG, $decoded->getType()->getValue());
+            $this->assertEquals($value, $decoded->getExecutableTag());
+            $this->assertEquals($encoded, $decoded->encode());
+        }
+    }
+
+    /**
      * Test XdrSCVal for empty vec
      */
     public function testXdrSCValVecEmpty(): void

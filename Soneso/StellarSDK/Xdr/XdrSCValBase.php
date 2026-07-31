@@ -31,6 +31,7 @@ class XdrSCValBase {
     public ?XdrSCAddress $address = null;
     public ?XdrSCContractInstance $instance = null;
     public ?XdrSCNonceKey $nonceKey = null;
+    public ?string $executableTag = null;
 
     public function __construct(?XdrSCValType $type = null) {
         if ($type !== null) {
@@ -123,6 +124,9 @@ class XdrSCValBase {
             case XdrSCValType::SCV_LEDGER_KEY_NONCE:
                 $bytes .= $this->nonceKey->encode();
                 break;
+            case XdrSCValType::SCV_EXECUTABLE_TAG:
+                $bytes .= XdrEncoder::string($this->executableTag);
+                break;
             default:
                 break;
         }
@@ -208,6 +212,9 @@ class XdrSCValBase {
             case XdrSCValType::SCV_LEDGER_KEY_NONCE:
                 $result->nonceKey = XdrSCNonceKey::decode($xdr);
                 break;
+            case XdrSCValType::SCV_EXECUTABLE_TAG:
+                $result->executableTag = $xdr->readString();
+                break;
             default:
                 break;
         }
@@ -256,6 +263,8 @@ class XdrSCValBase {
     public function setInstance(?XdrSCContractInstance $instance): void { $this->instance = $instance; }
     public function getNonceKey(): ?XdrSCNonceKey { return $this->nonceKey; }
     public function setNonceKey(?XdrSCNonceKey $nonceKey): void { $this->nonceKey = $nonceKey; }
+    public function getExecutableTag(): ?string { return $this->executableTag; }
+    public function setExecutableTag(?string $executableTag): void { $this->executableTag = $executableTag; }
 
     public function toBase64Xdr(): string {
         return base64_encode($this->encode());
@@ -293,6 +302,7 @@ class XdrSCValBase {
             XdrSCValType::SCV_CONTRACT_INSTANCE => ['contract_instance' => $this->instance->toJsonValue()],
             XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE => 'ledger_key_contract_instance',
             XdrSCValType::SCV_LEDGER_KEY_NONCE => ['ledger_key_nonce' => $this->nonceKey->toJsonValue()],
+            XdrSCValType::SCV_EXECUTABLE_TAG => ['executable_tag' => XdrJsonHelper::escapeString($this->executableTag)],
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown discriminant for type on XdrSCValType'
@@ -369,6 +379,9 @@ class XdrSCValBase {
                 'ledger_key_nonce' => throw new InvalidArgumentException(
                     "Arm 'ledger_key_nonce' on XdrSCValBase is non-void; supply a single-key object {\"ledger_key_nonce\": <payload>} instead of a bare string."
                 ),
+                'executable_tag' => throw new InvalidArgumentException(
+                    "Arm 'executable_tag' on XdrSCValBase is non-void; supply a single-key object {\"executable_tag\": <payload>} instead of a bare string."
+                ),
                 default => throw new InvalidArgumentException(
                     'Unknown XdrSCValBase void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
@@ -407,6 +420,7 @@ class XdrSCValBase {
             'address' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_ADDRESS)); $r->address = XdrSCAddress::fromJsonValue($arm); return $r; })(),
             'contract_instance' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_CONTRACT_INSTANCE)); $r->instance = XdrSCContractInstance::fromJsonValue($arm); return $r; })(),
             'ledger_key_nonce' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_LEDGER_KEY_NONCE)); $r->nonceKey = XdrSCNonceKey::fromJsonValue($arm); return $r; })(),
+            'executable_tag' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_EXECUTABLE_TAG)); $r->executableTag = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($arm); return $r; })(),
             default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrSCValBase: ' . XdrJsonHelper::safePreview($key)
             ),
@@ -514,6 +528,9 @@ class XdrSCValBase {
             case XdrSCValType::SCV_LEDGER_KEY_NONCE:
                 $this->nonceKey->toTxRep($prefix . '.nonce_key', $lines);
                 break;
+            case XdrSCValType::SCV_EXECUTABLE_TAG:
+                $lines[$prefix . '.executable_tag'] = TxRepHelper::escapeString($this->executableTag);
+                break;
             default:
                 break;
         }
@@ -600,6 +617,9 @@ class XdrSCValBase {
                 break;
             case XdrSCValType::SCV_LEDGER_KEY_NONCE:
                 $result->nonceKey = XdrSCNonceKey::fromTxRep($map, $prefix . '.nonce_key');
+                break;
+            case XdrSCValType::SCV_EXECUTABLE_TAG:
+                $result->executableTag = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.executable_tag') ?? '');
                 break;
             default:
                 break;

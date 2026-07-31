@@ -12861,6 +12861,45 @@ public function testRoundTrip_XdrStellarValueExtUnion_STELLAR_VALUE_BASIC(): voi
         'XdrStellarValueExt arm STELLAR_VALUE_BASIC not found on any discriminant property');
 }
 
+public function testRoundTrip_XdrStellarValueExtUnion_STELLAR_VALUE_EMPTY_TX_SET(): void
+{
+    // Default-fixture round-trip for the XdrStellarValueExt type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = 'AAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrStellarValueExt::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrStellarValueExt::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrStellarValueExt toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrStellarValueExt::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrStellarValueExt default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarValueExt::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrStellarValueExt default-fixture toJson idempotence broken');
+
+    // Reachability of the STELLAR_VALUE_EMPTY_TX_SET arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrStellarValueExt::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('STELLAR_VALUE_EMPTY_TX_SET')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrStellarValueExt arm STELLAR_VALUE_EMPTY_TX_SET not found on any discriminant property');
+}
+
 public function testRoundTrip_XdrStellarValueExtUnion_STELLAR_VALUE_SIGNED(): void
 {
     // Default-fixture round-trip for the XdrStellarValueExt type;

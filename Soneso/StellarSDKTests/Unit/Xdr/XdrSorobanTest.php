@@ -201,6 +201,7 @@ class XdrSorobanTest extends TestCase
     {
         $this->assertEquals(0, XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM);
         $this->assertEquals(1, XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET);
+        $this->assertEquals(2, XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF);
     }
 
     /**
@@ -236,6 +237,27 @@ class XdrSorobanTest extends TestCase
             $decoded->getType()->getValue()
         );
         $this->assertNull($decoded->getWasmIdHex());
+    }
+
+    /**
+     * Test XdrContractExecutable with external reference type round-trip.
+     */
+    public function testContractExecutableExternalRefRoundTrip(): void
+    {
+        $owner = $this->createTestSCAddress();
+        $executable = XdrContractExecutable::forExternalRef($owner, 'my-tag');
+        $encoded = $executable->encode();
+        $xdrBuffer = new XdrBuffer($encoded);
+        $decoded = XdrContractExecutable::decode($xdrBuffer);
+
+        $this->assertEquals(
+            XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF,
+            $decoded->getType()->getValue()
+        );
+        $this->assertNull($decoded->getWasmIdHex());
+        $this->assertNotNull($decoded->getExternalRef());
+        $this->assertEquals($owner->encode(), $decoded->getExternalRef()->getExecutableOwner()->encode());
+        $this->assertEquals('my-tag', $decoded->getExternalRef()->getTag());
     }
 
     /**
