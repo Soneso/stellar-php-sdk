@@ -3609,6 +3609,25 @@ class EnumRoundTripTest extends TestCase
         $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
+    public function testRoundTrip_XdrContractExecutableType_CONTRACT_EXECUTABLE_EXTERNAL_REF(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrContractExecutableType(\Soneso\StellarSDK\Xdr\XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrContractExecutableType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrContractExecutableType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(2, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractExecutableType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
     public function testRoundTrip_XdrContractIDPreimageType_CONTRACT_ID_PREIMAGE_FROM_ADDRESS(): void
     {
         $instance = new \Soneso\StellarSDK\Xdr\XdrContractIDPreimageType(\Soneso\StellarSDK\Xdr\XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
@@ -9784,6 +9803,25 @@ class EnumRoundTripTest extends TestCase
         $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
+    public function testRoundTrip_XdrSCValType_SCV_EXECUTABLE_TAG(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrSCValType(\Soneso\StellarSDK\Xdr\XdrSCValType::SCV_EXECUTABLE_TAG);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrSCValType::SCV_EXECUTABLE_TAG round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrSCValType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(22, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCValType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
     public function testRoundTrip_XdrSetOptionsResultCode_AUTH_REVOCABLE_REQUIRED(): void
     {
         $instance = new \Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode(\Soneso\StellarSDK\Xdr\XdrSetOptionsResultCode::AUTH_REVOCABLE_REQUIRED);
@@ -10444,6 +10482,25 @@ class EnumRoundTripTest extends TestCase
         $back = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(1, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
+    public function testRoundTrip_XdrStellarValueType_STELLAR_VALUE_EMPTY_TX_SET(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrStellarValueType(\Soneso\StellarSDK\Xdr\XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(2, $back->getValue());
         $xdr = $instance->toBase64Xdr();
         $fromXdr = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromBase64Xdr($xdr);
         $this->assertSame($jsonValue, $fromXdr->toJsonValue());

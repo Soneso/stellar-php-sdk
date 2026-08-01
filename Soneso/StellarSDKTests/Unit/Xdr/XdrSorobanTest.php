@@ -12,6 +12,7 @@ use Soneso\StellarSDK\Xdr\XdrAsset;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrContractExecutable;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableExternalRef;
 use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 use Soneso\StellarSDK\Xdr\XdrContractIDPreimage;
 use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
@@ -201,6 +202,7 @@ class XdrSorobanTest extends TestCase
     {
         $this->assertEquals(0, XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM);
         $this->assertEquals(1, XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET);
+        $this->assertEquals(2, XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF);
     }
 
     /**
@@ -236,6 +238,99 @@ class XdrSorobanTest extends TestCase
             $decoded->getType()->getValue()
         );
         $this->assertNull($decoded->getWasmIdHex());
+    }
+
+    /**
+     * Test XdrContractExecutable with external reference type round-trip.
+     */
+    public function testContractExecutableExternalRefRoundTrip(): void
+    {
+        $owner = $this->createTestSCAddress();
+        $executable = XdrContractExecutable::forExternalRef($owner, 'my-tag');
+        $encoded = $executable->encode();
+        $xdrBuffer = new XdrBuffer($encoded);
+        $decoded = XdrContractExecutable::decode($xdrBuffer);
+
+        $this->assertEquals(
+            XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF,
+            $decoded->getType()->getValue()
+        );
+        $this->assertNull($decoded->getWasmIdHex());
+        $this->assertNotNull($decoded->getExternalRef());
+        $this->assertEquals($owner->encode(), $decoded->getExternalRef()->getExecutableOwner()->encode());
+        $this->assertEquals('my-tag', $decoded->getExternalRef()->getTag());
+
+        // Base64 helpers on the external ref itself round-trip byte-identically.
+        $externalRef = $decoded->getExternalRef();
+        $refFromBase64 = XdrContractExecutableExternalRef::fromBase64Xdr($externalRef->toBase64Xdr());
+        $this->assertEquals($externalRef->encode(), $refFromBase64->encode());
+
+        // Mutating owner and tag through the setters is reflected in the encoding.
+        $newOwner = XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        $externalRef->setExecutableOwner($newOwner);
+        $externalRef->setTag('updated-tag');
+        $this->assertEquals($newOwner->encode(), $externalRef->getExecutableOwner()->encode());
+        $this->assertEquals('updated-tag', $externalRef->getTag());
+        $reencoded = XdrContractExecutableExternalRef::decode(new XdrBuffer($externalRef->encode()));
+        $this->assertEquals('updated-tag', $reencoded->getTag());
+        $this->assertEquals($newOwner->encode(), $reencoded->getExecutableOwner()->encode());
+    }
+
+    /**
+     * Test XdrContractExecutableExternalRef JSON round-trip, including that a
+     * "$schema" key on the input object is ignored.
+     */
+    public function testContractExecutableExternalRefJsonRoundTrip(): void
+    {
+        $owner = $this->createTestSCAddress();
+        $ref = new XdrContractExecutableExternalRef($owner, 'my-tag');
+
+        $jsonValue = $ref->toJsonValue();
+        $this->assertEquals('my-tag', $jsonValue['tag']);
+        $this->assertArrayHasKey('executable_owner', $jsonValue);
+
+        $jsonValue['$schema'] = 'https://example.org/schema.json';
+        $restored = XdrContractExecutableExternalRef::fromJsonValue($jsonValue);
+
+        $this->assertEquals($ref->encode(), $restored->encode());
+        $this->assertEquals('my-tag', $restored->getTag());
+    }
+
+    /**
+     * Test XdrContractExecutableExternalRef::fromJsonValue rejection of malformed input.
+     */
+    public function testContractExecutableExternalRefFromJsonValueRejectsMalformedInput(): void
+    {
+        // Non-object input.
+        try {
+            XdrContractExecutableExternalRef::fromJsonValue('not-an-object');
+            $this->fail('Expected InvalidArgumentException for non-object input');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString('Expected object for XdrContractExecutableExternalRef', $e->getMessage());
+        }
+
+        // Missing required fields, one at a time.
+        $valid = (new XdrContractExecutableExternalRef($this->createTestSCAddress(), 'my-tag'))->toJsonValue();
+        foreach (['executable_owner', 'tag'] as $field) {
+            $incomplete = $valid;
+            unset($incomplete[$field]);
+            try {
+                XdrContractExecutableExternalRef::fromJsonValue($incomplete);
+                $this->fail('Expected InvalidArgumentException for missing ' . $field);
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringContainsString('Missing required field ' . $field, $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Test XdrContractExecutableExternalRef::fromBase64Xdr rejection of invalid base64.
+     */
+    public function testContractExecutableExternalRefFromBase64XdrRejectsInvalidBase64(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid base64-encoded XDR');
+        XdrContractExecutableExternalRef::fromBase64Xdr('%%%not-base64%%%');
     }
 
     /**

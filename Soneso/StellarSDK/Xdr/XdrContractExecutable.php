@@ -20,6 +20,9 @@ class XdrContractExecutable extends XdrContractExecutableBase
                 break;
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
                 break;
+            case XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF:
+                $bytes .= $this->externalRef->encode();
+                break;
         }
         return $bytes;
     }
@@ -31,6 +34,9 @@ class XdrContractExecutable extends XdrContractExecutableBase
                 $result->wasmIdHex = bin2hex($xdr->readOpaqueFixed(32));
                 break;
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
+                break;
+            case XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF:
+                $result->externalRef = XdrContractExecutableExternalRef::decode($xdr);
                 break;
         }
         return $result;
@@ -44,5 +50,11 @@ class XdrContractExecutable extends XdrContractExecutableBase
 
     public static function forToken() : XdrContractExecutable {
         return new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
+    }
+
+    public static function forExternalRef(XdrSCAddress $executableOwner, string $tag) : XdrContractExecutable {
+        $result = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF());
+        $result->externalRef = new XdrContractExecutableExternalRef($executableOwner, $tag);
+        return $result;
     }
 }

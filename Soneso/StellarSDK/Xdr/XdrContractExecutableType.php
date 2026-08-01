@@ -13,6 +13,7 @@ class XdrContractExecutableType {
 
     const CONTRACT_EXECUTABLE_WASM = 0;
     const CONTRACT_EXECUTABLE_STELLAR_ASSET = 1;
+    const CONTRACT_EXECUTABLE_EXTERNAL_REF = 2;
 
     public function __construct(int $value) {
         $this->value = $value;
@@ -30,6 +31,10 @@ class XdrContractExecutableType {
         return new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET);
     }
 
+    public static function CONTRACT_EXECUTABLE_EXTERNAL_REF(): XdrContractExecutableType {
+        return new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }
@@ -39,6 +44,7 @@ class XdrContractExecutableType {
         switch ($value) {
             case 0:
             case 1:
+            case 2:
                 return new XdrContractExecutableType($value);
             default:
                 throw new InvalidArgumentException("Unknown enum value: $value");
@@ -61,6 +67,7 @@ class XdrContractExecutableType {
         return match ($this->value) {
             self::CONTRACT_EXECUTABLE_WASM => 'wasm',
             self::CONTRACT_EXECUTABLE_STELLAR_ASSET => 'stellar_asset',
+            self::CONTRACT_EXECUTABLE_EXTERNAL_REF => 'external_ref',
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown XdrContractExecutableType enum value: ' . $this->value
@@ -78,6 +85,7 @@ class XdrContractExecutableType {
         return match ($value) {
             'wasm' => new static(self::CONTRACT_EXECUTABLE_WASM),
             'stellar_asset' => new static(self::CONTRACT_EXECUTABLE_STELLAR_ASSET),
+            'external_ref' => new static(self::CONTRACT_EXECUTABLE_EXTERNAL_REF),
             default => throw new InvalidArgumentException(
                 'Unknown XdrContractExecutableType JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
@@ -108,6 +116,8 @@ class XdrContractExecutableType {
                 return 'CONTRACT_EXECUTABLE_WASM';
             case self::CONTRACT_EXECUTABLE_STELLAR_ASSET:
                 return 'CONTRACT_EXECUTABLE_STELLAR_ASSET';
+            case self::CONTRACT_EXECUTABLE_EXTERNAL_REF:
+                return 'CONTRACT_EXECUTABLE_EXTERNAL_REF';
             default:
                 return 'XdrContractExecutableType#' . $this->value;
         }
@@ -119,6 +129,8 @@ class XdrContractExecutableType {
                 return new static(self::CONTRACT_EXECUTABLE_WASM);
             case 'CONTRACT_EXECUTABLE_STELLAR_ASSET':
                 return new static(self::CONTRACT_EXECUTABLE_STELLAR_ASSET);
+            case 'CONTRACT_EXECUTABLE_EXTERNAL_REF':
+                return new static(self::CONTRACT_EXECUTABLE_EXTERNAL_REF);
             default:
                 $prefix = 'XdrContractExecutableType#';
                 if (str_starts_with($name, $prefix)) {

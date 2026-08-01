@@ -165,6 +165,12 @@ class XdrSCVal extends XdrSCValBase
         return $result;
     }
 
+    public static function forExecutableTag(string $executableTag) : XdrSCVal {
+        $result = new XdrSCVal(XdrSCValType::EXECUTABLE_TAG());
+        $result->executableTag = $executableTag;
+        return $result;
+    }
+
     /**
      * Creates an XdrSCVal for unsigned 128-bit BigInt.
      * @param GMP|string|int $value The BigInt value (GMP object, string, or int)
@@ -824,6 +830,22 @@ class XdrSCVal extends XdrSCValBase
     public function setNonceKey(?XdrSCNonceKey $nonceKey): void
     {
         $this->nonceKey = $nonceKey;
+    }
+
+    /**
+     * @return String|null
+     */
+    public function getExecutableTag(): ?string
+    {
+        return $this->executableTag;
+    }
+
+    /**
+     * @param String|null $executableTag
+     */
+    public function setExecutableTag(?string $executableTag): void
+    {
+        $this->executableTag = $executableTag;
     }
 
 }

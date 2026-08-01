@@ -7,11 +7,18 @@
 namespace Soneso\StellarSDKTests\Unit\Xdr\Sep51;
 
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Xdr\XdrContractExecutable;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableBase;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableExternalRef;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 use Soneso\StellarSDK\Xdr\XdrDataValue;
 use Soneso\StellarSDK\Xdr\XdrJsonHelper;
+use Soneso\StellarSDK\Xdr\XdrSCAddress;
 
 /**
- * SEP-51 parity tests for hand-written XdrDataValue.
+ * SEP-51 parity tests for hand-written wrappers against their generated
+ * counterparts: XdrDataValue, and XdrContractExecutable vs
+ * XdrContractExecutableBase.
  *
  * XdrDataValue is hand-authored rather than generator-produced (it is the
  * optional opaque-variable wrapper used by ManageData). Its SEP-51 wire form
@@ -156,5 +163,68 @@ class HandWrittenVsGeneratedTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         XdrDataValue::fromJsonValue(['not', 'a', 'hex', 'string']);
+    }
+
+    /**
+     * The hand-written XdrContractExecutable wrapper shadows the generated
+     * base encode()/decode(), so the base EXTERNAL_REF arms must be pinned
+     * directly against the wrapper: identical bytes on encode, identical
+     * structure on decode.
+     */
+    public function testContractExecutableExternalRefWrapperMatchesBase(): void
+    {
+        $owner = XdrSCAddress::forContractId(str_repeat('ab', 32));
+        $tag = 'audit-v1';
+
+        $wrapper = XdrContractExecutable::forExternalRef($owner, $tag);
+
+        $base = new XdrContractExecutableBase(
+            XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF()
+        );
+        $base->setExternalRef(new XdrContractExecutableExternalRef($owner, $tag));
+
+        $this->assertSame(
+            $wrapper->encode(),
+            $base->encode(),
+            'Base EXTERNAL_REF encoding diverged from the hand-written wrapper.'
+        );
+
+        $decoded = XdrContractExecutableBase::fromBase64Xdr($base->toBase64Xdr());
+        $this->assertSame($base->encode(), $decoded->encode());
+        $this->assertSame(
+            XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF,
+            $decoded->getType()->getValue()
+        );
+        $this->assertNotNull($decoded->getExternalRef());
+        $this->assertSame($tag, $decoded->getExternalRef()->getTag());
+        $this->assertSame($owner->encode(), $decoded->getExternalRef()->getExecutableOwner()->encode());
+    }
+
+    /**
+     * The EXTERNAL_REF JSON arm is inherited from the base by the wrapper:
+     * toJsonValue must emit the single-key {"external_ref": {...}} object and
+     * fromJsonValue must rebuild the same bytes from it.
+     */
+    public function testContractExecutableExternalRefJsonArmRoundTrips(): void
+    {
+        $owner = XdrSCAddress::forContractId(str_repeat('cd', 32));
+        $base = new XdrContractExecutableBase(
+            XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF()
+        );
+        $base->setExternalRef(new XdrContractExecutableExternalRef($owner, 'json-tag'));
+
+        $jsonValue = $base->toJsonValue();
+        $this->assertIsArray($jsonValue);
+        $this->assertSame(['external_ref'], array_keys($jsonValue));
+        $this->assertSame('json-tag', $jsonValue['external_ref']['tag']);
+
+        $restored = XdrContractExecutableBase::fromJsonValue($jsonValue);
+        $this->assertSame($base->encode(), $restored->encode());
+        $this->assertNotNull($restored->getExternalRef());
+        $this->assertSame('json-tag', $restored->getExternalRef()->getTag());
+
+        // The hand-written wrapper inherits the same JSON path.
+        $wrapperRestored = XdrContractExecutable::fromJsonValue($jsonValue);
+        $this->assertSame($base->encode(), $wrapperRestored->encode());
     }
 }

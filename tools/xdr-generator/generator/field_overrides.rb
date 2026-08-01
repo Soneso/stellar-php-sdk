@@ -173,8 +173,14 @@ FIELD_OVERRIDES = {
   # XdrClaimableBalanceID: arm name differs from PHP SDK field name
   "XdrClaimableBalanceID" => { "v0" => "hash" },
 
-  # XdrContractExecutable: XDR arm wasm_hash → PHP wasmIdHex
-  "XdrContractExecutable" => { "wasm_hash" => "wasmIdHex" },
+  # XdrContractExecutable: XDR arm wasm_hash → PHP wasmIdHex; snake_case arm → camelCase
+  "XdrContractExecutable" => {
+    "wasm_hash" => "wasmIdHex",
+    "external_ref" => "externalRef",
+  },
+
+  # XdrContractExecutableExternalRef: snake_case → camelCase field name
+  "XdrContractExecutableExternalRef" => { "executable_owner" => "executableOwner" },
 
   # XdrOperationResultTr: XDR arm name → PHP property name overrides
   "XdrOperationResultTr" => {
@@ -200,7 +206,10 @@ FIELD_OVERRIDES = {
   },
 
   # XdrSCVal: snake_case → camelCase field name
-  "XdrSCVal" => { "nonce_key" => "nonceKey" },
+  "XdrSCVal" => {
+    "nonce_key" => "nonceKey",
+    "executable_tag" => "executableTag",
+  },
 
   # XdrTimeBounds: rename to avoid return type conflict with wrapper's getMinTime(): DateTime
   "XdrTimeBounds" => {

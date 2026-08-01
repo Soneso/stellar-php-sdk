@@ -33,6 +33,7 @@ class XdrSCValType {
     const SCV_CONTRACT_INSTANCE = 19;
     const SCV_LEDGER_KEY_CONTRACT_INSTANCE = 20;
     const SCV_LEDGER_KEY_NONCE = 21;
+    const SCV_EXECUTABLE_TAG = 22;
 
     public function __construct(int $value) {
         $this->value = $value;
@@ -130,6 +131,10 @@ class XdrSCValType {
         return new XdrSCValType(XdrSCValType::SCV_LEDGER_KEY_NONCE);
     }
 
+    public static function EXECUTABLE_TAG(): XdrSCValType {
+        return new XdrSCValType(XdrSCValType::SCV_EXECUTABLE_TAG);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }
@@ -159,6 +164,7 @@ class XdrSCValType {
             case 19:
             case 20:
             case 21:
+            case 22:
                 return new XdrSCValType($value);
             default:
                 throw new InvalidArgumentException("Unknown enum value: $value");
@@ -201,6 +207,7 @@ class XdrSCValType {
             self::SCV_CONTRACT_INSTANCE => 'contract_instance',
             self::SCV_LEDGER_KEY_CONTRACT_INSTANCE => 'ledger_key_contract_instance',
             self::SCV_LEDGER_KEY_NONCE => 'ledger_key_nonce',
+            self::SCV_EXECUTABLE_TAG => 'executable_tag',
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown XdrSCValType enum value: ' . $this->value
@@ -238,6 +245,7 @@ class XdrSCValType {
             'contract_instance' => new static(self::SCV_CONTRACT_INSTANCE),
             'ledger_key_contract_instance' => new static(self::SCV_LEDGER_KEY_CONTRACT_INSTANCE),
             'ledger_key_nonce' => new static(self::SCV_LEDGER_KEY_NONCE),
+            'executable_tag' => new static(self::SCV_EXECUTABLE_TAG),
             default => throw new InvalidArgumentException(
                 'Unknown XdrSCValType JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
@@ -308,6 +316,8 @@ class XdrSCValType {
                 return 'SCV_LEDGER_KEY_CONTRACT_INSTANCE';
             case self::SCV_LEDGER_KEY_NONCE:
                 return 'SCV_LEDGER_KEY_NONCE';
+            case self::SCV_EXECUTABLE_TAG:
+                return 'SCV_EXECUTABLE_TAG';
             default:
                 return 'XdrSCValType#' . $this->value;
         }
@@ -359,6 +369,8 @@ class XdrSCValType {
                 return new static(self::SCV_LEDGER_KEY_CONTRACT_INSTANCE);
             case 'SCV_LEDGER_KEY_NONCE':
                 return new static(self::SCV_LEDGER_KEY_NONCE);
+            case 'SCV_EXECUTABLE_TAG':
+                return new static(self::SCV_EXECUTABLE_TAG);
             default:
                 $prefix = 'XdrSCValType#';
                 if (str_starts_with($name, $prefix)) {
