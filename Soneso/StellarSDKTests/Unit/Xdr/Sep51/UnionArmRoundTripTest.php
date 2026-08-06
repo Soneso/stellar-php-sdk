@@ -18,6 +18,162 @@ use PHPUnit\Framework\TestCase;
 
 class UnionArmRoundTripTest extends TestCase
 {
+public function testRoundTrip_XdrClawbackResultUnion_MALFORMED(): void
+{
+    // Default-fixture round-trip for the XdrClawbackResult type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = '/////w==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClawbackResult toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClawbackResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClawbackResult default-fixture toJson idempotence broken');
+
+    // Reachability of the MALFORMED arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('MALFORMED')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrClawbackResult arm MALFORMED not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrClawbackResultUnion_NO_TRUST(): void
+{
+    // Default-fixture round-trip for the XdrClawbackResult type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = '/////Q==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClawbackResult toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClawbackResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClawbackResult default-fixture toJson idempotence broken');
+
+    // Reachability of the NO_TRUST arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('NO_TRUST')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrClawbackResult arm NO_TRUST not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrClawbackResultUnion_SUCCESS(): void
+{
+    // Default-fixture round-trip for the XdrClawbackResult type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = 'AAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClawbackResult toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClawbackResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClawbackResult default-fixture toJson idempotence broken');
+
+    // Reachability of the SUCCESS arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('SUCCESS')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrClawbackResult arm SUCCESS not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrClawbackResultUnion_UNDERFUNDED(): void
+{
+    // Default-fixture round-trip for the XdrClawbackResult type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = '/////A==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrClawbackResult toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrClawbackResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrClawbackResult default-fixture toJson idempotence broken');
+
+    // Reachability of the UNDERFUNDED arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('UNDERFUNDED')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrClawbackResult arm UNDERFUNDED not found on any discriminant property');
+}
+
 public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS(): void
 {
     // Default-fixture round-trip for the XdrConfigSettingEntry type;
@@ -445,6 +601,357 @@ public function testRoundTrip_XdrConfigSettingEntryUnion_CONFIG_SETTING_STATE_AR
     }
     $this->assertTrue($found,
         'XdrConfigSettingEntry arm CONFIG_SETTING_STATE_ARCHIVAL not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrCreateAccountResultUnion_LOW_RESERVE(): void
+{
+    // Default-fixture round-trip for the XdrCreateAccountResult type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = '/////Q==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrCreateAccountResult toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrCreateAccountResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrCreateAccountResult default-fixture toJson idempotence broken');
+
+    // Reachability of the LOW_RESERVE arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('LOW_RESERVE')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrCreateAccountResult arm LOW_RESERVE not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrCreateAccountResultUnion_MALFORMED(): void
+{
+    // Default-fixture round-trip for the XdrCreateAccountResult type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = '/////w==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrCreateAccountResult toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrCreateAccountResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrCreateAccountResult default-fixture toJson idempotence broken');
+
+    // Reachability of the MALFORMED arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('MALFORMED')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrCreateAccountResult arm MALFORMED not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrCreateAccountResultUnion_SUCCESS(): void
+{
+    // Default-fixture round-trip for the XdrCreateAccountResult type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = 'AAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrCreateAccountResult toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrCreateAccountResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrCreateAccountResult default-fixture toJson idempotence broken');
+
+    // Reachability of the SUCCESS arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('SUCCESS')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrCreateAccountResult arm SUCCESS not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrCreateAccountResultUnion_UNDERFUNDED(): void
+{
+    // Default-fixture round-trip for the XdrCreateAccountResult type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = '/////g==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrCreateAccountResult toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrCreateAccountResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrCreateAccountResult default-fixture toJson idempotence broken');
+
+    // Reachability of the UNDERFUNDED arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('UNDERFUNDED')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrCreateAccountResult arm UNDERFUNDED not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrOperationResultUnion_EXCEEDED_WORK_LIMIT(): void
+{
+    // Default-fixture round-trip for the XdrOperationResult type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = '////+w==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOperationResult toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOperationResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationResult default-fixture toJson idempotence broken');
+
+    // Reachability of the EXCEEDED_WORK_LIMIT arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('EXCEEDED_WORK_LIMIT')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrOperationResult arm EXCEEDED_WORK_LIMIT not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrOperationResultUnion_NOT_SUPPORTED(): void
+{
+    // Default-fixture round-trip for the XdrOperationResult type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = '/////Q==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOperationResult toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOperationResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationResult default-fixture toJson idempotence broken');
+
+    // Reachability of the NOT_SUPPORTED arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('NOT_SUPPORTED')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrOperationResult arm NOT_SUPPORTED not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrOperationResultUnion_NO_ACCOUNT(): void
+{
+    // Default-fixture round-trip for the XdrOperationResult type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = '/////g==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOperationResult toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOperationResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationResult default-fixture toJson idempotence broken');
+
+    // Reachability of the NO_ACCOUNT arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('NO_ACCOUNT')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrOperationResult arm NO_ACCOUNT not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrOperationResultUnion_TOO_MANY_SPONSORING(): void
+{
+    // Default-fixture round-trip for the XdrOperationResult type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = '////+g==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOperationResult toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOperationResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationResult default-fixture toJson idempotence broken');
+
+    // Reachability of the TOO_MANY_SPONSORING arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('TOO_MANY_SPONSORING')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrOperationResult arm TOO_MANY_SPONSORING not found on any discriminant property');
+}
+
+public function testRoundTrip_XdrOperationResultUnion_TOO_MANY_SUBENTRIES(): void
+{
+    // Default-fixture round-trip for the XdrOperationResult type;
+    // the arm-specific constant is asserted as reachable on
+    // the discriminant enum to guard against silent removal.
+    $base64 = '/////A==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'XdrOperationResult toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
+    $this->assertSame($jsonValue, $decoded->toJsonValue(),
+        'XdrOperationResult default-fixture toJsonValue idempotence broken');
+    // Exercise the JSON-string boundary too.
+    $json = $instance->toJson();
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'XdrOperationResult default-fixture toJson idempotence broken');
+
+    // Reachability of the TOO_MANY_SUBENTRIES arm constant.
+    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
+    $found = false;
+    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
+        $t = $p->getType();
+        if (!$t instanceof \ReflectionNamedType) continue;
+        $tn = $t->getName();
+        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
+        if (!class_exists($tn)) continue;
+        $tr = new \ReflectionClass($tn);
+        if ($tr->hasConstant('TOO_MANY_SUBENTRIES')) {
+            $found = true;
+            break;
+        }
+    }
+    $this->assertTrue($found,
+        'XdrOperationResult arm TOO_MANY_SUBENTRIES not found on any discriminant property');
 }
 
 public function testRoundTrip_XdrSignerKeyUnion_SIGNER_KEY_TYPE_ED25519(): void
@@ -2538,201 +3045,6 @@ public function testRoundTrip_XdrClawbackClaimableBalanceResultUnion_SUCCESS(): 
         'XdrClawbackClaimableBalanceResult arm SUCCESS not found on any discriminant property');
 }
 
-public function testRoundTrip_XdrClawbackResultUnion_MALFORMED(): void
-{
-    // Default-fixture round-trip for the XdrClawbackResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = '/////w==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrClawbackResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrClawbackResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrClawbackResult default-fixture toJson idempotence broken');
-
-    // Reachability of the MALFORMED arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('MALFORMED')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrClawbackResult arm MALFORMED not found on any discriminant property');
-}
-
-public function testRoundTrip_XdrClawbackResultUnion_NOT_ENABLED(): void
-{
-    // Default-fixture round-trip for the XdrClawbackResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = '/////g==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrClawbackResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrClawbackResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrClawbackResult default-fixture toJson idempotence broken');
-
-    // Reachability of the NOT_ENABLED arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('NOT_ENABLED')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrClawbackResult arm NOT_ENABLED not found on any discriminant property');
-}
-
-public function testRoundTrip_XdrClawbackResultUnion_NO_TRUST(): void
-{
-    // Default-fixture round-trip for the XdrClawbackResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = '/////Q==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrClawbackResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrClawbackResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrClawbackResult default-fixture toJson idempotence broken');
-
-    // Reachability of the NO_TRUST arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('NO_TRUST')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrClawbackResult arm NO_TRUST not found on any discriminant property');
-}
-
-public function testRoundTrip_XdrClawbackResultUnion_SUCCESS(): void
-{
-    // Default-fixture round-trip for the XdrClawbackResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAA==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrClawbackResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrClawbackResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrClawbackResult default-fixture toJson idempotence broken');
-
-    // Reachability of the SUCCESS arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('SUCCESS')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrClawbackResult arm SUCCESS not found on any discriminant property');
-}
-
-public function testRoundTrip_XdrClawbackResultUnion_UNDERFUNDED(): void
-{
-    // Default-fixture round-trip for the XdrClawbackResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = '/////A==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrClawbackResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrClawbackResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrClawbackResult default-fixture toJson idempotence broken');
-
-    // Reachability of the UNDERFUNDED arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrClawbackResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('UNDERFUNDED')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrClawbackResult arm UNDERFUNDED not found on any discriminant property');
-}
-
 public function testRoundTrip_XdrContractDataEntry(): void
 {
     $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
@@ -2794,201 +3106,6 @@ public function testRoundTrip_XdrContractIDPreimage(): void
     $reInstance = \Soneso\StellarSDK\Xdr\XdrContractIDPreimage::fromBase64Xdr($reEncodedXdr);
     $this->assertSame($jsonValue, $reInstance->toJsonValue(),
         'XdrContractIDPreimage XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrCreateAccountResultUnion_ACCOUNT_ALREADY_EXIST(): void
-{
-    // Default-fixture round-trip for the XdrCreateAccountResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = '/////A==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrCreateAccountResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrCreateAccountResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrCreateAccountResult default-fixture toJson idempotence broken');
-
-    // Reachability of the ACCOUNT_ALREADY_EXIST arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('ACCOUNT_ALREADY_EXIST')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrCreateAccountResult arm ACCOUNT_ALREADY_EXIST not found on any discriminant property');
-}
-
-public function testRoundTrip_XdrCreateAccountResultUnion_LOW_RESERVE(): void
-{
-    // Default-fixture round-trip for the XdrCreateAccountResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = '/////Q==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrCreateAccountResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrCreateAccountResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrCreateAccountResult default-fixture toJson idempotence broken');
-
-    // Reachability of the LOW_RESERVE arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('LOW_RESERVE')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrCreateAccountResult arm LOW_RESERVE not found on any discriminant property');
-}
-
-public function testRoundTrip_XdrCreateAccountResultUnion_MALFORMED(): void
-{
-    // Default-fixture round-trip for the XdrCreateAccountResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = '/////w==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrCreateAccountResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrCreateAccountResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrCreateAccountResult default-fixture toJson idempotence broken');
-
-    // Reachability of the MALFORMED arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('MALFORMED')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrCreateAccountResult arm MALFORMED not found on any discriminant property');
-}
-
-public function testRoundTrip_XdrCreateAccountResultUnion_SUCCESS(): void
-{
-    // Default-fixture round-trip for the XdrCreateAccountResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAA==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrCreateAccountResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrCreateAccountResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrCreateAccountResult default-fixture toJson idempotence broken');
-
-    // Reachability of the SUCCESS arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('SUCCESS')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrCreateAccountResult arm SUCCESS not found on any discriminant property');
-}
-
-public function testRoundTrip_XdrCreateAccountResultUnion_UNDERFUNDED(): void
-{
-    // Default-fixture round-trip for the XdrCreateAccountResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = '/////g==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrCreateAccountResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrCreateAccountResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrCreateAccountResult default-fixture toJson idempotence broken');
-
-    // Reachability of the UNDERFUNDED arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrCreateAccountResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('UNDERFUNDED')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrCreateAccountResult arm UNDERFUNDED not found on any discriminant property');
 }
 
 public function testRoundTrip_XdrCreateClaimableBalanceResultUnion_LOW_RESERVE(): void
@@ -8244,279 +8361,6 @@ public function testRoundTrip_XdrOperationBodyUnion_SET_TRUST_LINE_FLAGS(): void
         'XdrOperationBody arm SET_TRUST_LINE_FLAGS not found on any discriminant property');
 }
 
-public function testRoundTrip_XdrOperationResultUnion_BAD_AUTH(): void
-{
-    // Default-fixture round-trip for the XdrOperationResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = '/////w==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrOperationResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrOperationResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrOperationResult default-fixture toJson idempotence broken');
-
-    // Reachability of the BAD_AUTH arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('BAD_AUTH')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrOperationResult arm BAD_AUTH not found on any discriminant property');
-}
-
-public function testRoundTrip_XdrOperationResultUnion_EXCEEDED_WORK_LIMIT(): void
-{
-    // Default-fixture round-trip for the XdrOperationResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = '////+w==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrOperationResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrOperationResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrOperationResult default-fixture toJson idempotence broken');
-
-    // Reachability of the EXCEEDED_WORK_LIMIT arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('EXCEEDED_WORK_LIMIT')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrOperationResult arm EXCEEDED_WORK_LIMIT not found on any discriminant property');
-}
-
-public function testRoundTrip_XdrOperationResultUnion_INNER(): void
-{
-    // Default-fixture round-trip for the XdrOperationResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = 'AAAAAAAAAAD////8';
-    $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrOperationResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrOperationResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrOperationResult default-fixture toJson idempotence broken');
-
-    // Reachability of the INNER arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('INNER')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrOperationResult arm INNER not found on any discriminant property');
-}
-
-public function testRoundTrip_XdrOperationResultUnion_NOT_SUPPORTED(): void
-{
-    // Default-fixture round-trip for the XdrOperationResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = '/////Q==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrOperationResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrOperationResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrOperationResult default-fixture toJson idempotence broken');
-
-    // Reachability of the NOT_SUPPORTED arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('NOT_SUPPORTED')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrOperationResult arm NOT_SUPPORTED not found on any discriminant property');
-}
-
-public function testRoundTrip_XdrOperationResultUnion_NO_ACCOUNT(): void
-{
-    // Default-fixture round-trip for the XdrOperationResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = '/////g==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrOperationResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrOperationResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrOperationResult default-fixture toJson idempotence broken');
-
-    // Reachability of the NO_ACCOUNT arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('NO_ACCOUNT')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrOperationResult arm NO_ACCOUNT not found on any discriminant property');
-}
-
-public function testRoundTrip_XdrOperationResultUnion_TOO_MANY_SPONSORING(): void
-{
-    // Default-fixture round-trip for the XdrOperationResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = '////+g==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrOperationResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrOperationResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrOperationResult default-fixture toJson idempotence broken');
-
-    // Reachability of the TOO_MANY_SPONSORING arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('TOO_MANY_SPONSORING')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrOperationResult arm TOO_MANY_SPONSORING not found on any discriminant property');
-}
-
-public function testRoundTrip_XdrOperationResultUnion_TOO_MANY_SUBENTRIES(): void
-{
-    // Default-fixture round-trip for the XdrOperationResult type;
-    // the arm-specific constant is asserted as reachable on
-    // the discriminant enum to guard against silent removal.
-    $base64 = '/////A==';
-    $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrOperationResult toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrOperationResult default-fixture toJsonValue idempotence broken');
-    // Exercise the JSON-string boundary too.
-    $json = $instance->toJson();
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrOperationResult default-fixture toJson idempotence broken');
-
-    // Reachability of the TOO_MANY_SUBENTRIES arm constant.
-    $reflect = new \ReflectionClass(\Soneso\StellarSDK\Xdr\XdrOperationResult::class);
-    $found = false;
-    foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
-        $t = $p->getType();
-        if (!$t instanceof \ReflectionNamedType) continue;
-        $tn = $t->getName();
-        if (!str_starts_with($tn, 'Soneso\\StellarSDK\\Xdr\\')) continue;
-        if (!class_exists($tn)) continue;
-        $tr = new \ReflectionClass($tn);
-        if ($tr->hasConstant('TOO_MANY_SUBENTRIES')) {
-            $found = true;
-            break;
-        }
-    }
-    $this->assertTrue($found,
-        'XdrOperationResult arm TOO_MANY_SUBENTRIES not found on any discriminant property');
-}
-
 public function testRoundTrip_XdrOperationResultTr(): void
 {
     $base64 = 'AAAAAP////w=';
@@ -11275,27 +11119,6 @@ public function testRoundTrip_XdrSCSpecUDTUnionCaseV0(): void
     $reInstance = \Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0::fromBase64Xdr($reEncodedXdr);
     $this->assertSame($jsonValue, $reInstance->toJsonValue(),
         'XdrSCSpecUDTUnionCaseV0 XDR-JSON-XDR round trip diverged');
-}
-
-public function testRoundTrip_XdrSerializedBinaryFuseFilter(): void
-{
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
-    $instance = \Soneso\StellarSDK\Xdr\XdrSerializedBinaryFuseFilter::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $json = $instance->toJson();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrSerializedBinaryFuseFilter::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrSerializedBinaryFuseFilter toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrSerializedBinaryFuseFilter::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrSerializedBinaryFuseFilter round-trip toJsonValue idempotence broken');
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrSerializedBinaryFuseFilter::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrSerializedBinaryFuseFilter round-trip toJson idempotence broken');
-    $reEncodedXdr = $decoded->toBase64Xdr();
-    $reInstance = \Soneso\StellarSDK\Xdr\XdrSerializedBinaryFuseFilter::fromBase64Xdr($reEncodedXdr);
-    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
-        'XdrSerializedBinaryFuseFilter XDR-JSON-XDR round trip diverged');
 }
 
 public function testRoundTrip_XdrSetOptionsResultUnion_AUTH_REVOCABLE_REQUIRED(): void

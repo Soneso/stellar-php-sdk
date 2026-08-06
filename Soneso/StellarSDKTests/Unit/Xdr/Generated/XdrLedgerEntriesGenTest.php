@@ -238,7 +238,7 @@ class XdrLedgerEntriesGenTest extends TestCase
         $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
         if (is_string($valid)) {
             $assertRejects(['not' => 'a string'], 'non-string union value');
-            $assertRejects('', 'empty string union value');
+            // '' is a valid value for this union (all-NUL AssetCode4); no rejection.
             $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
         } else {
             if ($hasStringForm) {

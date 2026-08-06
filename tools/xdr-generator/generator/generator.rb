@@ -2688,11 +2688,9 @@ class Generator < Xdrgen::Generators::Base
   # True when every member identifier is a simple ASCII identifier (a leading
   # letter followed by letters, digits, or underscores). Both
   # ALL_CAPS_WITH_UNDERSCORES (e.g. "ASSET_TYPE_NATIVE") and CamelCase
-  # (e.g. "WasmInsnExec", "IPv4") shapes are accepted: tokenize_identifier in
-  # XdrJsonHelpers splits on underscores only and lowercases the result, which
-  # produces the canonical wire form for both shapes per SEP-0051
-  # §Discriminated unions (e.g. IPAddrType -> ["ipv4","ipv6"];
-  # ContractCostType -> ["wasminsnexec","memalloc",...]).
+  # (e.g. "WasmInsnExec", "IPv4") shapes are accepted; the canonical wire form
+  # for each shape is derived by XdrJsonHelpers.enum_json_names from the
+  # original XDR identifiers.
   def enum_uses_simple_identifier_members?(php_name, enum_defn)
     enum_defn.members.all? do |m|
       member_name = resolve_member_name(php_name, m.name.to_s)
@@ -2706,20 +2704,50 @@ class Generator < Xdrgen::Generators::Base
   #   public function toJson(): string
   #   public static function fromJson(string $json): static
   #
-  # The wire-form value for each enum member is computed from the PHP-side
-  # member identifiers via the prefix-stripping algorithm in json_helpers.rb.
-  # Values are baked in at codegen time and never recomputed at runtime.
+  # The wire-form value for each enum member is computed from the ORIGINAL XDR
+  # member identifiers via the canonical naming algorithm in json_helpers.rb
+  # (PHP-side constant names drop XDR prefixes such as "tx"/"op" per
+  # MEMBER_PREFIX_STRIP and must not feed the naming rule). Values are baked in at
+  # codegen time and never recomputed at runtime. fromJsonValue additionally
+  # accepts the legacy wire names emitted by SDK releases up to 1.11.x as
+  # deprecated input aliases; toJsonValue never emits them.
   def render_enum_sep51_methods(out, php_name, class_name, enum_defn)
+    raw_names = enum_defn.members.map { |m| m.name.to_s }
     member_names = enum_defn.members.map { |m| resolve_member_name(php_name, m.name.to_s) }
-    json_map = XdrJsonHelpers.strip_shared_prefix(member_names)
+    json_map = XdrJsonHelpers.enum_json_names(raw_names)
+    legacy_map = XdrJsonHelpers.legacy_strip_shared_prefix(member_names)
+    canonical_values = raw_names.map { |raw| json_map[raw] }
+
+    # Two members collapsing to one wire name would make fromJsonValue bind
+    # the duplicate key to the first member and silently decode the wrong
+    # discriminant; fail the generation run instead.
+    duplicates = canonical_values.tally.select { |_, n| n > 1 }.keys
+    unless duplicates.empty?
+      raise "Duplicate canonical wire names #{duplicates.inspect} on #{class_name}"
+    end
+
+    # Deprecated input aliases: one per member whose legacy wire name differs
+    # from the canonical one. A legacy name colliding with any canonical name
+    # or another alias would make the from-side dispatch ambiguous; fail the
+    # generation run instead of emitting it.
+    aliases = []
+    enum_defn.members.each_index do |i|
+      legacy_value = legacy_map[member_names[i]]
+      next if legacy_value == canonical_values[i]
+      if canonical_values.include?(legacy_value) ||
+         aliases.any? { |a| a[:legacy] == legacy_value }
+        raise "Legacy alias #{legacy_value.inspect} on #{class_name} collides " \
+              "with a canonical wire name or another alias"
+      end
+      aliases << { legacy: legacy_value, member: member_names[i] }
+    end
 
     # toJsonValue — match on the integer value to the wire-form string.
     out.puts ""
     out.puts "    public function toJsonValue(): string {"
     out.puts "        return match ($this->value) {"
-    member_names.each do |member_name|
-      json_value = json_map[member_name]
-      out.puts "            self::#{member_name} => '#{php_string_escape(json_value)}',"
+    member_names.each_with_index do |member_name, i|
+      out.puts "            self::#{member_name} => '#{php_string_escape(canonical_values[i])}',"
     end
     # The default arm is unreachable under normal control flow because every
     # constant defined on the class is listed above. It is retained as a
@@ -2744,9 +2772,16 @@ class Generator < Xdrgen::Generators::Base
     out.puts "            );"
     out.puts "        }"
     out.puts "        return match ($value) {"
-    member_names.each do |member_name|
-      json_value = json_map[member_name]
-      out.puts "            '#{php_string_escape(json_value)}' => new static(self::#{member_name}),"
+    member_names.each_with_index do |member_name, i|
+      out.puts "            '#{php_string_escape(canonical_values[i])}' => new static(self::#{member_name}),"
+    end
+    unless aliases.empty?
+      out.puts "            // Deprecated input aliases: wire names emitted by SDK releases"
+      out.puts "            // up to 1.11.x. Accepted for compatibility; toJsonValue never"
+      out.puts "            // emits them."
+      aliases.each do |a|
+        out.puts "            '#{php_string_escape(a[:legacy])}' => new static(self::#{a[:member]}),"
+      end
     end
     # The default arm IS reachable via malformed input — the SEP-51 negative
     # test battery exercises it explicitly. Caller-supplied $value is bounded
@@ -2999,17 +3034,14 @@ class Generator < Xdrgen::Generators::Base
       # AssetCode4: trim trailing \x00, then SEP-51-escape.
       "XdrJsonHelper::escapeString(rtrim(#{accessor}, \"\\x00\"))"
     when 12
-      # AssetCode12: trim trailing \x00 fully; if trimmed length <= 4,
-      # right-pad with \x00 to exactly 5 (preserves AssetCode4 vs
-      # AssetCode12 distinguishability per SEP-51 spec); if 5..12, leave
-      # as-is. If 0, throw. Then escape.
+      # AssetCode12: trim trailing \x00; if trimmed length <= 4, right-pad
+      # with \x00 to exactly 5 (preserves AssetCode4 vs AssetCode12
+      # distinguishability per SEP-51 spec); if 5..12, leave as-is. An
+      # all-NUL code therefore serialises as five escaped NULs
+      # ("\0\0\0\0\0"), matching the rs-stellar-xdr reference. Then escape.
       "(static function (string $bytes): string {\n" +
       "            $trimmed = rtrim($bytes, \"\\x00\");\n" +
-      "            $len = strlen($trimmed);\n" +
-      "            if ($len === 0) {\n" +
-      "                throw new InvalidArgumentException('AssetCode12 must not be all-null');\n" +
-      "            }\n" +
-      "            if ($len <= 4) {\n" +
+      "            if (strlen($trimmed) <= 4) {\n" +
       "                $trimmed = str_pad($trimmed, 5, \"\\x00\", STR_PAD_RIGHT);\n" +
       "            }\n" +
       "            return XdrJsonHelper::escapeString($trimmed);\n" +
@@ -3242,6 +3274,16 @@ class Generator < Xdrgen::Generators::Base
   end
 
   def compute_enum_cased_arm_keys(disc_info, arms)
+    # Canonical arm keys come from the discriminant enum's FULL member list:
+    # the shared prefix is a property of the whole enum, so deriving it from
+    # only the cases present in this union would diverge from the reference
+    # implementation whenever the union covers a subset of the enum.
+    full_raw = disc_info[:enum_defn].members.map { |m| m.name.to_s }
+    json_map = XdrJsonHelpers.enum_json_names(full_raw)
+
+    # Legacy arm keys (deprecated input aliases) reproduce what SDK releases
+    # up to 1.11.x emitted for this union: the legacy algorithm applied to the
+    # union's own case subset.
     raw_idents = []
     arms.each do |arm|
       arm[:raw_cases].each do |raw|
@@ -3249,13 +3291,31 @@ class Generator < Xdrgen::Generators::Base
         raw_idents << raw
       end
     end
-    json_map = XdrJsonHelpers.strip_shared_prefix(raw_idents)
+    legacy_map = XdrJsonHelpers.legacy_strip_shared_prefix(raw_idents)
 
     out = []
     arms.each do |arm|
       arm[:raw_cases].each do |raw|
-        wire = raw == :default ? :runtime_default : json_map[raw]
-        out << { arm: arm, raw: raw, wire: wire }
+        if raw == :default
+          out << { arm: arm, raw: raw, wire: :runtime_default }
+          next
+        end
+        wire = json_map[raw]
+        raise "Union case #{raw.inspect} is not a member of the discriminant enum" if wire.nil?
+        legacy = legacy_map[raw]
+        entry = { arm: arm, raw: raw, wire: wire }
+        entry[:legacy_wire] = legacy if legacy != wire
+        out << entry
+      end
+    end
+
+    all_wires = out.map { |e| e[:wire] }.select { |w| w.is_a?(String) }
+    out.each do |e|
+      next unless e[:legacy_wire]
+      if all_wires.include?(e[:legacy_wire]) ||
+         out.count { |o| o[:legacy_wire] == e[:legacy_wire] } > 1
+        raise "Legacy union arm alias #{e[:legacy_wire].inspect} collides " \
+              "with a canonical arm key or another alias"
       end
     end
     out
@@ -3383,29 +3443,43 @@ class Generator < Xdrgen::Generators::Base
     has_non_void_in_arms = arms.any? { |a| !a[:void] }
 
     if has_void
-      non_void_arm_wire_keys =
+      non_void_entries =
         if has_non_void_in_arms
           arm_keys.reject { |e| e[:arm][:void] || e[:arm][:is_default] }
-                  .map { |e| e[:wire] }
-                  .select { |w| w.is_a?(String) }
-                  .uniq
+                  .select { |e| e[:wire].is_a?(String) }
         else
           []
         end
+      # Bare non-void arm keys are rejected with a pointer at the object form.
+      # Legacy aliases get the same rejection, pointing at the CANONICAL key.
+      non_void_rejections =
+        non_void_entries.map { |e| [e[:wire], e[:wire]] } +
+        non_void_entries.select { |e| e[:legacy_wire] }
+                        .map { |e| [e[:legacy_wire], e[:wire]] }
+      non_void_rejections.uniq!
 
       out.puts "        if (is_string($value)) {"
       out.puts "            return match ($value) {"
       void_arm_strings.each do |entry|
-        wire = entry[:wire]
-        case_label = entry[:arm][:case_labels][entry[:arm][:raw_cases].index(entry[:raw]) || 0]
-        new_call = build_union_constructor_for_void_arm(disc_info, case_label, entry)
-        out.puts "                '#{php_string_escape(wire.to_s)}' => #{new_call},"
+        new_call = void_arm_constructor_expr(disc_info, entry)
+        out.puts "                '#{php_string_escape(entry[:wire].to_s)}' => #{new_call},"
       end
-      if !non_void_arm_wire_keys.empty?
-        non_void_arm_wire_keys.each do |wire|
-          escaped = php_string_escape(wire.to_s)
+      void_aliases = void_arm_strings.select { |e| e[:legacy_wire] }
+      unless void_aliases.empty?
+        out.puts "                // Deprecated input aliases: wire names emitted by SDK"
+        out.puts "                // releases up to 1.11.x. Accepted for compatibility;"
+        out.puts "                // toJsonValue never emits them."
+        void_aliases.each do |entry|
+          new_call = void_arm_constructor_expr(disc_info, entry)
+          out.puts "                '#{php_string_escape(entry[:legacy_wire])}' => #{new_call},"
+        end
+      end
+      if !non_void_rejections.empty?
+        non_void_rejections.each do |display, canonical|
+          escaped = php_string_escape(display.to_s)
+          canonical_escaped = php_string_escape(canonical.to_s)
           out.puts "                '#{escaped}' => throw new InvalidArgumentException("
-          out.puts "                    \"Arm '#{escaped}' on #{class_name} is non-void; supply a single-key object {\\\"#{escaped}\\\": <payload>} instead of a bare string.\""
+          out.puts "                    \"Arm '#{escaped}' on #{class_name} is non-void; supply a single-key object {\\\"#{canonical_escaped}\\\": <payload>} instead of a bare string.\""
           out.puts "                ),"
         end
       end
@@ -3443,6 +3517,19 @@ class Generator < Xdrgen::Generators::Base
         body = build_union_arm_from_json_body(disc_info, entry, class_name)
         out.puts "            '#{php_string_escape(entry[:wire].to_s)}' => #{body},"
       end
+      object_aliases = arm_keys.select do |entry|
+        entry[:legacy_wire] && !entry[:arm][:void] && !entry[:arm][:is_default] &&
+          entry[:wire].is_a?(String)
+      end
+      unless object_aliases.empty?
+        out.puts "            // Deprecated input aliases: wire names emitted by SDK releases"
+        out.puts "            // up to 1.11.x. Accepted for compatibility; toJsonValue never"
+        out.puts "            // emits them."
+        object_aliases.each do |entry|
+          body = build_union_arm_from_json_body(disc_info, entry, class_name)
+          out.puts "            '#{php_string_escape(entry[:legacy_wire])}' => #{body},"
+        end
+      end
       default_non_void = arms.find { |a| a[:is_default] && !a[:void] }
       if default_non_void
         # The default arm matches any unknown key; we cannot enumerate every
@@ -3467,6 +3554,14 @@ class Generator < Xdrgen::Generators::Base
       out.puts "            'Expected void-arm string for #{class_name}, got ' . get_debug_type($value)"
       out.puts "        );"
     end
+  end
+
+  # The constructor expression for one void-arm entry: resolves the entry's
+  # case label and delegates to build_union_constructor_for_void_arm. Shared
+  # by the canonical and alias void-string emission loops.
+  def void_arm_constructor_expr(disc_info, entry)
+    case_label = entry[:arm][:case_labels][entry[:arm][:raw_cases].index(entry[:raw]) || 0]
+    build_union_constructor_for_void_arm(disc_info, case_label, entry)
   end
 
   # Build a "new static(...)" expression that instantiates the union for one

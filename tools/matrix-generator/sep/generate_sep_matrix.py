@@ -2654,16 +2654,21 @@ class SEP51Analyzer(SEPAnalyzerBase):
         ))
 
         # -- Enum --
-        # json_helpers.rb implements strip_shared_prefix / tokenize_identifier.
-        strip_line = self._grep_line(self._JSON_HELPERS_RB, r"def strip_shared_prefix")
-        tok_line = self._grep_line(self._JSON_HELPERS_RB, r"def tokenize_identifier")
+        # json_helpers.rb implements enum_json_names (canonical rule) with
+        # heck_words as the word segmenter.
+        names_line = self._grep_line(self._JSON_HELPERS_RB, r"def enum_json_names")
+        words_line = self._grep_line(self._JSON_HELPERS_RB, r"def heck_words")
         enum_note = (
-            "snake_case string; shared enum-identifier prefix stripped per SEP-0051 §Enum. "
-            "Prefix-strip algorithm in "
-            + (self._cite(self._JSON_HELPERS_RB, strip_line) if strip_line else self._cite(self._JSON_HELPERS_RB, 90))
-            + "; tokenizer in "
-            + (self._cite(self._JSON_HELPERS_RB, tok_line) if tok_line else self._cite(self._JSON_HELPERS_RB, 38))
-            + ". Single-member enums: no prefix stripped (full lowercase name emitted)."
+            "snake_case string derived from the original XDR identifiers by the "
+            "rs-stellar-xdr rule: byte-wise shared prefix truncated to its last "
+            "underscore and stripped, then heck UpperCamelCase + serde snake_case. "
+            "Algorithm in "
+            + (self._cite(self._JSON_HELPERS_RB, names_line) if names_line else self._JSON_HELPERS_RB)
+            + "; word segmentation in "
+            + (self._cite(self._JSON_HELPERS_RB, words_line) if words_line else self._JSON_HELPERS_RB)
+            + ". Single-member enums emit the full name; digit-leading remainders "
+            "prepend the first prefix character. Names emitted by SDK releases up "
+            "to 1.11.x are accepted as deprecated fromJson input aliases."
         )
         section.fields.append(self._make_field(
             name="Enum",
@@ -2690,7 +2695,7 @@ class SEP51Analyzer(SEPAnalyzerBase):
 
         # -- Discriminated Union --
         union_render_line = self._grep_line(gen_rb, r"def render_union_sep51_methods")
-        union_schema_line = self._grep_line(gen_rb, r"is_array.*array_key_exists.*\\\$schema")
+        union_schema_line = self._grep_line(gen_rb, r"is_array.*array_key_exists.*\$schema")
         union_note = (
             "Four sub-arm shapes supported: void arm (JSON string), non-void arm (JSON object), "
             "multi-void (JSON string for each void case), int-cased (discriminant-name + integer). "
@@ -2864,8 +2869,27 @@ class SEP51Analyzer(SEPAnalyzerBase):
             description="AssetCode12: trim NUL bytes; if result <= 4 bytes pad to 5; encode via String escape (SEP-0051 §Asset Code Types)",
             status=SupportStatus.SUPPORTED,
             notes=(
-                "Trim-and-pad rule per SEP-0051; XdrJsonHelper::escapeString. "
+                "Trim-and-pad rule per SEP-0051 (all-NUL emits five escaped NULs); "
+                "XdrJsonHelper::escapeString. "
                 + (self._cite(alpha12_path, alpha12_tojson) if alpha12_tojson else "")
+                + ". Intentional input-side strictness: standalone AlphaNum12 "
+                "fields reject codes decoding to fewer than 5 bytes "
+                "(protocol-invalid; rs-stellar-xdr accepts and pads them "
+                "structurally)."
+            ),
+        ))
+
+        allow_trust_path = "Soneso/StellarSDK/Xdr/XdrAllowTrustOperationAssetBase.php"
+        allow_trust_tojson = self._grep_line(allow_trust_path, r"public function toJsonValue")
+        section.fields.append(self._make_field(
+            name="AssetCode (union)",
+            description="AssetCode union: bare length-discriminated string, no arm-key envelope (SEP-0051 §Asset Code Types)",
+            status=SupportStatus.SUPPORTED,
+            notes=(
+                "Bare length-discriminated string per SEP-0051 §Asset Code Types "
+                "(at most 4 decoded bytes -> AssetCode4, at least 5 -> AssetCode12); "
+                "no arm-key envelope. "
+                + (self._cite(allow_trust_path, allow_trust_tojson) if allow_trust_tojson else allow_trust_path)
             ),
         ))
 

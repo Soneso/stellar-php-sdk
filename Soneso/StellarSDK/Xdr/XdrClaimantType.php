@@ -53,7 +53,7 @@ class XdrClaimantType {
 
     public function toJsonValue(): string {
         return match ($this->value) {
-            self::V0 => 'v0',
+            self::V0 => 'claimant_type_v0',
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown XdrClaimantType enum value: ' . $this->value
@@ -69,6 +69,10 @@ class XdrClaimantType {
             );
         }
         return match ($value) {
+            'claimant_type_v0' => new static(self::V0),
+            // Deprecated input aliases: wire names emitted by SDK releases
+            // up to 1.11.x. Accepted for compatibility; toJsonValue never
+            // emits them.
             'v0' => new static(self::V0),
             default => throw new InvalidArgumentException(
                 'Unknown XdrClaimantType JSON value: ' . XdrJsonHelper::safePreview($value)

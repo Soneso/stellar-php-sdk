@@ -60,6 +60,7 @@ use Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaExtV1;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaV2;
 use Soneso\StellarSDK\Xdr\XdrStellarValue;
 use Soneso\StellarSDK\Xdr\XdrStellarValueExt;
+use Soneso\StellarSDK\Xdr\XdrStellarValueProposedValue;
 use Soneso\StellarSDK\Xdr\XdrStellarValueType;
 use Soneso\StellarSDK\Xdr\XdrTransactionEvent;
 use Soneso\StellarSDK\Xdr\XdrTransactionEventStage;
@@ -122,7 +123,7 @@ class XdrLedgerGenTest extends TestCase
 
     public function testXdrStellarValueTypeEnumRoundTrip(): void
     {
-        $values = [XdrStellarValueType::STELLAR_VALUE_BASIC, XdrStellarValueType::STELLAR_VALUE_SIGNED];
+        $values = [XdrStellarValueType::STELLAR_VALUE_BASIC, XdrStellarValueType::STELLAR_VALUE_SIGNED, XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET];
         foreach ($values as $v) {
             $original = new XdrStellarValueType($v);
             $encoded = $original->encode();
@@ -144,11 +145,12 @@ class XdrLedgerGenTest extends TestCase
     {
         $this->assertNotNull(XdrStellarValueType::STELLAR_VALUE_BASIC());
         $this->assertNotNull(XdrStellarValueType::STELLAR_VALUE_SIGNED());
+        $this->assertNotNull(XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET());
     }
 
     public function testXdrStellarValueTypeEnumJsonRoundTrip(): void
     {
-        $values = [XdrStellarValueType::STELLAR_VALUE_BASIC, XdrStellarValueType::STELLAR_VALUE_SIGNED];
+        $values = [XdrStellarValueType::STELLAR_VALUE_BASIC, XdrStellarValueType::STELLAR_VALUE_SIGNED, XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET];
         foreach ($values as $v) {
             $original = new XdrStellarValueType($v);
             $j1 = $original->toJsonValue();
@@ -412,6 +414,97 @@ class XdrLedgerGenTest extends TestCase
         $obj = new XdrStellarValueExt(new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_BASIC));
         $this->assertNotNull($obj->getV());
         $obj->getLcValueSignature();
+        $obj->getProposedValue();
+    }
+
+    public function testXdrStellarValueProposedValueStructRoundTrip(): void
+    {
+        $original = new XdrStellarValueProposedValue(str_repeat("\xAB", 32), str_repeat("\xAB", 32), 42, new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04"));
+        $encoded = $original->encode();
+        $decoded = XdrStellarValueProposedValue::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrStellarValueProposedValue');
+        $b64Decoded = XdrStellarValueProposedValue::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrStellarValueProposedValue');
+    }
+
+    public function testXdrStellarValueProposedValueStructJsonRoundTrip(): void
+    {
+        $original = new XdrStellarValueProposedValue(str_repeat("\xAB", 32), str_repeat("\xAB", 32), 42, new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04"));
+        $j1 = $original->toJsonValue();
+        $back = XdrStellarValueProposedValue::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarValueProposedValue');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarValueProposedValue');
+        $back2 = XdrStellarValueProposedValue::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarValueProposedValue');
+    }
+
+    public function testXdrStellarValueProposedValueStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrStellarValueProposedValue(str_repeat("\xAB", 32), str_repeat("\xAB", 32), 42, new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04"));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrStellarValueProposedValue::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrStellarValueProposedValueEdgeCaseZeroRoundTrip(): void
+    {
+        $original = new XdrStellarValueProposedValue(str_repeat("\xAB", 32), str_repeat("\xAB", 32), 0, new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04"));
+        $encoded = $original->encode();
+        $decoded = XdrStellarValueProposedValue::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrStellarValueProposedValue');
+    }
+
+    public function testXdrStellarValueProposedValueGettersSetters(): void
+    {
+        $obj = new XdrStellarValueProposedValue(str_repeat("\xAB", 32), str_repeat("\xAB", 32), 42, new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04"));
+        $this->assertNotNull($obj->getTxSetHash());
+        $newVal = str_repeat("\xAB", 32);
+        $obj->setTxSetHash($newVal);
+        $this->assertSame($newVal, $obj->getTxSetHash());
+        $this->assertNotNull($obj->getPreviousLedgerHash());
+        $newVal = str_repeat("\xAB", 32);
+        $obj->setPreviousLedgerHash($newVal);
+        $this->assertSame($newVal, $obj->getPreviousLedgerHash());
+        $this->assertNotNull($obj->getPreviousLedgerVersion());
+        $newVal = 42;
+        $obj->setPreviousLedgerVersion($newVal);
+        $this->assertSame($newVal, $obj->getPreviousLedgerVersion());
+        $this->assertNotNull($obj->getLcValueSignature());
+        $newVal = new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04");
+        $obj->setLcValueSignature($newVal);
+        $this->assertSame($newVal, $obj->getLcValueSignature());
     }
 
     public function testXdrLedgerHeaderFlagsEnumRoundTrip(): void

@@ -157,7 +157,7 @@ echo $vec->toJson() . PHP_EOL;
 
 ### Enum
 
-An XDR enum member renders as a snake_case string. The encoder strips the longest shared prefix across the enum's members before applying the camelCase-to-snake_case rewrite, so the JSON form drops redundant per-enum scoping. For example `SCValType` has members `SCV_BOOL`, `SCV_VOID`, `SCV_U32`, ...; the shared `SCV_` prefix is removed and the remainder lowercased to give `bool`, `void`, `u32`, etc.
+An XDR enum member renders as a snake_case string derived from the original XDR identifier by the same rule as the rs-stellar-xdr reference implementation: the byte-wise longest common prefix across the enum's members is truncated back to its last underscore and stripped (nothing is stripped for single-member enums or when the common prefix contains no underscore), then the remainder is word-split (underscores and camelCase boundaries) and joined in snake_case. For example `SCValType` has members `SCV_BOOL`, `SCV_VOID`, `SCV_U32`, ...; the shared `SCV_` prefix is removed to give `bool`, `void`, `u32`. Prefixes without a trailing underscore are kept: `txSUCCESS` renders as `tx_success` and `opINNER` as `op_inner`. `fromJson` additionally accepts the names emitted by SDK releases up to 1.11.x as deprecated input aliases.
 
 ```php
 <?php declare(strict_types=1);
@@ -229,6 +229,10 @@ Every Stellar address type that has a StrKey representation is emitted as the St
 | `SignerKey hash_x` | `X` | 32-byte hash |
 | `SignerKey ed25519_signed_payload`, `SignedPayload` | `P` | packed ed25519 + payload bytes |
 
+A signed payload must carry 1 to 64 payload bytes. A zero-length payload is
+valid XDR but has no SEP-23 strkey the ecosystem accepts, so `toJson` and
+`fromJson` reject it with an `InvalidArgumentException`.
+
 ```php
 <?php declare(strict_types=1);
 
@@ -282,6 +286,30 @@ echo bin2hex(XdrJsonHelper::unescapeString('\\xc3\\x9c\\0\\x01')) . PHP_EOL;
 <!-- expected: USDC
 \xc3\x9c\0\x01
 c39c0001
+-->
+
+The emitted form trims trailing NUL bytes; an `AssetCode12` additionally
+right-pads back to a 5-byte minimum so its string form always stays
+distinguishable from an `AssetCode4`. An all-NUL `AssetCode12` therefore
+emits `"\0\0\0\0\0"` (five escaped NULs). On input, a standalone `AlphaNum12`
+field rejects codes decoding to fewer than 5 bytes (such a code is
+protocol-invalid and belongs to `AlphaNum4`).
+
+The `AssetCode` union (the `asset` field of `AllowTrustOp`) emits the bare
+`AssetCode4` / `AssetCode12` string form with no arm-key envelope; the parse
+side discriminates by decoded length (at most 4 bytes selects the
+`AssetCode4` arm, 5 or more the `AssetCode12` arm):
+
+```php
+<?php declare(strict_types=1);
+
+use Soneso\StellarSDK\Xdr\XdrAllowTrustOperationAsset;
+
+echo XdrAllowTrustOperationAsset::fromAlphaNumAssetCode('USD')->toJson() . PHP_EOL;
+echo XdrAllowTrustOperationAsset::fromAlphaNumAssetCode('EURTOK')->toJson() . PHP_EOL;
+```
+<!-- expected: "USD"
+"EURTOK"
 -->
 
 ### ClaimableBalanceID
@@ -379,7 +407,7 @@ public static function fromJson(string $json): static;
 
 The semantics:
 
-- `toJsonValue` returns the value-level PHP representation: a string for strkey-rendered types, an int for 32-bit integers, an associative array for structs, a single-key array for non-void union arms, `null` for null optionals, and the bare arm name for void union arms.
+- `toJsonValue` returns the value-level PHP representation: a string for strkey-rendered types, an int for 32-bit integers, an associative array for structs, a single-key array for non-void union arms (except the `AssetCode` union, which returns the bare length-discriminated code string), `null` for null optionals, and the bare arm name for void union arms.
 - `fromJsonValue` accepts the inverse of `toJsonValue`. Input shape errors throw `InvalidArgumentException` with a bounded preview of the offending value (control bytes are escaped to prevent log injection).
 - `toJson` is `json_encode($this->toJsonValue(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)`. It throws `JsonException` on encode failure.
 - `fromJson` is `static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR))`. It throws `JsonException` on malformed input and `InvalidArgumentException` on shape mismatch.

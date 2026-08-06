@@ -42,7 +42,7 @@ xdr-clean-all: xdr-clean-generated
 	rm -rf xdr/
 
 # Full regeneration cycle
-xdr-update: xdr-clean-all xdr-generate xdr-emit-roundtrip-tests
+xdr-update: xdr-clean-all xdr-generate xdr-emit-roundtrip-tests xdr-generate-tests
 
 # Run snapshot tests
 xdr-generator-test: $(XDR_SRCS)

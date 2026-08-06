@@ -76,13 +76,13 @@ class XdrOperationResult {
 
     public function toJsonValue(): mixed {
         return match ($this->resultCode->getValue()) {
-            XdrOperationResultCode::INNER => ['opinner' => $this->resultTr->toJsonValue()],
-            XdrOperationResultCode::BAD_AUTH => 'opbad_auth',
-            XdrOperationResultCode::NO_ACCOUNT => 'opno_account',
-            XdrOperationResultCode::NOT_SUPPORTED => 'opnot_supported',
-            XdrOperationResultCode::TOO_MANY_SUBENTRIES => 'optoo_many_subentries',
-            XdrOperationResultCode::EXCEEDED_WORK_LIMIT => 'opexceeded_work_limit',
-            XdrOperationResultCode::TOO_MANY_SPONSORING => 'optoo_many_sponsoring',
+            XdrOperationResultCode::INNER => ['op_inner' => $this->resultTr->toJsonValue()],
+            XdrOperationResultCode::BAD_AUTH => 'op_bad_auth',
+            XdrOperationResultCode::NO_ACCOUNT => 'op_no_account',
+            XdrOperationResultCode::NOT_SUPPORTED => 'op_not_supported',
+            XdrOperationResultCode::TOO_MANY_SUBENTRIES => 'op_too_many_subentries',
+            XdrOperationResultCode::EXCEEDED_WORK_LIMIT => 'op_exceeded_work_limit',
+            XdrOperationResultCode::TOO_MANY_SPONSORING => 'op_too_many_sponsoring',
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown discriminant for resultCode on XdrOperationResultCode'
@@ -97,14 +97,26 @@ class XdrOperationResult {
         }
         if (is_string($value)) {
             return match ($value) {
+                'op_bad_auth' => new static(new XdrOperationResultCode(XdrOperationResultCode::BAD_AUTH)),
+                'op_no_account' => new static(new XdrOperationResultCode(XdrOperationResultCode::NO_ACCOUNT)),
+                'op_not_supported' => new static(new XdrOperationResultCode(XdrOperationResultCode::NOT_SUPPORTED)),
+                'op_too_many_subentries' => new static(new XdrOperationResultCode(XdrOperationResultCode::TOO_MANY_SUBENTRIES)),
+                'op_exceeded_work_limit' => new static(new XdrOperationResultCode(XdrOperationResultCode::EXCEEDED_WORK_LIMIT)),
+                'op_too_many_sponsoring' => new static(new XdrOperationResultCode(XdrOperationResultCode::TOO_MANY_SPONSORING)),
+                // Deprecated input aliases: wire names emitted by SDK
+                // releases up to 1.11.x. Accepted for compatibility;
+                // toJsonValue never emits them.
                 'opbad_auth' => new static(new XdrOperationResultCode(XdrOperationResultCode::BAD_AUTH)),
                 'opno_account' => new static(new XdrOperationResultCode(XdrOperationResultCode::NO_ACCOUNT)),
                 'opnot_supported' => new static(new XdrOperationResultCode(XdrOperationResultCode::NOT_SUPPORTED)),
                 'optoo_many_subentries' => new static(new XdrOperationResultCode(XdrOperationResultCode::TOO_MANY_SUBENTRIES)),
                 'opexceeded_work_limit' => new static(new XdrOperationResultCode(XdrOperationResultCode::EXCEEDED_WORK_LIMIT)),
                 'optoo_many_sponsoring' => new static(new XdrOperationResultCode(XdrOperationResultCode::TOO_MANY_SPONSORING)),
+                'op_inner' => throw new InvalidArgumentException(
+                    "Arm 'op_inner' on XdrOperationResult is non-void; supply a single-key object {\"op_inner\": <payload>} instead of a bare string."
+                ),
                 'opinner' => throw new InvalidArgumentException(
-                    "Arm 'opinner' on XdrOperationResult is non-void; supply a single-key object {\"opinner\": <payload>} instead of a bare string."
+                    "Arm 'opinner' on XdrOperationResult is non-void; supply a single-key object {\"op_inner\": <payload>} instead of a bare string."
                 ),
                 default => throw new InvalidArgumentException(
                     'Unknown XdrOperationResult void arm string: ' . XdrJsonHelper::safePreview($value)
@@ -124,6 +136,10 @@ class XdrOperationResult {
         }
         $arm = $value[$key];
         return match ($key) {
+            'op_inner' => (static function () use ($arm) { $r = new static(new XdrOperationResultCode(XdrOperationResultCode::INNER)); $r->resultTr = XdrOperationResultTr::fromJsonValue($arm); return $r; })(),
+            // Deprecated input aliases: wire names emitted by SDK releases
+            // up to 1.11.x. Accepted for compatibility; toJsonValue never
+            // emits them.
             'opinner' => (static function () use ($arm) { $r = new static(new XdrOperationResultCode(XdrOperationResultCode::INNER)); $r->resultTr = XdrOperationResultTr::fromJsonValue($arm); return $r; })(),
             default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrOperationResult: ' . XdrJsonHelper::safePreview($key)

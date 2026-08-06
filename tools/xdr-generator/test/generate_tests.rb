@@ -23,6 +23,11 @@ MAX_DEPTH = 3
 # Test account ID used for XdrAccountID fields.
 TEST_ACCOUNT_ID = "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H"
 
+# String-form unions for which the empty string is a VALID value and must not
+# appear in the generated rejection battery. The AssetCode union parses "" as
+# an all-NUL AssetCode4 (and emits "" for it), matching rs-stellar-xdr.
+STRING_FORM_UNIONS_ACCEPTING_EMPTY = %w[XdrAllowTrustOperationAsset].freeze
+
 # PHP reserved words (same as generator).
 PHP_RESERVED_WORDS = %w[
   abstract array as break callable case catch class clone const continue
@@ -1704,7 +1709,11 @@ def generate_union_negative_json_test(php_name, union_defn)
   lines << "        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }"
   lines << "        if (is_string($valid)) {"
   lines << "            $assertRejects(['not' => 'a string'], 'non-string union value');"
-  lines << "            $assertRejects('', 'empty string union value');"
+  if STRING_FORM_UNIONS_ACCEPTING_EMPTY.include?(php_name)
+    lines << "            // '' is a valid value for this union (all-NUL AssetCode4); no rejection."
+  else
+    lines << "            $assertRejects('', 'empty string union value');"
+  end
   lines << "            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');"
   lines << "        } else {"
   lines << "            if ($hasStringForm) {"

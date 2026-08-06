@@ -59,8 +59,8 @@ class XdrIPAddrType {
 
     public function toJsonValue(): string {
         return match ($this->value) {
-            self::IPv4 => 'ipv4',
-            self::IPv6 => 'ipv6',
+            self::IPv4 => 'i_pv4',
+            self::IPv6 => 'i_pv6',
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown XdrIPAddrType enum value: ' . $this->value
@@ -76,6 +76,11 @@ class XdrIPAddrType {
             );
         }
         return match ($value) {
+            'i_pv4' => new static(self::IPv4),
+            'i_pv6' => new static(self::IPv6),
+            // Deprecated input aliases: wire names emitted by SDK releases
+            // up to 1.11.x. Accepted for compatibility; toJsonValue never
+            // emits them.
             'ipv4' => new static(self::IPv4),
             'ipv6' => new static(self::IPv6),
             default => throw new InvalidArgumentException(

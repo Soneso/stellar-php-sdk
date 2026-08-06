@@ -47,9 +47,12 @@ use Soneso\StellarSDK\Xdr\XdrTransactionResultCode;
  *   - long unknown string (truncated in the exception message)
  *
  * The OperationResultCode and TransactionResultCode coverage pins the
- * SEP-0051 §Discriminated unions rule that strips the well-known IDL
- * member prefix and emits the bare lowercase identifier (so OP_INNER
- * becomes `inner`, TX_SUCCESS becomes `success`, etc.).
+ * canonical rs-stellar-xdr naming rule: the byte-wise shared prefix is
+ * truncated back to the last underscore before stripping, so the "op"/"tx"
+ * prefixes (no trailing underscore) are retained and camelCase splits at
+ * word boundaries (opINNER emits `op_inner`, txSUCCESS emits `tx_success`).
+ * The names emitted by SDK releases up to 1.11.x remain accepted by
+ * fromJsonValue as deprecated input aliases.
  */
 class PrimitivesAndEnumsRoundTripTest extends TestCase
 {
@@ -354,22 +357,29 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
     // CamelCase identifier coverage — XdrIPAddrType, XdrContractCostType
     //
     // These two enums use CamelCase constants rather than ALL_CAPS_WITH_UNDERSCORES.
-    // SEP-0051 §Discriminated unions specifies the wire form is the lowercase
-    // identifier with the well-known prefix stripped; the tokenizer splits on
-    // '_' only, so each CamelCase identifier becomes a single lowercased token
-    // (e.g. IPv4 -> "ipv4"; WasmInsnExec -> "wasminsnexec").
+    // The canonical wire form splits camelCase at word boundaries per the
+    // heck/serde casing used by rs-stellar-xdr (IPv4 -> "i_pv4";
+    // WasmInsnExec -> "wasm_insn_exec").
     // =========================================================================
 
     public function testIPAddrType_camelCaseRoundTrip(): void
     {
         $cases = [
-            XdrIPAddrType::IPv4 => 'ipv4',
-            XdrIPAddrType::IPv6 => 'ipv6',
+            XdrIPAddrType::IPv4 => 'i_pv4',
+            XdrIPAddrType::IPv6 => 'i_pv6',
         ];
         foreach ($cases as $value => $expected) {
             $this->assertSame($expected, (new XdrIPAddrType($value))->toJsonValue());
             $this->assertSame($value, XdrIPAddrType::fromJsonValue($expected)->getValue());
         }
+    }
+
+    public function testIPAddrType_acceptsLegacyAliases(): void
+    {
+        // Names emitted by SDK releases up to 1.11.x are accepted on input
+        // during the deprecation window; they are never emitted.
+        $this->assertSame(XdrIPAddrType::IPv4, XdrIPAddrType::fromJsonValue('ipv4')->getValue());
+        $this->assertSame(XdrIPAddrType::IPv6, XdrIPAddrType::fromJsonValue('ipv6')->getValue());
     }
 
     public function testIPAddrType_rejectsUnknownString(): void
@@ -389,11 +399,11 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
     {
         // Representative members spanning the index range [0, 85].
         $cases = [
-            XdrContractCostType::WasmInsnExec     => 'wasminsnexec',
-            XdrContractCostType::MemAlloc         => 'memalloc',
-            XdrContractCostType::ChaCha20DrawBytes => 'chacha20drawbytes',
-            XdrContractCostType::Bls12381EncodeFp => 'bls12381encodefp',
-            XdrContractCostType::Bn254G1Msm       => 'bn254g1msm',
+            XdrContractCostType::WasmInsnExec      => 'wasm_insn_exec',
+            XdrContractCostType::MemAlloc          => 'mem_alloc',
+            XdrContractCostType::ChaCha20DrawBytes => 'cha_cha20_draw_bytes',
+            XdrContractCostType::Bls12381EncodeFp  => 'bls12381_encode_fp',
+            XdrContractCostType::Bn254G1Msm        => 'bn254_g1_msm',
         ];
         foreach ($cases as $value => $expected) {
             $this->assertSame(
@@ -405,6 +415,24 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
                 $value,
                 XdrContractCostType::fromJsonValue($expected)->getValue(),
                 "ContractCostType('$expected') fromJsonValue mismatch"
+            );
+        }
+    }
+
+    public function testContractCostType_acceptsLegacyAliases(): void
+    {
+        $aliases = [
+            'wasminsnexec'      => XdrContractCostType::WasmInsnExec,
+            'memalloc'          => XdrContractCostType::MemAlloc,
+            'chacha20drawbytes' => XdrContractCostType::ChaCha20DrawBytes,
+            'bls12381encodefp'  => XdrContractCostType::Bls12381EncodeFp,
+            'bn254g1msm'        => XdrContractCostType::Bn254G1Msm,
+        ];
+        foreach ($aliases as $alias => $value) {
+            $this->assertSame(
+                $value,
+                XdrContractCostType::fromJsonValue($alias)->getValue(),
+                "ContractCostType legacy alias '$alias' must be accepted"
             );
         }
     }
@@ -454,23 +482,20 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
     // OperationResultCode — well-known IDL prefix stripped per SEP-0051
     // =========================================================================
 
-    public function testOperationResultCode_emitsBareMemberNamesNoOpPrefix(): void
+    public function testOperationResultCode_keepsOpPrefix(): void
     {
-        // SEP-0051 §Discriminated unions specifies that the wire form is the
-        // lowercase identifier with the well-known IDL prefix removed. For
-        // OperationResultCode the well-known prefix is `op`, so OP_INNER is
-        // emitted as `inner`, OP_BAD_AUTH as `bad_auth`, etc. PHP-side
-        // identifiers are already stripped at codegen-name level via
-        // MEMBER_PREFIX_STRIP and the toJsonValue tokenizer applies the
-        // canonical algorithm.
+        // The original XDR identifiers are opINNER, opBAD_AUTH, ...: their
+        // byte-wise shared prefix "op" contains no underscore, so nothing is
+        // stripped and the heck/serde casing yields "op_inner",
+        // "op_bad_auth", etc., matching rs-stellar-xdr.
         $cases = [
-            XdrOperationResultCode::INNER               => 'inner',
-            XdrOperationResultCode::BAD_AUTH            => 'bad_auth',
-            XdrOperationResultCode::NO_ACCOUNT          => 'no_account',
-            XdrOperationResultCode::NOT_SUPPORTED       => 'not_supported',
-            XdrOperationResultCode::TOO_MANY_SUBENTRIES => 'too_many_subentries',
-            XdrOperationResultCode::EXCEEDED_WORK_LIMIT => 'exceeded_work_limit',
-            XdrOperationResultCode::TOO_MANY_SPONSORING => 'too_many_sponsoring',
+            XdrOperationResultCode::INNER               => 'op_inner',
+            XdrOperationResultCode::BAD_AUTH            => 'op_bad_auth',
+            XdrOperationResultCode::NO_ACCOUNT          => 'op_no_account',
+            XdrOperationResultCode::NOT_SUPPORTED       => 'op_not_supported',
+            XdrOperationResultCode::TOO_MANY_SUBENTRIES => 'op_too_many_subentries',
+            XdrOperationResultCode::EXCEEDED_WORK_LIMIT => 'op_exceeded_work_limit',
+            XdrOperationResultCode::TOO_MANY_SPONSORING => 'op_too_many_sponsoring',
         ];
         foreach ($cases as $value => $expected) {
             $this->assertSame($expected, (new XdrOperationResultCode($value))->toJsonValue());
@@ -478,11 +503,24 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
         }
     }
 
-    public function testOperationResultCode_rejectsPrefixRetainingString(): void
+    public function testOperationResultCode_acceptsLegacyAliases(): void
     {
-        // The prefix-retaining form `opinner` is NOT accepted by fromJsonValue;
-        // SEP-0051 §Discriminated unions specifies the canonical wire form
-        // strips the well-known IDL prefix, so only `inner` is accepted.
+        // Names emitted by SDK releases up to 1.11.x are accepted on input
+        // during the deprecation window; they are never emitted.
+        $this->assertSame(
+            XdrOperationResultCode::INNER,
+            XdrOperationResultCode::fromJsonValue('inner')->getValue()
+        );
+        $this->assertSame(
+            XdrOperationResultCode::BAD_AUTH,
+            XdrOperationResultCode::fromJsonValue('bad_auth')->getValue()
+        );
+    }
+
+    public function testOperationResultCode_rejectsGluedPrefixString(): void
+    {
+        // "opinner" is neither the canonical wire form nor a legacy alias
+        // (pre-1.12 enum emission used "inner"); it must be rejected.
         $this->expectException(\InvalidArgumentException::class);
         XdrOperationResultCode::fromJsonValue('opinner');
     }
@@ -491,29 +529,29 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
     // TransactionResultCode — same prefix-strip rule (`tx` prefix)
     // =========================================================================
 
-    public function testTransactionResultCode_emitsBareMemberNamesNoTxPrefix(): void
+    public function testTransactionResultCode_keepsTxPrefix(): void
     {
         $cases = [
-            XdrTransactionResultCode::FEE_BUMP_INNER_SUCCESS => 'fee_bump_inner_success',
-            XdrTransactionResultCode::SUCCESS                => 'success',
-            XdrTransactionResultCode::FAILED                 => 'failed',
-            XdrTransactionResultCode::TOO_EARLY              => 'too_early',
-            XdrTransactionResultCode::TOO_LATE               => 'too_late',
-            XdrTransactionResultCode::MISSING_OPERATION      => 'missing_operation',
-            XdrTransactionResultCode::BAD_SEQ                => 'bad_seq',
-            XdrTransactionResultCode::BAD_AUTH               => 'bad_auth',
-            XdrTransactionResultCode::INSUFFICIENT_BALANCE   => 'insufficient_balance',
-            XdrTransactionResultCode::NO_ACCOUNT             => 'no_account',
-            XdrTransactionResultCode::INSUFFICIENT_FEE       => 'insufficient_fee',
-            XdrTransactionResultCode::BAD_AUTH_EXTRA         => 'bad_auth_extra',
-            XdrTransactionResultCode::INTERNAL_ERROR         => 'internal_error',
-            XdrTransactionResultCode::NOT_SUPPORTED          => 'not_supported',
-            XdrTransactionResultCode::FEE_BUMP_INNER_FAILED  => 'fee_bump_inner_failed',
-            XdrTransactionResultCode::BAD_SPONSORSHIP        => 'bad_sponsorship',
-            XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP => 'bad_min_seq_age_or_gap',
-            XdrTransactionResultCode::MALFORMED              => 'malformed',
-            XdrTransactionResultCode::SOROBAN_INVALID        => 'soroban_invalid',
-            XdrTransactionResultCode::FROZEN_KEY_ACCESSED    => 'frozen_key_accessed',
+            XdrTransactionResultCode::FEE_BUMP_INNER_SUCCESS => 'tx_fee_bump_inner_success',
+            XdrTransactionResultCode::SUCCESS                => 'tx_success',
+            XdrTransactionResultCode::FAILED                 => 'tx_failed',
+            XdrTransactionResultCode::TOO_EARLY              => 'tx_too_early',
+            XdrTransactionResultCode::TOO_LATE               => 'tx_too_late',
+            XdrTransactionResultCode::MISSING_OPERATION      => 'tx_missing_operation',
+            XdrTransactionResultCode::BAD_SEQ                => 'tx_bad_seq',
+            XdrTransactionResultCode::BAD_AUTH               => 'tx_bad_auth',
+            XdrTransactionResultCode::INSUFFICIENT_BALANCE   => 'tx_insufficient_balance',
+            XdrTransactionResultCode::NO_ACCOUNT             => 'tx_no_account',
+            XdrTransactionResultCode::INSUFFICIENT_FEE       => 'tx_insufficient_fee',
+            XdrTransactionResultCode::BAD_AUTH_EXTRA         => 'tx_bad_auth_extra',
+            XdrTransactionResultCode::INTERNAL_ERROR         => 'tx_internal_error',
+            XdrTransactionResultCode::NOT_SUPPORTED          => 'tx_not_supported',
+            XdrTransactionResultCode::FEE_BUMP_INNER_FAILED  => 'tx_fee_bump_inner_failed',
+            XdrTransactionResultCode::BAD_SPONSORSHIP        => 'tx_bad_sponsorship',
+            XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP => 'tx_bad_min_seq_age_or_gap',
+            XdrTransactionResultCode::MALFORMED              => 'tx_malformed',
+            XdrTransactionResultCode::SOROBAN_INVALID        => 'tx_soroban_invalid',
+            XdrTransactionResultCode::FROZEN_KEY_ACCESSED    => 'tx_frozen_key_accessed',
         ];
         foreach ($cases as $value => $expected) {
             $this->assertSame($expected, (new XdrTransactionResultCode($value))->toJsonValue());
@@ -521,8 +559,22 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
         }
     }
 
-    public function testTransactionResultCode_rejectsPrefixRetainingString(): void
+    public function testTransactionResultCode_acceptsLegacyAliases(): void
     {
+        $this->assertSame(
+            XdrTransactionResultCode::SUCCESS,
+            XdrTransactionResultCode::fromJsonValue('success')->getValue()
+        );
+        $this->assertSame(
+            XdrTransactionResultCode::FEE_BUMP_INNER_SUCCESS,
+            XdrTransactionResultCode::fromJsonValue('fee_bump_inner_success')->getValue()
+        );
+    }
+
+    public function testTransactionResultCode_rejectsGluedPrefixString(): void
+    {
+        // "txsuccess" is neither the canonical wire form nor a legacy alias
+        // (pre-1.12 enum emission used "success"); it must be rejected.
         $this->expectException(\InvalidArgumentException::class);
         XdrTransactionResultCode::fromJsonValue('txsuccess');
     }

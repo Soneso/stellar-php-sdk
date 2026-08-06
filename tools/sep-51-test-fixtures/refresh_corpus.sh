@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
-# Refresh the SEP-51 snapshot corpus and diff against the committed copy.
+# Diff the PHP SDK's current SEP-0051 output against the vendored corpus.
 #
-# Re-runs generate_corpus.py (which seeds via PHP and snapshots the SDK's own
-# canonical SEP-0051 toJson output for every fixture), then compares the
-# produced corpus.json against the committed reference.
+# Re-runs generate_corpus.py with --source php (the SDK's own toJson output;
+# no oracle binary required), then compares the produced entries against the
+# committed corpus, whose spec_reference_json is populated from the
+# rs-stellar-xdr CLI oracle. Drift therefore means the SDK's emission no
+# longer matches the reference implementation baseline.
+#
+# Only the `entries` array is compared: `generated_at` and `_meta` describe
+# the provenance of each file (oracle vs php) and differ by design.
 #
 # Exit codes:
 #   0 no drift.
-#   1 drift detected (corpus diverges from committed reference).
+#   1 drift detected (SDK output diverges from the vendored oracle baseline).
 #   2 prerequisite failure (missing generator, generator failure, etc.).
 
 set -uo pipefail
@@ -38,7 +43,7 @@ SCRATCH=$(mktemp -d)
 trap 'rm -rf "$SCRATCH"' EXIT
 SCRATCH_OUT="$SCRATCH/corpus.refreshed.json"
 
-if ! python3 "$GENERATOR" --output "$SCRATCH_OUT"; then
+if ! python3 "$GENERATOR" --source php --output "$SCRATCH_OUT"; then
     echo "refresh_corpus: generator run failed" >&2
     exit 2
 fi
@@ -48,25 +53,38 @@ if [ ! -f "$COMMITTED" ]; then
     exit 2
 fi
 
-# Compare normalised JSON (sorted keys) for deterministic diff.
+# Compare normalised entries (sorted keys, spec_reference_json parsed as JSON
+# so formatting differences between emitters do not count as drift; the
+# oracle_incomparable marker is metadata of the committed corpus only). On
+# drift, the same normalisation feeds the printed diff, so the report always
+# matches the comparison that failed.
 if python3 - "$COMMITTED" "$SCRATCH_OUT" <<'PY'
-import json, sys
-a = json.loads(open(sys.argv[1], encoding="utf-8").read())
-b = json.loads(open(sys.argv[2], encoding="utf-8").read())
-a_norm = json.dumps(a, sort_keys=True)
-b_norm = json.dumps(b, sort_keys=True)
-sys.exit(0 if a_norm == b_norm else 1)
+import difflib, json, sys
+
+def normalised_entries(path):
+    doc = json.loads(open(path, encoding="utf-8").read())
+    entries = []
+    for e in doc["entries"]:
+        e = dict(e)
+        e.pop("oracle_incomparable", None)
+        if isinstance(e.get("spec_reference_json"), str):
+            e["spec_reference_json"] = json.loads(e["spec_reference_json"])
+        entries.append(e)
+    return json.dumps(entries, indent=2, sort_keys=True).splitlines()
+
+a = normalised_entries(sys.argv[1])
+b = normalised_entries(sys.argv[2])
+if a == b:
+    sys.exit(0)
+sys.stderr.write("\n".join(
+    difflib.unified_diff(a, b, fromfile="committed", tofile="refreshed", lineterm="")
+) + "\n")
+sys.exit(1)
 PY
 then
     echo "refresh_corpus: no drift."
     exit 0
 else
     echo "refresh_corpus: drift detected vs committed corpus."
-    python3 - "$COMMITTED" "$SCRATCH_OUT" <<'PY' || true
-import difflib, json, sys
-a = json.dumps(json.load(open(sys.argv[1], encoding="utf-8")), indent=2, sort_keys=True).splitlines()
-b = json.dumps(json.load(open(sys.argv[2], encoding="utf-8")), indent=2, sort_keys=True).splitlines()
-sys.stderr.write("\n".join(difflib.unified_diff(a, b, fromfile="committed", tofile="refreshed", lineterm="")) + "\n")
-PY
     exit 1
 fi

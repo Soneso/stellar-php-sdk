@@ -32,6 +32,7 @@ use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12;
 use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrBeginSponsoringFutureReservesOperation;
+use Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType;
 use Soneso\StellarSDK\Xdr\XdrBucketEntry;
 use Soneso\StellarSDK\Xdr\XdrBucketEntryType;
 use Soneso\StellarSDK\Xdr\XdrBucketMetadata;
@@ -39,17 +40,16 @@ use Soneso\StellarSDK\Xdr\XdrBucketMetadataExt;
 use Soneso\StellarSDK\Xdr\XdrBumpSequenceOperation;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustOperation;
-use Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceOperation;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntry;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntryExt;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceIDType;
+use Soneso\StellarSDK\Xdr\XdrClaimantType;
+use Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceOperation;
 use Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceOperation;
 use Soneso\StellarSDK\Xdr\XdrClawbackOperation;
-use Soneso\StellarSDK\Xdr\XdrContractEvent;
-use Soneso\StellarSDK\Xdr\XdrContractEventBody;
-use Soneso\StellarSDK\Xdr\XdrContractEventBodyV0;
-use Soneso\StellarSDK\Xdr\XdrContractEventType;
+use Soneso\StellarSDK\Xdr\XdrClawbackResult;
+use Soneso\StellarSDK\Xdr\XdrClawbackResultCode;
 use Soneso\StellarSDK\Xdr\XdrConfigSettingContractBandwidthV0;
 use Soneso\StellarSDK\Xdr\XdrConfigSettingContractComputeV0;
 use Soneso\StellarSDK\Xdr\XdrConfigSettingContractEventsV0;
@@ -58,11 +58,20 @@ use Soneso\StellarSDK\Xdr\XdrConfigSettingContractHistoricalDataV0;
 use Soneso\StellarSDK\Xdr\XdrConfigSettingContractLedgerCostV0;
 use Soneso\StellarSDK\Xdr\XdrConfigSettingEntry;
 use Soneso\StellarSDK\Xdr\XdrConfigSettingID;
+use Soneso\StellarSDK\Xdr\XdrContractCostType;
+use Soneso\StellarSDK\Xdr\XdrContractEvent;
+use Soneso\StellarSDK\Xdr\XdrContractEventBody;
+use Soneso\StellarSDK\Xdr\XdrContractEventBodyV0;
+use Soneso\StellarSDK\Xdr\XdrContractEventType;
 use Soneso\StellarSDK\Xdr\XdrContractExecutable;
 use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 use Soneso\StellarSDK\Xdr\XdrCreateAccountOperation;
+use Soneso\StellarSDK\Xdr\XdrCreateAccountResult;
+use Soneso\StellarSDK\Xdr\XdrCreateAccountResultCode;
 use Soneso\StellarSDK\Xdr\XdrCreateClaimableBalanceOperation;
 use Soneso\StellarSDK\Xdr\XdrCreatePassiveSellOfferOperation;
+use Soneso\StellarSDK\Xdr\XdrCurve25519Public;
+use Soneso\StellarSDK\Xdr\XdrCurve25519Secret;
 use Soneso\StellarSDK\Xdr\XdrDataValue;
 use Soneso\StellarSDK\Xdr\XdrDataValueMandatory;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
@@ -71,6 +80,8 @@ use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrExtendFootprintTTLOp;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrGeneralizedTransactionSet;
+use Soneso\StellarSDK\Xdr\XdrHmacSha256Key;
+use Soneso\StellarSDK\Xdr\XdrHmacSha256Mac;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntry;
@@ -78,6 +89,7 @@ use Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntryType;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrInt256Parts;
 use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionOp;
+use Soneso\StellarSDK\Xdr\XdrIPAddrType;
 use Soneso\StellarSDK\Xdr\XdrLedgerBounds;
 use Soneso\StellarSDK\Xdr\XdrLedgerCloseMeta;
 use Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaExt;
@@ -104,15 +116,17 @@ use Soneso\StellarSDK\Xdr\XdrMemo;
 use Soneso\StellarSDK\Xdr\XdrMemoType;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccountMed25519;
-use Soneso\StellarSDK\Xdr\XdrIPAddrType;
 use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
+use Soneso\StellarSDK\Xdr\XdrOperationResult;
+use Soneso\StellarSDK\Xdr\XdrOperationResultCode;
+use Soneso\StellarSDK\Xdr\XdrOperationResultTr;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
-use Soneso\StellarSDK\Xdr\XdrPeerAddress;
-use Soneso\StellarSDK\Xdr\XdrPeerAddressIp;
 use Soneso\StellarSDK\Xdr\XdrPathPaymentStrictReceiveOperation;
 use Soneso\StellarSDK\Xdr\XdrPathPaymentStrictSendOperation;
 use Soneso\StellarSDK\Xdr\XdrPaymentOperation;
+use Soneso\StellarSDK\Xdr\XdrPeerAddress;
+use Soneso\StellarSDK\Xdr\XdrPeerAddressIp;
 use Soneso\StellarSDK\Xdr\XdrPrice;
 use Soneso\StellarSDK\Xdr\XdrRestoreFootprintOp;
 use Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipOperation;
@@ -123,6 +137,7 @@ use Soneso\StellarSDK\Xdr\XdrSCContractInstance;
 use Soneso\StellarSDK\Xdr\XdrSCError;
 use Soneso\StellarSDK\Xdr\XdrSCErrorCode;
 use Soneso\StellarSDK\Xdr\XdrSCErrorType;
+use Soneso\StellarSDK\Xdr\XdrSCNonceKey;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
 use Soneso\StellarSDK\Xdr\XdrSCSpecFunctionV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecTypeDef;
@@ -137,13 +152,14 @@ use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseVoidV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionV0;
 use Soneso\StellarSDK\Xdr\XdrSCSymbol;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
-use Soneso\StellarSDK\Xdr\XdrSCNonceKey;
 use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
+use Soneso\StellarSDK\Xdr\XdrSerializedBinaryFuseFilter;
 use Soneso\StellarSDK\Xdr\XdrSetOptionsOperation;
 use Soneso\StellarSDK\Xdr\XdrSetTrustLineFlagsOperation;
+use Soneso\StellarSDK\Xdr\XdrShortHashSeed;
+use Soneso\StellarSDK\Xdr\XdrSignedPayload;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
-use Soneso\StellarSDK\Xdr\XdrSignedPayload;
 use Soneso\StellarSDK\Xdr\XdrStellarValue;
 use Soneso\StellarSDK\Xdr\XdrStellarValueExt;
 use Soneso\StellarSDK\Xdr\XdrStellarValueType;
@@ -1298,6 +1314,114 @@ add($fixtures, 'transaction_result_meta_v1_success', 'TransactionResultMetaV1',
     ),
     'SEP-0051 §Stellar-Specific Types > TransactionResultMetaV1',
     'SUCCESS result with empty fee processing arrays and v0 meta');
+
+// Inline fixed-length opaque fields (declared `opaque identifier[N]` in the
+// .x rather than through a named typedef). SEP-0051 §Opaque Data (Fixed
+// Length) mandates a hex string; rs-stellar-xdr serialises the unwrapped
+// [u8; N] as a JSON array of numbers. These entries pin the SDK's
+// spec-compliant hex form; generate_corpus.py marks them
+// oracle-incomparable.
+add($fixtures, 'curve25519_secret_standalone', 'Curve25519Secret',
+    new XdrCurve25519Secret(str_repeat("\x51", 32)),
+    'SEP-0051 §Specification > Opaque Data (Fixed Length)',
+    'Inline opaque[32] key field; spec-mandated hex form');
+add($fixtures, 'curve25519_public_standalone', 'Curve25519Public',
+    new XdrCurve25519Public(str_repeat("\x52", 32)),
+    'SEP-0051 §Specification > Opaque Data (Fixed Length)',
+    'Inline opaque[32] key field; spec-mandated hex form');
+add($fixtures, 'hmac_sha256_key_standalone', 'HmacSha256Key',
+    new XdrHmacSha256Key(str_repeat("\x53", 32)),
+    'SEP-0051 §Specification > Opaque Data (Fixed Length)',
+    'Inline opaque[32] key field; spec-mandated hex form');
+add($fixtures, 'hmac_sha256_mac_standalone', 'HmacSha256Mac',
+    new XdrHmacSha256Mac(str_repeat("\x54", 32)),
+    'SEP-0051 §Specification > Opaque Data (Fixed Length)',
+    'Inline opaque[32] mac field; spec-mandated hex form');
+add($fixtures, 'short_hash_seed_standalone', 'ShortHashSeed',
+    new XdrShortHashSeed(str_repeat("\x55", 16)),
+    'SEP-0051 §Specification > Opaque Data (Fixed Length)',
+    'Inline opaque[16] seed field; spec-mandated hex form');
+add($fixtures, 'serialized_binary_fuse_filter', 'SerializedBinaryFuseFilter',
+    new XdrSerializedBinaryFuseFilter(
+        new XdrBinaryFuseFilterType(XdrBinaryFuseFilterType::BINARY_FUSE_FILTER_8_BIT),
+        new XdrShortHashSeed(str_repeat("\x56", 16)),
+        new XdrShortHashSeed(str_repeat("\x57", 16)),
+        4, 3, 2, 2, 1, "\xf0\xf1\xf2\xf3"
+    ),
+    'SEP-0051 §Specification > Opaque Data (Fixed Length)',
+    'Embeds two inline-opaque ShortHashSeed fields and the b8_bit enum arm');
+
+// Oracle-anchored fixtures for the wire names whose derivation depends on
+// the non-trivial branches of the canonical naming rule: camelCase word
+// splitting, prefixes without a trailing underscore, digit-leading
+// remainders, single-member enums, and multi-token byte-wise prefixes.
+add($fixtures, 'ip_addr_type_v4', 'IPAddrType',
+    new XdrIPAddrType(XdrIPAddrType::IPv4),
+    'SEP-0051 §Specification > Enum',
+    'CamelCase member with acronym run (IPv4 -> i_pv4)');
+add($fixtures, 'ip_addr_type_v6', 'IPAddrType',
+    new XdrIPAddrType(XdrIPAddrType::IPv6),
+    'SEP-0051 §Specification > Enum',
+    'CamelCase member with acronym run (IPv6 -> i_pv6)');
+add($fixtures, 'contract_cost_type_wasm_insn_exec', 'ContractCostType',
+    new XdrContractCostType(XdrContractCostType::WasmInsnExec),
+    'SEP-0051 §Specification > Enum',
+    'CamelCase member word-split (WasmInsnExec -> wasm_insn_exec)');
+add($fixtures, 'binary_fuse_filter_type_8bit', 'BinaryFuseFilterType',
+    new XdrBinaryFuseFilterType(XdrBinaryFuseFilterType::BINARY_FUSE_FILTER_8_BIT),
+    'SEP-0051 §Specification > Enum',
+    'Digit-leading remainder after prefix strip (b8_bit)');
+add($fixtures, 'binary_fuse_filter_type_16bit', 'BinaryFuseFilterType',
+    new XdrBinaryFuseFilterType(XdrBinaryFuseFilterType::BINARY_FUSE_FILTER_16_BIT),
+    'SEP-0051 §Specification > Enum',
+    'Digit-leading remainder after prefix strip (b16_bit)');
+add($fixtures, 'binary_fuse_filter_type_32bit', 'BinaryFuseFilterType',
+    new XdrBinaryFuseFilterType(XdrBinaryFuseFilterType::BINARY_FUSE_FILTER_32_BIT),
+    'SEP-0051 §Specification > Enum',
+    'Digit-leading remainder after prefix strip (b32_bit)');
+add($fixtures, 'claimant_type_v0_standalone', 'ClaimantType',
+    new XdrClaimantType(XdrClaimantType::V0),
+    'SEP-0051 §Specification > Enum',
+    'Single-member enum emits the full identifier (claimant_type_v0)');
+add($fixtures, 'create_account_result_already_exist', 'CreateAccountResult',
+    new XdrCreateAccountResult(new XdrCreateAccountResultCode(XdrCreateAccountResultCode::ACCOUNT_ALREADY_EXIST)),
+    'SEP-0051 §Specification > Enum',
+    'Multi-token byte-wise prefix strip (CREATE_ACCOUNT_ -> already_exist)');
+add($fixtures, 'clawback_result_not_clawback_enabled', 'ClawbackResult',
+    new XdrClawbackResult(new XdrClawbackResultCode(XdrClawbackResultCode::NOT_ENABLED)),
+    'SEP-0051 §Specification > Enum',
+    'Prefix strip is positional; interior CLAWBACK token retained (not_clawback_enabled)');
+add($fixtures, 'operation_result_bad_auth', 'OperationResult',
+    new XdrOperationResult(new XdrOperationResultCode(XdrOperationResultCode::BAD_AUTH)),
+    'SEP-0051 §Specification > Discriminated Union',
+    'Void arm keyed by a prefix without trailing underscore (op_bad_auth)');
+add($fixtures, 'operation_result_inner_create_account', 'OperationResult',
+    (static function (): XdrOperationResult {
+        $tr = new XdrOperationResultTr(new XdrOperationType(XdrOperationType::CREATE_ACCOUNT));
+        $tr->createAccountResult = new XdrCreateAccountResult(
+            new XdrCreateAccountResultCode(XdrCreateAccountResultCode::ACCOUNT_ALREADY_EXIST)
+        );
+        $result = new XdrOperationResult(new XdrOperationResultCode(XdrOperationResultCode::INNER));
+        $result->setResultTr($tr);
+        return $result;
+    })(),
+    'SEP-0051 §Specification > Discriminated Union',
+    'Non-void op_inner arm carrying a create_account result');
+add($fixtures, 'allow_trust_operation_alphanum12', 'AllowTrustOperation',
+    new XdrAllowTrustOperation(
+        new XdrAccountID('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'),
+        XdrAllowTrustOperationAsset::fromAlphaNumAssetCode('EURTOK'),
+        1
+    ),
+    'SEP-0051 §Asset Code Types',
+    'AssetCode union 12-byte arm as bare length-discriminated string');
+add($fixtures, 'asset_alpha_num12_all_nul', 'AssetAlphaNum12',
+    new XdrAssetAlphaNum12(
+        str_repeat("\x00", 12),
+        new XdrAccountID('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H')
+    ),
+    'SEP-0051 §Asset Code Types',
+    'All-NUL AssetCode12 emits five escaped NULs');
 
 // -----------------------------------------------------------------------
 // Output JSON

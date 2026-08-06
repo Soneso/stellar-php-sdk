@@ -51,11 +51,7 @@ class XdrAssetAlphaNum12Base {
         return [
             'asset_code' => (static function (string $bytes): string {
             $trimmed = rtrim($bytes, "\x00");
-            $len = strlen($trimmed);
-            if ($len === 0) {
-                throw new InvalidArgumentException('AssetCode12 must not be all-null');
-            }
-            if ($len <= 4) {
+            if (strlen($trimmed) <= 4) {
                 $trimmed = str_pad($trimmed, 5, "\x00", STR_PAD_RIGHT);
             }
             return XdrJsonHelper::escapeString($trimmed);

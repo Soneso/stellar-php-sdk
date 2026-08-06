@@ -117,6 +117,15 @@ class XdrSignerKey {
                         'XdrSignerKey signedPayload field is null'
                     );
                 }
+                // A zero-length payload is valid XDR but has no
+                // SEP-23 strkey the ecosystem accepts (payload must
+                // be 1 to 64 bytes); there is no spec-conformant
+                // JSON rendering for it.
+                if ($this->signedPayload->getPayload() === '') {
+                    throw new InvalidArgumentException(
+                        'Zero-length signed payload has no SEP-23 strkey representation'
+                    );
+                }
                 return StrKey::encodeXdrSignedPayload($this->signedPayload);
             default:
                 throw new InvalidArgumentException(
@@ -155,6 +164,11 @@ class XdrSignerKey {
         if ($prefix === 'P') {
             $result = new static(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD));
             $result->signedPayload = StrKey::decodeXdrSignedPayload($value);
+            if ($result->signedPayload->getPayload() === '') {
+                throw new InvalidArgumentException(
+                    'Zero-length signed payload has no SEP-23 strkey representation'
+                );
+            }
             return $result;
         }
         throw new InvalidArgumentException(

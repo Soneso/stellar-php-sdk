@@ -75,7 +75,7 @@ class XdrContractExecutableBase {
 
     public function toJsonValue(): mixed {
         return match ($this->type->getValue()) {
-            XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM => ['wasm' => XdrJsonHelper::bytesToHex($this->wasmIdHex)],
+            XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM => ['wasm' => (static function ($v) { if (!is_string($v) || strlen($v) !== 64 || !ctype_xdigit($v)) { throw new InvalidArgumentException('Expected 64-character hex wasm hash, got ' . (is_string($v) ? strlen($v) . '-character string' : get_debug_type($v))); } return strtolower($v); })($this->wasmIdHex)],
             XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET => 'stellar_asset',
             XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF => ['external_ref' => $this->externalRef->toJsonValue()],
             // @codeCoverageIgnoreStart
@@ -117,7 +117,7 @@ class XdrContractExecutableBase {
         }
         $arm = $value[$key];
         return match ($key) {
-            'wasm' => (static function () use ($arm) { $r = new static(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM)); $r->wasmIdHex = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($arm); return $r; })(),
+            'wasm' => (static function () use ($arm) { $r = new static(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM)); $r->wasmIdHex = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } if (strlen($v) !== 64 || !ctype_xdigit($v)) { throw new InvalidArgumentException('Expected 64-character hex wasm hash, got ' . strlen($v) . '-character string'); } return strtolower($v); })($arm); return $r; })(),
             'external_ref' => (static function () use ($arm) { $r = new static(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF)); $r->externalRef = XdrContractExecutableExternalRef::fromJsonValue($arm); return $r; })(),
             default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrContractExecutableBase: ' . XdrJsonHelper::safePreview($key)

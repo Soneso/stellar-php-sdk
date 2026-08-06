@@ -108,15 +108,28 @@ class GeneratorSnapshotTest < Minitest::Test
     ])
   end
 
-  def test_sep51_xdr_operation_result_code_emits_bare_member_names
-    # SEP-0051 §Discriminated unions specifies the well-known IDL prefix
-    # is stripped from each member; the PHP-side identifiers have already
-    # been stripped at codegen-name level via MEMBER_PREFIX_STRIP, so the
-    # emission renders OP_INNER as "inner", OP_BAD_AUTH as "bad_auth", etc.
+  def test_sep51_xdr_operation_result_code_keeps_op_prefix
+    # Wire names derive from the ORIGINAL XDR identifiers (opINNER,
+    # opBAD_AUTH, ...): the byte-wise shared prefix "op" contains no
+    # underscore, so nothing is stripped and the heck/serde casing yields
+    # "op_inner", "op_bad_auth", etc., matching rs-stellar-xdr.
     assert_sep51_enum_shape("XdrOperationResultCode.php", expected_arms: %w[
-      inner bad_auth no_account not_supported too_many_subentries
-      exceeded_work_limit too_many_sponsoring
+      op_inner op_bad_auth op_no_account op_not_supported
+      op_too_many_subentries op_exceeded_work_limit op_too_many_sponsoring
     ])
+  end
+
+  def test_sep51_xdr_operation_result_code_accepts_legacy_aliases
+    # fromJsonValue additionally accepts the wire names emitted by SDK
+    # releases up to 1.11.x as deprecated input aliases; toJsonValue must
+    # never emit them.
+    path = File.join(OUTPUT_DIR, "XdrOperationResultCode.php")
+    assert File.exist?(path), "expected #{path} to exist; check generator output cwd"
+    contents = File.read(path)
+    assert_match(/'inner'\s*=>\s*new\s+static\(self::INNER\)/, contents,
+      "legacy alias 'inner' must be accepted by fromJsonValue")
+    refute_match(/self::INNER\s*=>\s*'inner'/, contents,
+      "toJsonValue must emit the canonical name, not the legacy alias")
   end
 
   def test_sep51_xdr_claimable_balance_id_type_single_member
@@ -145,10 +158,9 @@ class GeneratorSnapshotTest < Minitest::Test
 
   def test_sep51_emitted_for_camelcase_const_enums
     # XdrIPAddrType and XdrContractCostType use CamelCase constant names
-    # (e.g. IPv4, IPv6, WasmInsnExec). The tokenizer splits on underscores
-    # only, so each CamelCase identifier becomes a single lowercased token
-    # and produces the canonical SEP-0051 wire form (e.g. ["ipv4","ipv6"];
-    # ["wasminsnexec","memalloc",...]).
+    # (e.g. IPv4, IPv6, WasmInsnExec). The canonical wire forms split the
+    # camelCase words per the heck/serde casing used by rs-stellar-xdr
+    # ("IPv4" -> "i_pv4", "WasmInsnExec" -> "wasm_insn_exec").
     %w[XdrIPAddrType.php XdrContractCostType.php].each do |fname|
       path = File.join(OUTPUT_DIR, fname)
       assert File.exist?(path), "expected #{path} to exist; check generator output cwd"
@@ -156,6 +168,12 @@ class GeneratorSnapshotTest < Minitest::Test
       assert_match SEP51_TO_JSON_VALUE_SIGNATURE, contents,
         "#{fname} should receive SEP-51 enum emission for CamelCase identifiers"
     end
+    ip_contents = File.read(File.join(OUTPUT_DIR, "XdrIPAddrType.php"))
+    assert_match(/self::IPv4\s*=>\s*'i_pv4'/, ip_contents,
+      "IPv4 must emit the canonical camelCase-split wire form")
+    cost_contents = File.read(File.join(OUTPUT_DIR, "XdrContractCostType.php"))
+    assert_match(/self::WasmInsnExec\s*=>\s*'wasm_insn_exec'/, cost_contents,
+      "WasmInsnExec must emit the canonical camelCase-split wire form")
   end
 
   # ------------------------------------------------------------------

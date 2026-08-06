@@ -51,6 +51,12 @@
 module StellarJsonOverrides
   module_function
 
+  # Exception message shared by every emission site that rejects a
+  # zero-length signed payload (a value with no SEP-23 strkey the ecosystem
+  # accepts: a signed payload carries 1 to 64 payload bytes).
+  ZERO_LENGTH_SIGNED_PAYLOAD_MESSAGE =
+    'Zero-length signed payload has no SEP-23 strkey representation'
+
   # Build the canonical toJson/fromJson facade as a single PHP source
   # string suitable for injection by callers that want the full
   # four-method block. Reproduces the generator's render_to_json_facade
@@ -208,6 +214,15 @@ module StellarJsonOverrides
                                   'XdrSignerKey signedPayload field is null'
                               );
                           }
+                          // A zero-length payload is valid XDR but has no
+                          // SEP-23 strkey the ecosystem accepts (payload must
+                          // be 1 to 64 bytes); there is no spec-conformant
+                          // JSON rendering for it.
+                          if ($this->signedPayload->getPayload() === '') {
+                              throw new InvalidArgumentException(
+                                  '#{ZERO_LENGTH_SIGNED_PAYLOAD_MESSAGE}'
+                              );
+                          }
                           return StrKey::encodeXdrSignedPayload($this->signedPayload);
                       default:
                           throw new InvalidArgumentException(
@@ -247,6 +262,11 @@ module StellarJsonOverrides
                   if ($prefix === 'P') {
                       $result = new static(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD));
                       $result->signedPayload = StrKey::decodeXdrSignedPayload($value);
+                      if ($result->signedPayload->getPayload() === '') {
+                          throw new InvalidArgumentException(
+                              '#{ZERO_LENGTH_SIGNED_PAYLOAD_MESSAGE}'
+                          );
+                      }
                       return $result;
                   }
                   throw new InvalidArgumentException(
@@ -262,6 +282,14 @@ module StellarJsonOverrides
       to_value_signature: 'public function toJsonValue(): string',
       to_body: lambda do |_ctx|
         <<~PHP.chomp
+                  // A zero-length payload is valid XDR but has no SEP-23
+                  // strkey the ecosystem accepts (payload must be 1 to 64
+                  // bytes); there is no spec-conformant JSON rendering for it.
+                  if ($this->getPayload() === '') {
+                      throw new InvalidArgumentException(
+                          '#{ZERO_LENGTH_SIGNED_PAYLOAD_MESSAGE}'
+                      );
+                  }
                   return StrKey::encodeXdrSignedPayload($this);
         PHP
       end,
@@ -272,7 +300,13 @@ module StellarJsonOverrides
                           'Expected string for XdrSignedPayload JSON value, got ' . get_debug_type($value)
                       );
                   }
-                  return StrKey::decodeXdrSignedPayload($value);
+                  $result = StrKey::decodeXdrSignedPayload($value);
+                  if ($result->getPayload() === '') {
+                      throw new InvalidArgumentException(
+                          '#{ZERO_LENGTH_SIGNED_PAYLOAD_MESSAGE}'
+                      );
+                  }
+                  return $result;
         PHP
       end,
     },
@@ -860,25 +894,18 @@ module StellarJsonOverrides
     },
 
     # XdrAllowTrustOperationAsset — Cat-B union over (CREDIT_ALPHANUM4,
-    # CREDIT_ALPHANUM12). The default generator emission would produce arm
-    # keys `alphanum4` / `alphanum12` (the prefix-stripped form of the
-    # ASSET_TYPE_CREDIT_ALPHANUM4 / ASSET_TYPE_CREDIT_ALPHANUM12 enum
-    # discriminants). The XDR IDL field is `AssetCode` (a typedef whose
-    # CREDIT_ALPHANUM4 / CREDIT_ALPHANUM12 arms hold opaque[4] and
-    # opaque[12] respectively); SEP-0051 §String requires the AssetCode
-    # bytes to be emitted as a bare escape-aware string under arm keys
-    # `credit_alphanum4` / `credit_alphanum12`, applying trim-pad-escape
-    # AssetCode semantics (rtrim trailing NULs on the 4-byte arm; rtrim
-    # then right-pad to 5 bytes minimum on the 12-byte arm; then SEP-51
-    # escape both).
+    # CREDIT_ALPHANUM12), modelling the AssetCode union of AllowTrustOp.
+    # Per SEP-0051 §"Asset Code Types" (and the rs-stellar-xdr reference), the
+    # AssetCode union serialises as the BARE AssetCode4/AssetCode12 string
+    # form - no arm-key envelope. Discrimination is by encoded length: an
+    # AssetCode4 decodes to at most 4 bytes, an AssetCode12 to at least 5
+    # (the 12-byte arm right-pads to a 5-byte minimum on emit precisely to
+    # keep the two arms distinguishable).
     #
     # This override emits the canonical wire form directly; it bypasses the
-    # generator's standard union dispatch entirely. The (parent_type,
-    # field_name) entries for XdrAllowTrustOperationAssetBase.assetCode4 /
-    # assetCode12 in SEP51_FIELD_OVERRIDES are documentary — they are not
-    # consulted on this code path because the type-level override wins.
+    # generator's standard union dispatch entirely.
     'XdrAllowTrustOperationAsset' => {
-      to_value_signature: 'public function toJsonValue(): mixed',
+      to_value_signature: 'public function toJsonValue(): string',
       to_body: lambda do |_ctx|
         <<~PHP.chomp
                   switch ($this->type->getValue()) {
@@ -889,26 +916,24 @@ module StellarJsonOverrides
                               );
                           }
                           // AssetCode4: rtrim trailing \\x00 then SEP-51 escape.
-                          return ['credit_alphanum4' => XdrJsonHelper::escapeString(rtrim($this->assetCode4, "\\x00"))];
+                          return XdrJsonHelper::escapeString(rtrim($this->assetCode4, "\\x00"));
                       case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
                           if ($this->assetCode12 === null) {
                               throw new InvalidArgumentException(
                                   'XdrAllowTrustOperationAsset assetCode12 field is null'
                               );
                           }
-                          // AssetCode12: rtrim trailing \\x00 fully; if the
-                          // trimmed length <= 4 right-pad to exactly 5 (preserves
+                          // AssetCode12: rtrim trailing \\x00; if the trimmed
+                          // length <= 4 right-pad to exactly 5 (preserves
                           // AssetCode4-vs-AssetCode12 distinguishability per
-                          // SEP-0051 §"Asset Code Types"); throw on all-null.
+                          // SEP-0051 §"Asset Code Types"; an all-NUL code
+                          // serialises as five escaped NULs, matching the
+                          // rs-stellar-xdr reference).
                           $trimmed = rtrim($this->assetCode12, "\\x00");
-                          $len = strlen($trimmed);
-                          if ($len === 0) {
-                              throw new InvalidArgumentException('AssetCode12 must not be all-null');
-                          }
-                          if ($len <= 4) {
+                          if (strlen($trimmed) <= 4) {
                               $trimmed = str_pad($trimmed, 5, "\\x00", STR_PAD_RIGHT);
                           }
-                          return ['credit_alphanum12' => XdrJsonHelper::escapeString($trimmed)];
+                          return XdrJsonHelper::escapeString($trimmed);
                       default:
                           throw new InvalidArgumentException(
                               'Unknown XdrAllowTrustOperationAsset discriminant: ' . $this->type->getValue()
@@ -921,59 +946,40 @@ module StellarJsonOverrides
                   if (is_array($value) && array_key_exists('$schema', $value)) {
                       unset($value['$schema']);
                   }
-                  if (!is_array($value) || count($value) !== 1) {
+                  // Deprecated input aliases: SDK releases up to 1.11.x emitted
+                  // single-key objects {"credit_alphanum4": <code>} /
+                  // {"credit_alphanum12": <code>}. Accepted for compatibility;
+                  // toJsonValue never emits them. The unwrapped code falls
+                  // through to the length-discriminated string path below.
+                  if (is_array($value) && count($value) === 1) {
+                      $key = array_key_first($value);
+                      if ($key === 'credit_alphanum4' || $key === 'credit_alphanum12') {
+                          $value = $value[$key];
+                      }
+                  }
+                  if (!is_string($value)) {
                       throw new InvalidArgumentException(
-                          'Expected single-key object for XdrAllowTrustOperationAsset, got ' . get_debug_type($value)
+                          'Expected AssetCode string for XdrAllowTrustOperationAsset, got ' . get_debug_type($value)
                       );
                   }
-                  $key = array_key_first($value);
-                  if (!is_string($key)) {
+                  $decoded = XdrJsonHelper::unescapeString($value);
+                  $len = strlen($decoded);
+                  if ($len > 12) {
                       throw new InvalidArgumentException(
-                          'Expected string arm key for XdrAllowTrustOperationAsset, got ' . get_debug_type($key)
+                          'AssetCode must not exceed 12 bytes; got ' . $len
                       );
                   }
-                  $arm = $value[$key];
-                  if ($key === 'credit_alphanum4') {
-                      if (!is_string($arm)) {
-                          throw new InvalidArgumentException(
-                              'Expected string for credit_alphanum4 arm, got ' . get_debug_type($arm)
-                          );
-                      }
-                      $decoded = XdrJsonHelper::unescapeString($arm);
-                      if (strlen($decoded) > 4) {
-                          throw new InvalidArgumentException(
-                              'AssetCode4 must not exceed 4 bytes; got ' . strlen($decoded)
-                          );
-                      }
+                  // Length discriminates the arm per SEP-0051 §"Asset Code Types":
+                  // at most 4 decoded bytes is an AssetCode4, at least 5 an
+                  // AssetCode12.
+                  if ($len <= 4) {
                       $result = new static(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4));
                       $result->assetCode4 = str_pad($decoded, 4, "\\x00", STR_PAD_RIGHT);
                       return $result;
                   }
-                  if ($key === 'credit_alphanum12') {
-                      if (!is_string($arm)) {
-                          throw new InvalidArgumentException(
-                              'Expected string for credit_alphanum12 arm, got ' . get_debug_type($arm)
-                          );
-                      }
-                      $decoded = XdrJsonHelper::unescapeString($arm);
-                      $len = strlen($decoded);
-                      if ($len <= 4) {
-                          throw new InvalidArgumentException(
-                              'AssetCode12 must exceed 4 bytes; got ' . $len . ' (use AssetCode4 instead)'
-                          );
-                      }
-                      if ($len > 12) {
-                          throw new InvalidArgumentException(
-                              'AssetCode12 must not exceed 12 bytes; got ' . $len
-                          );
-                      }
-                      $result = new static(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12));
-                      $result->assetCode12 = str_pad($decoded, 12, "\\x00", STR_PAD_RIGHT);
-                      return $result;
-                  }
-                  throw new InvalidArgumentException(
-                      'Unknown arm key for XdrAllowTrustOperationAsset: ' . XdrJsonHelper::safePreview($key)
-                  );
+                  $result = new static(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12));
+                  $result->assetCode12 = str_pad($decoded, 12, "\\x00", STR_PAD_RIGHT);
+                  return $result;
         PHP
       end,
     },

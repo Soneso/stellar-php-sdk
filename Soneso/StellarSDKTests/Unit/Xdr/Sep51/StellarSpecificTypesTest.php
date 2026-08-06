@@ -198,6 +198,46 @@ class StellarSpecificTypesTest extends TestCase
         XdrSignerKey::fromJsonValue('Z' . str_repeat('A', 55));
     }
 
+    public function testXdrSignerKeyRejectsZeroLengthSignedPayloadOnEmit(): void
+    {
+        // A zero-length payload is valid XDR but has no SEP-23 strkey the
+        // ecosystem accepts (a signed payload carries 1 to 64 payload
+        // bytes), so there is no spec-conformant JSON rendering.
+        $key = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD));
+        $key->signedPayload = new XdrSignedPayload(str_repeat("\x88", 32), '');
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Zero-length signed payload has no SEP-23 strkey representation');
+        $key->toJsonValue();
+    }
+
+    public function testXdrSignerKeyRejectsZeroLengthSignedPayloadOnParse(): void
+    {
+        $strkey = StrKey::encodeXdrSignedPayload(new XdrSignedPayload(str_repeat("\x88", 32), ''));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Zero-length signed payload has no SEP-23 strkey representation');
+        XdrSignerKey::fromJsonValue($strkey);
+    }
+
+    public function testXdrSignedPayloadRejectsZeroLengthPayloadBothDirections(): void
+    {
+        $zero = new XdrSignedPayload(str_repeat("\x99", 32), '');
+        $threw = false;
+        try {
+            $zero->toJsonValue();
+        } catch (\InvalidArgumentException $e) {
+            $threw = true;
+            $this->assertStringContainsString('Zero-length signed payload', $e->getMessage());
+        }
+        $this->assertTrue($threw, 'toJsonValue must reject a zero-length payload');
+
+        $strkey = StrKey::encodeXdrSignedPayload($zero);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Zero-length signed payload has no SEP-23 strkey representation');
+        XdrSignedPayload::fromJsonValue($strkey);
+    }
+
     // -----------------------------------------------------------------
     // XdrSignedPayload — standalone P-strkey
     // -----------------------------------------------------------------
@@ -569,15 +609,20 @@ class StellarSpecificTypesTest extends TestCase
         $this->assertSame('ABCDEFGHIJKL', $value['asset_code']);
     }
 
-    public function testXdrAssetAlphaNum12RejectsAllNullCode(): void
+    public function testXdrAssetAlphaNum12AllNullCodeEmitsFiveEscapedNuls(): void
     {
+        // An all-NUL AssetCode12 serialises as five escaped NULs and
+        // round-trips back to 12 NUL bytes, matching the rs-stellar-xdr
+        // reference implementation.
         $rawIssuer = str_repeat("\xe0", 32);
         $issuerStrKey = StrKey::encodeAccountId($rawIssuer);
 
         $alpha = new XdrAssetAlphaNum12(str_repeat("\x00", 12), new XdrAccountID($issuerStrKey));
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('AssetCode12 must not be all-null');
-        $alpha->toJsonValue();
+        $value = $alpha->toJsonValue();
+        $this->assertSame('\\0\\0\\0\\0\\0', $value['asset_code']);
+
+        $back = XdrAssetAlphaNum12::fromJsonValue($value);
+        $this->assertSame(str_repeat("\x00", 12), $back->getAssetCode());
     }
 
     public function testXdrAssetAlphaNum12RejectsLeFourByteCodeOnFromSide(): void
@@ -612,11 +657,13 @@ class StellarSpecificTypesTest extends TestCase
     //
     // The IDL field is `AssetCode` (a union typedef whose CREDIT_ALPHANUM4 /
     // CREDIT_ALPHANUM12 arms hold opaque[4] / opaque[12] respectively). The
-    // SEP-0051 String encoding (§String) requires the AssetCode bytes to be
-    // emitted as a SEP-51-escaped string under arm keys
-    // `credit_alphanum4` / `credit_alphanum12`. The wire form rtrims trailing
-    // NUL on the 4-byte arm and rtrim-then-pad-to-5 minimum on the 12-byte
-    // arm. The override is registered in stellar_json_overrides.rb.
+    // Per SEP-0051 §"Asset Code Types" (and the rs-stellar-xdr reference), the
+    // AssetCode union serialises as the BARE AssetCode4/AssetCode12 string
+    // form - no arm-key envelope. The wire form rtrims trailing NUL on the
+    // 4-byte arm and rtrim-then-pad-to-5 minimum on the 12-byte arm; the
+    // parse side discriminates by decoded length (<= 4 bytes -> AssetCode4,
+    // >= 5 -> AssetCode12). The override is registered in
+    // stellar_json_overrides.rb.
     // -----------------------------------------------------------------
 
     public function testXdrAllowTrustOperationAssetCode4Path(): void
@@ -624,14 +671,11 @@ class StellarSpecificTypesTest extends TestCase
         // fromAlphaNumAssetCode stores the asset code without null padding;
         // toJsonValue rtrims trailing NULs so the wire form is the bare code.
         $allow = XdrAllowTrustOperationAsset::fromAlphaNumAssetCode('USD');
-        $value = $allow->toJsonValue();
-        $this->assertArrayHasKey('credit_alphanum4', $value);
-        $this->assertSame('USD', $value['credit_alphanum4']);
+        $this->assertSame('USD', $allow->toJsonValue());
 
-        // Round-trip: from-side right-pads to 4 bytes since the storage form
-        // for the assetCode4 field is a 4-byte buffer when the wrapper's
-        // decode() has populated it.
-        $rt = XdrAllowTrustOperationAsset::fromJsonValue($value);
+        // Round-trip: 3 decoded bytes discriminate to the AssetCode4 arm and
+        // the from-side right-pads to 4 bytes.
+        $rt = XdrAllowTrustOperationAsset::fromJsonValue('USD');
         $this->assertSame(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4, $rt->type->getValue());
         $this->assertSame("USD\x00", $rt->assetCode4);
     }
@@ -639,39 +683,33 @@ class StellarSpecificTypesTest extends TestCase
     public function testXdrAllowTrustOperationAssetCode12Path(): void
     {
         $allow = XdrAllowTrustOperationAsset::fromAlphaNumAssetCode('EURTOK');
-        $value = $allow->toJsonValue();
-        $this->assertArrayHasKey('credit_alphanum12', $value);
         // 6-byte code is emitted as-is (above the 5-byte AssetCode12 floor).
-        $this->assertSame('EURTOK', $value['credit_alphanum12']);
+        $this->assertSame('EURTOK', $allow->toJsonValue());
 
-        $rt = XdrAllowTrustOperationAsset::fromJsonValue($value);
+        // 6 decoded bytes discriminate to the AssetCode12 arm; the from-side
+        // right-pads to 12 bytes.
+        $rt = XdrAllowTrustOperationAsset::fromJsonValue('EURTOK');
         $this->assertSame(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12, $rt->type->getValue());
-        // From-side right-pads to 12 bytes.
         $this->assertSame(str_pad('EURTOK', 12, "\x00"), $rt->assetCode12);
     }
 
     public function testXdrAllowTrustOperationAssetCreditAlphanum4RoundTrip(): void
     {
         // 4-byte AlphaNum4 storage with trailing NUL is rtrimmed on the wire
-        // so the rendered code is the bare "USD" (per SEP-0051 §String, the
-        // emitted form is the escape-aware textual representation of the
-        // canonical AssetCode bytes).
+        // so the rendered code is the bare "USD".
         $allow = new XdrAllowTrustOperationAsset(
             new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4)
         );
         $allow->assetCode4 = "USD\x00";
 
-        $value = $allow->toJsonValue();
-        $this->assertSame(['credit_alphanum4' => 'USD'], $value);
-
-        $rt = XdrAllowTrustOperationAsset::fromJsonValue($value);
-        $this->assertSame(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4, $rt->type->getValue());
-        $this->assertSame("USD\x00", $rt->assetCode4);
+        $this->assertSame('USD', $allow->toJsonValue());
 
         // Round-trip via the JSON facade as well.
         $json = $allow->toJson();
-        $rt2 = XdrAllowTrustOperationAsset::fromJson($json);
-        $this->assertSame("USD\x00", $rt2->assetCode4);
+        $this->assertSame('"USD"', $json);
+        $rt = XdrAllowTrustOperationAsset::fromJson($json);
+        $this->assertSame(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4, $rt->type->getValue());
+        $this->assertSame("USD\x00", $rt->assetCode4);
     }
 
     public function testXdrAllowTrustOperationAssetCreditAlphanum12RoundTrip(): void
@@ -684,17 +722,36 @@ class StellarSpecificTypesTest extends TestCase
         );
         $allow->assetCode12 = "TESTTOKEN12\x00";
 
-        $value = $allow->toJsonValue();
-        $this->assertSame(['credit_alphanum12' => 'TESTTOKEN12'], $value);
-
-        $rt = XdrAllowTrustOperationAsset::fromJsonValue($value);
-        $this->assertSame(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12, $rt->type->getValue());
-        $this->assertSame(str_pad('TESTTOKEN12', 12, "\x00"), $rt->assetCode12);
+        $this->assertSame('TESTTOKEN12', $allow->toJsonValue());
 
         // Round-trip via the JSON facade as well.
         $json = $allow->toJson();
-        $rt2 = XdrAllowTrustOperationAsset::fromJson($json);
-        $this->assertSame(str_pad('TESTTOKEN12', 12, "\x00"), $rt2->assetCode12);
+        $rt = XdrAllowTrustOperationAsset::fromJson($json);
+        $this->assertSame(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12, $rt->type->getValue());
+        $this->assertSame(str_pad('TESTTOKEN12', 12, "\x00"), $rt->assetCode12);
+    }
+
+    public function testXdrAllowTrustOperationAssetAcceptsLegacyObjectForms(): void
+    {
+        // SDK releases up to 1.11.x emitted single-key objects; they are
+        // accepted on input during the deprecation window, never emitted.
+        $rt4 = XdrAllowTrustOperationAsset::fromJsonValue(['credit_alphanum4' => 'USD']);
+        $this->assertSame(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4, $rt4->type->getValue());
+        $this->assertSame("USD\x00", $rt4->assetCode4);
+
+        $rt12 = XdrAllowTrustOperationAsset::fromJsonValue(['credit_alphanum12' => 'EURTOK']);
+        $this->assertSame(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12, $rt12->type->getValue());
+        $this->assertSame(str_pad('EURTOK', 12, "\x00"), $rt12->assetCode12);
+    }
+
+    public function testXdrAllowTrustOperationAssetEmptyStringIsAllNulAssetCode4(): void
+    {
+        // The reference implementation parses "" as an all-NUL AssetCode4
+        // (and emits "" for it); length discrimination places 0 decoded
+        // bytes on the 4-byte arm.
+        $rt = XdrAllowTrustOperationAsset::fromJsonValue('');
+        $this->assertSame(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4, $rt->type->getValue());
+        $this->assertSame(str_repeat("\x00", 4), $rt->assetCode4);
     }
 
     // -----------------------------------------------------------------

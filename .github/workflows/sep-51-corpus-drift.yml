@@ -1,9 +1,11 @@
 name: SEP-51 corpus drift
 
-# Snapshot regression guard. Re-runs tools/sep-51-test-fixtures/refresh_corpus.sh,
-# which regenerates the SDK's SEP-0051 snapshot corpus from PHP's own toJson
-# output and diffs the result against the committed copy. Any drift fails the
-# workflow and opens a tracking issue.
+# Reference-parity guard. Re-runs tools/sep-51-test-fixtures/refresh_corpus.sh,
+# which re-emits the SDK's SEP-0051 toJson output for every corpus fixture and
+# diffs the entries against the committed corpus, whose reference JSON comes
+# from the rs-stellar-xdr CLI oracle. Any drift means the SDK's emission no
+# longer matches the reference implementation; the workflow fails and opens a
+# tracking issue.
 #
 # Manual trigger only at commit time. Activation post-merge requires
 # uncommenting the schedule block below in a separate explicit PR.
@@ -20,7 +22,7 @@ permissions:
 
 jobs:
   drift-check:
-    name: SEP-51 snapshot drift check
+    name: SEP-51 reference-parity check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

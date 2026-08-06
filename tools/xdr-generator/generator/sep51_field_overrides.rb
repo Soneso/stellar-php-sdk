@@ -55,19 +55,45 @@ SEP51_FIELD_OVERRIDES = {
   ['XdrClaimLiquidityAtom',                 'liquidityPoolID']  => { strkey: :liquidity_pool, encoding: :raw },
   ['XdrHashIDPreimageRevokeID',             'liquidityPoolID']  => { strkey: :liquidity_pool, encoding: :raw },
 
-  # ContractID -> C-strkey (one site outside SCAddress). The PHP wrapper stores
-  # the value as a hex Hash and the SEP-51 emission upgrades the textual form
-  # to the canonical C-strkey, matching the encoding used for ContractID
-  # everywhere else in the SDK.
+  # ContractID -> C-strkey (sites outside SCAddress). XdrConfigUpgradeSetKey's
+  # PHP wrapper stores the value as a hex Hash; XdrContractEvent stores the
+  # optional contractID (PHP property `hash`) as raw 32 bytes. Both emit the
+  # canonical C-strkey, matching rs-stellar-xdr's ContractId serialisation.
   ['XdrConfigUpgradeSetKeyBase',            'contractID']       => { strkey: :contract, encoding: :hex },
+  ['XdrContractEvent',                      'hash']             => { strkey: :contract, encoding: :raw },
+
+  # ContractExecutable wasm hash. The hand-written XdrContractExecutable
+  # wrapper stores the hash as a 64-character hex string (decode applies
+  # bin2hex), so the SEP-51 methods emitted on the Base must pass the stored
+  # hex through unchanged in both directions; hex-encoding the storage again
+  # would double-encode.
+  ['XdrContractExecutableBase',             'wasmIdHex']        => {
+    proc: {
+      to: lambda do |accessor|
+        "(static function ($v) { " \
+        "if (!is_string($v) || strlen($v) !== 64 || !ctype_xdigit($v)) { " \
+        "throw new InvalidArgumentException('Expected 64-character hex wasm hash, got ' . " \
+        "(is_string($v) ? strlen($v) . '-character string' : get_debug_type($v))); } " \
+        "return strtolower($v); })(#{accessor})"
+      end,
+      from: lambda do |source|
+        "(static function ($v) { " \
+        "if (!is_string($v)) { " \
+        "throw new InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } " \
+        "if (strlen($v) !== 64 || !ctype_xdigit($v)) { " \
+        "throw new InvalidArgumentException('Expected 64-character hex wasm hash, got ' . strlen($v) . '-character string'); } " \
+        "return strtolower($v); })(#{source})"
+      end,
+    },
+  },
 
   # AssetCode4 / AssetCode12 trim-pad-escape inline at consuming-field sites.
   # XdrAssetCode does not exist as a class; both consuming-struct sites
-  # (XdrAssetAlphaNum4Base.assetCode and XdrAssetAlphaNum12Base.assetCode,
-  # plus the two XdrAllowTrustOperationAssetBase fields) emit a bare string
-  # rather than a sub-object envelope.
+  # (XdrAssetAlphaNum4Base.assetCode and XdrAssetAlphaNum12Base.assetCode)
+  # emit a bare string rather than a sub-object envelope. The AllowTrust
+  # AssetCode union is handled whole-body by StellarJsonOverrides
+  # (XdrAllowTrustOperationAsset), which emits the bare length-discriminated
+  # string form.
   ['XdrAssetAlphaNum4Base',                 'assetCode']        => { asset_code: 4 },
   ['XdrAssetAlphaNum12Base',                'assetCode']        => { asset_code: 12 },
-  ['XdrAllowTrustOperationAssetBase',       'assetCode4']       => { asset_code: 4 },
-  ['XdrAllowTrustOperationAssetBase',       'assetCode12']      => { asset_code: 12 },
 }.freeze
