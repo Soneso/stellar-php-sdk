@@ -62,7 +62,7 @@ class XdrFeeBumpTransactionInnerTx {
 
     public function toJsonValue(): mixed {
         return match ($this->type->getValue()) {
-            XdrEnvelopeType::ENVELOPE_TYPE_TX => ['envelope_type_tx' => $this->v1->toJsonValue()],
+            XdrEnvelopeType::ENVELOPE_TYPE_TX => ['tx' => $this->v1->toJsonValue()],
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown discriminant for type on XdrEnvelopeType'
@@ -88,6 +88,10 @@ class XdrFeeBumpTransactionInnerTx {
         }
         $arm = $value[$key];
         return match ($key) {
+            'tx' => (static function () use ($arm) { $r = new static(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $r->v1 = XdrTransactionV1Envelope::fromJsonValue($arm); return $r; })(),
+            // Deprecated input aliases: wire names emitted by SDK releases
+            // up to 1.11.x. Accepted for compatibility; toJsonValue never
+            // emits them.
             'envelope_type_tx' => (static function () use ($arm) { $r = new static(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $r->v1 = XdrTransactionV1Envelope::fromJsonValue($arm); return $r; })(),
             default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrFeeBumpTransactionInnerTx: ' . XdrJsonHelper::safePreview($key)
@@ -107,10 +111,11 @@ class XdrFeeBumpTransactionInnerTx {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

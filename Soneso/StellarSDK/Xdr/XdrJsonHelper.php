@@ -23,6 +23,21 @@ use InvalidArgumentException;
 final class XdrJsonHelper
 {
     /**
+     * How many unknown keys {@see self::rejectUnknownFields} names before it
+     * summarises the remainder as a count. Enough to diagnose a hand-edited
+     * document without letting a large object dictate the message length.
+     */
+    private const UNKNOWN_FIELD_REPORT_LIMIT = 5;
+
+    /**
+     * Object nesting depth accepted by the text decode path.
+     *
+     * Matches json_decode's own default so a document deeper than the
+     * duplicate-key pre-scan tracks is one json_decode rejects anyway.
+     */
+    private const DECODE_MAX_DEPTH = 512;
+
+    /**
      * SEP-51 String type: escape bytes per the SEP-51 String escape ladder.
      *
      * Escaping rules (applied byte-by-byte on the raw binary input):
@@ -712,6 +727,397 @@ final class XdrJsonHelper
             return $sanitised;
         }
         return substr($sanitised, 0, $max - 3) . '...';
+    }
+
+    /**
+     * Fold a field's input alias into the field's canonical key.
+     *
+     * A struct field may accept a second spelling of its key on input while
+     * always emitting the canonical one. Rewriting the alias to the canonical key
+     * before any other check means the declared-key closure, the required-field
+     * check and the field read all work from the one spelling the type emits.
+     *
+     * The two spellings name one field, so supplying both is a duplicate rather
+     * than two values: it is rejected instead of one silently winning.
+     *
+     * @param array<array-key, mixed> $value        The decoded JSON object.
+     * @param string                  $canonicalKey The key the type emits.
+     * @param string                  $aliasKey     The additional key accepted on input.
+     * @param string                  $typeName     The PHP class the object is being decoded into.
+     * @return array<array-key, mixed> $value with any alias entry moved to $canonicalKey.
+     * @throws InvalidArgumentException When both spellings are present.
+     * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md
+     */
+    public static function normalizeFieldAlias(
+        array $value,
+        string $canonicalKey,
+        string $aliasKey,
+        string $typeName
+    ): array {
+        if (!array_key_exists($aliasKey, $value)) {
+            return $value;
+        }
+        if (array_key_exists($canonicalKey, $value)) {
+            throw new InvalidArgumentException(
+                "Duplicate field '" . $canonicalKey . "' for " . $typeName
+                . ": '" . $canonicalKey . "' and its input alias '" . $aliasKey
+                . "' cannot both be supplied"
+            );
+        }
+        $value[$canonicalKey] = $value[$aliasKey];
+        unset($value[$aliasKey]);
+        return $value;
+    }
+
+    /**
+     * Reject a struct-object JSON input that carries keys the type does not declare.
+     *
+     * SEP-0051 defines the JSON encoding of a struct as an object whose keys are
+     * exactly the struct's fields. A key outside that set is not part of the type's
+     * encoding, so accepting it would silently discard data the caller believes was
+     * decoded. Every declared key remains required; this method only constrains what
+     * may appear in addition to them.
+     *
+     * The one key an object may carry beyond its declared fields is `$schema`, which
+     * SEP-0051 says any object SHOULD allow for tooling annotation. Callers strip it
+     * before reaching this method, so it never appears in $value.
+     *
+     * Keys are echoed through {@see self::safePreview} because they originate in
+     * caller-supplied JSON; the reported list is capped so a document carrying many
+     * unknown keys cannot inflate the message.
+     *
+     * @param array<array-key, mixed> $value        The decoded JSON object, `$schema` already removed.
+     * @param list<string>            $declaredKeys The type's declared field keys, in IDL order.
+     * @param string                  $typeName     The PHP class the object is being decoded into.
+     * @throws InvalidArgumentException When $value holds any key outside $declaredKeys.
+     * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md
+     */
+    public static function rejectUnknownFields(array $value, array $declaredKeys, string $typeName): void
+    {
+        $unknown = array_diff(array_keys($value), $declaredKeys);
+        if ($unknown === []) {
+            return;
+        }
+        // A numeric JSON key such as "0" arrives as a PHP int; cast so the preview
+        // helper receives the string form of every key it reports.
+        $previews = array_map(
+            static function ($key): string {
+                return "'" . self::safePreview((string) $key, 40) . "'";
+            },
+            array_slice(array_values($unknown), 0, self::UNKNOWN_FIELD_REPORT_LIMIT)
+        );
+        $overflow = count($unknown) - count($previews);
+        if ($overflow > 0) {
+            $previews[] = '(' . $overflow . ' more)';
+        }
+        throw new InvalidArgumentException(
+            'Unknown field' . (count($unknown) === 1 ? '' : 's')
+            . ' in JSON input for ' . $typeName . ': ' . implode(', ', $previews)
+        );
+    }
+
+    /**
+     * Decode a SEP-0051 JSON document from its text form.
+     *
+     * Every `fromJson(string $json)` entry point routes through here, so the
+     * text-level input rules hold uniformly across all XDR types: the document is
+     * scanned for duplicate object keys and then parsed.
+     *
+     * The duplicate-key scan has to happen on the text because json_decode cannot
+     * report duplicates — it resolves them last-value-wins, which would silently
+     * discard the earlier value from a document that is not valid SEP-0051 input.
+     * See {@see self::rejectDuplicateKeys}.
+     *
+     * The tree entry points (`fromJsonValue`, taking an already-decoded PHP value)
+     * need no such check: a PHP array cannot hold two identical string keys, so a
+     * duplicate is unrepresentable by the time a value reaches them.
+     *
+     * @param string $json The raw JSON document.
+     * @return mixed The decoded value, with objects as associative arrays.
+     * @throws InvalidArgumentException When an object in $json repeats a key.
+     * @throws \JsonException When $json is not syntactically valid JSON.
+     * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md
+     */
+    public static function decodeText(string $json): mixed
+    {
+        self::rejectDuplicateKeys($json);
+        return json_decode($json, true, self::DECODE_MAX_DEPTH, JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * Reject a JSON document in which any single object repeats a key.
+     *
+     * A repeated key has no SEP-0051 meaning: the document names one field twice
+     * with two values, and no rule says which one the type takes. PHP's json_decode
+     * silently keeps the last, so without this scan the first value would vanish
+     * from a document that is not valid input in the first place.
+     *
+     * Scope is per object. The same key in sibling objects, or in an object nested
+     * inside another that already uses that key, is ordinary JSON and is accepted;
+     * only a repeat within one set of braces is a duplicate.
+     *
+     * Keys are compared after their JSON escapes are resolved, so `"a"` and
+     * `"a"` are the same key. Escape resolution produces UTF-8 bytes, which
+     * makes `"é"` and a literal `é` the same key as well.
+     *
+     * The walk is a single iterative pass over the raw bytes, with an explicit
+     * frame stack rather than recursion, so nesting depth cannot exhaust the PHP
+     * call stack. String tokens are consumed whole, so braces, commas and colons
+     * inside string content never disturb the structure being tracked.
+     *
+     * This is a structural scan, not a JSON validator. On a structural fault it
+     * cannot navigate past — an unbalanced brace, an unterminated string, an
+     * unresolvable escape, nesting beyond {@see self::DECODE_MAX_DEPTH} — it stops
+     * and returns, leaving json_decode to report the syntax error. It does not
+     * inspect scalar values, so a document that is both duplicate-keyed and
+     * otherwise malformed may surface either error depending on which fault the
+     * scan reaches first; both outcomes reject the document.
+     *
+     * @param string $json The raw JSON document.
+     * @throws InvalidArgumentException When an object in $json repeats a key.
+     * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md
+     */
+    public static function rejectDuplicateKeys(string $json): void
+    {
+        $len = strlen($json);
+        $i = 0;
+        // One frame per open container: an array of the keys already seen in an
+        // open object, or null for an open array (an array has no keys to repeat).
+        $frames = [];
+        $depth = 0;
+        // True while the next string token belongs in the innermost object's key
+        // position, which is the only position a duplicate can occupy.
+        $expectKey = false;
+
+        while ($i < $len) {
+            $c = $json[$i];
+
+            if ($c === ' ' || $c === "\t" || $c === "\n" || $c === "\r") {
+                $i++;
+                continue;
+            }
+
+            if ($c === '{' || $c === '[') {
+                if ($depth >= self::DECODE_MAX_DEPTH) {
+                    return;
+                }
+                $frames[$depth] = $c === '{' ? [] : null;
+                $depth++;
+                $expectKey = $c === '{';
+                $i++;
+                continue;
+            }
+
+            if ($c === '}' || $c === ']') {
+                if ($depth === 0) {
+                    return;
+                }
+                $depth--;
+                unset($frames[$depth]);
+                $expectKey = false;
+                $i++;
+                continue;
+            }
+
+            if ($c === ',') {
+                $expectKey = $depth > 0 && $frames[$depth - 1] !== null;
+                $i++;
+                continue;
+            }
+
+            if ($c === ':') {
+                $expectKey = false;
+                $i++;
+                continue;
+            }
+
+            if ($c === '"') {
+                $close = self::scanStringToken($json, $i);
+                if ($close === null) {
+                    return;
+                }
+                if ($expectKey) {
+                    $key = self::resolveStringEscapes(substr($json, $i + 1, $close - $i - 1));
+                    if ($key === null) {
+                        return;
+                    }
+                    if (isset($frames[$depth - 1][$key])) {
+                        throw new InvalidArgumentException(
+                            "Duplicate key in JSON input: '" . self::safePreview($key, 40) . "'"
+                        );
+                    }
+                    $frames[$depth - 1][$key] = true;
+                }
+                $i = $close + 1;
+                $expectKey = false;
+                continue;
+            }
+
+            // Numbers and the true/false/null literals carry no structure the scan
+            // needs; step over their bytes.
+            $i++;
+        }
+    }
+
+    /**
+     * Find the closing quote of the JSON string token opening at $start.
+     *
+     * @param string $json  The raw JSON document.
+     * @param int    $start Offset of the token's opening quote.
+     * @return int|null Offset of the closing quote, or null if the token is unterminated.
+     */
+    private static function scanStringToken(string $json, int $start): ?int
+    {
+        $len = strlen($json);
+        $i = $start + 1;
+        while ($i < $len) {
+            if ($json[$i] === '\\') {
+                // Skip the escape marker and whatever it escapes, so an escaped
+                // quote does not read as the end of the token.
+                $i += 2;
+                continue;
+            }
+            if ($json[$i] === '"') {
+                return $i;
+            }
+            $i++;
+        }
+        return null;
+    }
+
+    /**
+     * Resolve the JSON escapes in a string token's content to raw UTF-8 bytes.
+     *
+     * Two keys are the same key when their resolved forms are byte-equal, which is
+     * what makes `"a"`, `"a"` and `"a"` written with either hex case all
+     * collide.
+     *
+     * @param string $raw The token content, without the surrounding quotes.
+     * @return string|null The resolved bytes, or null if an escape is not resolvable.
+     */
+    private static function resolveStringEscapes(string $raw): ?string
+    {
+        if (strpos($raw, '\\') === false) {
+            return $raw;
+        }
+        $len = strlen($raw);
+        $out = '';
+        $i = 0;
+        while ($i < $len) {
+            if ($raw[$i] !== '\\') {
+                $out .= $raw[$i];
+                $i++;
+                continue;
+            }
+            if ($i + 1 >= $len) {
+                return null;
+            }
+            switch ($raw[$i + 1]) {
+                case '"':
+                    $out .= '"';
+                    $i += 2;
+                    break;
+                case '\\':
+                    $out .= '\\';
+                    $i += 2;
+                    break;
+                case '/':
+                    $out .= '/';
+                    $i += 2;
+                    break;
+                case 'b':
+                    $out .= "\x08";
+                    $i += 2;
+                    break;
+                case 'f':
+                    $out .= "\x0C";
+                    $i += 2;
+                    break;
+                case 'n':
+                    $out .= "\n";
+                    $i += 2;
+                    break;
+                case 'r':
+                    $out .= "\r";
+                    $i += 2;
+                    break;
+                case 't':
+                    $out .= "\t";
+                    $i += 2;
+                    break;
+                case 'u':
+                    $cp = self::readHex4($raw, $i + 2);
+                    if ($cp === null) {
+                        return null;
+                    }
+                    $i += 6;
+                    if ($cp >= 0xD800 && $cp <= 0xDBFF) {
+                        // A high surrogate is only meaningful paired with the low
+                        // surrogate that follows it.
+                        if ($i + 5 >= $len || $raw[$i] !== '\\' || $raw[$i + 1] !== 'u') {
+                            return null;
+                        }
+                        $low = self::readHex4($raw, $i + 2);
+                        if ($low === null || $low < 0xDC00 || $low > 0xDFFF) {
+                            return null;
+                        }
+                        $cp = 0x10000 + (($cp - 0xD800) << 10) + ($low - 0xDC00);
+                        $i += 6;
+                    } elseif ($cp >= 0xDC00 && $cp <= 0xDFFF) {
+                        return null;
+                    }
+                    $out .= self::codePointToUtf8($cp);
+                    break;
+                default:
+                    return null;
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Read exactly four hex digits at $at and return their value.
+     *
+     * @param string $s  The string to read from.
+     * @param int    $at Offset of the first hex digit.
+     * @return int|null The parsed value, or null if four hex digits are not present.
+     */
+    private static function readHex4(string $s, int $at): ?int
+    {
+        if ($at + 4 > strlen($s)) {
+            return null;
+        }
+        $hex = substr($s, $at, 4);
+        if (preg_match('/^[0-9A-Fa-f]{4}$/', $hex) !== 1) {
+            return null;
+        }
+        return (int) hexdec($hex);
+    }
+
+    /**
+     * Encode a Unicode code point as UTF-8 bytes.
+     *
+     * @param int $cp A code point in [0, 0x10FFFF], not a surrogate.
+     * @return string The UTF-8 byte sequence.
+     */
+    private static function codePointToUtf8(int $cp): string
+    {
+        if ($cp < 0x80) {
+            return chr($cp);
+        }
+        if ($cp < 0x800) {
+            return chr(0xC0 | ($cp >> 6))
+                . chr(0x80 | ($cp & 0x3F));
+        }
+        if ($cp < 0x10000) {
+            return chr(0xE0 | ($cp >> 12))
+                . chr(0x80 | (($cp >> 6) & 0x3F))
+                . chr(0x80 | ($cp & 0x3F));
+        }
+        return chr(0xF0 | ($cp >> 18))
+            . chr(0x80 | (($cp >> 12) & 0x3F))
+            . chr(0x80 | (($cp >> 6) & 0x3F))
+            . chr(0x80 | ($cp & 0x3F));
     }
 
     /**

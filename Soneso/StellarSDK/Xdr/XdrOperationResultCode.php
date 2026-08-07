@@ -89,13 +89,13 @@ class XdrOperationResultCode {
 
     public function toJsonValue(): string {
         return match ($this->value) {
-            self::INNER => 'inner',
-            self::BAD_AUTH => 'bad_auth',
-            self::NO_ACCOUNT => 'no_account',
-            self::NOT_SUPPORTED => 'not_supported',
-            self::TOO_MANY_SUBENTRIES => 'too_many_subentries',
-            self::EXCEEDED_WORK_LIMIT => 'exceeded_work_limit',
-            self::TOO_MANY_SPONSORING => 'too_many_sponsoring',
+            self::INNER => 'op_inner',
+            self::BAD_AUTH => 'op_bad_auth',
+            self::NO_ACCOUNT => 'op_no_account',
+            self::NOT_SUPPORTED => 'op_not_supported',
+            self::TOO_MANY_SUBENTRIES => 'op_too_many_subentries',
+            self::EXCEEDED_WORK_LIMIT => 'op_exceeded_work_limit',
+            self::TOO_MANY_SPONSORING => 'op_too_many_sponsoring',
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown XdrOperationResultCode enum value: ' . $this->value
@@ -111,6 +111,16 @@ class XdrOperationResultCode {
             );
         }
         return match ($value) {
+            'op_inner' => new static(self::INNER),
+            'op_bad_auth' => new static(self::BAD_AUTH),
+            'op_no_account' => new static(self::NO_ACCOUNT),
+            'op_not_supported' => new static(self::NOT_SUPPORTED),
+            'op_too_many_subentries' => new static(self::TOO_MANY_SUBENTRIES),
+            'op_exceeded_work_limit' => new static(self::EXCEEDED_WORK_LIMIT),
+            'op_too_many_sponsoring' => new static(self::TOO_MANY_SPONSORING),
+            // Deprecated input aliases: wire names emitted by SDK releases
+            // up to 1.11.x. Accepted for compatibility; toJsonValue never
+            // emits them.
             'inner' => new static(self::INNER),
             'bad_auth' => new static(self::BAD_AUTH),
             'no_account' => new static(self::NO_ACCOUNT),
@@ -136,9 +146,10 @@ class XdrOperationResultCode {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

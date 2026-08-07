@@ -31,8 +31,11 @@ class XdrEncoder
         if ($expectedLength && $length > $expectedLength) throw new InvalidArgumentException(sprintf('Unexpected length for value. Has length %s, expected %s', $length, $expectedLength));
         if ($expectedLength && !$padUnexpectedLength && $length != $expectedLength) throw new InvalidArgumentException(sprintf('Unexpected length for value. Has length %s, expected %s', $length, $expectedLength));
 
-        if ($expectedLength && $length != $expectedLength) {
-            $value = self::applyPadding($value, $expectedLength);
+        if ($expectedLength && $length < $expectedLength) {
+            // Pad to exactly the declared fixed length. str_pad rather than
+            // applyPadding: the latter pads to the next multiple of the
+            // target length, which leaves an empty value unpadded.
+            $value = str_pad($value, $expectedLength, chr(0), STR_PAD_RIGHT);
         }
 
         return self::applyPadding($value);

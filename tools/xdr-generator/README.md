@@ -41,17 +41,22 @@ Output goes to `Soneso/StellarSDK/Xdr/`.
 ### Run tests
 
 ```bash
-make xdr-generator-test                # run snapshot tests via Docker
+make xdr-generator-test                # run snapshot and helper tests via Docker
 make xdr-generator-update-snapshots    # update snapshots after intentional changes
 make xdr-validate                      # validate generated types against XDR definitions
 make xdr-generate-tests                # regenerate PHP XDR unit tests
 ```
+
+`xdr-generator-test` covers `test/generator_snapshot_test.rb` plus the codegen-time helper units (`generator_helpers_test.rb`, `json_helpers_test.rb`, `sep51_field_overrides_test.rb`). A new test file must be listed in the target to be gated.
 
 Or directly (requires `bundle install` first):
 
 ```bash
 cd tools/xdr-generator
 bundle exec ruby -Itest test/generator_snapshot_test.rb
+bundle exec ruby -Itest test/generator_helpers_test.rb
+bundle exec ruby -Itest test/json_helpers_test.rb
+bundle exec ruby -Itest test/sep51_field_overrides_test.rb
 bundle exec ruby test/update_snapshots.rb
 bundle exec ruby test/validate_generated_types.rb
 bundle exec ruby test/generate_tests.rb
@@ -94,4 +99,4 @@ The override files preserve the existing SDK API where hand-written PHP code div
 - **`type_overrides.rb`** — `TYPE_OVERRIDES` maps XDR typedefs to the PHP types the SDK uses (e.g. `XdrTimePoint` -> `int`, `XdrSCVec` -> `array`). `BASE_WRAPPER_TYPES` lists types that generate base classes. `SKIP_TYPES` lists types excluded from generation. `EXTENSION_POINT_FIELDS` simplifies void-only extension unions to `int`.
 - **`field_overrides.rb`** — `FIELD_OVERRIDES` remaps field names (e.g. `code` -> `resultCode`). `FIELD_TYPE_OVERRIDES` overrides the type of specific fields (e.g. forcing `BigInteger` instead of `int`).
 - **`name_overrides.rb`** — Maps XDR type names to PHP class names where the SDK convention differs from the spec.
-- **`member_overrides.rb`** — `MEMBER_OVERRIDES` remaps individual enum constant names. `MEMBER_PREFIX_STRIP` strips common prefixes from enum constants (e.g. `PAYMENT_SUCCESS` -> `SUCCESS`).
+- **`member_overrides.rb`** — `MEMBER_OVERRIDES` remaps individual enum constant names. `MEMBER_PREFIX_STRIP` strips common prefixes from enum constants (e.g. `PAYMENT_SUCCESS` -> `SUCCESS`). These affect PHP constant names only; SEP-51 JSON wire names are always derived from the original XDR identifiers (`json_helpers.rb`).

@@ -72,6 +72,33 @@ public function testRoundTrip_XdrAccountID_corpus_account_id_g_alt(): void
         'corpus[account_id_g_alt] XDR-JSON-XDR round trip diverged');
 }
 
+public function testRoundTrip_XdrAllowTrustOperation_corpus_allow_trust_operation_alphanum12(): void
+{
+    $base64 = 'AAAAAGL8HQvQkbK2HA3WVjRrKmjX00fG8sLI7m0ERwJW/AX3AAAAAkVVUlRPSwAAAAAAAAAAAAE=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrAllowTrustOperation::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrAllowTrustOperation::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[allow_trust_operation_alphanum12] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrAllowTrustOperation::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[allow_trust_operation_alphanum12] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAllowTrustOperation::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[allow_trust_operation_alphanum12] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrAllowTrustOperation::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[allow_trust_operation_alphanum12] XDR-JSON-XDR round trip diverged');
+}
+
 public function testRoundTrip_XdrAsset_corpus_asset_alphanum12_11byte(): void
 {
     $base64 = 'AAAAAlRXRUxWRUNIQVJTAAAAAAA/DDS/k60NmXHQTMyQ9wVRHIOKrZc0pKL7DXoD/H/omg==';
@@ -342,6 +369,33 @@ public function testRoundTrip_XdrAsset_corpus_asset_native(): void
         'corpus[asset_native] XDR-JSON-XDR round trip diverged');
 }
 
+public function testRoundTrip_XdrAssetAlphaNum12_corpus_asset_alpha_num12_all_nul(): void
+{
+    $base64 = 'AAAAAAAAAAAAAAAAAAAAAGL8HQvQkbK2HA3WVjRrKmjX00fG8sLI7m0ERwJW/AX3';
+    $instance = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[asset_alpha_num12_all_nul] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[asset_alpha_num12_all_nul] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[asset_alpha_num12_all_nul] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[asset_alpha_num12_all_nul] XDR-JSON-XDR round trip diverged');
+}
+
 public function testRoundTrip_XdrAssetAlphaNum12_corpus_asset_alphanum12_standalone(): void
 {
     $base64 = 'Q1VTVE9NAAAAAAAAAAAAAD8MNL+TrQ2ZcdBMzJD3BVEcg4qtlzSkovsNegP8f+ia';
@@ -394,6 +448,87 @@ public function testRoundTrip_XdrAssetAlphaNum4_corpus_asset_alphanum4_standalon
     $reInstance = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4::fromBase64Xdr($reEncodedXdr);
     $this->assertSame($jsonValue, $reInstance->toJsonValue(),
         'corpus[asset_alphanum4_standalone] XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrBinaryFuseFilterType_corpus_binary_fuse_filter_type_16bit(): void
+{
+    $base64 = 'AAAAAQ==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[binary_fuse_filter_type_16bit] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[binary_fuse_filter_type_16bit] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[binary_fuse_filter_type_16bit] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[binary_fuse_filter_type_16bit] XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrBinaryFuseFilterType_corpus_binary_fuse_filter_type_32bit(): void
+{
+    $base64 = 'AAAAAg==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[binary_fuse_filter_type_32bit] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[binary_fuse_filter_type_32bit] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[binary_fuse_filter_type_32bit] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[binary_fuse_filter_type_32bit] XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrBinaryFuseFilterType_corpus_binary_fuse_filter_type_8bit(): void
+{
+    $base64 = 'AAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[binary_fuse_filter_type_8bit] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[binary_fuse_filter_type_8bit] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[binary_fuse_filter_type_8bit] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[binary_fuse_filter_type_8bit] XDR-JSON-XDR round trip diverged');
 }
 
 public function testRoundTrip_XdrBucketEntry_corpus_bucket_entry_deadentry(): void
@@ -585,6 +720,33 @@ public function testRoundTrip_XdrClaimableBalanceID_corpus_claimable_balance_id_
         'corpus[claimable_balance_id_v0] XDR-JSON-XDR round trip diverged');
 }
 
+public function testRoundTrip_XdrClaimantType_corpus_claimant_type_v0_standalone(): void
+{
+    $base64 = 'AAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClaimantType::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimantType::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[claimant_type_v0_standalone] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClaimantType::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[claimant_type_v0_standalone] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClaimantType::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[claimant_type_v0_standalone] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClaimantType::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[claimant_type_v0_standalone] XDR-JSON-XDR round trip diverged');
+}
+
 public function testRoundTrip_XdrClawbackClaimableBalanceOperation_corpus_clawback_claimable_balance_operation_standalone(): void
 {
     $base64 = 'AAAAANTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU';
@@ -610,6 +772,33 @@ public function testRoundTrip_XdrClawbackClaimableBalanceOperation_corpus_clawba
     $reInstance = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceOperation::fromBase64Xdr($reEncodedXdr);
     $this->assertSame($jsonValue, $reInstance->toJsonValue(),
         'corpus[clawback_claimable_balance_operation_standalone] XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrClawbackResult_corpus_clawback_result_not_clawback_enabled(): void
+{
+    $base64 = '/////g==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[clawback_result_not_clawback_enabled] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[clawback_result_not_clawback_enabled] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[clawback_result_not_clawback_enabled] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[clawback_result_not_clawback_enabled] XDR-JSON-XDR round trip diverged');
 }
 
 public function testRoundTrip_XdrConfigSettingEntry_corpus_config_setting_entry_bandwidth_v0(): void
@@ -882,6 +1071,33 @@ public function testRoundTrip_XdrConfigSettingEntry_corpus_config_setting_entry_
         'corpus[config_setting_entry_state_size_window] XDR-JSON-XDR round trip diverged');
 }
 
+public function testRoundTrip_XdrContractCostType_corpus_contract_cost_type_wasm_insn_exec(): void
+{
+    $base64 = 'AAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[contract_cost_type_wasm_insn_exec] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[contract_cost_type_wasm_insn_exec] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[contract_cost_type_wasm_insn_exec] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[contract_cost_type_wasm_insn_exec] XDR-JSON-XDR round trip diverged');
+}
+
 public function testRoundTrip_XdrContractEvent_corpus_contract_event_no_contract_id(): void
 {
     $base64 = 'AAAAAAAAAAAAAAABAAAAAAAAAAEAAAAPAAAACHRyYW5zZmVyAAAAAwAAAHs=';
@@ -934,6 +1150,87 @@ public function testRoundTrip_XdrContractEvent_corpus_contract_event_with_contra
     $reInstance = \Soneso\StellarSDK\Xdr\XdrContractEvent::fromBase64Xdr($reEncodedXdr);
     $this->assertSame($jsonValue, $reInstance->toJsonValue(),
         'corpus[contract_event_with_contract_id] XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrCreateAccountResult_corpus_create_account_result_already_exist(): void
+{
+    $base64 = '/////A==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[create_account_result_already_exist] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[create_account_result_already_exist] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[create_account_result_already_exist] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[create_account_result_already_exist] XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrCurve25519Public_corpus_curve25519_public_standalone(): void
+{
+    $base64 = 'UlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlI=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrCurve25519Public::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrCurve25519Public::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[curve25519_public_standalone] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrCurve25519Public::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[curve25519_public_standalone] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCurve25519Public::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[curve25519_public_standalone] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrCurve25519Public::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[curve25519_public_standalone] XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrCurve25519Secret_corpus_curve25519_secret_standalone(): void
+{
+    $base64 = 'UVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVE=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrCurve25519Secret::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrCurve25519Secret::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[curve25519_secret_standalone] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrCurve25519Secret::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[curve25519_secret_standalone] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrCurve25519Secret::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[curve25519_secret_standalone] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrCurve25519Secret::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[curve25519_secret_standalone] XDR-JSON-XDR round trip diverged');
 }
 
 public function testRoundTrip_XdrDataValue_corpus_data_value_absent(): void
@@ -1044,6 +1341,60 @@ public function testRoundTrip_XdrDiagnosticEvent_corpus_diagnostic_event_in_succ
         'corpus[diagnostic_event_in_successful_call] XDR-JSON-XDR round trip diverged');
 }
 
+public function testRoundTrip_XdrHmacSha256Key_corpus_hmac_sha256_key_standalone(): void
+{
+    $base64 = 'U1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1M=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrHmacSha256Key::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrHmacSha256Key::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[hmac_sha256_key_standalone] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrHmacSha256Key::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[hmac_sha256_key_standalone] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrHmacSha256Key::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[hmac_sha256_key_standalone] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrHmacSha256Key::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[hmac_sha256_key_standalone] XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrHmacSha256Mac_corpus_hmac_sha256_mac_standalone(): void
+{
+    $base64 = 'VFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFQ=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrHmacSha256Mac::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrHmacSha256Mac::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[hmac_sha256_mac_standalone] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrHmacSha256Mac::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[hmac_sha256_mac_standalone] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrHmacSha256Mac::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[hmac_sha256_mac_standalone] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrHmacSha256Mac::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[hmac_sha256_mac_standalone] XDR-JSON-XDR round trip diverged');
+}
+
 public function testRoundTrip_XdrHotArchiveBucketEntry_corpus_hot_archive_bucket_entry_archived(): void
 {
     $base64 = 'AAAAAAAAAHsAAAAAAAAAAGL8HQvQkbK2HA3WVjRrKmjX00fG8sLI7m0ERwJW/AX3AAAAAACYloAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAA';
@@ -1123,6 +1474,60 @@ public function testRoundTrip_XdrHotArchiveBucketEntry_corpus_hot_archive_bucket
     $reInstance = \Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntry::fromBase64Xdr($reEncodedXdr);
     $this->assertSame($jsonValue, $reInstance->toJsonValue(),
         'corpus[hot_archive_bucket_entry_metaentry] XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrIPAddrType_corpus_ip_addr_type_v4(): void
+{
+    $base64 = 'AAAAAA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[ip_addr_type_v4] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[ip_addr_type_v4] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[ip_addr_type_v4] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[ip_addr_type_v4] XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrIPAddrType_corpus_ip_addr_type_v6(): void
+{
+    $base64 = 'AAAAAQ==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[ip_addr_type_v6] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[ip_addr_type_v6] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[ip_addr_type_v6] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[ip_addr_type_v6] XDR-JSON-XDR round trip diverged');
 }
 
 public function testRoundTrip_XdrInt128Parts_corpus_int128_negative_one(): void
@@ -2446,6 +2851,60 @@ public function testRoundTrip_XdrOperation_corpus_operation_set_trust_line_flags
     $reInstance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($reEncodedXdr);
     $this->assertSame($jsonValue, $reInstance->toJsonValue(),
         'corpus[operation_set_trust_line_flags] XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrOperationResult_corpus_operation_result_bad_auth(): void
+{
+    $base64 = '/////w==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[operation_result_bad_auth] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[operation_result_bad_auth] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[operation_result_bad_auth] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[operation_result_bad_auth] XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrOperationResult_corpus_operation_result_inner_create_account(): void
+{
+    $base64 = 'AAAAAAAAAAD////8';
+    $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[operation_result_inner_create_account] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[operation_result_inner_create_account] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[operation_result_inner_create_account] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[operation_result_inner_create_account] XDR-JSON-XDR round trip diverged');
 }
 
 public function testRoundTrip_XdrPeerAddress_corpus_peer_address_ipv4_loopback(): void
@@ -5983,6 +6442,60 @@ public function testRoundTrip_XdrSCVal_corpus_scval_void(): void
     $reInstance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($reEncodedXdr);
     $this->assertSame($jsonValue, $reInstance->toJsonValue(),
         'corpus[scval_void] XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrSerializedBinaryFuseFilter_corpus_serialized_binary_fuse_filter(): void
+{
+    $base64 = 'AAAAAFZWVlZWVlZWVlZWVlZWVlZXV1dXV1dXV1dXV1dXV1dXAAAABAAAAAMAAAACAAAAAgAAAAEAAAAE8PHy8w==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrSerializedBinaryFuseFilter::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrSerializedBinaryFuseFilter::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[serialized_binary_fuse_filter] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrSerializedBinaryFuseFilter::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[serialized_binary_fuse_filter] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrSerializedBinaryFuseFilter::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[serialized_binary_fuse_filter] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrSerializedBinaryFuseFilter::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[serialized_binary_fuse_filter] XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrShortHashSeed_corpus_short_hash_seed_standalone(): void
+{
+    $base64 = 'VVVVVVVVVVVVVVVVVVVVVQ==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrShortHashSeed::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // toJsonValue stability across two independent decodes of the
+    // same XDR base64 — catches non-determinism in the toJsonValue
+    // path.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrShortHashSeed::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[short_hash_seed_standalone] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrShortHashSeed::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[short_hash_seed_standalone] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrShortHashSeed::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[short_hash_seed_standalone] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrShortHashSeed::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[short_hash_seed_standalone] XDR-JSON-XDR round trip diverged');
 }
 
 public function testRoundTrip_XdrSignedPayload_corpus_signed_payload_standalone(): void

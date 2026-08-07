@@ -63,6 +63,7 @@ class XdrConfigSettingContractLedgerCostExtV0 {
                 'Expected object for XdrConfigSettingContractLedgerCostExtV0 JSON value, got ' . get_debug_type($value)
             );
         }
+        XdrJsonHelper::rejectUnknownFields($value, ['tx_max_footprint_entries', 'fee_write1_kb'], 'XdrConfigSettingContractLedgerCostExtV0');
         if (!array_key_exists('tx_max_footprint_entries', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field tx_max_footprint_entries for XdrConfigSettingContractLedgerCostExtV0'
@@ -90,9 +91,10 @@ class XdrConfigSettingContractLedgerCostExtV0 {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

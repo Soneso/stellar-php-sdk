@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 require 'minitest/autorun'
+require 'stringio'
 require 'xdrgen'
 require_relative '../generator/generator'
 
 # Adversarial assertions for private codegen helpers in Generator that do not
 # fit cleanly into the snapshot or json_helpers test suites.
 #
-# Currently this exercises php_string_escape, which must produce
+# php_string_escape must produce
 # single-quoted-PHP-literal-safe output for inputs containing backslashes,
 # single quotes, or both. Ruby's two-argument String#gsub re-parses the
 # replacement string for back-references, so a naive implementation
@@ -58,7 +59,40 @@ class GeneratorHelpersTest < Minitest::Test
     end
   end
 
+  # ------------------------------------------------------------------
+  # fromJson facade emission
+  #
+  # Every fromJson(string) entry point routes through
+  # XdrJsonHelper::decodeText, which is where the SEP-0051 text-level input
+  # rules live — currently the duplicate-object-key rejection. A type that
+  # called json_decode directly would silently accept a document the rest of
+  # the SDK refuses, so the template is pinned here rather than left to the
+  # per-type snapshots alone.
+  # ------------------------------------------------------------------
+
+  def test_from_json_facade_routes_through_the_shared_decode_entry
+    php = emit_from_json_facade
+
+    assert_includes php, 'return static::fromJsonValue(XdrJsonHelper::decodeText($json));'
+    refute_includes php, 'json_decode',
+                    'fromJson must not call json_decode directly; it bypasses the input rules'
+  end
+
+  def test_from_json_facade_documents_both_rejection_paths
+    php = emit_from_json_facade
+
+    assert_includes php, '@throws JsonException If $json is not syntactically valid JSON.'
+    assert_includes php, '@throws InvalidArgumentException If an object in $json repeats a key, or if'
+  end
+
   private
+
+  # Emit the generator's fromJson facade as PHP source.
+  def emit_from_json_facade
+    out = StringIO.new
+    @gen.send(:render_from_json_facade, out)
+    out.string
+  end
 
   # Reverse the escaping a PHP single-quoted literal applies: \\ -> \, \' -> '.
   # Bytes that are not part of these two sequences are returned verbatim.

@@ -53,7 +53,7 @@ class XdrClaimantType {
 
     public function toJsonValue(): string {
         return match ($this->value) {
-            self::V0 => 'v0',
+            self::V0 => 'claimant_type_v0',
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown XdrClaimantType enum value: ' . $this->value
@@ -69,6 +69,10 @@ class XdrClaimantType {
             );
         }
         return match ($value) {
+            'claimant_type_v0' => new static(self::V0),
+            // Deprecated input aliases: wire names emitted by SDK releases
+            // up to 1.11.x. Accepted for compatibility; toJsonValue never
+            // emits them.
             'v0' => new static(self::V0),
             default => throw new InvalidArgumentException(
                 'Unknown XdrClaimantType JSON value: ' . XdrJsonHelper::safePreview($value)
@@ -88,10 +92,11 @@ class XdrClaimantType {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
     public function enumName(): string {

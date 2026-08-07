@@ -107,6 +107,7 @@ class XdrSCPStatementPrepare {
                 'Expected object for XdrSCPStatementPrepare JSON value, got ' . get_debug_type($value)
             );
         }
+        XdrJsonHelper::rejectUnknownFields($value, ['quorum_set_hash', 'ballot', 'prepared', 'prepared_prime', 'n_c', 'n_h'], 'XdrSCPStatementPrepare');
         if (!array_key_exists('quorum_set_hash', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field quorum_set_hash for XdrSCPStatementPrepare'
@@ -164,9 +165,10 @@ class XdrSCPStatementPrepare {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

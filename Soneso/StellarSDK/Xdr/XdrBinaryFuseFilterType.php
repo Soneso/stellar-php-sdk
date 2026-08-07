@@ -65,9 +65,9 @@ class XdrBinaryFuseFilterType {
 
     public function toJsonValue(): string {
         return match ($this->value) {
-            self::BINARY_FUSE_FILTER_8_BIT => '8_bit',
-            self::BINARY_FUSE_FILTER_16_BIT => '16_bit',
-            self::BINARY_FUSE_FILTER_32_BIT => '32_bit',
+            self::BINARY_FUSE_FILTER_8_BIT => 'b8_bit',
+            self::BINARY_FUSE_FILTER_16_BIT => 'b16_bit',
+            self::BINARY_FUSE_FILTER_32_BIT => 'b32_bit',
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown XdrBinaryFuseFilterType enum value: ' . $this->value
@@ -83,6 +83,12 @@ class XdrBinaryFuseFilterType {
             );
         }
         return match ($value) {
+            'b8_bit' => new static(self::BINARY_FUSE_FILTER_8_BIT),
+            'b16_bit' => new static(self::BINARY_FUSE_FILTER_16_BIT),
+            'b32_bit' => new static(self::BINARY_FUSE_FILTER_32_BIT),
+            // Deprecated input aliases: wire names emitted by SDK releases
+            // up to 1.11.x. Accepted for compatibility; toJsonValue never
+            // emits them.
             '8_bit' => new static(self::BINARY_FUSE_FILTER_8_BIT),
             '16_bit' => new static(self::BINARY_FUSE_FILTER_16_BIT),
             '32_bit' => new static(self::BINARY_FUSE_FILTER_32_BIT),
@@ -104,9 +110,10 @@ class XdrBinaryFuseFilterType {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

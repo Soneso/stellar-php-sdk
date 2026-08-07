@@ -70,6 +70,7 @@ class XdrHashIDPreimageOperationID {
                 'Expected object for XdrHashIDPreimageOperationID JSON value, got ' . get_debug_type($value)
             );
         }
+        XdrJsonHelper::rejectUnknownFields($value, ['source_account', 'seq_num', 'op_num'], 'XdrHashIDPreimageOperationID');
         if (!array_key_exists('source_account', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field source_account for XdrHashIDPreimageOperationID'
@@ -103,9 +104,10 @@ class XdrHashIDPreimageOperationID {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

@@ -284,6 +284,44 @@ public function testRejectsBareStringFor_XdrInflationResult_success(): void
     }
 }
 
+public function testRejectsBareStringFor_XdrInnerTransactionResultResult_tx_failed(): void
+{
+    // Per-non-void-arm rejection: round-trip tests pass valid
+    // payloads only, so the per-arm rejection throw inside
+    // fromJsonValue stays uncovered. This test exercises that
+    // branch directly by passing a bare string for an arm that
+    // requires a single-key object payload, then asserts the
+    // resulting message contains both the arm token and the
+    // canonical "non-void" phrase to prove the per-arm branch
+    // fired (not the catch-all default arm).
+    try {
+        \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson('"tx_failed"');
+        $this->fail('Expected InvalidArgumentException for bare string "tx_failed" on XdrInnerTransactionResultResult');
+    } catch (\InvalidArgumentException $e) {
+        $this->assertStringContainsString('tx_failed', $e->getMessage());
+        $this->assertStringContainsString('non-void', $e->getMessage());
+    }
+}
+
+public function testRejectsBareStringFor_XdrInnerTransactionResultResult_tx_success(): void
+{
+    // Per-non-void-arm rejection: round-trip tests pass valid
+    // payloads only, so the per-arm rejection throw inside
+    // fromJsonValue stays uncovered. This test exercises that
+    // branch directly by passing a bare string for an arm that
+    // requires a single-key object payload, then asserts the
+    // resulting message contains both the arm token and the
+    // canonical "non-void" phrase to prove the per-arm branch
+    // fired (not the catch-all default arm).
+    try {
+        \Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult::fromJson('"tx_success"');
+        $this->fail('Expected InvalidArgumentException for bare string "tx_success" on XdrInnerTransactionResultResult');
+    } catch (\InvalidArgumentException $e) {
+        $this->assertStringContainsString('tx_success', $e->getMessage());
+        $this->assertStringContainsString('non-void', $e->getMessage());
+    }
+}
+
 public function testRejectsBareStringFor_XdrInnerTransactionResultResult_txfailed(): void
 {
     // Per-non-void-arm rejection: round-trip tests pass valid
@@ -869,6 +907,25 @@ public function testRejectsBareStringFor_XdrOperationBody_set_trust_line_flags()
         $this->fail('Expected InvalidArgumentException for bare string "set_trust_line_flags" on XdrOperationBody');
     } catch (\InvalidArgumentException $e) {
         $this->assertStringContainsString('set_trust_line_flags', $e->getMessage());
+        $this->assertStringContainsString('non-void', $e->getMessage());
+    }
+}
+
+public function testRejectsBareStringFor_XdrOperationResult_op_inner(): void
+{
+    // Per-non-void-arm rejection: round-trip tests pass valid
+    // payloads only, so the per-arm rejection throw inside
+    // fromJsonValue stays uncovered. This test exercises that
+    // branch directly by passing a bare string for an arm that
+    // requires a single-key object payload, then asserts the
+    // resulting message contains both the arm token and the
+    // canonical "non-void" phrase to prove the per-arm branch
+    // fired (not the catch-all default arm).
+    try {
+        \Soneso\StellarSDK\Xdr\XdrOperationResult::fromJson('"op_inner"');
+        $this->fail('Expected InvalidArgumentException for bare string "op_inner" on XdrOperationResult');
+    } catch (\InvalidArgumentException $e) {
+        $this->assertStringContainsString('op_inner', $e->getMessage());
         $this->assertStringContainsString('non-void', $e->getMessage());
     }
 }
@@ -1629,6 +1686,82 @@ public function testRejectsBareStringFor_XdrStellarValueExt_signed(): void
         $this->fail('Expected InvalidArgumentException for bare string "signed" on XdrStellarValueExt');
     } catch (\InvalidArgumentException $e) {
         $this->assertStringContainsString('signed', $e->getMessage());
+        $this->assertStringContainsString('non-void', $e->getMessage());
+    }
+}
+
+public function testRejectsBareStringFor_XdrTransactionResultResult_tx_failed(): void
+{
+    // Per-non-void-arm rejection: round-trip tests pass valid
+    // payloads only, so the per-arm rejection throw inside
+    // fromJsonValue stays uncovered. This test exercises that
+    // branch directly by passing a bare string for an arm that
+    // requires a single-key object payload, then asserts the
+    // resulting message contains both the arm token and the
+    // canonical "non-void" phrase to prove the per-arm branch
+    // fired (not the catch-all default arm).
+    try {
+        \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson('"tx_failed"');
+        $this->fail('Expected InvalidArgumentException for bare string "tx_failed" on XdrTransactionResultResult');
+    } catch (\InvalidArgumentException $e) {
+        $this->assertStringContainsString('tx_failed', $e->getMessage());
+        $this->assertStringContainsString('non-void', $e->getMessage());
+    }
+}
+
+public function testRejectsBareStringFor_XdrTransactionResultResult_tx_fee_bump_inner_failed(): void
+{
+    // Per-non-void-arm rejection: round-trip tests pass valid
+    // payloads only, so the per-arm rejection throw inside
+    // fromJsonValue stays uncovered. This test exercises that
+    // branch directly by passing a bare string for an arm that
+    // requires a single-key object payload, then asserts the
+    // resulting message contains both the arm token and the
+    // canonical "non-void" phrase to prove the per-arm branch
+    // fired (not the catch-all default arm).
+    try {
+        \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson('"tx_fee_bump_inner_failed"');
+        $this->fail('Expected InvalidArgumentException for bare string "tx_fee_bump_inner_failed" on XdrTransactionResultResult');
+    } catch (\InvalidArgumentException $e) {
+        $this->assertStringContainsString('tx_fee_bump_inner_failed', $e->getMessage());
+        $this->assertStringContainsString('non-void', $e->getMessage());
+    }
+}
+
+public function testRejectsBareStringFor_XdrTransactionResultResult_tx_fee_bump_inner_success(): void
+{
+    // Per-non-void-arm rejection: round-trip tests pass valid
+    // payloads only, so the per-arm rejection throw inside
+    // fromJsonValue stays uncovered. This test exercises that
+    // branch directly by passing a bare string for an arm that
+    // requires a single-key object payload, then asserts the
+    // resulting message contains both the arm token and the
+    // canonical "non-void" phrase to prove the per-arm branch
+    // fired (not the catch-all default arm).
+    try {
+        \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson('"tx_fee_bump_inner_success"');
+        $this->fail('Expected InvalidArgumentException for bare string "tx_fee_bump_inner_success" on XdrTransactionResultResult');
+    } catch (\InvalidArgumentException $e) {
+        $this->assertStringContainsString('tx_fee_bump_inner_success', $e->getMessage());
+        $this->assertStringContainsString('non-void', $e->getMessage());
+    }
+}
+
+public function testRejectsBareStringFor_XdrTransactionResultResult_tx_success(): void
+{
+    // Per-non-void-arm rejection: round-trip tests pass valid
+    // payloads only, so the per-arm rejection throw inside
+    // fromJsonValue stays uncovered. This test exercises that
+    // branch directly by passing a bare string for an arm that
+    // requires a single-key object payload, then asserts the
+    // resulting message contains both the arm token and the
+    // canonical "non-void" phrase to prove the per-arm branch
+    // fired (not the catch-all default arm).
+    try {
+        \Soneso\StellarSDK\Xdr\XdrTransactionResultResult::fromJson('"tx_success"');
+        $this->fail('Expected InvalidArgumentException for bare string "tx_success" on XdrTransactionResultResult');
+    } catch (\InvalidArgumentException $e) {
+        $this->assertStringContainsString('tx_success', $e->getMessage());
         $this->assertStringContainsString('non-void', $e->getMessage());
     }
 }
