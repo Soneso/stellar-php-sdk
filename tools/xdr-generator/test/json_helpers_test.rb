@@ -347,4 +347,42 @@ class JsonHelpersTest < Minitest::Test
   def test_legacy_strip_empty_list_returns_empty_hash
     assert_equal({}, XdrJsonHelpers.legacy_strip_shared_prefix([]))
   end
+
+  # ------------------------------------------------------------------
+  # unknown_field_guard — struct-object key closure
+  # ------------------------------------------------------------------
+
+  def test_unknown_field_guard_lists_keys_in_given_order
+    assert_equal "XdrJsonHelper::rejectUnknownFields($value, ['n', 'd'], 'XdrPrice');",
+                 XdrJsonHelpers.unknown_field_guard('XdrPrice', %w[n d])
+  end
+
+  def test_unknown_field_guard_with_single_key
+    assert_equal "XdrJsonHelper::rejectUnknownFields($value, ['nonce'], 'XdrSCNonceKey');",
+                 XdrJsonHelpers.unknown_field_guard('XdrSCNonceKey', %w[nonce])
+  end
+
+  def test_unknown_field_guard_with_no_declared_keys_closes_over_the_empty_set
+    assert_equal "XdrJsonHelper::rejectUnknownFields($value, [], 'XdrEmpty');",
+                 XdrJsonHelpers.unknown_field_guard('XdrEmpty', [])
+  end
+
+  def test_unknown_field_guard_escapes_php_single_quote_metacharacters
+    assert_equal "XdrJsonHelper::rejectUnknownFields($value, ['a\\\\b', 'c\\'d'], 'Xdr\\'T');",
+                 XdrJsonHelpers.unknown_field_guard("Xdr'T", ['a\\b', "c'd"])
+  end
+
+  # ------------------------------------------------------------------
+  # field_alias_fold — input alias folded onto the canonical field key
+  # ------------------------------------------------------------------
+
+  def test_field_alias_fold_reassigns_value_from_the_helper
+    assert_equal "$value = XdrJsonHelper::normalizeFieldAlias($value, 'type', 'type_', 'XdrDontHave');",
+                 XdrJsonHelpers.field_alias_fold('XdrDontHave', 'type', 'type_')
+  end
+
+  def test_field_alias_fold_escapes_php_single_quote_metacharacters
+    assert_equal "$value = XdrJsonHelper::normalizeFieldAlias($value, 'a\\'b', 'c\\\\d', 'Xdr\\'T');",
+                 XdrJsonHelpers.field_alias_fold("Xdr'T", "a'b", 'c\\d')
+  end
 end

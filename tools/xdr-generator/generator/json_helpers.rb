@@ -4,8 +4,10 @@
 #
 # This module groups Ruby-side computations the generator performs once at code
 # generation: the canonical enum-member naming algorithm shared by enums and
-# discriminated unions, plus the legacy naming algorithm retained solely to
-# emit deprecated input aliases.
+# discriminated unions, the legacy naming algorithm retained solely to emit
+# deprecated input aliases, and the struct-object statements — the key-closure
+# guard shared by the default struct renderer and the object-shaped type
+# overrides, plus the field-key alias fold.
 #
 # The strings produced here are baked into the emitted PHP source as literal
 # match-arm keys; downstream PHP code does not recompute them at runtime.
@@ -38,6 +40,40 @@
 
 module XdrJsonHelpers
   module_function
+
+  # ---------------------------------------------------------------------------
+  # Struct-object key closure
+  # ---------------------------------------------------------------------------
+
+  # The PHP statement that folds a field's input alias into its canonical wire
+  # key. Emitted ahead of the key closure so the closure and the field reads
+  # only ever see the spelling the to side emits.
+  def field_alias_fold(class_name, canonical_key, alias_key)
+    "$value = XdrJsonHelper::normalizeFieldAlias(" \
+      "$value, '#{php_quote(canonical_key)}', '#{php_quote(alias_key)}', '#{php_quote(class_name)}');"
+  end
+
+  # The PHP statement that closes a struct-object decode over its declared
+  # field keys.
+  #
+  # SEP-0051 encodes a struct as an object whose keys are exactly its fields,
+  # so a key outside that set carries no meaning for the type and is rejected
+  # rather than silently dropped. The statement belongs after the '$schema'
+  # strip and the is_array guard: '$schema' is the one annotation SEP-0051
+  # says an object SHOULD tolerate, and by that point it is already gone.
+  #
+  # Emitted by both the default struct renderer and the object-shaped bodies
+  # in stellar_json_overrides.rb so every struct-object path states the same
+  # rule in the same form.
+  def unknown_field_guard(class_name, json_keys)
+    keys = json_keys.map { |k| "'#{php_quote(k)}'" }.join(', ')
+    "XdrJsonHelper::rejectUnknownFields($value, [#{keys}], '#{php_quote(class_name)}');"
+  end
+
+  # Escape a Ruby string for embedding in a PHP single-quoted literal.
+  def php_quote(str)
+    str.to_s.gsub('\\') { '\\\\' }.gsub("'") { "\\'" }
+  end
 
   # ---------------------------------------------------------------------------
   # Canonical naming (rs-stellar-xdr rule)

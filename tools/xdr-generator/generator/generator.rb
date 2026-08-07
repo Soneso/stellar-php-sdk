@@ -2809,10 +2809,11 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
     out.puts "    /**"
     out.puts "     * @throws JsonException If $json is not syntactically valid JSON."
-    out.puts "     * @throws InvalidArgumentException If the JSON shape does not match this type."
+    out.puts "     * @throws InvalidArgumentException If an object in $json repeats a key, or if"
+    out.puts "     *         the JSON shape does not match this type."
     out.puts "     */"
     out.puts "    public static function fromJson(string $json): static {"
-    out.puts "        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));"
+    out.puts "        return static::fromJsonValue(XdrJsonHelper::decodeText($json));"
     out.puts "    }"
   end
 
@@ -2832,6 +2833,11 @@ class Generator < Xdrgen::Generators::Base
   # collapsed to int are emitted as the bare void-arm string "v0" (treated as
   # a void int-cased union with arm 0) and reject any other input on the from
   # side.
+  #
+  # The from side is closed: once the schema annotation has been stripped and
+  # any field-key alias has been folded onto its canonical spelling, every
+  # remaining key must be one of the emitted field keys, and all of them are
+  # required. See render_field_alias_folds and render_unknown_field_guard.
   def render_struct_sep51_methods(out, struct_name, class_name, fields)
     out.puts ""
     out.puts "    public function toJsonValue(): array {"
@@ -2853,6 +2859,8 @@ class Generator < Xdrgen::Generators::Base
     out.puts "                'Expected object for #{class_name} JSON value, got ' . get_debug_type($value)"
     out.puts "            );"
     out.puts "        }"
+    render_field_alias_folds(out, class_name, fields)
+    render_unknown_field_guard(out, class_name, fields.map { |f| struct_field_json_key(f) })
     fields.each do |f|
       render_struct_field_from_json(out, f, class_name)
     end
@@ -2866,6 +2874,25 @@ class Generator < Xdrgen::Generators::Base
 
     render_to_json_facade(out)
     render_from_json_facade(out)
+  end
+
+  # Emit the statement that closes a struct-object decode over its declared
+  # field keys. The keys are the same strings the to side emits, so the two
+  # directions cannot drift apart.
+  def render_unknown_field_guard(out, class_name, json_keys)
+    out.puts "        #{XdrJsonHelpers.unknown_field_guard(class_name, json_keys)}"
+  end
+
+  # Emit one fold statement per field that accepts an input alias for its wire
+  # key. Placed ahead of the key closure and the per-field reads so that both
+  # see only the canonical spelling.
+  def render_field_alias_folds(out, class_name, fields)
+    fields.each do |f|
+      alias_key = struct_field_json_key_alias(f)
+      next unless alias_key
+
+      out.puts "        #{XdrJsonHelpers.field_alias_fold(class_name, struct_field_json_key(f), alias_key)}"
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -3059,6 +3086,24 @@ class Generator < Xdrgen::Generators::Base
   # `signerSponsoringIDs`).
   def struct_field_json_key(field)
     field[:xdr_name].to_s.underscore
+  end
+
+  # Additional spellings of a struct field's wire key that the from side
+  # accepts. Keyed by the canonical key from struct_field_json_key, so the
+  # guard, the alias fold and the field read all derive from one place; the to
+  # side never emits an alias.
+  #
+  # "type_" is accepted for a field keyed "type": SEP-0051 leaves the key as
+  # the snake_case IDL field name, and implementations whose target language
+  # reserves `type` have shipped the escaped spelling. Seven IDL structs
+  # declare a `type` field, so seven emitted types carry this alias.
+  STRUCT_FIELD_KEY_ALIASES = {
+    'type' => 'type_',
+  }.freeze
+
+  # The alias for one struct field's wire key, or nil when it has none.
+  def struct_field_json_key_alias(field)
+    STRUCT_FIELD_KEY_ALIASES[struct_field_json_key(field)]
   end
 
   # Emit the inverse: a sequence of PHP statements that parse one struct field
@@ -3817,10 +3862,11 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
     out.puts "    /**"
     out.puts "     * @throws JsonException If $json is not syntactically valid JSON."
-    out.puts "     * @throws InvalidArgumentException If the JSON shape does not match this type."
+    out.puts "     * @throws InvalidArgumentException If an object in $json repeats a key, or if"
+    out.puts "     *         the JSON shape does not match this type."
     out.puts "     */"
     out.puts "    public static function fromJson(string $json): static {"
-    out.puts "        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));"
+    out.puts "        return static::fromJsonValue(XdrJsonHelper::decodeText($json));"
     out.puts "    }"
   end
 

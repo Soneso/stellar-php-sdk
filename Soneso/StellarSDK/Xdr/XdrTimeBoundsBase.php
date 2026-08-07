@@ -63,6 +63,7 @@ class XdrTimeBoundsBase {
                 'Expected object for XdrTimeBounds JSON value, got ' . get_debug_type($value)
             );
         }
+        XdrJsonHelper::rejectUnknownFields($value, ['min_time', 'max_time'], 'XdrTimeBounds');
         if (!array_key_exists('min_time', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field min_time for XdrTimeBounds'
@@ -107,10 +108,11 @@ class XdrTimeBoundsBase {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

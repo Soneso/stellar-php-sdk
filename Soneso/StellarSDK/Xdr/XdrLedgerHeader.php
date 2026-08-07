@@ -160,6 +160,7 @@ class XdrLedgerHeader {
                 'Expected object for XdrLedgerHeader JSON value, got ' . get_debug_type($value)
             );
         }
+        XdrJsonHelper::rejectUnknownFields($value, ['ledger_version', 'previous_ledger_hash', 'scp_value', 'tx_set_result_hash', 'bucket_list_hash', 'ledger_seq', 'total_coins', 'fee_pool', 'inflation_seq', 'id_pool', 'base_fee', 'base_reserve', 'max_tx_set_size', 'skip_list', 'ext'], 'XdrLedgerHeader');
         if (!array_key_exists('ledger_version', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field ledger_version for XdrLedgerHeader'
@@ -272,9 +273,10 @@ class XdrLedgerHeader {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

@@ -20,6 +20,7 @@ use Soneso\StellarSDK\Xdr\XdrInt256Parts;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyLiquidityPool;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositOperation;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawOperation;
+use Soneso\StellarSDK\Xdr\XdrManageDataOperation;
 use Soneso\StellarSDK\Xdr\XdrMemo;
 use Soneso\StellarSDK\Xdr\XdrMemoType;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
@@ -32,6 +33,10 @@ use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSignedPayload;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
+use Soneso\StellarSDK\Xdr\XdrTimeBounds;
+use Soneso\StellarSDK\Xdr\XdrTransaction;
+use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrTransactionV0;
 use Soneso\StellarSDK\Xdr\XdrUInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrUInt256Parts;
 use phpseclib3\Math\BigInteger;
@@ -51,6 +56,8 @@ use phpseclib3\Math\BigInteger;
  *     XdrAssetAlphaNum12, XdrAllowTrustOperationAsset,
  *     XdrLiquidityPoolDepositOperation, XdrLiquidityPoolWithdrawOperation,
  *     XdrLedgerKeyLiquidityPool.
+ *   - Object-shaped bespoke types: XdrTimeBounds, XdrManageDataOperation,
+ *     XdrTransaction, XdrTransactionV0.
  *   - Hand-written XdrDataValue.
  *
  * Each test verifies (a) the toJsonValue wire form matches the SEP-51
@@ -1208,5 +1215,108 @@ class StellarSpecificTypesTest extends TestCase
         $json = $alpha->toJson();
         $rt2 = XdrAssetAlphaNum12::fromJson($json);
         $this->assertSame($stored, $rt2->assetCode);
+    }
+
+    // -----------------------------------------------------------------
+    // Object-shaped bespoke types — struct-object key closure
+    // -----------------------------------------------------------------
+    //
+    // XdrTimeBounds, XdrManageDataOperation, XdrTransaction and
+    // XdrTransactionV0 receive bespoke from-side bodies rather than the
+    // default struct template. They carry the same closure over their
+    // declared keys, so an over-supplied document is rejected on these
+    // paths too.
+
+    public function testXdrTimeBoundsAcceptsExactlyItsDeclaredKeys(): void
+    {
+        $bounds = XdrTimeBounds::fromJsonValue(['min_time' => '0', 'max_time' => '100']);
+        $this->assertSame(['min_time' => '0', 'max_time' => '100'], $bounds->toJsonValue());
+    }
+
+    public function testXdrTimeBoundsRejectsAnUnknownKey(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Unknown field in JSON input for XdrTimeBounds: 'bogus'");
+        XdrTimeBounds::fromJsonValue(['min_time' => '0', 'max_time' => '100', 'bogus' => 1]);
+    }
+
+    public function testXdrManageDataOperationAcceptsSchemaBesideItsDeclaredKeys(): void
+    {
+        $op = XdrManageDataOperation::fromJsonValue([
+            '$schema' => 'https://schema',
+            'data_name' => 'k',
+            'data_value' => '00ff',
+        ]);
+        $this->assertSame(['data_name' => 'k', 'data_value' => '00ff'], $op->toJsonValue());
+    }
+
+    public function testXdrManageDataOperationRejectsAnUnknownKey(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            "Unknown field in JSON input for XdrManageDataOperation: 'bogus'"
+        );
+        XdrManageDataOperation::fromJsonValue([
+            'data_name' => 'k',
+            'data_value' => null,
+            'bogus' => 1,
+        ]);
+    }
+
+    /**
+     * A signed v1 transaction envelope, used as the source of a real
+     * XdrTransaction rather than a hand-typed key set: the fixture's own
+     * toJsonValue supplies the declared keys, so the test cannot pass by
+     * agreeing with a stale list.
+     */
+    private const TRANSACTION_ENVELOPE_V1_XDR =
+        'AAAAAgAAAADmmSZkwY3163TMouB2TY8MljqXw2IxVYTGyvDrR6YtAAAqmmQAABpuAAAAAQAAAAAAAAAAAAAAAQ'
+        . 'AAAAAAAAAYAAAAAQAAAAEAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAAAAAABAAAABgAAAAHXkotywnA8z+r365/0'
+        . '701QSlWouXn8m0UOoshCtNHOYQAAABQAAAABAAI9fQAAAAAAAAD4AAAAAAAqmgAAAAABR6YtAAAAAEArDtxbqU'
+        . 'I+CsdkRmV0lFhVt0wyB7fyrmmkM6Fr35wpPcK8WKcXeKTl4BQ+akE14MZtpaea9LMdhXopaW3pJA0E';
+
+    /** A v0 transaction with no optional fields set. */
+    private const TRANSACTION_V0_XDR =
+        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAA==';
+
+    public function testXdrTransactionAcceptsExactlyItsDeclaredKeys(): void
+    {
+        $tx = XdrTransactionEnvelope::fromBase64Xdr(self::TRANSACTION_ENVELOPE_V1_XDR)
+            ->getV1()->getTx();
+        $jsonValue = $tx->toJsonValue();
+        $this->assertSame(
+            ['source_account', 'fee', 'seq_num', 'cond', 'memo', 'operations', 'ext'],
+            array_keys($jsonValue)
+        );
+        $this->assertSame($jsonValue, XdrTransaction::fromJsonValue($jsonValue)->toJsonValue());
+    }
+
+    public function testXdrTransactionRejectsAnUnknownKey(): void
+    {
+        $jsonValue = XdrTransactionEnvelope::fromBase64Xdr(self::TRANSACTION_ENVELOPE_V1_XDR)
+            ->getV1()->getTx()->toJsonValue();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Unknown field in JSON input for XdrTransaction: 'bogus'");
+        XdrTransaction::fromJsonValue($jsonValue + ['bogus' => 1]);
+    }
+
+    public function testXdrTransactionV0AcceptsExactlyItsDeclaredKeys(): void
+    {
+        $jsonValue = XdrTransactionV0::fromBase64Xdr(self::TRANSACTION_V0_XDR)->toJsonValue();
+        $this->assertSame(
+            ['source_account_ed25519', 'fee', 'seq_num', 'time_bounds', 'memo', 'operations', 'ext'],
+            array_keys($jsonValue)
+        );
+        $this->assertSame($jsonValue, XdrTransactionV0::fromJsonValue($jsonValue)->toJsonValue());
+    }
+
+    public function testXdrTransactionV0RejectsAnUnknownKey(): void
+    {
+        $jsonValue = XdrTransactionV0::fromBase64Xdr(self::TRANSACTION_V0_XDR)->toJsonValue();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Unknown field in JSON input for XdrTransactionV0: 'bogus'");
+        XdrTransactionV0::fromJsonValue($jsonValue + ['bogus' => 1]);
     }
 }

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'json_helpers'
+
 # Per-type SEP-51 (XDR-JSON) emission overrides for Stellar-specific types.
 #
 # This registry maps an XDR type name (the PHP class name, e.g.
@@ -56,32 +58,6 @@ module StellarJsonOverrides
   # accepts: a signed payload carries 1 to 64 payload bytes).
   ZERO_LENGTH_SIGNED_PAYLOAD_MESSAGE =
     'Zero-length signed payload has no SEP-23 strkey representation'
-
-  # Build the canonical toJson/fromJson facade as a single PHP source
-  # string suitable for injection by callers that want the full
-  # four-method block. Reproduces the generator's render_to_json_facade
-  # and render_from_json_facade exactly.
-  def facade_block
-    <<~PHP.strip
-      /**
-       * @throws JsonException If the value contains structures that cannot be encoded as JSON.
-       */
-      public function toJson(): string {
-          return json_encode(
-              $this->toJsonValue(),
-              JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-          );
-      }
-
-      /**
-       * @throws JsonException If $json is not syntactically valid JSON.
-       * @throws InvalidArgumentException If the JSON shape does not match this type.
-       */
-      public static function fromJson(string $json): static {
-          return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
-      }
-    PHP
-  end
 
   # Registry of type-level overrides. Each entry maps an XDR type name to
   # a hash of:
@@ -1061,6 +1037,9 @@ module StellarJsonOverrides
                   ];
         PHP
       end,
+      # The key list in the unknown-field guard below repeats the keys the
+      # to_body emits; the two are kept in step by hand, so a field added,
+      # removed or renamed must be changed in both.
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (is_array($value) && array_key_exists('$schema', $value)) {
@@ -1071,6 +1050,7 @@ module StellarJsonOverrides
                           'Expected object for XdrTimeBounds JSON value, got ' . get_debug_type($value)
                       );
                   }
+                  #{XdrJsonHelpers.unknown_field_guard('XdrTimeBounds', %w[min_time max_time])}
                   if (!array_key_exists('min_time', $value)) {
                       throw new InvalidArgumentException(
                           'Missing required field min_time for XdrTimeBounds'
@@ -1131,6 +1111,9 @@ module StellarJsonOverrides
                   ];
         PHP
       end,
+      # The key list in the unknown-field guard below repeats the keys the
+      # to_body emits; the two are kept in step by hand, so a field added,
+      # removed or renamed must be changed in both.
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (is_array($value) && array_key_exists('$schema', $value)) {
@@ -1141,6 +1124,7 @@ module StellarJsonOverrides
                           'Expected object for XdrTransaction JSON value, got ' . get_debug_type($value)
                       );
                   }
+                  #{XdrJsonHelpers.unknown_field_guard('XdrTransaction', %w[source_account fee seq_num cond memo operations ext])}
                   foreach (['source_account', 'fee', 'seq_num', 'cond', 'memo', 'operations', 'ext'] as $required) {
                       if (!array_key_exists($required, $value)) {
                           throw new InvalidArgumentException(
@@ -1201,6 +1185,9 @@ module StellarJsonOverrides
                   ];
         PHP
       end,
+      # The key list in the unknown-field guard below repeats the keys the
+      # to_body emits; the two are kept in step by hand, so a field added,
+      # removed or renamed must be changed in both.
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (is_array($value) && array_key_exists('$schema', $value)) {
@@ -1211,6 +1198,7 @@ module StellarJsonOverrides
                           'Expected object for XdrTransactionV0 JSON value, got ' . get_debug_type($value)
                       );
                   }
+                  #{XdrJsonHelpers.unknown_field_guard('XdrTransactionV0', %w[source_account_ed25519 fee seq_num time_bounds memo operations ext])}
                   foreach (['source_account_ed25519', 'fee', 'seq_num', 'time_bounds', 'memo', 'operations', 'ext'] as $required) {
                       if (!array_key_exists($required, $value)) {
                           throw new InvalidArgumentException(
@@ -1274,6 +1262,9 @@ module StellarJsonOverrides
                   ];
         PHP
       end,
+      # The key list in the unknown-field guard below repeats the keys the
+      # to_body emits; the two are kept in step by hand, so a field added,
+      # removed or renamed must be changed in both.
       from_body: lambda do |_ctx|
         <<~PHP.chomp
                   if (is_array($value) && array_key_exists('$schema', $value)) {
@@ -1284,6 +1275,7 @@ module StellarJsonOverrides
                           'Expected object for XdrManageDataOperation JSON value, got ' . get_debug_type($value)
                       );
                   }
+                  #{XdrJsonHelpers.unknown_field_guard('XdrManageDataOperation', %w[data_name data_value])}
                   if (!array_key_exists('data_name', $value)) {
                       throw new InvalidArgumentException(
                           'Missing required field data_name for XdrManageDataOperation'

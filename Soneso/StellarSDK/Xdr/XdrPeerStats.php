@@ -154,6 +154,7 @@ class XdrPeerStats {
                 'Expected object for XdrPeerStats JSON value, got ' . get_debug_type($value)
             );
         }
+        XdrJsonHelper::rejectUnknownFields($value, ['id', 'version_str', 'messages_read', 'messages_written', 'bytes_read', 'bytes_written', 'seconds_connected', 'unique_flood_bytes_recv', 'duplicate_flood_bytes_recv', 'unique_fetch_bytes_recv', 'duplicate_fetch_bytes_recv', 'unique_flood_message_recv', 'duplicate_flood_message_recv', 'unique_fetch_message_recv', 'duplicate_fetch_message_recv'], 'XdrPeerStats');
         if (!array_key_exists('id', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field id for XdrPeerStats'
@@ -262,9 +263,10 @@ class XdrPeerStats {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

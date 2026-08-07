@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDKTests\Unit\Xdr\Sep51;
 
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Xdr\XdrContractCodeEntryExtV1;
 use Soneso\StellarSDK\Xdr\XdrContractExecutable;
 use Soneso\StellarSDK\Xdr\XdrContractExecutableBase;
 use Soneso\StellarSDK\Xdr\XdrContractExecutableExternalRef;
@@ -17,8 +18,13 @@ use Soneso\StellarSDK\Xdr\XdrSCAddress;
 
 /**
  * SEP-51 parity tests for hand-written wrappers against their generated
- * counterparts: XdrDataValue, and XdrContractExecutable vs
- * XdrContractExecutableBase.
+ * counterparts: XdrDataValue, XdrContractExecutable vs
+ * XdrContractExecutableBase, and XdrContractCodeEntryExtV1.
+ *
+ * XdrContractCodeEntryExtV1 is hand-authored because the IDL declares it as
+ * an anonymous inline struct inside a union arm, which the generator does not
+ * name. Its fromJsonValue must nonetheless enforce the same struct-object key
+ * closure the generator emits.
  *
  * XdrDataValue is hand-authored rather than generator-produced (it is the
  * optional opaque-variable wrapper used by ManageData). Its SEP-51 wire form
@@ -226,5 +232,58 @@ class HandWrittenVsGeneratedTest extends TestCase
         // The hand-written wrapper inherits the same JSON path.
         $wrapperRestored = XdrContractExecutable::fromJsonValue($jsonValue);
         $this->assertSame($base->encode(), $wrapperRestored->encode());
+    }
+
+    /**
+     * The wire form of XdrContractCodeEntryExtV1: an `ext` extension point and
+     * the `cost_inputs` object.
+     *
+     * @return array<string, mixed>
+     */
+    private static function contractCodeEntryExtV1JsonValue(): array
+    {
+        return [
+            'ext' => 'v0',
+            'cost_inputs' => [
+                'ext' => 'v0',
+                'n_instructions' => 1,
+                'n_functions' => 2,
+                'n_globals' => 3,
+                'n_table_entries' => 4,
+                'n_types' => 5,
+                'n_data_segments' => 6,
+                'n_elem_segments' => 7,
+                'n_imports' => 8,
+                'n_exports' => 9,
+                'n_data_segment_bytes' => 10,
+            ],
+        ];
+    }
+
+    public function testContractCodeEntryExtV1AcceptsExactlyItsDeclaredKeys(): void
+    {
+        $jsonValue = self::contractCodeEntryExtV1JsonValue();
+        $decoded = XdrContractCodeEntryExtV1::fromJsonValue($jsonValue);
+        $this->assertSame($jsonValue, $decoded->toJsonValue());
+    }
+
+    public function testContractCodeEntryExtV1AcceptsSchemaBesideItsDeclaredKeys(): void
+    {
+        $jsonValue = self::contractCodeEntryExtV1JsonValue();
+        $decoded = XdrContractCodeEntryExtV1::fromJsonValue(
+            ['$schema' => 'https://schema'] + $jsonValue
+        );
+        $this->assertSame($jsonValue, $decoded->toJsonValue());
+    }
+
+    public function testContractCodeEntryExtV1RejectsAnUnknownKey(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            "Unknown field in JSON input for XdrContractCodeEntryExtV1: 'bogus'"
+        );
+        XdrContractCodeEntryExtV1::fromJsonValue(
+            self::contractCodeEntryExtV1JsonValue() + ['bogus' => 1]
+        );
     }
 }

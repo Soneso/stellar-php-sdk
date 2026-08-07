@@ -119,6 +119,7 @@ class XdrStateArchivalSettings {
                 'Expected object for XdrStateArchivalSettings JSON value, got ' . get_debug_type($value)
             );
         }
+        XdrJsonHelper::rejectUnknownFields($value, ['max_entry_ttl', 'min_temporary_ttl', 'min_persistent_ttl', 'persistent_rent_rate_denominator', 'temp_rent_rate_denominator', 'max_entries_to_archive', 'live_soroban_state_size_window_sample_size', 'live_soroban_state_size_window_sample_period', 'eviction_scan_size', 'starting_eviction_scan_level'], 'XdrStateArchivalSettings');
         if (!array_key_exists('max_entry_ttl', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field max_entry_ttl for XdrStateArchivalSettings'
@@ -194,9 +195,10 @@ class XdrStateArchivalSettings {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

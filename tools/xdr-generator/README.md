@@ -41,17 +41,22 @@ Output goes to `Soneso/StellarSDK/Xdr/`.
 ### Run tests
 
 ```bash
-make xdr-generator-test                # run snapshot tests via Docker
+make xdr-generator-test                # run snapshot and helper tests via Docker
 make xdr-generator-update-snapshots    # update snapshots after intentional changes
 make xdr-validate                      # validate generated types against XDR definitions
 make xdr-generate-tests                # regenerate PHP XDR unit tests
 ```
+
+`xdr-generator-test` covers `test/generator_snapshot_test.rb` plus the codegen-time helper units (`generator_helpers_test.rb`, `json_helpers_test.rb`, `sep51_field_overrides_test.rb`). A new test file must be listed in the target to be gated.
 
 Or directly (requires `bundle install` first):
 
 ```bash
 cd tools/xdr-generator
 bundle exec ruby -Itest test/generator_snapshot_test.rb
+bundle exec ruby -Itest test/generator_helpers_test.rb
+bundle exec ruby -Itest test/json_helpers_test.rb
+bundle exec ruby -Itest test/sep51_field_overrides_test.rb
 bundle exec ruby test/update_snapshots.rb
 bundle exec ruby test/validate_generated_types.rb
 bundle exec ruby test/generate_tests.rb

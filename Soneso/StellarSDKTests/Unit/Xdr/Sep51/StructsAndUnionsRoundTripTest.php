@@ -13,6 +13,7 @@ use Soneso\StellarSDK\Xdr\XdrAuth;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntry;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntryExtV1;
 use Soneso\StellarSDK\Xdr\XdrConfigSettingContractComputeV0;
+use Soneso\StellarSDK\Xdr\XdrDontHave;
 use Soneso\StellarSDK\Xdr\XdrError;
 use Soneso\StellarSDK\Xdr\XdrErrorCode;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
@@ -31,6 +32,7 @@ use Soneso\StellarSDK\Xdr\XdrSCError;
 use Soneso\StellarSDK\Xdr\XdrSCErrorCode;
 use Soneso\StellarSDK\Xdr\XdrSCErrorType;
 use Soneso\StellarSDK\Xdr\XdrSCNonceKey;
+use Soneso\StellarSDK\Xdr\XdrSCSpecUDTStructFieldV0;
 use Soneso\StellarSDK\Xdr\XdrSCPBallot;
 use Soneso\StellarSDK\Xdr\XdrSCPNomination;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
@@ -56,8 +58,8 @@ use Soneso\StellarSDK\Xdr\XdrValue;
  *
  * The negative cases trip on the shape-validation paths the generator emits
  * at the top of fromJsonValue: the missing-required-field guard, the
- * wrong-shape guard (non-array vs single-key-object), and the
- * unknown-arm-key / unknown-void-string guards.
+ * wrong-shape guard (non-array vs single-key-object), the struct-object key
+ * closure, and the unknown-arm-key / unknown-void-string guards.
  */
 class StructsAndUnionsRoundTripTest extends TestCase
 {
@@ -116,6 +118,157 @@ class StructsAndUnionsRoundTripTest extends TestCase
         // missing-field guard.
         $this->expectException(\InvalidArgumentException::class);
         XdrPrice::fromJsonValue(['$schema' => 'https://schema']);
+    }
+
+    // =========================================================================
+    // Struct-object key closure — every key beyond the declared fields (and
+    // the '$schema' annotation SEP-0051 says an object SHOULD tolerate) is
+    // rejected rather than silently dropped.
+    // =========================================================================
+
+    public function testPriceRejectsAnUnknownKeyNamingTheKeyAndTheType(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Unknown field in JSON input for XdrPrice: 'bogus'");
+        XdrPrice::fromJsonValue(['n' => 1, 'd' => 2, 'bogus' => 3]);
+    }
+
+    public function testPriceRejectsSeveralUnknownKeysNamingEachOne(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Unknown fields in JSON input for XdrPrice: 'bogus', 'other'");
+        XdrPrice::fromJsonValue(['n' => 1, 'd' => 2, 'bogus' => 3, 'other' => 4]);
+    }
+
+    public function testPriceRejectsAnUnknownKeyAlongsideSchema(): void
+    {
+        // The '$schema' strip must not license anything else through with it.
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Unknown field in JSON input for XdrPrice: 'bogus'");
+        XdrPrice::fromJsonValue(['$schema' => 'https://schema', 'n' => 1, 'd' => 2, 'bogus' => 3]);
+    }
+
+    public function testPriceRejectsAnUnknownKeyBeforeTheMissingFieldGuard(): void
+    {
+        // The closure runs first, so a document that is both incomplete and
+        // over-supplied reports the key it should not have carried.
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Unknown field in JSON input for XdrPrice: 'bogus'");
+        XdrPrice::fromJsonValue(['n' => 1, 'bogus' => 3]);
+    }
+
+    public function testPriceRejectsACaseVariantOfADeclaredKey(): void
+    {
+        // Key matching is exact; SEP-51 keys are the snake_case IDL names.
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Unknown field in JSON input for XdrPrice: 'N'");
+        XdrPrice::fromJsonValue(['N' => 1, 'd' => 2]);
+    }
+
+    public function testClaimableBalanceEntryExtV1AcceptsItsExtensionPointKey(): void
+    {
+        // An extension-point field is a declared key like any other: its value
+        // is validated and discarded, but its presence must not trip the
+        // closure.
+        $decoded = XdrClaimableBalanceEntryExtV1::fromJsonValue(['ext' => 'v0', 'flags' => 1]);
+        $this->assertSame(['ext' => 'v0', 'flags' => 1], $decoded->toJsonValue());
+    }
+
+    public function testClaimableBalanceEntryExtV1RejectsAnUnknownKey(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            "Unknown field in JSON input for XdrClaimableBalanceEntryExtV1: 'bogus'"
+        );
+        XdrClaimableBalanceEntryExtV1::fromJsonValue(['ext' => 'v0', 'flags' => 1, 'bogus' => 2]);
+    }
+
+    // -------------------------------------------------------------------------
+    // The 'type' field. Seven XDR structs declare a field named `type`. The
+    // SEP-51 key is `type` and that is the only spelling emitted; `type_` is
+    // accepted on input as a second spelling of the same key, so it satisfies
+    // the required-field check and counts as declared. The two spellings name
+    // one field, so supplying both is a duplicate.
+    // -------------------------------------------------------------------------
+
+    public function testSCSpecUDTStructFieldV0DecodesWithTheDeclaredTypeKey(): void
+    {
+        $decoded = XdrSCSpecUDTStructFieldV0::fromJson('{"doc":"","name":"x","type":"bool"}');
+        $this->assertSame('AAAAAAAAAAF4AAAAAAAAAQ==', $decoded->toBase64Xdr());
+    }
+
+    public function testSCSpecUDTStructFieldV0DecodesTheTrailingUnderscoreSpelling(): void
+    {
+        $canonical = XdrSCSpecUDTStructFieldV0::fromJson('{"doc":"","name":"x","type":"bool"}');
+        $aliased = XdrSCSpecUDTStructFieldV0::fromJson('{"doc":"","name":"x","type_":"bool"}');
+        $this->assertSame($canonical->toBase64Xdr(), $aliased->toBase64Xdr());
+    }
+
+    public function testSCSpecUDTStructFieldV0EmitsOnlyTheCanonicalTypeKey(): void
+    {
+        $aliased = XdrSCSpecUDTStructFieldV0::fromJson('{"doc":"","name":"x","type_":"bool"}');
+        $this->assertSame(['doc', 'name', 'type'], array_keys($aliased->toJsonValue()));
+        $this->assertSame('{"doc":"","name":"x","type":"bool"}', $aliased->toJson());
+    }
+
+    public function testSCSpecUDTStructFieldV0CountsTheAliasAsADeclaredKey(): void
+    {
+        // The alias must not reach the unknown-field guard. An unrelated
+        // unknown key alongside it is still reported, and only that key.
+        try {
+            XdrSCSpecUDTStructFieldV0::fromJson('{"doc":"","name":"x","type_":"bool","bogus":1}');
+            $this->fail('Expected the unknown key to be rejected.');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString("'bogus'", $e->getMessage());
+            $this->assertStringNotContainsString("'type_'", $e->getMessage());
+        }
+    }
+
+    public function testSCSpecUDTStructFieldV0AliasDoesNotSatisfyADifferentMissingField(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Missing required field name for XdrSCSpecUDTStructFieldV0');
+        XdrSCSpecUDTStructFieldV0::fromJson('{"doc":"","type_":"bool"}');
+    }
+
+    public function testSCSpecUDTStructFieldV0RejectsBothSpellingsOfTheTypeKey(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            "Duplicate field 'type' for XdrSCSpecUDTStructFieldV0: 'type' and its input alias"
+            . " 'type_' cannot both be supplied"
+        );
+        XdrSCSpecUDTStructFieldV0::fromJson('{"doc":"","name":"x","type":"bool","type_":"u32"}');
+    }
+
+    public function testSCSpecUDTStructFieldV0RejectsBothSpellingsEvenWhenTheyAgree(): void
+    {
+        // The rejection is about the field being supplied twice, not about the
+        // two values disagreeing.
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Duplicate field 'type' for XdrSCSpecUDTStructFieldV0");
+        XdrSCSpecUDTStructFieldV0::fromJson('{"doc":"","name":"x","type":"bool","type_":"bool"}');
+    }
+
+    public function testDontHaveDecodesTheTrailingUnderscoreSpelling(): void
+    {
+        // A second type carrying the alias, to pin that it is emitted per
+        // declared `type` field rather than on one spec type.
+        $hash = str_repeat('0', 64);
+        $canonical = XdrDontHave::fromJson('{"type":"dont_have","req_hash":"' . $hash . '"}');
+        $aliased = XdrDontHave::fromJson('{"type_":"dont_have","req_hash":"' . $hash . '"}');
+        $this->assertSame($canonical->toBase64Xdr(), $aliased->toBase64Xdr());
+        $this->assertSame($canonical->toJson(), $aliased->toJson());
+    }
+
+    public function testDontHaveRejectsBothSpellingsOfTheTypeKey(): void
+    {
+        $hash = str_repeat('0', 64);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Duplicate field 'type' for XdrDontHave");
+        XdrDontHave::fromJson(
+            '{"type":"dont_have","type_":"dont_have","req_hash":"' . $hash . '"}'
+        );
     }
 
     // =========================================================================
@@ -506,6 +659,24 @@ class StructsAndUnionsRoundTripTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         XdrLedgerEntryData::fromJsonValue(['account' => [], 'offer' => []]);
+    }
+
+    public function testLedgerEntryDataRejectsAnUnknownKeyBesideAValidArmKey(): void
+    {
+        // A union object carries exactly one key: the arm. An extra key is
+        // rejected by the same single-key rule that rejects two valid arms.
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected single-key object for XdrLedgerEntryData');
+        XdrLedgerEntryData::fromJsonValue(['account' => [], 'bogus' => 1]);
+    }
+
+    public function testLedgerEntryDataAcceptsSchemaBesideTheArmKey(): void
+    {
+        // '$schema' is stripped before the single-key rule applies, so it does
+        // not count against the arm.
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown arm key');
+        XdrLedgerEntryData::fromJsonValue(['$schema' => 'https://schema', 'nope' => null]);
     }
 
     public function testLedgerEntryDataRejectsIntegerArmKey(): void

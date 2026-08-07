@@ -137,6 +137,7 @@ class XdrLedgerCloseMetaV2 {
                 'Expected object for XdrLedgerCloseMetaV2 JSON value, got ' . get_debug_type($value)
             );
         }
+        XdrJsonHelper::rejectUnknownFields($value, ['ext', 'ledger_header', 'tx_set', 'tx_processing', 'upgrades_processing', 'scp_info', 'total_byte_size_of_live_soroban_state', 'evicted_keys'], 'XdrLedgerCloseMetaV2');
         if (!array_key_exists('ext', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field ext for XdrLedgerCloseMetaV2'
@@ -228,9 +229,10 @@ class XdrLedgerCloseMetaV2 {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

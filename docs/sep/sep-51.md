@@ -195,6 +195,46 @@ echo $decoded->getLiveUntilLedgerSeq() . PHP_EOL;
 1
 -->
 
+Decoding a struct is closed over its declared keys. Every key is required, and a key the struct does not declare is rejected with an `InvalidArgumentException` naming the key and the type, rather than being ignored. That keeps a misspelled or stale key from being silently dropped and decoded as something the sender did not send. The one exception is `$schema`, described in the next section.
+
+```php
+<?php declare(strict_types=1);
+
+use Soneso\StellarSDK\Xdr\XdrTTLEntry;
+
+try {
+    XdrTTLEntry::fromJson(
+        '{"key_hash":"0101010101010101010101010101010101010101010101010101010101010101","live_until_ledger_seq":1,"livUntilLedgerSeq":2}'
+    );
+} catch (InvalidArgumentException $e) {
+    echo $e->getMessage() . PHP_EOL;
+}
+```
+<!-- expected: Unknown field in JSON input for XdrTTLEntry: 'livUntilLedgerSeq'
+-->
+
+A union object is closed the same way: after `$schema` is removed it must carry exactly one key, and that key must name an arm.
+
+One key has a second accepted spelling. Seven XDR structs declare a field named `type` — `SCSpecUDTStructFieldV0`, `SCSpecUDTUnionCaseTupleV0`, `SCSpecFunctionInputV0`, `SCSpecEventParamV0`, `ContractEvent`, `DontHave` and `SerializedBinaryFuseFilter`. Their SEP-51 key is `type`, and that is the only spelling emitted, but `type_` is also accepted on input so documents written by tooling that escaped the key still decode. Either spelling satisfies the required-field check and counts as declared. The two spellings name one field, so supplying both is a duplicate and is rejected.
+
+```php
+<?php declare(strict_types=1);
+
+use Soneso\StellarSDK\Xdr\XdrSCSpecUDTStructFieldV0;
+
+$aliased = XdrSCSpecUDTStructFieldV0::fromJson('{"doc":"","name":"x","type_":"bool"}');
+echo $aliased->toJson() . PHP_EOL;
+
+try {
+    XdrSCSpecUDTStructFieldV0::fromJson('{"doc":"","name":"x","type":"bool","type_":"bool"}');
+} catch (InvalidArgumentException $e) {
+    echo $e->getMessage() . PHP_EOL;
+}
+```
+<!-- expected: {"doc":"","name":"x","type":"bool"}
+Duplicate field 'type' for XdrSCSpecUDTStructFieldV0: 'type' and its input alias 'type_' cannot both be supplied
+-->
+
 ### `$schema` passthrough
 
 SEP-0051 says any JSON object SHOULD allow a `$schema` key for tooling annotation, but never require one. The PHP SDK's `fromJsonValue` strips a top-level `$schema` from any object before dispatching to field decoding, so JSON produced by a tool that injected the annotation still decodes cleanly. `toJsonValue` never emits `$schema`; the annotation is purely an input convenience.
@@ -210,6 +250,35 @@ $entry = XdrTTLEntry::fromJson($annotated);
 echo $entry->toJson() . PHP_EOL;
 ```
 <!-- expected: {"key_hash":"0202020202020202020202020202020202020202020202020202020202020202","live_until_ledger_seq":42}
+-->
+
+### Duplicate keys
+
+A JSON object that names the same key twice is rejected. Such a document supplies two values for one field and nothing says which one wins, so `fromJson` refuses it rather than picking one. PHP's `json_decode` resolves a repeat silently by keeping the last value, so the check runs over the document text before it is parsed — that is the only point at which the repeat is still visible.
+
+The rule is scoped to a single object. The same key in sibling objects, or in an object nested inside one that already uses that key, is ordinary JSON and decodes normally. Keys are compared after their JSON escapes are resolved, so `"n"` and `"\u006e"` are the same key, as are `"é"` and `"\u00e9"`. A repeated `$schema` is a duplicate like any other, because the scan runs before the annotation is stripped.
+
+The check belongs to the text entry point. `fromJsonValue` receives an already-decoded PHP value, and a PHP array cannot hold the same string key twice, so a duplicate cannot reach it.
+
+```php
+<?php declare(strict_types=1);
+
+use Soneso\StellarSDK\Xdr\XdrContractCostParams;
+use Soneso\StellarSDK\Xdr\XdrPrice;
+
+try {
+    XdrPrice::fromJson('{"n":1,"d":2,"n":9}');
+} catch (InvalidArgumentException $e) {
+    echo $e->getMessage() . PHP_EOL;
+}
+
+$params = XdrContractCostParams::fromJson(
+    '[{"ext":"v0","const_term":"1","linear_term":"2"},{"ext":"v0","const_term":"3","linear_term":"4"}]'
+);
+echo count($params->entries) . PHP_EOL;
+```
+<!-- expected: Duplicate key in JSON input: 'n'
+2
 -->
 
 ## Stellar-Specific Types
@@ -408,11 +477,13 @@ public static function fromJson(string $json): static;
 The semantics:
 
 - `toJsonValue` returns the value-level PHP representation: a string for strkey-rendered types, an int for 32-bit integers, an associative array for structs, a single-key array for non-void union arms (except the `AssetCode` union, which returns the bare length-discriminated code string), `null` for null optionals, and the bare arm name for void union arms.
-- `fromJsonValue` accepts the inverse of `toJsonValue`. Input shape errors throw `InvalidArgumentException` with a bounded preview of the offending value (control bytes are escaped to prevent log injection).
+- `fromJsonValue` accepts the inverse of `toJsonValue`, and only that: for an object input, every declared key is required and no other key is accepted apart from `$schema` and the `type_` spelling of a `type` key. Input shape errors throw `InvalidArgumentException` with a bounded preview of the offending value (control bytes are escaped to prevent log injection).
 - `toJson` is `json_encode($this->toJsonValue(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)`. It throws `JsonException` on encode failure.
-- `fromJson` is `static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR))`. It throws `JsonException` on malformed input and `InvalidArgumentException` on shape mismatch.
+- `fromJson` is `static::fromJsonValue(XdrJsonHelper::decodeText($json))`. `decodeText` applies the text-level input rules — currently the duplicate-object-key rejection — and then parses at a nesting depth of 512. It throws `JsonException` on malformed input, and `InvalidArgumentException` on a repeated key or a shape mismatch.
 
-`Soneso\StellarSDK\Xdr\XdrJsonHelper` exposes the lower-level primitives that every type's `toJsonValue` / `fromJsonValue` delegate to: `escapeString`, `unescapeString`, `bytesToHex`, `hexToBytes`, the integer conversion helpers (`int64ToString`, `stringToInt64`, `uint64ToString`, `stringToUint64`, `int128PartsToString`, `stringToInt128Parts`, the `uint128` and `int256` / `uint256` equivalents), `canonicalJson`, `ksortRecursive`, and `safePreview`.
+`Soneso\StellarSDK\Xdr\XdrJsonHelper` exposes the lower-level primitives that every type's `toJsonValue` / `fromJsonValue` delegate to: `escapeString`, `unescapeString`, `bytesToHex`, `hexToBytes`, the integer conversion helpers (`int64ToString`, `stringToInt64`, `uint64ToString`, `stringToUint64`, `int128PartsToString`, `stringToInt128Parts`, the `uint128` and `int256` / `uint256` equivalents), `canonicalJson`, `ksortRecursive`, `safePreview`, `rejectUnknownFields` (the struct-object key closure), `normalizeFieldAlias` (the `type_` input alias fold), `decodeText` (the shared text decode entry every `fromJson` routes through), and `rejectDuplicateKeys` (the text-level duplicate-key scan `decodeText` applies).
+
+`canonicalJson` is a byte-normalisation utility rather than a decode entry point, so it does not apply the input rules; it keeps `json_decode`'s last-value-wins resolution for a repeated key.
 
 ```php
 <?php declare(strict_types=1);
