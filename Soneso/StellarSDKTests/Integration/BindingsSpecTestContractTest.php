@@ -15,8 +15,9 @@ use Soneso\StellarSDK\Soroban\Contract\ClientOptions;
 use Soneso\StellarSDK\Soroban\Contract\DeployRequest;
 use Soneso\StellarSDK\Soroban\Contract\InstallRequest;
 use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
-use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDKTests\PrintLogger;
+use Soneso\StellarSDKTests\TestUtils;
 use Soneso\StellarSDKTests\bindings\BindingsSpecTestContract;
 use Soneso\StellarSDKTests\bindings\BindingsSpecTestContractComplexEnum;
 use Soneso\StellarSDKTests\bindings\BindingsSpecTestContractRoyalCard;
@@ -40,15 +41,17 @@ class BindingsSpecTestContractTest extends TestCase
     const TESTNET_RPC_URL = "https://soroban-testnet.stellar.org";
 
     private Network $network;
+    private SorobanServer $server;
     private KeyPair $sourceAccountKeyPair;
 
     public function setUp(): void
     {
         error_reporting(E_ALL);
         $this->network = Network::testnet();
+        $this->server = new SorobanServer(self::TESTNET_RPC_URL);
         $this->sourceAccountKeyPair = KeyPair::random();
         print("Signer seed: " . $this->sourceAccountKeyPair->getSecretSeed() . PHP_EOL);
-        FriendBot::fundTestAccount($this->sourceAccountKeyPair->getAccountId());
+        TestUtils::fundTestAccountAndAwaitVisibility($this->sourceAccountKeyPair->getAccountId(), rpc: $this->server);
     }
 
     /**

@@ -27,8 +27,6 @@ use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\SetTrustLineFlagsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrTrustLineFlags;
 
 class ClawbackTest extends TestCase
@@ -52,11 +50,7 @@ class ClawbackTest extends TestCase
 
         $masterAccountKeyPair = KeyPair::random();
         $masterAccountId = $masterAccountKeyPair->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($masterAccountId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($masterAccountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($masterAccountId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
         $destinationAccountKeyPair = KeyPair::random();
         $destinationAccountId = $destinationAccountKeyPair->getAccountId();

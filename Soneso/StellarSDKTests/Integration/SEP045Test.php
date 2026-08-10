@@ -17,8 +17,9 @@ use Soneso\StellarSDK\Soroban\Contract\DeployRequest;
 use Soneso\StellarSDK\Soroban\Contract\InstallRequest;
 use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
-use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
+use Soneso\StellarSDKTests\TestUtils;
 
 /**
  * Integration tests for SEP-45 Web Authentication for Contract Accounts
@@ -57,7 +58,9 @@ class SEP045Test extends TestCase
         $sourceKeyPair = KeyPair::random();
         print("Created test account: " . $sourceKeyPair->getAccountId() . PHP_EOL);
 
-        FriendBot::fundTestAccount($sourceKeyPair->getAccountId());
+        // The wasm install and the contract deployment below source from this account through the RPC.
+        $rpc = new SorobanServer("https://soroban-testnet.stellar.org");
+        TestUtils::fundTestAccountAndAwaitVisibility($sourceKeyPair->getAccountId(), rpc: $rpc);
         print("Funded test account via Friendbot" . PHP_EOL);
 
         // Step 2: Create signer keypair (used for both constructor and authentication)
@@ -156,7 +159,9 @@ class SEP045Test extends TestCase
         $sourceKeyPair = KeyPair::random();
         print("Created test account: " . $sourceKeyPair->getAccountId() . PHP_EOL);
 
-        FriendBot::fundTestAccount($sourceKeyPair->getAccountId());
+        // The wasm install and the contract deployment below source from this account through the RPC.
+        $rpc = new SorobanServer("https://soroban-testnet.stellar.org");
+        TestUtils::fundTestAccountAndAwaitVisibility($sourceKeyPair->getAccountId(), rpc: $rpc);
         print("Funded test account via Friendbot" . PHP_EOL);
 
         // Step 2: Create signer keypair (used for both constructor and authentication)

@@ -31,8 +31,8 @@ use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\SetTrustLineFlagsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDK\Xdr\XdrTrustLineFlags;
+use Soneso\StellarSDKTests\TestUtils;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertNotNull;
 
@@ -77,9 +77,9 @@ class SEP008Test  extends TestCase
         $asset2IssuerKp = KeyPair::random();
         $accountAKp = KeyPair::random();
         $tomlData = new StellarToml(toml: $this->anchorToml);
-        FriendBot::fundTestAccount($asset1IssuerKp->getAccountId());
-        FriendBot::fundTestAccount($asset2IssuerKp->getAccountId());
-        FriendBot::fundTestAccount($accountAKp->getAccountId());
+        TestUtils::fundTestAccountAndAwaitVisibility($asset1IssuerKp->getAccountId(), horizon: $sdk);
+        TestUtils::fundTestAccountAndAwaitVisibility($asset2IssuerKp->getAccountId(), horizon: $sdk);
+        TestUtils::fundTestAccountAndAwaitVisibility($accountAKp->getAccountId(), horizon: $sdk);
 
         $sourceAccountId = $asset1IssuerKp->getAccountId();
         $sourceAccount = $sdk->requestAccount($sourceAccountId);

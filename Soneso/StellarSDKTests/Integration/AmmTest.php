@@ -30,8 +30,6 @@ use Soneso\StellarSDK\Responses\Operations\LiquidityPoolDepositOperationResponse
 use Soneso\StellarSDK\Responses\Operations\LiquidityPoolWithdrawOperationResponse;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDK\Util\FuturenetFriendBot;
 
 class AmmTest extends TestCase
 {
@@ -67,15 +65,9 @@ class AmmTest extends TestCase
         $assetB= new AssetTypeCreditAlphanum12("PHPSTAR", $assetBIssueAccountId);
         $assetNative = Asset::native();
 
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($sourceAccountId);
-            FriendBot::fundTestAccount($assetAIssueAccountId);
-            FriendBot::fundTestAccount($assetBIssueAccountId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($sourceAccountId);
-            FuturenetFriendBot::fundTestAccount($assetAIssueAccountId);
-            FuturenetFriendBot::fundTestAccount($assetBIssueAccountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($sourceAccountId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
+        TestUtils::fundTestAccountAndAwaitVisibility($assetAIssueAccountId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
+        TestUtils::fundTestAccountAndAwaitVisibility($assetBIssueAccountId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
 
         $sourceAccount = $this->sdk->requestAccount($sourceAccountId);
@@ -225,13 +217,8 @@ class AmmTest extends TestCase
         $accYKp = KeyPair::random();
         $accYId = $accYKp->getAccountId();
 
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($accXId);
-            FriendBot::fundTestAccount($accYId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($accXId);
-            FuturenetFriendBot::fundTestAccount($accYId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($accXId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
+        TestUtils::fundTestAccountAndAwaitVisibility($accYId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
         $accX = $this->sdk->requestAccount($accXId);
         $ctOpB1 = (new ChangeTrustOperationBuilder($assetA, "98398398293"))->setSourceAccount($accXId)->build();
@@ -283,15 +270,9 @@ class AmmTest extends TestCase
         $assetA = new AssetTypeCreditAlphanum4("TEST", $assetAIssueAccountId);
         $assetB = new AssetTypeCreditAlphanum12("TESTASSET", $assetBIssueAccountId);
 
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($sourceAccountId);
-            FriendBot::fundTestAccount($assetAIssueAccountId);
-            FriendBot::fundTestAccount($assetBIssueAccountId);
-        } elseif ($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($sourceAccountId);
-            FuturenetFriendBot::fundTestAccount($assetAIssueAccountId);
-            FuturenetFriendBot::fundTestAccount($assetBIssueAccountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($sourceAccountId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
+        TestUtils::fundTestAccountAndAwaitVisibility($assetAIssueAccountId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
+        TestUtils::fundTestAccountAndAwaitVisibility($assetBIssueAccountId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
         $sourceAccount = $this->sdk->requestAccount($sourceAccountId);
 
@@ -396,11 +377,7 @@ class AmmTest extends TestCase
         $randomAccountKeyPair = KeyPair::random();
         $randomAccountId = $randomAccountKeyPair->getAccountId();
 
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($randomAccountId);
-        } elseif ($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($randomAccountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($randomAccountId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
         $requestBuilder = $this->sdk->liquidityPools()->forAccount($randomAccountId);
         $response = $requestBuilder->execute();

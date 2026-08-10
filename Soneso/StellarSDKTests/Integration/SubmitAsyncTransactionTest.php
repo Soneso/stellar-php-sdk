@@ -16,8 +16,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Responses\Transaction\SubmitAsyncTransactionResponse;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDK\Util\FuturenetFriendBot;
+use Soneso\StellarSDKTests\TestUtils;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertNotNull;
 use function PHPUnit\Framework\assertTrue;
@@ -43,11 +42,7 @@ class SubmitAsyncTransactionTest  extends TestCase
 
         $keyPair = KeyPair::random();
         $accountId = $keyPair->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($accountId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($accountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($accountId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
         $account = $this->sdk->requestAccount($accountId);
 
@@ -72,11 +67,7 @@ class SubmitAsyncTransactionTest  extends TestCase
 
         $keyPair = KeyPair::random();
         $accountId = $keyPair->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($accountId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($accountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($accountId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
 
         $account = $this->sdk->requestAccount($accountId);
@@ -106,11 +97,7 @@ class SubmitAsyncTransactionTest  extends TestCase
 
         $keyPair = KeyPair::random();
         $accountId = $keyPair->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($accountId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($accountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($accountId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
 
         $account = $this->sdk->requestAccount($accountId);
@@ -144,11 +131,7 @@ class SubmitAsyncTransactionTest  extends TestCase
 
         $keyPair = KeyPair::random();
         $accountId = $keyPair->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($accountId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($accountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($accountId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
 
         $account = new Account($accountId, new BigInteger(1000000));

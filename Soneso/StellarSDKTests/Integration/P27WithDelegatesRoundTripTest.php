@@ -23,8 +23,8 @@ use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Soroban\SorobanDelegateDescriptor;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDKTests\PrintLogger;
+use Soneso\StellarSDKTests\TestUtils;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 
@@ -95,9 +95,8 @@ class P27WithDelegatesRoundTripTest extends TestCase
         $submitterId      = $submitterKeyPair->getAccountId();
         $delegateId       = $delegateKeyPair->getAccountId();
 
-        FriendBot::fundTestAccount($submitterId);
-        FriendBot::fundTestAccount($delegateId);
-        sleep(5);
+        TestUtils::fundTestAccountAndAwaitVisibility($submitterId, rpc: $this->server);
+        TestUtils::fundTestAccountAndAwaitVisibility($delegateId, rpc: $this->server);
 
         // Deploy the modular custom account (registering the delegate as an allowed signer) and the
         // auth (increment) business contract, both via the high-level client.

@@ -23,9 +23,8 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
-use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDKTests\PrintLogger;
+use Soneso\StellarSDKTests\TestUtils;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
@@ -72,17 +71,21 @@ class SorobanAtomicSwapTest extends TestCase
         $bobKeyPair = KeyPair::random();
         $bobId = $bobKeyPair->getAccountId();
 
-        if ($this->testOn === 'testnet') {
-            FriendBot::fundTestAccount($adminId);
-            FriendBot::fundTestAccount($aliceId);
-            FriendBot::fundTestAccount($bobId);
-        } elseif ($this->testOn === 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($adminId);
-            FuturenetFriendBot::fundTestAccount($aliceId);
-            FuturenetFriendBot::fundTestAccount($bobId);
-        }
-
-        sleep(5);
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $adminId,
+            rpc: $this->server,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $aliceId,
+            rpc: $this->server,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $bobId,
+            rpc: $this->server,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
 
         print("admin: " . $adminKeyPair->getSecretSeed() .  " : " . $adminKeyPair->getAccountId(). PHP_EOL);
         print("alice: " . $aliceKeyPair->getSecretSeed() .  " : " . $aliceKeyPair->getAccountId(). PHP_EOL);

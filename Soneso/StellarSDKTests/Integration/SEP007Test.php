@@ -15,7 +15,7 @@ use Soneso\StellarSDK\SEP\URIScheme\URISchemeError;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDKTests\TestUtils;
 
 class SEP007Test extends TestCase
 {
@@ -30,7 +30,7 @@ class SEP007Test extends TestCase
             $sdk->requestAccount($this->accountId);
         } catch (HorizonRequestException $e) {
             $this->assertTrue($e->getStatusCode() == 404);
-            FriendBot::fundTestAccount($this->accountId);
+            TestUtils::fundTestAccountAndAwaitVisibility($this->accountId, horizon: $sdk);
         }
     }
 

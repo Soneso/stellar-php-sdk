@@ -19,9 +19,9 @@ use Soneso\StellarSDK\Soroban\Contract\InstallRequest;
 use Soneso\StellarSDK\Soroban\Contract\NativeUnionVal;
 use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
-use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDK\Util\FuturenetFriendBot;
+use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDKTests\PrintLogger;
+use Soneso\StellarSDKTests\TestUtils;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrInt256Parts;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
@@ -61,6 +61,7 @@ class SorobanClientTest  extends TestCase
 
     private string $testOn = 'testnet'; // 'futurenet'
     private Network $network;
+    private SorobanServer $server;
     private KeyPair $sourceAccountKeyPair;
 
     public function setUp(): void
@@ -71,11 +72,16 @@ class SorobanClientTest  extends TestCase
         print("Signer seed: " . $this->sourceAccountKeyPair->getSecretSeed() . PHP_EOL);
         if ($this->testOn === 'testnet') {
             $this->network = Network::testnet();
-            FriendBot::fundTestAccount($this->sourceAccountKeyPair->getAccountId());
         } elseif ($this->testOn === 'futurenet') {
             $this->network = Network::futurenet();
-            FuturenetFriendBot::fundTestAccount($this->sourceAccountKeyPair->getAccountId());
         }
+        $rpcUrl = $this->testOn == "testnet" ? self::TESTNET_RPC_URL: self::FUTURENET_RPC_URL;
+        $this->server = new SorobanServer($rpcUrl);
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $this->sourceAccountKeyPair->getAccountId(),
+            rpc: $this->server,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
     }
 
     public function testHelloContract() {
@@ -145,11 +151,11 @@ class SorobanClientTest  extends TestCase
         // we need to sign the auth entry
 
         $invokerKeyPair = KeyPair::random();
-        if ($this->testOn === 'testnet') {
-            FriendBot::fundTestAccount($invokerKeyPair->getAccountId());
-        } elseif ($this->testOn === 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($invokerKeyPair->getAccountId());
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $invokerKeyPair->getAccountId(),
+            rpc: $this->server,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
 
         $invokerAccountId = $invokerKeyPair->getAccountId();
         $args = $spec->funcArgsToXdrSCValues(name: $methodName,
@@ -186,15 +192,10 @@ class SorobanClientTest  extends TestCase
         $bobKeyPair = KeyPair::random();
         $bobId = $bobKeyPair->getAccountId();
 
-        if ($this->testOn === 'testnet') {
-            FriendBot::fundTestAccount($adminKeyPair->getAccountId());
-            FriendBot::fundTestAccount($aliceId);
-            FriendBot::fundTestAccount($bobId);
-        } elseif ($this->testOn === 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($adminKeyPair->getAccountId());
-            FuturenetFriendBot::fundTestAccount($aliceId);
-            FuturenetFriendBot::fundTestAccount($bobId);
-        }
+        $useFuturenet = $this->testOn !== 'testnet';
+        TestUtils::fundTestAccountAndAwaitVisibility($adminKeyPair->getAccountId(), rpc: $this->server, useFuturenet: $useFuturenet);
+        TestUtils::fundTestAccountAndAwaitVisibility($aliceId, rpc: $this->server, useFuturenet: $useFuturenet);
+        TestUtils::fundTestAccountAndAwaitVisibility($bobId, rpc: $this->server, useFuturenet: $useFuturenet);
 
         print("admin: " . $adminKeyPair->getSecretSeed() .  " : " . $adminKeyPair->getAccountId(). PHP_EOL);
         print("alice: " . $aliceKeyPair->getSecretSeed() .  " : " . $aliceKeyPair->getAccountId(). PHP_EOL);
@@ -820,15 +821,10 @@ class SorobanClientTest  extends TestCase
         $bobKeyPair = KeyPair::random();
         $bobId = $bobKeyPair->getAccountId();
 
-        if ($this->testOn === 'testnet') {
-            FriendBot::fundTestAccount($adminKeyPair->getAccountId());
-            FriendBot::fundTestAccount($aliceId);
-            FriendBot::fundTestAccount($bobId);
-        } else {
-            FuturenetFriendBot::fundTestAccount($adminKeyPair->getAccountId());
-            FuturenetFriendBot::fundTestAccount($aliceId);
-            FuturenetFriendBot::fundTestAccount($bobId);
-        }
+        $useFuturenet = $this->testOn !== 'testnet';
+        TestUtils::fundTestAccountAndAwaitVisibility($adminKeyPair->getAccountId(), rpc: $this->server, useFuturenet: $useFuturenet);
+        TestUtils::fundTestAccountAndAwaitVisibility($aliceId, rpc: $this->server, useFuturenet: $useFuturenet);
+        TestUtils::fundTestAccountAndAwaitVisibility($bobId, rpc: $this->server, useFuturenet: $useFuturenet);
 
         $atomicSwapClient = $this->deployContract($swapContractWasmHash);
         print("Deployed atomic swap contract contract id: {$atomicSwapClient->getContractId()}" . PHP_EOL);
@@ -938,15 +934,10 @@ class SorobanClientTest  extends TestCase
         $bobKeyPair = KeyPair::random();
         $bobId = $bobKeyPair->getAccountId();
         
-        if ($this->testOn === 'testnet') {
-            FriendBot::fundTestAccount($adminKeyPair->getAccountId());
-            FriendBot::fundTestAccount($aliceId);
-            FriendBot::fundTestAccount($bobId);
-        } else {
-            FuturenetFriendBot::fundTestAccount($adminKeyPair->getAccountId());
-            FuturenetFriendBot::fundTestAccount($aliceId);
-            FuturenetFriendBot::fundTestAccount($bobId);
-        }
+        $useFuturenet = $this->testOn !== 'testnet';
+        TestUtils::fundTestAccountAndAwaitVisibility($adminKeyPair->getAccountId(), rpc: $this->server, useFuturenet: $useFuturenet);
+        TestUtils::fundTestAccountAndAwaitVisibility($aliceId, rpc: $this->server, useFuturenet: $useFuturenet);
+        TestUtils::fundTestAccountAndAwaitVisibility($bobId, rpc: $this->server, useFuturenet: $useFuturenet);
         
         // Deploy contracts
         $atomicSwapDeployed = $this->deployContract($swapContractWasmHash);

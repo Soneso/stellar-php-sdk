@@ -26,8 +26,6 @@ use Soneso\StellarSDK\RevokeSponsorshipOperationBuilder;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
 
@@ -53,11 +51,7 @@ class SponsorshipTest extends TestCase
 
         $masterAccountKeyPair = KeyPair::random();
         $masterAccountId = $masterAccountKeyPair->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($masterAccountId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($masterAccountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($masterAccountId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
         $accountAKeyPair = KeyPair::random();
         $accountAId = $accountAKeyPair->getAccountId();

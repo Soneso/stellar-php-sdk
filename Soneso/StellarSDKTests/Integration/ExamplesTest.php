@@ -33,7 +33,7 @@ use Soneso\StellarSDK\SEP\Derivation\WordList;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Util\FriendBot;
+use Soneso\StellarSDKTests\TestUtils;
 
 class ExamplesTest extends TestCase
 {
@@ -43,10 +43,12 @@ class ExamplesTest extends TestCase
         print($keyPair->getAccountId() . PHP_EOL);
         print($keyPair->getSecretSeed() . PHP_EOL);
         $this->assertTrue(true);
-        $funded = FriendBot::fundTestAccount($keyPair->getAccountId());
-        print ($funded ? "account funded" : "account not funded");
 
         $sdk = StellarSDK::getTestNetInstance();
+
+        // Ask the Friendbot to create the account and wait until Horizon serves it.
+        TestUtils::fundTestAccountAndAwaitVisibility($keyPair->getAccountId(), horizon: $sdk);
+        print ("account funded");
 
         /// Create a key pair for your existing account.
         $keyA = KeyPair::fromSeed($keyPair->getSecretSeed());
@@ -112,12 +114,12 @@ class ExamplesTest extends TestCase
 
         // Create and fund a new sender account for the payment example
         $senderKeyPair = KeyPair::random();
-        FriendBot::fundTestAccount($senderKeyPair->getAccountId());
+        TestUtils::fundTestAccountAndAwaitVisibility($senderKeyPair->getAccountId(), horizon: $sdk);
 
         // Create and fund a destination account
         $destinationKeyPair = KeyPair::random();
         $destination = $destinationKeyPair->getAccountId();
-        FriendBot::fundTestAccount($destination);
+        TestUtils::fundTestAccountAndAwaitVisibility($destination, horizon: $sdk);
 
         // Load sender account data from the stellar network.
         $sender = $sdk->requestAccount($senderKeyPair->getAccountId());
@@ -149,7 +151,7 @@ class ExamplesTest extends TestCase
         $keyPair = KeyPair::random();
 
         // Ask the Friendbot to create our new account in the stellar network (only available in testnet).
-        $funded = FriendBot::fundTestAccount($keyPair->getAccountId());
+        TestUtils::fundTestAccountAndAwaitVisibility($keyPair->getAccountId(), horizon: $sdk);
 
         // Load the data of the new account from stellar.
         $account = $sdk->requestAccount($keyPair->getAccountId());
@@ -163,7 +165,7 @@ class ExamplesTest extends TestCase
 
         // Create and fund an existing account using FriendBot
         $existingAccountKeyPair = KeyPair::random();
-        FriendBot::fundTestAccount($existingAccountKeyPair->getAccountId());
+        TestUtils::fundTestAccountAndAwaitVisibility($existingAccountKeyPair->getAccountId(), horizon: $sdk);
 
         // Existing account id.
         $existingAccountId = $existingAccountKeyPair->getAccountId();
@@ -208,9 +210,9 @@ class ExamplesTest extends TestCase
         $receiverAccountId = $receiverKeyPair->getAccountId();
 
         // Fund all accounts using FriendBot
-        FriendBot::fundTestAccount($issuerAccountId);
-        FriendBot::fundTestAccount($senderAccountId);
-        FriendBot::fundTestAccount($receiverAccountId);
+        TestUtils::fundTestAccountAndAwaitVisibility($issuerAccountId, horizon: $sdk);
+        TestUtils::fundTestAccountAndAwaitVisibility($senderAccountId, horizon: $sdk);
+        TestUtils::fundTestAccountAndAwaitVisibility($receiverAccountId, horizon: $sdk);
 
         // Define the custom asset/token issued by the issuer account.
         $iomAsset = new AssetTypeCreditAlphaNum4("IOM", $issuerAccountId);
@@ -300,7 +302,7 @@ class ExamplesTest extends TestCase
         $receiverAccountId = $receiverKeyPair->getAccountId();
 
         // Fund the issuer account.
-        FriendBot::fundTestAccount($issuerAccountId);
+        TestUtils::fundTestAccountAndAwaitVisibility($issuerAccountId, horizon: $sdk);
 
         // Load the issuer account so that we have it's current sequence number.
         $issuer = $sdk->requestAccount($issuerAccountId);
@@ -499,8 +501,8 @@ class ExamplesTest extends TestCase
         $accountYId = $keyPairY->getAccountId();
 
         // Create both accounts.
-        FriendBot::fundTestAccount($accountXId);
-        FriendBot::fundTestAccount($accountYId);
+        TestUtils::fundTestAccountAndAwaitVisibility($accountXId, horizon: $sdk);
+        TestUtils::fundTestAccountAndAwaitVisibility($accountYId, horizon: $sdk);
 
         // Prepare the operation for merging account Y into account X.
         $accMergeOp = (new AccountMergeOperationBuilder($accountXId))->build();
@@ -552,7 +554,7 @@ class ExamplesTest extends TestCase
         $accountId = $accountKeyPair->getAccountId();
 
         // Create account.
-        FriendBot::fundTestAccount($accountId);
+        TestUtils::fundTestAccountAndAwaitVisibility($accountId, horizon: $sdk);
 
         // Load account data to get the current sequence number.
         $account = $sdk->requestAccount($accountId);
@@ -596,7 +598,7 @@ class ExamplesTest extends TestCase
         $accountId = $keyPair->getAccountId();
 
         // Create account.
-        FriendBot::fundTestAccount($accountId);
+        TestUtils::fundTestAccountAndAwaitVisibility($accountId, horizon: $sdk);
 
         // Load account data including it's current sequence number.
         $account = $sdk->requestAccount($accountId);
@@ -660,7 +662,7 @@ class ExamplesTest extends TestCase
         $buyerAccountId = $buyerKeypair->getAccountId();
 
         // Create the buyer account.
-        FriendBot::fundTestAccount($buyerAccountId);
+        TestUtils::fundTestAccountAndAwaitVisibility($buyerAccountId, horizon: $sdk);
 
         // Create the issuer account.
         $buyerAccount = $sdk->requestAccount($buyerAccountId);
@@ -780,7 +782,7 @@ class ExamplesTest extends TestCase
         $sellerAccountId = $sellerKeypair->getAccountId();
 
         // Create the buyer account.
-        FriendBot::fundTestAccount($sellerAccountId);
+        TestUtils::fundTestAccountAndAwaitVisibility($sellerAccountId, horizon: $sdk);
 
         // Create the issuer account.
         $sellerAccount = $sdk->requestAccount($sellerAccountId);
@@ -912,7 +914,7 @@ class ExamplesTest extends TestCase
         $sellerAccountId = $sellerKeypair->getAccountId();
 
         // Create the buyer account.
-        FriendBot::fundTestAccount($sellerAccountId);
+        TestUtils::fundTestAccountAndAwaitVisibility($sellerAccountId, horizon: $sdk);
 
         // Create the issuer account.
         $sellerAccount = $sdk->requestAccount($sellerAccountId);
@@ -1044,7 +1046,7 @@ class ExamplesTest extends TestCase
         $trustorAccountId = $trustorKeypair->getAccountId();
 
         // Create trustor account.
-        FriendBot::fundTestAccount($trustorAccountId);
+        TestUtils::fundTestAccountAndAwaitVisibility($trustorAccountId, horizon: $sdk);
 
         // Load the trustor account so that we can later create the trustline.
         $trustorAccount =  $sdk->requestAccount($trustorAccountId);
@@ -1163,7 +1165,7 @@ class ExamplesTest extends TestCase
         $trustorAccountId = $trustorKeypair->getAccountId();
 
         // Create trustor account.
-        FriendBot::fundTestAccount($trustorAccountId);
+        TestUtils::fundTestAccountAndAwaitVisibility($trustorAccountId, horizon: $sdk);
 
         // Load the trustor account so that we can later create the trustline.
         $trustorAccount =  $sdk->requestAccount($trustorAccountId);
@@ -1387,8 +1389,8 @@ class ExamplesTest extends TestCase
         $destinationId = $destinationKeyPair->getAccountId();
 
         // Create the source and the payer account.
-        FriendBot::fundTestAccount($sourceId);
-        FriendBot::fundTestAccount($payerId);
+        TestUtils::fundTestAccountAndAwaitVisibility($sourceId, horizon: $sdk);
+        TestUtils::fundTestAccountAndAwaitVisibility($payerId, horizon: $sdk);
 
         // Load the current data of the source account so that we can create the inner transaction.
         $sourceAccount = $sdk->requestAccount($sourceId);
@@ -1442,7 +1444,7 @@ class ExamplesTest extends TestCase
         $senderAccountId = $senderKeyPair->getAccountId();
 
         // Create the sender account.
-        FriendBot::fundTestAccount($senderAccountId);
+        TestUtils::fundTestAccountAndAwaitVisibility($senderAccountId, horizon: $sdk);
 
         // Load the current account data of the sender account.
         $accountA = $sdk->requestAccount($senderAccountId);

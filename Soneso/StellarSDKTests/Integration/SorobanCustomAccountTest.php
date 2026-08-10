@@ -24,9 +24,8 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
-use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDKTests\PrintLogger;
+use Soneso\StellarSDKTests\TestUtils;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
@@ -85,17 +84,21 @@ class SorobanCustomAccountTest extends TestCase
         $bobId = $bobKeyPair->getAccountId();
         //print("BOB: " . $bobKeyPair->getSecretSeed() . PHP_EOL);
 
-        if ($this->testOn === 'testnet') {
-            FriendBot::fundTestAccount($adminId);
-            FriendBot::fundTestAccount($aliceId);
-            FriendBot::fundTestAccount($bobId);
-        } elseif ($this->testOn === 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($adminId);
-            FuturenetFriendBot::fundTestAccount($aliceId);
-            FuturenetFriendBot::fundTestAccount($bobId);
-        }
-
-        sleep(5);
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $adminId,
+            rpc: $this->server,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $aliceId,
+            rpc: $this->server,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $bobId,
+            rpc: $this->server,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
 
         $deployAccRes = $this->deployContract($this->server,self::CUSTOM_ACCOUNT_CONTRACT_PATH, $adminKeyPair);
         $accountContractWasmId = $deployAccRes[0];

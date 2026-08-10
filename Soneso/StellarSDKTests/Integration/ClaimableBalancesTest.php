@@ -18,8 +18,6 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Responses\Effects\ClaimableBalanceCreatedEffectResponse;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDK\Util\FuturenetFriendBot;
 
 class ClaimableBalancesTest extends TestCase
 {
@@ -43,11 +41,7 @@ class ClaimableBalancesTest extends TestCase
 
         $sourceAccountKeyPair = KeyPair::random();
         $sourceAccountId = $sourceAccountKeyPair->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($sourceAccountId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($sourceAccountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($sourceAccountId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
         $firstClaimantKp = KeyPair::random();
         $fistClaimantId = $firstClaimantKp->getAccountId();
@@ -95,11 +89,7 @@ class ClaimableBalancesTest extends TestCase
         $this->assertTrue($response->getClaimableBalances()->count() > 0);
 
         $cb = $response->getClaimableBalances()->toArray()[0];
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($fistClaimantId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($fistClaimantId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($fistClaimantId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
         // test also strkey claimable balance id
         $strKeyBalanceId = StrKey::encodeClaimableBalanceIdHex($cb->getBalanceId());
         $opc = new ClaimClaimableBalanceOperationBuilder($strKeyBalanceId);

@@ -18,8 +18,6 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDK\Util\FuturenetFriendBot;
 
 class TradesTest extends TestCase
 {
@@ -46,11 +44,11 @@ class TradesTest extends TestCase
         $issuerId = $issuerKeypair->getAccountId();
         $buyerId = $buyerKeypair->getAccountId();
 
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($buyerId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($buyerId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $buyerId,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
 
         $buyerAccount = $this->sdk->requestAccount($buyerId);
         $createAccountOp = (new CreateAccountOperationBuilder($issuerId, "10"))->build();
@@ -158,11 +156,11 @@ class TradesTest extends TestCase
         $issuerId = $issuerKeypair->getAccountId();
         $sellerId = $sellerKeypair->getAccountId();
 
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($sellerId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($sellerId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $sellerId,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
 
         $sellerAccount = $this->sdk->requestAccount($sellerId);
         $createAccountOp = (new CreateAccountOperationBuilder($issuerId, "10"))->build();

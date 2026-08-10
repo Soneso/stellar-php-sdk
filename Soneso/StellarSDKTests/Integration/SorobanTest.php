@@ -40,9 +40,8 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
-use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDKTests\PrintLogger;
+use Soneso\StellarSDKTests\TestUtils;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
 use Soneso\StellarSDK\Xdr\XdrContractEvent;
 use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
@@ -80,19 +79,22 @@ class SorobanTest extends TestCase
         $this->accountAKeyPair = KeyPair::random();
         $this->accountAId = $this->accountAKeyPair->getAccountId();
         if ($this->testOn === 'testnet') {
-            FriendBot::fundTestAccount($this->accountAId);
             $this->network = Network::testnet();
             $this->server = new SorobanServer(self::TESTNET_SERVER_URL);
             $this->server->setLogger(new PrintLogger());
             $this->sdk = StellarSDK::getTestNetInstance();
         } elseif ($this->testOn === 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($this->accountAId);
             $this->network = Network::futurenet();
             $this->server = new SorobanServer(self::FUTURENET_SERVER_URL);
             $this->server->setLogger(new PrintLogger());
             $this->sdk = StellarSDK::getFutureNetInstance();
         }
-        sleep(5);
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $this->accountAId,
+            rpc: $this->server,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
     }
 
     /**
@@ -471,12 +473,12 @@ class SorobanTest extends TestCase
         $accountBKeyPair = KeyPair::random();
         $accountBId = $accountBKeyPair->getAccountId();
         // fund account
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($accountBId);
-        } elseif ($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($accountBId);
-        }
-        sleep(5);
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $accountBId,
+            rpc: $this->server,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
 
         $accountB = $this->server->getAccount($accountBId);
         assertNotNull($accountB);

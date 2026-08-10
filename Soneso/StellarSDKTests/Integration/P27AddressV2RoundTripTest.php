@@ -22,8 +22,8 @@ use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Util\FriendBot;
 use Soneso\StellarSDKTests\PrintLogger;
+use Soneso\StellarSDKTests\TestUtils;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 
@@ -90,9 +90,8 @@ class P27AddressV2RoundTripTest extends TestCase
         $submitterId      = $submitterKeyPair->getAccountId();
         $invokerId        = $invokerKeyPair->getAccountId();
 
-        FriendBot::fundTestAccount($submitterId);
-        FriendBot::fundTestAccount($invokerId);
-        sleep(5);
+        TestUtils::fundTestAccountAndAwaitVisibility($submitterId, rpc: $this->server);
+        TestUtils::fundTestAccountAndAwaitVisibility($invokerId, rpc: $this->server);
 
         // Deploy the auth contract via the high-level client.
         $wasmHash = SorobanClient::install(new InstallRequest(

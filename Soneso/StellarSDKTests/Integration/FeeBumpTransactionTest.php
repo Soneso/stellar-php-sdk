@@ -16,8 +16,6 @@ use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDK\Util\FuturenetFriendBot;
 
 class FeeBumpTransactionTest extends TestCase
 {
@@ -40,22 +38,14 @@ class FeeBumpTransactionTest extends TestCase
     {
         $sourceKeyPair = KeyPair::random();
         $sourceId = $sourceKeyPair->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($sourceId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($sourceId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($sourceId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
         $destinationKeyPair = KeyPair::random();
         $destinationId = $destinationKeyPair->getAccountId();
 
         $payerKeyPair = KeyPair::random();
         $payerId = $payerKeyPair->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($payerId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($payerId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($payerId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
         $sourceAccount = $this->sdk->requestAccount($sourceId);
         $createAccountOp = (new CreateAccountOperationBuilder($destinationId, "10"))->build();
@@ -97,22 +87,14 @@ class FeeBumpTransactionTest extends TestCase
 
         $sourceKeyPair = KeyPair::random();
         $sourceId = $sourceKeyPair->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($sourceId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($sourceId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($sourceId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
         $destinationKeyPair = KeyPair::random();
         $destinationId = $destinationKeyPair->getAccountId();
 
         $payerKeyPair = KeyPair::random();
         $payerId = $payerKeyPair->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($payerId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($payerId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($payerId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
         $muxedSourceAccount = new MuxedAccount($sourceId, 97839283928292);
         $muxedPayerAccount = new MuxedAccount($payerId, 24242423737333);

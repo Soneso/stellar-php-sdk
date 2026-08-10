@@ -26,8 +26,6 @@ use Soneso\StellarSDK\SetOptionsOperation;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
 use function PHPUnit\Framework\assertNotNull;
@@ -63,11 +61,11 @@ final class AccountTest extends TestCase
         }
         $keyPairA = KeyPair::random();
         $accountId = $keyPairA->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($accountId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($accountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $accountId,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
 
         $accountA = $this->sdk->requestAccount($accountId);
         $seqNr = $accountA->getSequenceNumber();
@@ -137,11 +135,11 @@ final class AccountTest extends TestCase
     public function testFindAccountforAsset(): void {
         $keyPairA = KeyPair::random();
         $accountAId = $keyPairA->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($accountAId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($accountAId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $accountAId,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
         $accountA = $this->sdk->requestAccount($accountAId);
 
         $keyPairC = KeyPair::random();
@@ -186,13 +184,16 @@ final class AccountTest extends TestCase
         $keyPairY = KeyPair::random();
         $accountXId = $keyPairX->getAccountId();
         $accountYId = $keyPairY->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($accountXId);
-            FriendBot::fundTestAccount($accountYId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($accountXId);
-            FuturenetFriendBot::fundTestAccount($accountYId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $accountXId,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $accountYId,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
 
         $accountMergeOperation = (new AccountMergeOperationBuilder($accountXId))->build();
         $accountY = $this->sdk->requestAccount($accountYId);
@@ -214,13 +215,16 @@ final class AccountTest extends TestCase
         $keyPairY = KeyPair::random();
         $accountXId = $keyPairX->getAccountId();
         $accountYId = $keyPairY->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($accountXId);
-            FriendBot::fundTestAccount($accountYId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($accountXId);
-            FuturenetFriendBot::fundTestAccount($accountYId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $accountXId,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $accountYId,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
 
         $muxedDestination = new MuxedAccount($accountXId, 1919198222);
         $muxedSource = new MuxedAccount($accountYId, 99999999);
@@ -245,11 +249,11 @@ final class AccountTest extends TestCase
     public function testBumpSequence(): void {
         $keyPair = KeyPair::random();
         $accountId = $keyPair->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($accountId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($accountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $accountId,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
 
         $account = $this->sdk->requestAccount($accountId);
 
@@ -272,12 +276,11 @@ final class AccountTest extends TestCase
     public function testManageData(): void {
         $keyPair = KeyPair::random();
         $accountId = $keyPair->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($accountId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($accountId);
-        }
-
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $accountId,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
 
         $account = $this->sdk->requestAccount($accountId);
 
@@ -348,11 +351,11 @@ final class AccountTest extends TestCase
         $keyPair = KeyPair::random();
         $accountId = $keyPair->getAccountId();
 
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($accountId);
-        } elseif ($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($accountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $accountId,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
 
         // Load account
         $account = $this->sdk->requestAccount($accountId);
@@ -427,11 +430,11 @@ final class AccountTest extends TestCase
         $keyPair = KeyPair::random();
         $accountId = $keyPair->getAccountId();
 
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($accountId);
-        } elseif ($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($accountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $accountId,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
 
         // Get initial account state
         $initialAccount = $this->sdk->requestAccount($accountId);
@@ -515,11 +518,11 @@ final class AccountTest extends TestCase
         $keyPair = KeyPair::random();
         $accountId = $keyPair->getAccountId();
 
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($accountId);
-        } elseif ($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($accountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $accountId,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
 
         // Load account and create initial data entry
         $account = $this->sdk->requestAccount($accountId);

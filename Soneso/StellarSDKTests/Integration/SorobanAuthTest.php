@@ -25,9 +25,8 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
-use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDK\Util\FuturenetFriendBot;
 use Soneso\StellarSDKTests\PrintLogger;
+use Soneso\StellarSDKTests\TestUtils;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
 use function PHPUnit\Framework\assertEquals;
@@ -76,11 +75,12 @@ class SorobanAuthTest extends TestCase
         $getHealthResponse = $this->server->getHealth();
         $this->assertEquals(GetHealthResponse::HEALTHY, $getHealthResponse->status);
 
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($invokerId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($invokerId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $invokerId,
+            rpc: $this->server,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
 
         $contractId = $this->deployContract($this->server, self::AUTH_CONTRACT_PATH, $invokerKeyPair);
 
@@ -174,14 +174,19 @@ class SorobanAuthTest extends TestCase
         $invokerKeyPair = KeyPair::random();
         $invokerId = $invokerKeyPair->getAccountId();
 
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($submitterId);
-            FriendBot::fundTestAccount($invokerId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($submitterId);
-            FuturenetFriendBot::fundTestAccount($invokerId);
-        }
-        sleep(5);
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $submitterId,
+            rpc: $this->server,
+            horizon: $this->sdk,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
+        // The invoker only signs authorization entries; its account entry is read through the RPC
+        // during simulation and at apply time, never through Horizon.
+        TestUtils::fundTestAccountAndAwaitVisibility(
+            $invokerId,
+            rpc: $this->server,
+            useFuturenet: $this->testOn !== 'testnet',
+        );
 
         $contractId = $this->deployContract($this->server, self::AUTH_CONTRACT_PATH, $submitterKeyPair);
 

@@ -27,8 +27,6 @@ use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
-use Soneso\StellarSDK\Util\FriendBot;
-use Soneso\StellarSDK\Util\FuturenetFriendBot;
 
 class QueryTest extends TestCase
 {
@@ -53,11 +51,7 @@ class QueryTest extends TestCase
 
         $accountKeyPair = KeyPair::random();
         $accountId = $accountKeyPair->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($accountId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($accountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($accountId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
         $account = $this->sdk->requestAccount($accountId);
         $requestBuilder = $this->sdk->accounts()->forSigner($accountId);
         $response = $requestBuilder->execute();
@@ -202,11 +196,7 @@ class QueryTest extends TestCase
         $buyerKp = KeyPair::random();
         $buyerAccountId = $buyerKp->getAccountId();
 
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($buyerAccountId);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($buyerAccountId);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($buyerAccountId, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
         $buyerAccount = $this->sdk->requestAccount($buyerAccountId);
         $createAccount = (new CreateAccountOperationBuilder($issuerAccountId, "100"))->build();
@@ -367,13 +357,8 @@ class QueryTest extends TestCase
         $keypair2 = KeyPair::random();
         $acc1Id = $keypair1->getAccountId();
         $acc2Id = $keypair2->getAccountId();
-        if ($this->testOn == 'testnet') {
-            FriendBot::fundTestAccount($acc1Id);
-            FriendBot::fundTestAccount($acc2Id);
-        } elseif($this->testOn == 'futurenet') {
-            FuturenetFriendBot::fundTestAccount($acc1Id);
-            FuturenetFriendBot::fundTestAccount($acc2Id);
-        }
+        TestUtils::fundTestAccountAndAwaitVisibility($acc1Id, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
+        TestUtils::fundTestAccountAndAwaitVisibility($acc2Id, horizon: $this->sdk, useFuturenet: $this->testOn !== 'testnet');
 
         $pid = pcntl_fork();
 
