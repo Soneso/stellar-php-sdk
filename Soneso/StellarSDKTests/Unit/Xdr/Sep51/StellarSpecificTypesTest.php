@@ -220,7 +220,11 @@ class StellarSpecificTypesTest extends TestCase
 
     public function testXdrSignerKeyRejectsZeroLengthSignedPayloadOnParse(): void
     {
-        $strkey = StrKey::encodeXdrSignedPayload(new XdrSignedPayload(str_repeat("\x88", 32), ''));
+        // A structurally well-formed P-strkey (version byte, checksum, padding)
+        // carrying a zero-length payload for the \x88-repeated signer key. A
+        // hardcoded literal: StrKey refuses to encode a zero-length payload,
+        // so the SDK cannot produce this string.
+        $strkey = 'PCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIQAAAAAAI4NI';
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Zero-length signed payload has no SEP-23 strkey representation');
@@ -239,7 +243,11 @@ class StellarSpecificTypesTest extends TestCase
         }
         $this->assertTrue($threw, 'toJsonValue must reject a zero-length payload');
 
-        $strkey = StrKey::encodeXdrSignedPayload($zero);
+        // A structurally well-formed P-strkey carrying a zero-length payload
+        // for the \x99-repeated signer key. A hardcoded literal: StrKey
+        // refuses to encode a zero-length payload, so the SDK cannot produce
+        // this string.
+        $strkey = 'PCMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZSAAAAAACXQA';
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Zero-length signed payload has no SEP-23 strkey representation');
         XdrSignedPayload::fromJsonValue($strkey);

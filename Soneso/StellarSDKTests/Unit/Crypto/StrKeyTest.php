@@ -462,7 +462,7 @@ class StrKeyTest extends TestCase
     public function testSignedPayloadWithDifferentLengths() {
         $keyPair = KeyPair::random();
 
-        // Test with minimum payload length (4 bytes)
+        // Test with the smallest padded payload region (4 bytes, a 4-byte raw payload)
         $minPayload = hex2bin("01020304");
         $xdrMin = new \Soneso\StellarSDK\Xdr\XdrSignedPayload($keyPair->getPublicKey(), $minPayload);
         $encodedMin = StrKey::encodeXdrSignedPayload($xdrMin);
@@ -482,6 +482,77 @@ class StrKeyTest extends TestCase
         $encodedMed = StrKey::encodeXdrSignedPayload($xdrMed);
         $decodedMed = StrKey::decodeXdrSignedPayload($encodedMed);
         assertEquals($medPayload, $decodedMed->getPayload());
+    }
+
+    public function testSignedPayloadLengthBounds() {
+        // A zero-length payload is valid XDR but has no SEP-23 strkey the
+        // ecosystem accepts (1 to 64 payload bytes), so every encode and
+        // decode path refuses it.
+        $accountId = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
+        $pk = StrKey::decodeAccountId($accountId);
+        $zeroLengthStrkey = "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAKH4Y";
+
+        try {
+            StrKey::encodeXdrSignedPayload(new \Soneso\StellarSDK\Xdr\XdrSignedPayload($pk, ""));
+            $this->fail("Encoding a zero-length XdrSignedPayload should raise");
+        } catch (\InvalidArgumentException $e) {
+            assertTrue(str_contains($e->getMessage(), "Zero-length signed payload"));
+        }
+
+        try {
+            StrKey::encodeSignedPayload(\Soneso\StellarSDK\SignedPayloadSigner::fromPublicKey($pk, ""));
+            $this->fail("Encoding a zero-length SignedPayloadSigner should raise");
+        } catch (\InvalidArgumentException $e) {
+            assertTrue(str_contains($e->getMessage(), "Zero-length signed payload"));
+        }
+
+        try {
+            StrKey::decodeXdrSignedPayload($zeroLengthStrkey);
+            $this->fail("Decoding a zero-length P-strkey should raise");
+        } catch (\InvalidArgumentException $e) {
+            assertTrue(str_contains($e->getMessage(), "Zero-length signed payload"));
+        }
+
+        try {
+            StrKey::decodeSignedPayload($zeroLengthStrkey);
+            $this->fail("Decoding a zero-length P-strkey should raise");
+        } catch (\InvalidArgumentException $e) {
+            assertTrue(str_contains($e->getMessage(), "Zero-length signed payload"));
+        }
+
+        // Above the SEP-23 maximum of 64 payload bytes.
+        try {
+            StrKey::encodeXdrSignedPayload(
+                new \Soneso\StellarSDK\Xdr\XdrSignedPayload($pk, str_repeat("\x01", 65))
+            );
+            $this->fail("Encoding a 65-byte signed payload should raise");
+        } catch (\InvalidArgumentException $e) {
+            assertTrue(str_contains($e->getMessage(), "exceeds the maximum"));
+        }
+
+        // The decode paths enforce the maximum as well: a structurally
+        // well-formed P-strkey carrying a 65-byte payload for the
+        // \x88-repeated signer key, kept as a literal because StrKey
+        // cannot produce it.
+        $overMaxStrkey = "PCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIQAAAABAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQAAAAH5MA";
+        try {
+            StrKey::decodeXdrSignedPayload($overMaxStrkey);
+            $this->fail("Decoding a 65-byte-payload P-strkey should raise");
+        } catch (\InvalidArgumentException $e) {
+            assertTrue(str_contains($e->getMessage(), "exceeds the maximum"));
+        }
+        try {
+            StrKey::decodeSignedPayload($overMaxStrkey);
+            $this->fail("Decoding a 65-byte-payload P-strkey should raise");
+        } catch (\InvalidArgumentException $e) {
+            assertTrue(str_contains($e->getMessage(), "exceeds the maximum"));
+        }
+
+        // One byte is the minimum representable payload and round-trips.
+        $oneByte = StrKey::encodeXdrSignedPayload(
+            new \Soneso\StellarSDK\Xdr\XdrSignedPayload($pk, "\x01")
+        );
+        assertEquals("\x01", StrKey::decodeXdrSignedPayload($oneByte)->getPayload());
     }
 
     public function testIsValidSignedPayload() {

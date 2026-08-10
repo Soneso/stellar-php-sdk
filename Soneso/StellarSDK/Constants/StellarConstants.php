@@ -194,10 +194,13 @@ final class StellarConstants
     public const SIGNED_PAYLOAD_MAX_LENGTH_BYTES = 64;
 
     /**
-     * Minimum length of a signed payload in bytes.
+     * Minimum length of the padded payload region of a signed payload
+     * P-strkey, in bytes.
      *
-     * Signed payloads must contain at least 4 bytes of data to be valid.
-     * This ensures there is meaningful data being signed.
+     * SEP-23 pads the payload with zero bytes to a multiple of four, so
+     * the smallest raw payload (1 byte) occupies a 4-byte padded region.
+     * This constant bounds the padded region in strkey validity checks;
+     * the raw payload itself carries 1 to 64 bytes.
      *
      * Unit: bytes
      */

@@ -236,7 +236,7 @@ use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\SignedPayloadSigner;
 
 $keyPair = KeyPair::random();
-$payload = random_bytes(32); // 4-64 bytes
+$payload = random_bytes(32); // 1-64 bytes
 
 $signer = SignedPayloadSigner::fromAccountId($keyPair->getAccountId(), $payload);
 $signedPayload = StrKey::encodeSignedPayload($signer); // P...

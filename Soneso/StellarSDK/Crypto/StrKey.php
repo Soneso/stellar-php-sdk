@@ -169,8 +169,10 @@ class StrKey
      * Encodes a SignedPayloadSigner to strkey signed payload (P...).
      * @param SignedPayloadSigner $signedPayloadSigner SignedPayloadSigner to encode
      * @return string "P..." representation of the signed payload
+     * @throws InvalidArgumentException when the payload is empty or longer than 64 bytes
      */
     public static function encodeSignedPayload(SignedPayloadSigner $signedPayloadSigner) : string {
+        self::checkSignedPayloadLength($signedPayloadSigner->getPayload());
         $pk = (KeyPair::fromAccountId($signedPayloadSigner->getSignerAccountId()->getAccountId()))->getPublicKey();
         $signedPayload = new XdrSignedPayload($pk, $signedPayloadSigner->getPayload());
         $data = $signedPayload->encode();
@@ -181,8 +183,10 @@ class StrKey
      * Encodes a XdrSignedPayload to strkey signed payload (P...).
      * @param XdrSignedPayload $signedPayload XdrSignedPayload to encode
      * @return string "P..." representation of the signed payload
+     * @throws InvalidArgumentException when the payload is empty or longer than 64 bytes
      */
     public static function encodeXdrSignedPayload(XdrSignedPayload $signedPayload) : string {
+        self::checkSignedPayloadLength($signedPayload->getPayload());
         $data = $signedPayload->encode();
         return static::encodeCheck(VersionByte::SIGNED_PAYLOAD, $data);
     }
@@ -191,11 +195,13 @@ class StrKey
      * Decodes strkey signed payload ("P...") to a SignedPayloadSigner object.
      * @param string $signedPayload signed payload ("P...") to decode
      * @return SignedPayloadSigner object decoded from the given strkey signed payload
+     * @throws InvalidArgumentException when the decoded payload is empty or longer than 64 bytes
      */
     public static function decodeSignedPayload(string $signedPayload) : SignedPayloadSigner {
         $signedPayloadRaw = self::decodeCheck(VersionByte::SIGNED_PAYLOAD, $signedPayload);
         $xdr = new XdrBuffer($signedPayloadRaw);
         $xdrPayloadSigner = XdrSignedPayload::decode($xdr);
+        self::checkSignedPayloadLength($xdrPayloadSigner->getPayload());
         return SignedPayloadSigner::fromPublicKey($xdrPayloadSigner->getEd25519(), $xdrPayloadSigner->getPayload());
     }
 
@@ -203,11 +209,14 @@ class StrKey
      * Decodes strkey signed payload ("P...") to a XdrSignedPayload object.
      * @param string $signedPayload signed payload ("P...") to decode
      * @return XdrSignedPayload object decoded from the given strkey signed payload
+     * @throws InvalidArgumentException when the decoded payload is empty or longer than 64 bytes
      */
     public static function decodeXdrSignedPayload(string $signedPayload) : XdrSignedPayload {
         $signedPayloadRaw = self::decodeCheck(VersionByte::SIGNED_PAYLOAD, $signedPayload);
         $xdr = new XdrBuffer($signedPayloadRaw);
-        return XdrSignedPayload::decode($xdr);
+        $result = XdrSignedPayload::decode($xdr);
+        self::checkSignedPayloadLength($result->getPayload());
+        return $result;
     }
 
     /**
@@ -505,5 +514,31 @@ class StrKey
 
     private static function verifyChecksum(string $expectedChecksum, string $data) : bool {
         return hash_equals($expectedChecksum, static::calculateChecksum($data));
+    }
+
+    /**
+     * Requires a signed payload to be representable as a SEP-23 P-strkey:
+     * 1 to 64 raw payload bytes. A zero-length payload is valid XDR, but
+     * the resulting P-strkey is rejected across the ecosystem (SEP-23
+     * encodes a 4-byte length prefix and a payload padded to a 4-byte
+     * multiple; the accepted padded region is 4 to 64 bytes, which is a
+     * raw payload of 1 to 64 bytes). The 64-byte maximum is the XDR bound
+     * of the payload field (opaque<64>).
+     * @param string $payload raw, unpadded payload bytes
+     * @throws InvalidArgumentException when the payload is empty or longer than 64 bytes
+     */
+    private static function checkSignedPayloadLength(string $payload) : void {
+        if ($payload === '') {
+            throw new InvalidArgumentException(
+                'Zero-length signed payload has no SEP-23 strkey representation'
+            );
+        }
+        if (strlen($payload) > StellarConstants::SIGNED_PAYLOAD_MAX_LENGTH_BYTES) {
+            throw new InvalidArgumentException(sprintf(
+                'Signed payload length %d exceeds the maximum of %d bytes (XDR opaque<64>)',
+                strlen($payload),
+                StellarConstants::SIGNED_PAYLOAD_MAX_LENGTH_BYTES
+            ));
+        }
     }
 }
