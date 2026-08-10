@@ -243,6 +243,8 @@ $signedPayload = StrKey::encodeSignedPayload($signer); // P...
 
 $decoded = StrKey::decodeSignedPayload($signedPayload);
 echo $decoded->getSignerAccountId()->getAccountId() . PHP_EOL;
+
+StrKey::isValidSignedPayload($signedPayload); // true
 ```
 
 ## Liquidity pool and claimable balance IDs

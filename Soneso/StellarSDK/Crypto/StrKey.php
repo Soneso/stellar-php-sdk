@@ -166,12 +166,34 @@ class StrKey
     }
 
     /**
+     * Returns true if the given strkey representation ("P...") is a valid
+     * signed payload: correct structure and checksum, a payload of 1 to 64
+     * bytes, and no data beyond the padded payload.
+     * @param string $signedPayload signed payload ("P...") to check
+     * @return bool true if valid signed payload strkey representation.
+     */
+    public static function isValidSignedPayload(string $signedPayload) : bool {
+        $length = strlen($signedPayload);
+        if ($length < CryptoConstants::STRKEY_SIGNED_PAYLOAD_MIN_LENGTH
+            || $length > CryptoConstants::STRKEY_SIGNED_PAYLOAD_MAX_LENGTH) {
+            return false;
+        }
+        try {
+            self::decodeXdrSignedPayload($signedPayload);
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    /**
      * Encodes a SignedPayloadSigner to strkey signed payload (P...).
      * @param SignedPayloadSigner $signedPayloadSigner SignedPayloadSigner to encode
      * @return string "P..." representation of the signed payload
-     * @throws InvalidArgumentException when the payload is empty or longer than 64 bytes
      */
     public static function encodeSignedPayload(SignedPayloadSigner $signedPayloadSigner) : string {
+        // SignedPayloadSigner enforces the SEP-23 bounds at construction;
+        // the check here covers any future relaxation of that invariant.
         self::checkSignedPayloadLength($signedPayloadSigner->getPayload());
         $pk = (KeyPair::fromAccountId($signedPayloadSigner->getSignerAccountId()->getAccountId()))->getPublicKey();
         $signedPayload = new XdrSignedPayload($pk, $signedPayloadSigner->getPayload());
@@ -195,13 +217,15 @@ class StrKey
      * Decodes strkey signed payload ("P...") to a SignedPayloadSigner object.
      * @param string $signedPayload signed payload ("P...") to decode
      * @return SignedPayloadSigner object decoded from the given strkey signed payload
-     * @throws InvalidArgumentException when the decoded payload is empty or longer than 64 bytes
+     * @throws InvalidArgumentException when the decoded payload is empty, longer than 64
+     * bytes, or followed by data beyond its padding
      */
     public static function decodeSignedPayload(string $signedPayload) : SignedPayloadSigner {
         $signedPayloadRaw = self::decodeCheck(VersionByte::SIGNED_PAYLOAD, $signedPayload);
         $xdr = new XdrBuffer($signedPayloadRaw);
         $xdrPayloadSigner = XdrSignedPayload::decode($xdr);
         self::checkSignedPayloadLength($xdrPayloadSigner->getPayload());
+        self::checkSignedPayloadConsumed($signedPayloadRaw, $xdrPayloadSigner->getPayload());
         return SignedPayloadSigner::fromPublicKey($xdrPayloadSigner->getEd25519(), $xdrPayloadSigner->getPayload());
     }
 
@@ -209,13 +233,15 @@ class StrKey
      * Decodes strkey signed payload ("P...") to a XdrSignedPayload object.
      * @param string $signedPayload signed payload ("P...") to decode
      * @return XdrSignedPayload object decoded from the given strkey signed payload
-     * @throws InvalidArgumentException when the decoded payload is empty or longer than 64 bytes
+     * @throws InvalidArgumentException when the decoded payload is empty, longer than 64
+     * bytes, or followed by data beyond its padding
      */
     public static function decodeXdrSignedPayload(string $signedPayload) : XdrSignedPayload {
         $signedPayloadRaw = self::decodeCheck(VersionByte::SIGNED_PAYLOAD, $signedPayload);
         $xdr = new XdrBuffer($signedPayloadRaw);
         $result = XdrSignedPayload::decode($xdr);
         self::checkSignedPayloadLength($result->getPayload());
+        self::checkSignedPayloadConsumed($signedPayloadRaw, $result->getPayload());
         return $result;
     }
 
@@ -415,11 +441,6 @@ class StrKey
                     return false;
                 }
                 break;
-            case VersionByte::SIGNED_PAYLOAD:
-                if (strlen($data) < CryptoConstants::STRKEY_SIGNED_PAYLOAD_MIN_LENGTH || strlen($data) > CryptoConstants::STRKEY_SIGNED_PAYLOAD_MAX_LENGTH) {
-                    return false;
-                }
-                break;
             case VersionByte::CLAIMABLE_BALANCE_ID:
                 if (strlen($data) !== CryptoConstants::STRKEY_CLAIMABLE_BALANCE_LENGTH) {
                     return false;
@@ -440,10 +461,6 @@ class StrKey
                     return strlen($decoded) === StellarConstants::ED25519_PUBLIC_KEY_LENGTH_BYTES;
                 case VersionByte::MUXED_ACCOUNT_ID:
                     return strlen($decoded) === StellarConstants::MUXED_ACCOUNT_DECODED_LENGTH;
-                case VersionByte::SIGNED_PAYLOAD:
-                    // 32 for the signer, +4 for the payload size, then either +4 for the
-                    // min or +64 for the max payload
-                    return strlen($decoded) >= StellarConstants::ED25519_PUBLIC_KEY_LENGTH_BYTES + CryptoConstants::SIGNED_PAYLOAD_LENGTH_PREFIX_BYTES + StellarConstants::SIGNED_PAYLOAD_MIN_LENGTH_BYTES && strlen($decoded) <= StellarConstants::ED25519_PUBLIC_KEY_LENGTH_BYTES + CryptoConstants::SIGNED_PAYLOAD_LENGTH_PREFIX_BYTES + StellarConstants::SIGNED_PAYLOAD_MAX_LENGTH_BYTES;
                 case VersionByte::CLAIMABLE_BALANCE_ID:
                     return strlen($decoded) === StellarConstants::CLAIMABLE_BALANCE_DECODED_LENGTH;
                 default:
@@ -538,6 +555,30 @@ class StrKey
                 'Signed payload length %d exceeds the maximum of %d bytes (XDR opaque<64>)',
                 strlen($payload),
                 StellarConstants::SIGNED_PAYLOAD_MAX_LENGTH_BYTES
+            ));
+        }
+    }
+
+    /**
+     * Requires the decoded data of a signed payload P-strkey to be exactly
+     * the signer key, the 4-byte payload length prefix, and the payload
+     * padded to a 4-byte multiple. SEP-23 permits nothing after the padding,
+     * so surplus bytes mean the length prefix understates the payload.
+     * @param string $decodedData decoded strkey data (version byte and checksum removed)
+     * @param string $payload raw payload read from the length prefix
+     * @throws InvalidArgumentException when the decoded data carries surplus bytes
+     */
+    private static function checkSignedPayloadConsumed(string $decodedData, string $payload) : void {
+        $paddedPayloadLength = strlen($payload) + ((4 - strlen($payload) % 4) % 4);
+        $expectedLength = StellarConstants::ED25519_PUBLIC_KEY_LENGTH_BYTES
+            + CryptoConstants::SIGNED_PAYLOAD_LENGTH_PREFIX_BYTES
+            + $paddedPayloadLength;
+        if (strlen($decodedData) !== $expectedLength) {
+            throw new InvalidArgumentException(sprintf(
+                'Signed payload declares %d payload bytes, but the decoded data is %d bytes where %d are expected',
+                strlen($payload),
+                strlen($decodedData),
+                $expectedLength
             ));
         }
     }

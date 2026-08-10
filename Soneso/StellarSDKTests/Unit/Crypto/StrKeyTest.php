@@ -462,6 +462,14 @@ class StrKeyTest extends TestCase
     public function testSignedPayloadWithDifferentLengths() {
         $keyPair = KeyPair::random();
 
+        // Payload lengths that pad up to one 4-byte region (1 to 4 raw bytes)
+        foreach ([1, 2, 3] as $shortLength) {
+            $shortPayload = random_bytes($shortLength);
+            $xdrShort = new \Soneso\StellarSDK\Xdr\XdrSignedPayload($keyPair->getPublicKey(), $shortPayload);
+            $decodedShort = StrKey::decodeXdrSignedPayload(StrKey::encodeXdrSignedPayload($xdrShort));
+            assertEquals($shortPayload, $decodedShort->getPayload());
+        }
+
         // Test with the smallest padded payload region (4 bytes, a 4-byte raw payload)
         $minPayload = hex2bin("01020304");
         $xdrMin = new \Soneso\StellarSDK\Xdr\XdrSignedPayload($keyPair->getPublicKey(), $minPayload);
@@ -499,11 +507,13 @@ class StrKeyTest extends TestCase
             assertTrue(str_contains($e->getMessage(), "Zero-length signed payload"));
         }
 
+        // SignedPayloadSigner enforces the bounds at construction, so the
+        // encodeSignedPayload path cannot receive a zero-length payload.
         try {
-            StrKey::encodeSignedPayload(\Soneso\StellarSDK\SignedPayloadSigner::fromPublicKey($pk, ""));
-            $this->fail("Encoding a zero-length SignedPayloadSigner should raise");
+            \Soneso\StellarSDK\SignedPayloadSigner::fromPublicKey($pk, "");
+            $this->fail("Constructing a zero-length SignedPayloadSigner should raise");
         } catch (\InvalidArgumentException $e) {
-            assertTrue(str_contains($e->getMessage(), "Zero-length signed payload"));
+            assertTrue(str_contains($e->getMessage(), "invalid payload length 0"));
         }
 
         try {
@@ -556,11 +566,61 @@ class StrKeyTest extends TestCase
     }
 
     public function testIsValidSignedPayload() {
-        $validPayload = "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAQACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IBZGM";
+        // The two valid vectors from SEP-23 (32-byte and 29-byte payloads).
+        assertTrue(StrKey::isValidSignedPayload(
+            "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAQACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IBZGM"));
+        assertTrue(StrKey::isValidSignedPayload(
+            "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAOQCAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUAAAAFGBU"));
 
-        // Valid signed payload should be properly decoded
-        $decoded = StrKey::decodeSignedPayload($validPayload);
-        assertEquals("GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ", $decoded->getSignerAccountId()->getAccountId());
+        // Zero-length payload.
+        assertFalse(StrKey::isValidSignedPayload(
+            "PCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIQAAAAAAI4NI"));
+        // 65-byte payload.
+        assertFalse(StrKey::isValidSignedPayload(
+            "PCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIQAAAABAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQAAAAH5MA"));
+        // SEP-23 invalid vector: length prefix shorter than the payload.
+        assertFalse(StrKey::isValidSignedPayload(
+            "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAQACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IAAAAAAAAPM"));
+        // Wrong strkey type entirely.
+        assertFalse(StrKey::isValidSignedPayload(
+            "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"));
+    }
+
+    public function testSignedPayloadRejectsSep23InvalidVectors() {
+        // The three invalid signed-payload vectors from SEP-23. The first
+        // declares fewer payload bytes than the data carries, so the decoded
+        // data has surplus bytes after the padding.
+        $shorterThanPayload = "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAQACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IAAAAAAAAPM";
+        try {
+            StrKey::decodeXdrSignedPayload($shorterThanPayload);
+            $this->fail("A length prefix shorter than the payload should raise");
+        } catch (\InvalidArgumentException $e) {
+            assertTrue(str_contains($e->getMessage(), "declares 32 payload bytes"));
+        }
+        try {
+            StrKey::decodeSignedPayload($shorterThanPayload);
+            $this->fail("A length prefix shorter than the payload should raise");
+        } catch (\InvalidArgumentException $e) {
+            assertTrue(str_contains($e->getMessage(), "declares 32 payload bytes"));
+        }
+
+        $thrown = false;
+        try {
+            StrKey::decodeXdrSignedPayload(
+                "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAOQCAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4Z2PQ");
+        } catch (\Exception $e) {
+            $thrown = true;
+        }
+        assertTrue($thrown, "A length prefix longer than the payload should raise");
+
+        $thrown = false;
+        try {
+            StrKey::decodeXdrSignedPayload(
+                "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAOQCAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DXFH6");
+        } catch (\Exception $e) {
+            $thrown = true;
+        }
+        assertTrue($thrown, "A signed payload without zero padding should raise");
     }
 
     public function testEncodeDecodeConsistency() {

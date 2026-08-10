@@ -27,8 +27,13 @@ class SignedPayloadSigner
      */
     public function __construct(XdrAccountID $signerAccountId, string $payload)
     {
-        if (strlen($payload) > StellarConstants::SIGNED_PAYLOAD_MAX_LENGTH_BYTES) {
-            throw new InvalidArgumentException(sprintf("invalid payload length, must be less than  %s", StellarConstants::SIGNED_PAYLOAD_MAX_LENGTH_BYTES));
+        $len = strlen($payload);
+        if ($len < 1 || $len > StellarConstants::SIGNED_PAYLOAD_MAX_LENGTH_BYTES) {
+            throw new InvalidArgumentException(sprintf(
+                'invalid payload length %d, must be between 1 and %d bytes',
+                $len,
+                StellarConstants::SIGNED_PAYLOAD_MAX_LENGTH_BYTES
+            ));
         }
         $this->payload = $payload;
         $this->signerAccountId = $signerAccountId;

@@ -197,10 +197,10 @@ final class StellarConstants
      * Minimum length of the padded payload region of a signed payload
      * P-strkey, in bytes.
      *
-     * SEP-23 pads the payload with zero bytes to a multiple of four, so
-     * the smallest raw payload (1 byte) occupies a 4-byte padded region.
-     * This constant bounds the padded region in strkey validity checks;
-     * the raw payload itself carries 1 to 64 bytes.
+     * A protocol fact of SEP-23: the payload is padded with zero bytes to
+     * a multiple of four, so the smallest raw payload (1 byte) occupies a
+     * 4-byte padded region. The raw payload itself carries 1 to 64 bytes;
+     * StrKey enforces those bounds when encoding and decoding.
      *
      * Unit: bytes
      */

@@ -21,6 +21,29 @@ class PayloadSignerTest extends TestCase
 {
     private string $seed = "1123740522f11bfef6b3671f51e159ccf589ccf8965262dd5f97d1721d383dd4";
 
+    public function testConstructorEnforcesPayloadBounds(): void
+    {
+        $accountId = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
+
+        try {
+            SignedPayloadSigner::fromAccountId($accountId, "");
+            $this->fail("A zero-length payload should raise at construction");
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString("invalid payload length 0, must be between 1 and 64 bytes", $e->getMessage());
+        }
+
+        try {
+            SignedPayloadSigner::fromAccountId($accountId, str_repeat("\x01", 65));
+            $this->fail("A 65-byte payload should raise at construction");
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString("invalid payload length 65", $e->getMessage());
+        }
+
+        // The boundaries are inclusive: 1 and 64 bytes construct fine.
+        $this->assertSame("\x01", SignedPayloadSigner::fromAccountId($accountId, "\x01")->getPayload());
+        $this->assertSame(64, strlen(SignedPayloadSigner::fromAccountId($accountId, str_repeat("\x02", 64))->getPayload()));
+    }
+
     public function testSignPayloadSigner(): void
     {
         $seedBytes = hex2bin($this->seed);

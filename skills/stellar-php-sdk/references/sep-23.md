@@ -716,17 +716,17 @@ $xdr = new XdrSignedPayload($keyPair->getPublicKey(), $payload);
 **SignedPayload payload size limits:**
 
 ```php
-// WRONG: payload shorter than 4 bytes or longer than 64 bytes
-$signer = SignedPayloadSigner::fromAccountId($accountId, random_bytes(3));  // too short
+// WRONG: empty payload or longer than 64 bytes
+$signer = SignedPayloadSigner::fromAccountId($accountId, "");               // throws InvalidArgumentException
 $signer = SignedPayloadSigner::fromAccountId($accountId, random_bytes(65)); // throws InvalidArgumentException
 
-// CORRECT: payload must be 4–64 bytes
+// CORRECT: payload must be 1–64 bytes
 $signer = SignedPayloadSigner::fromAccountId($accountId, random_bytes(32));
 ```
 
 <!-- DISCREPANCIES AND NOTES:
 
-1. The SDK docs sep-23.md example for signed payload uses `$signer = SignedPayloadSigner::fromAccountId($keyPair->getAccountId(), $payload)` and states payload is "4-64 bytes". The SDK source (SignedPayloadSigner.php) only enforces a maximum of SIGNED_PAYLOAD_MAX_LENGTH_BYTES (64) in the constructor, with no minimum check. The test file uses 4 bytes as the minimum (testSignedPayloadWithDifferentLengths), consistent with the SEP spec. The reference file documents the 4-64 range as the valid range per spec and test evidence.
+1. The SDK docs sep-23.md example for signed payload uses `$signer = SignedPayloadSigner::fromAccountId($keyPair->getAccountId(), $payload)` and states payload is "1-64 bytes". The SDK source (SignedPayloadSigner.php) enforces 1 to 64 bytes in the constructor, and StrKey enforces the same bounds when encoding and decoding P-strkeys.
 
 2. The claimable balance ID auto-discriminant behavior: `encodeClaimableBalanceId()` checks if input length equals ED25519_PUBLIC_KEY_LENGTH_BYTES (32) and if so, prepends a zero byte. This means passing raw 32 bytes or the full 33 bytes (with discriminant already present) both work. This is a subtle auto-prepend behavior documented in the pitfalls section.
 
@@ -734,5 +734,5 @@ $signer = SignedPayloadSigner::fromAccountId($accountId, random_bytes(32));
 
 4. `SignedPayloadSigner::getSignerAccountId()` returns `XdrAccountID`, not a string. Callers must chain `->getAccountId()` to get the G... string. This is documented in the examples.
 
-5. The docs file states signed payload length is "4-64 bytes" but the PHP test file also uses a 29-byte payload successfully (`testSignedPayloads` decodes a known vector with 29-byte payload). The minimum enforced in StrKey::isValid is actually: decoded bytes must be >= 32+4+4=40. This translates to a minimum payload of 4 bytes in the XDR encoding (4-byte length prefix + 4-byte payload). Documented as 4–64 bytes per spec.
+5. The raw payload carries 1 to 64 bytes; SEP-23 pads it with zero bytes to a 4-byte multiple, so the padded region spans 4 to 64 bytes and the decoded data spans 40 to 100 bytes (32-byte key + 4-byte length prefix + padded payload). `StrKey::isValidSignedPayload()` performs a full decode-based check, including rejection of data beyond the padded payload.
 -->

@@ -870,6 +870,7 @@ static decodePreAuthTx(string $preAuth): string
 static isValidSha256Hash(string $hash): bool
 static encodeSha256Hash(string $data): string
 static decodeSha256Hash(string $hash): string
+static isValidSignedPayload(string $signedPayload): bool
 static encodeSignedPayload(SignedPayloadSigner $signedPayloadSigner): string
 static encodeXdrSignedPayload(XdrSignedPayload $signedPayload): string
 static decodeSignedPayload(string $signedPayload): SignedPayloadSigner
