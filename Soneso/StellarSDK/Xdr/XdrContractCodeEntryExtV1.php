@@ -100,6 +100,7 @@ class XdrContractCodeEntryExtV1
                 'Expected object for XdrContractCodeEntryExtV1 JSON value, got ' . get_debug_type($value)
             );
         }
+        XdrJsonHelper::rejectUnknownFields($value, ['ext', 'cost_inputs'], 'XdrContractCodeEntryExtV1');
         if (!array_key_exists('ext', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field ext for XdrContractCodeEntryExtV1'
@@ -128,6 +129,6 @@ class XdrContractCodeEntryExtV1
     }
 
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

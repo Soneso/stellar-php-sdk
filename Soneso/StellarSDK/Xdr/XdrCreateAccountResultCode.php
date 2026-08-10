@@ -81,7 +81,7 @@ class XdrCreateAccountResultCode {
             self::MALFORMED => 'malformed',
             self::UNDERFUNDED => 'underfunded',
             self::LOW_RESERVE => 'low_reserve',
-            self::ACCOUNT_ALREADY_EXIST => 'account_already_exist',
+            self::ACCOUNT_ALREADY_EXIST => 'already_exist',
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown XdrCreateAccountResultCode enum value: ' . $this->value
@@ -101,6 +101,10 @@ class XdrCreateAccountResultCode {
             'malformed' => new static(self::MALFORMED),
             'underfunded' => new static(self::UNDERFUNDED),
             'low_reserve' => new static(self::LOW_RESERVE),
+            'already_exist' => new static(self::ACCOUNT_ALREADY_EXIST),
+            // Deprecated input aliases: wire names emitted by SDK releases
+            // up to 1.11.x. Accepted for compatibility; toJsonValue never
+            // emits them.
             'account_already_exist' => new static(self::ACCOUNT_ALREADY_EXIST),
             default => throw new InvalidArgumentException(
                 'Unknown XdrCreateAccountResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
@@ -120,9 +124,10 @@ class XdrCreateAccountResultCode {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

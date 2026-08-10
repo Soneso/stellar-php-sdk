@@ -106,24 +106,24 @@ class XdrInnerTransactionResultResult {
 
     public function toJsonValue(): mixed {
         return match ($this->resultCode->getValue()) {
-            XdrTransactionResultCode::SUCCESS => ['txsuccess' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->results)],
-            XdrTransactionResultCode::FAILED => ['txfailed' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->results)],
-            XdrTransactionResultCode::TOO_EARLY => 'txtoo_early',
-            XdrTransactionResultCode::TOO_LATE => 'txtoo_late',
-            XdrTransactionResultCode::MISSING_OPERATION => 'txmissing_operation',
-            XdrTransactionResultCode::BAD_SEQ => 'txbad_seq',
-            XdrTransactionResultCode::BAD_AUTH => 'txbad_auth',
-            XdrTransactionResultCode::INSUFFICIENT_BALANCE => 'txinsufficient_balance',
-            XdrTransactionResultCode::NO_ACCOUNT => 'txno_account',
-            XdrTransactionResultCode::INSUFFICIENT_FEE => 'txinsufficient_fee',
-            XdrTransactionResultCode::BAD_AUTH_EXTRA => 'txbad_auth_extra',
-            XdrTransactionResultCode::INTERNAL_ERROR => 'txinternal_error',
-            XdrTransactionResultCode::NOT_SUPPORTED => 'txnot_supported',
-            XdrTransactionResultCode::BAD_SPONSORSHIP => 'txbad_sponsorship',
-            XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP => 'txbad_min_seq_age_or_gap',
-            XdrTransactionResultCode::MALFORMED => 'txmalformed',
-            XdrTransactionResultCode::SOROBAN_INVALID => 'txsoroban_invalid',
-            XdrTransactionResultCode::FROZEN_KEY_ACCESSED => 'txfrozen_key_accessed',
+            XdrTransactionResultCode::SUCCESS => ['tx_success' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->results)],
+            XdrTransactionResultCode::FAILED => ['tx_failed' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->results)],
+            XdrTransactionResultCode::TOO_EARLY => 'tx_too_early',
+            XdrTransactionResultCode::TOO_LATE => 'tx_too_late',
+            XdrTransactionResultCode::MISSING_OPERATION => 'tx_missing_operation',
+            XdrTransactionResultCode::BAD_SEQ => 'tx_bad_seq',
+            XdrTransactionResultCode::BAD_AUTH => 'tx_bad_auth',
+            XdrTransactionResultCode::INSUFFICIENT_BALANCE => 'tx_insufficient_balance',
+            XdrTransactionResultCode::NO_ACCOUNT => 'tx_no_account',
+            XdrTransactionResultCode::INSUFFICIENT_FEE => 'tx_insufficient_fee',
+            XdrTransactionResultCode::BAD_AUTH_EXTRA => 'tx_bad_auth_extra',
+            XdrTransactionResultCode::INTERNAL_ERROR => 'tx_internal_error',
+            XdrTransactionResultCode::NOT_SUPPORTED => 'tx_not_supported',
+            XdrTransactionResultCode::BAD_SPONSORSHIP => 'tx_bad_sponsorship',
+            XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP => 'tx_bad_min_seq_age_or_gap',
+            XdrTransactionResultCode::MALFORMED => 'tx_malformed',
+            XdrTransactionResultCode::SOROBAN_INVALID => 'tx_soroban_invalid',
+            XdrTransactionResultCode::FROZEN_KEY_ACCESSED => 'tx_frozen_key_accessed',
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown discriminant for resultCode on XdrTransactionResultCode'
@@ -138,6 +138,25 @@ class XdrInnerTransactionResultResult {
         }
         if (is_string($value)) {
             return match ($value) {
+                'tx_too_early' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)),
+                'tx_too_late' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_LATE)),
+                'tx_missing_operation' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::MISSING_OPERATION)),
+                'tx_bad_seq' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_SEQ)),
+                'tx_bad_auth' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_AUTH)),
+                'tx_insufficient_balance' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::INSUFFICIENT_BALANCE)),
+                'tx_no_account' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::NO_ACCOUNT)),
+                'tx_insufficient_fee' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::INSUFFICIENT_FEE)),
+                'tx_bad_auth_extra' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_AUTH_EXTRA)),
+                'tx_internal_error' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::INTERNAL_ERROR)),
+                'tx_not_supported' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::NOT_SUPPORTED)),
+                'tx_bad_sponsorship' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_SPONSORSHIP)),
+                'tx_bad_min_seq_age_or_gap' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::BAD_MIN_SEQ_AGE_OR_GAP)),
+                'tx_malformed' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::MALFORMED)),
+                'tx_soroban_invalid' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::SOROBAN_INVALID)),
+                'tx_frozen_key_accessed' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::FROZEN_KEY_ACCESSED)),
+                // Deprecated input aliases: wire names emitted by SDK
+                // releases up to 1.11.x. Accepted for compatibility;
+                // toJsonValue never emits them.
                 'txtoo_early' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)),
                 'txtoo_late' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_LATE)),
                 'txmissing_operation' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::MISSING_OPERATION)),
@@ -154,11 +173,17 @@ class XdrInnerTransactionResultResult {
                 'txmalformed' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::MALFORMED)),
                 'txsoroban_invalid' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::SOROBAN_INVALID)),
                 'txfrozen_key_accessed' => new static(new XdrTransactionResultCode(XdrTransactionResultCode::FROZEN_KEY_ACCESSED)),
+                'tx_success' => throw new InvalidArgumentException(
+                    "Arm 'tx_success' on XdrInnerTransactionResultResult is non-void; supply a single-key object {\"tx_success\": <payload>} instead of a bare string."
+                ),
+                'tx_failed' => throw new InvalidArgumentException(
+                    "Arm 'tx_failed' on XdrInnerTransactionResultResult is non-void; supply a single-key object {\"tx_failed\": <payload>} instead of a bare string."
+                ),
                 'txsuccess' => throw new InvalidArgumentException(
-                    "Arm 'txsuccess' on XdrInnerTransactionResultResult is non-void; supply a single-key object {\"txsuccess\": <payload>} instead of a bare string."
+                    "Arm 'txsuccess' on XdrInnerTransactionResultResult is non-void; supply a single-key object {\"tx_success\": <payload>} instead of a bare string."
                 ),
                 'txfailed' => throw new InvalidArgumentException(
-                    "Arm 'txfailed' on XdrInnerTransactionResultResult is non-void; supply a single-key object {\"txfailed\": <payload>} instead of a bare string."
+                    "Arm 'txfailed' on XdrInnerTransactionResultResult is non-void; supply a single-key object {\"tx_failed\": <payload>} instead of a bare string."
                 ),
                 default => throw new InvalidArgumentException(
                     'Unknown XdrInnerTransactionResultResult void arm string: ' . XdrJsonHelper::safePreview($value)
@@ -178,6 +203,11 @@ class XdrInnerTransactionResultResult {
         }
         $arm = $value[$key];
         return match ($key) {
+            'tx_success' => (static function () use ($arm) { $r = new static(new XdrTransactionResultCode(XdrTransactionResultCode::SUCCESS)); $r->results = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrOperationResult::fromJsonValue($item); } return $out; })($arm); return $r; })(),
+            'tx_failed' => (static function () use ($arm) { $r = new static(new XdrTransactionResultCode(XdrTransactionResultCode::FAILED)); $r->results = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrOperationResult::fromJsonValue($item); } return $out; })($arm); return $r; })(),
+            // Deprecated input aliases: wire names emitted by SDK releases
+            // up to 1.11.x. Accepted for compatibility; toJsonValue never
+            // emits them.
             'txsuccess' => (static function () use ($arm) { $r = new static(new XdrTransactionResultCode(XdrTransactionResultCode::SUCCESS)); $r->results = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrOperationResult::fromJsonValue($item); } return $out; })($arm); return $r; })(),
             'txfailed' => (static function () use ($arm) { $r = new static(new XdrTransactionResultCode(XdrTransactionResultCode::FAILED)); $r->results = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrOperationResult::fromJsonValue($item); } return $out; })($arm); return $r; })(),
             default => throw new InvalidArgumentException(
@@ -198,9 +228,10 @@ class XdrInnerTransactionResultResult {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

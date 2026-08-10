@@ -112,6 +112,8 @@ class XdrSerializedBinaryFuseFilter {
                 'Expected object for XdrSerializedBinaryFuseFilter JSON value, got ' . get_debug_type($value)
             );
         }
+        $value = XdrJsonHelper::normalizeFieldAlias($value, 'type', 'type_', 'XdrSerializedBinaryFuseFilter');
+        XdrJsonHelper::rejectUnknownFields($value, ['type', 'input_hash_seed', 'filter_seed', 'segment_length', 'segement_length_mask', 'segment_count', 'segment_count_length', 'fingerprint_length', 'fingerprints'], 'XdrSerializedBinaryFuseFilter');
         if (!array_key_exists('type', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field type for XdrSerializedBinaryFuseFilter'
@@ -184,9 +186,10 @@ class XdrSerializedBinaryFuseFilter {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

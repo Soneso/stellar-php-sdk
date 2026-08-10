@@ -2265,4 +2265,157 @@ class NegativeInputTest extends TestCase
     {
         $this->assertUnionRejects(\Soneso\StellarSDK\Xdr\XdrTxSetComponent::class, 'non_void', 'wrongType');
     }
+
+    // =========================================================================
+    // Duplicate object keys
+    //
+    // A JSON object that names the same key twice is not valid SEP-0051 input:
+    // it supplies two values for one field and nothing says which one wins.
+    // PHP's json_decode resolves the repeat silently, keeping the last value,
+    // so fromJson pre-scans the document text and rejects instead.
+    //
+    // The verdicts pinned below were taken from the rs-stellar-xdr reference
+    // implementation, which refuses each of these documents.
+    // =========================================================================
+
+    /**
+     * Assert that $type::fromJson refuses $json and names $key as the repeat.
+     *
+     * @param class-string $type
+     */
+    private function assertDuplicateKeyRejected(string $type, string $json, string $key): void
+    {
+        try {
+            $type::fromJson($json);
+            $this->fail("Expected $type::fromJson to reject the duplicate key '$key' in: $json");
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString(
+                "Duplicate key in JSON input: '$key'",
+                $e->getMessage(),
+                "Rejection message must name the repeated key '$key'"
+            );
+        }
+    }
+
+    public function testDuplicateKey_sameValueRejected(): void
+    {
+        // A repeat is rejected on its own terms; the two values agreeing does
+        // not make the document valid.
+        $this->assertDuplicateKeyRejected(
+            \Soneso\StellarSDK\Xdr\XdrPrice::class,
+            '{"n":1,"d":2,"n":1}',
+            'n'
+        );
+    }
+
+    public function testDuplicateKey_differentValueRejected(): void
+    {
+        // Without the pre-scan json_decode would keep n=9 and discard n=1.
+        $this->assertDuplicateKeyRejected(
+            \Soneso\StellarSDK\Xdr\XdrPrice::class,
+            '{"n":1,"d":2,"n":9}',
+            'n'
+        );
+    }
+
+    public function testDuplicateKey_nestedObjectRejected(): void
+    {
+        // The repeat sits one level down, inside ledger_bounds.
+        $json = '{"time_bounds":null,'
+            . '"ledger_bounds":{"min_ledger":1,"max_ledger":2,"min_ledger":3},'
+            . '"min_seq_num":null,"min_seq_age":"0","min_seq_ledger_gap":0,"extra_signers":[]}';
+        $this->assertDuplicateKeyRejected(
+            \Soneso\StellarSDK\Xdr\XdrPreconditionsV2::class,
+            $json,
+            'min_ledger'
+        );
+    }
+
+    public function testDuplicateKey_insideArrayElementRejected(): void
+    {
+        // Objects reached through an array element are scoped like any other.
+        $this->assertDuplicateKeyRejected(
+            \Soneso\StellarSDK\Xdr\XdrContractCostParams::class,
+            '[{"ext":"v0","const_term":"10","linear_term":"20","const_term":"30"}]',
+            'const_term'
+        );
+    }
+
+    public function testDuplicateKey_escapeResolvedCollisionRejected(): void
+    {
+        // "\u006e" and "n" are the same key once escapes are resolved.
+        $this->assertDuplicateKeyRejected(
+            \Soneso\StellarSDK\Xdr\XdrPrice::class,
+            '{"\u006e":1,"d":2,"n":5}',
+            'n'
+        );
+    }
+
+    public function testDuplicateKey_escapeResolvedIgnoresHexCase(): void
+    {
+        // \u006E and \u006e denote the same code point.
+        $this->assertDuplicateKeyRejected(
+            \Soneso\StellarSDK\Xdr\XdrPrice::class,
+            '{"\u006E":1,"d":2,"\u006e":5}',
+            'n'
+        );
+    }
+
+    public function testDuplicateKey_schemaAnnotationRejected(): void
+    {
+        // The scan runs on the document text, before $schema is stripped, so a
+        // repeated annotation key is caught like any other repeat.
+        $this->assertDuplicateKeyRejected(
+            \Soneso\StellarSDK\Xdr\XdrPrice::class,
+            '{"$schema":"https://a","$schema":"https://b","n":1,"d":2}',
+            '$schema'
+        );
+    }
+
+    public function testDuplicateKey_scopeIsPerObject_siblingsAccepted(): void
+    {
+        // Sibling objects each carry their own key set, so the same field names
+        // repeating across elements is ordinary JSON.
+        $params = \Soneso\StellarSDK\Xdr\XdrContractCostParams::fromJson(
+            '[{"ext":"v0","const_term":"10","linear_term":"20"},'
+            . '{"ext":"v0","const_term":"30","linear_term":"40"}]'
+        );
+        $this->assertCount(2, $params->entries);
+    }
+
+    public function testDuplicateKey_scopeIsPerObject_nestedReuseAccepted(): void
+    {
+        // An inner object may reuse a key name the enclosing object already used.
+        $entry = \Soneso\StellarSDK\Xdr\XdrSCMapEntry::fromJson(
+            '{"key":{"map":[{"key":{"u32":1},"val":{"u32":2}}]},"val":{"u32":9}}'
+        );
+        $this->assertNotNull($entry->getKey()->getMap());
+    }
+
+    public function testDuplicateKey_singleSchemaAnnotationAccepted(): void
+    {
+        // One $schema key is an annotation, not a repeat.
+        $price = \Soneso\StellarSDK\Xdr\XdrPrice::fromJson('{"$schema":"https://x","n":1,"d":2}');
+        $this->assertSame(1, $price->getN());
+        $this->assertSame(2, $price->getD());
+    }
+
+    public function testDuplicateKey_escapedKeyWithoutCollisionAccepted(): void
+    {
+        // Escaping a key is legal; only a resolved collision is a duplicate.
+        $price = \Soneso\StellarSDK\Xdr\XdrPrice::fromJson('{"\u006e":1,"d":2}');
+        $this->assertSame(1, $price->getN());
+        $this->assertSame(2, $price->getD());
+    }
+
+    public function testDuplicateKey_stringValueResemblingKeyAccepted(): void
+    {
+        // A string in value position is not a key, so it cannot collide with
+        // one: here each value spells the sibling key's name.
+        $entry = \Soneso\StellarSDK\Xdr\XdrSCMapEntry::fromJson(
+            '{"key":{"symbol":"val"},"val":{"symbol":"key"}}'
+        );
+        $this->assertSame('val', $entry->getKey()->getSym());
+        $this->assertSame('key', $entry->getVal()->getSym());
+    }
 }

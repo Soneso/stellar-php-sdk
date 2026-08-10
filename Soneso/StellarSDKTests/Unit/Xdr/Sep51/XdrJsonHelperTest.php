@@ -1277,19 +1277,23 @@ class XdrJsonHelperTest extends TestCase
     }
 
     /**
-     * canonicalJson inherits json_decode's last-value-wins behaviour on duplicate keys.
+     * canonicalJson normalises bytes; it does not apply SEP-51 input rules.
      *
-     * This pins the behaviour at the spec-vs-impl boundary. json_decode in PHP retains
-     * the last value when an object contains duplicate keys; SEP-51 itself does not
-     * address duplicate keys, so this test documents the inherited behaviour.
+     * The duplicate-key rule belongs to the decode path: XdrJsonHelper::decodeText
+     * rejects a repeated key, and every fromJson entry point goes through it.
+     * canonicalJson is the separate byte-normalisation utility used to compare two
+     * documents for structural equality, so it keeps json_decode's last-value-wins
+     * resolution. This test marks that boundary so the two are not confused.
      */
-    public function testCanonical_duplicateKeyLastWins(): void
+    public function testCanonical_duplicateKeyIsNotTheDecodeGate(): void
     {
-        // json_decode (and therefore canonicalJson) retains the last value for duplicate keys.
-        // This is the inherited PHP json_decode behaviour; SEP-51 does not address duplicate keys.
         $result = XdrJsonHelper::canonicalJson('{"a":1,"a":2}');
         $decoded = json_decode($result, true);
-        $this->assertSame(2, $decoded['a'], 'Duplicate key should retain last value (json_decode behaviour)');
+        $this->assertSame(2, $decoded['a'], 'canonicalJson retains json_decode last-value-wins resolution');
+
+        // The same document is refused where the input rules do apply.
+        $this->expectException(\InvalidArgumentException::class);
+        XdrJsonHelper::decodeText('{"a":1,"a":2}');
     }
 
     /**
@@ -1532,5 +1536,426 @@ class XdrJsonHelperTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessageMatches('/must not be empty/');
         XdrJsonHelper::wrapUnsignedToSignedInt('');
+    }
+
+    // =========================================================================
+    // rejectUnknownFields — struct-object key closure
+    // =========================================================================
+
+    public function testRejectUnknownFields_acceptsExactlyTheDeclaredKeys(): void
+    {
+        XdrJsonHelper::rejectUnknownFields(['n' => 1, 'd' => 2], ['n', 'd'], 'XdrPrice');
+        $this->addToAssertionCount(1);
+    }
+
+    public function testRejectUnknownFields_acceptsASubsetOfTheDeclaredKeys(): void
+    {
+        // Presence of every declared key is the callers' concern; this helper
+        // only constrains what may appear in addition to them.
+        XdrJsonHelper::rejectUnknownFields(['n' => 1], ['n', 'd'], 'XdrPrice');
+        $this->addToAssertionCount(1);
+    }
+
+    public function testRejectUnknownFields_acceptsAnEmptyObject(): void
+    {
+        XdrJsonHelper::rejectUnknownFields([], ['n', 'd'], 'XdrPrice');
+        $this->addToAssertionCount(1);
+    }
+
+    public function testRejectUnknownFields_namesTheOffendingKeyAndTheType(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Unknown field in JSON input for XdrPrice: 'bogus'");
+        XdrJsonHelper::rejectUnknownFields(['n' => 1, 'd' => 2, 'bogus' => 3], ['n', 'd'], 'XdrPrice');
+    }
+
+    public function testRejectUnknownFields_namesEveryOffendingKeyInInputOrder(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Unknown fields in JSON input for XdrPrice: 'b', 'a'");
+        XdrJsonHelper::rejectUnknownFields(['b' => 1, 'n' => 1, 'a' => 2], ['n', 'd'], 'XdrPrice');
+    }
+
+    public function testRejectUnknownFields_summarisesBeyondTheReportLimit(): void
+    {
+        $value = [];
+        foreach (range(1, 9) as $i) {
+            $value['k' . $i] = $i;
+        }
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            "Unknown fields in JSON input for XdrPrice: 'k1', 'k2', 'k3', 'k4', 'k5', (4 more)"
+        );
+        XdrJsonHelper::rejectUnknownFields($value, ['n', 'd'], 'XdrPrice');
+    }
+
+    public function testRejectUnknownFields_boundsAnOverlongKeyInTheMessage(): void
+    {
+        $long = str_repeat('x', 500);
+        try {
+            XdrJsonHelper::rejectUnknownFields([$long => 1], ['n'], 'XdrPrice');
+            $this->fail('Expected rejectUnknownFields to reject the unknown key.');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertLessThan(200, strlen($e->getMessage()));
+            $this->assertStringContainsString('...', $e->getMessage());
+        }
+    }
+
+    public function testRejectUnknownFields_escapesControlCharactersInAKey(): void
+    {
+        try {
+            XdrJsonHelper::rejectUnknownFields(["a\x1bb" => 1], ['n'], 'XdrPrice');
+            $this->fail('Expected rejectUnknownFields to reject the unknown key.');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString('a\\x1Bb', $e->getMessage());
+            $this->assertStringNotContainsString("\x1b", $e->getMessage());
+        }
+    }
+
+    public function testRejectUnknownFields_reportsANumericKeyAsAString(): void
+    {
+        // json_decode turns the JSON object key "0" into a PHP int array key.
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Unknown field in JSON input for XdrPrice: '0'");
+        XdrJsonHelper::rejectUnknownFields([0 => 1], ['n', 'd'], 'XdrPrice');
+    }
+
+    public function testRejectUnknownFields_rejectsEveryKeyWhenNoneAreDeclared(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Unknown field in JSON input for XdrEmpty: 'n'");
+        XdrJsonHelper::rejectUnknownFields(['n' => 1], [], 'XdrEmpty');
+    }
+
+    // =========================================================================
+    // normalizeFieldAlias — input alias folded onto the canonical field key
+    // =========================================================================
+
+    public function testNormalizeFieldAlias_passesThroughWhenOnlyTheCanonicalKeyIsPresent(): void
+    {
+        $value = ['type' => 'bool', 'name' => 'x'];
+        $this->assertSame(
+            $value,
+            XdrJsonHelper::normalizeFieldAlias($value, 'type', 'type_', 'XdrDontHave')
+        );
+    }
+
+    public function testNormalizeFieldAlias_passesThroughWhenNeitherKeyIsPresent(): void
+    {
+        $value = ['name' => 'x'];
+        $this->assertSame(
+            $value,
+            XdrJsonHelper::normalizeFieldAlias($value, 'type', 'type_', 'XdrDontHave')
+        );
+    }
+
+    public function testNormalizeFieldAlias_movesTheAliasValueOntoTheCanonicalKey(): void
+    {
+        $result = XdrJsonHelper::normalizeFieldAlias(
+            ['name' => 'x', 'type_' => 'bool'],
+            'type',
+            'type_',
+            'XdrDontHave'
+        );
+        $this->assertSame(['name' => 'x', 'type' => 'bool'], $result);
+    }
+
+    public function testNormalizeFieldAlias_preservesANullAliasValue(): void
+    {
+        // array_key_exists, not isset: a null payload is a supplied value.
+        $result = XdrJsonHelper::normalizeFieldAlias(
+            ['type_' => null],
+            'type',
+            'type_',
+            'XdrDontHave'
+        );
+        $this->assertSame(['type' => null], $result);
+    }
+
+    public function testNormalizeFieldAlias_rejectsBothSpellings(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            "Duplicate field 'type' for XdrDontHave: 'type' and its input alias 'type_'"
+            . ' cannot both be supplied'
+        );
+        XdrJsonHelper::normalizeFieldAlias(
+            ['type' => 'a', 'type_' => 'b'],
+            'type',
+            'type_',
+            'XdrDontHave'
+        );
+    }
+
+    public function testNormalizeFieldAlias_rejectsBothSpellingsWhenTheCanonicalValueIsNull(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Duplicate field 'type' for XdrDontHave");
+        XdrJsonHelper::normalizeFieldAlias(
+            ['type' => null, 'type_' => 'b'],
+            'type',
+            'type_',
+            'XdrDontHave'
+        );
+    }
+
+    public function testNormalizeFieldAlias_doesNotDisturbOtherKeys(): void
+    {
+        $result = XdrJsonHelper::normalizeFieldAlias(
+            ['doc' => 'd', 'type_' => 'bool', 'name' => 'n'],
+            'type',
+            'type_',
+            'XdrSCSpecUDTStructFieldV0'
+        );
+        $this->assertSame(['doc' => 'd', 'name' => 'n', 'type' => 'bool'], $result);
+    }
+
+    // =========================================================================
+    // decodeText / rejectDuplicateKeys
+    //
+    // A JSON object naming the same key twice supplies two values for one field
+    // with no rule saying which one wins. json_decode resolves that silently to
+    // the last value, so the document has to be refused before it is parsed. The
+    // scan works on the raw text, which is the only place a repeat is still
+    // visible.
+    // =========================================================================
+
+    /**
+     * @return array<string, array{0: string, 1: string}>
+     */
+    public static function duplicateKeyRejectionProvider(): array
+    {
+        return [
+            'flat, values agree'          => ['{"n":1,"d":2,"n":1}', 'n'],
+            'flat, values differ'         => ['{"n":1,"d":2,"n":9}', 'n'],
+            'first and last key'          => ['{"a":1,"b":2,"c":3,"a":4}', 'a'],
+            'adjacent repeat'             => ['{"a":1,"a":2}', 'a'],
+            'repeated three times'        => ['{"a":1,"a":2,"a":3}', 'a'],
+            'nested one level'            => ['{"outer":{"x":1,"x":2}}', 'x'],
+            'nested three levels'         => ['{"a":{"b":{"c":{"k":1,"k":2}}}}', 'k'],
+            'inside array element'        => ['[{"k":1,"k":2}]', 'k'],
+            'inside nested arrays'        => ['[[[{"k":1,"k":2}]]]', 'k'],
+            'repeat after nested object'  => ['{"a":{"b":1},"a":2}', 'a'],
+            'repeat after nested array'   => ['{"a":[1,2],"a":3}', 'a'],
+            'escaped vs literal'          => ['{"\u006e":1,"n":2}', 'n'],
+            'both escaped, hex case'      => ['{"\u006E":1,"\u006e":2}', 'n'],
+            'escaped non-ASCII'           => ['{"é":1,"\u00e9":2}', 'é'],
+            'surrogate pair vs literal'   => ['{"😀":1,"\ud83d\ude00":2}', '😀'],
+            'escaped quote in key'        => ['{"a\"b":1,"a\"b":2}', 'a"b'],
+            'tab spelt two ways'          => ['{"a\tb":1,"a\u0009b":2}', "a\tb"],
+            'empty key'                   => ['{"":1,"":2}', ''],
+            'schema annotation'           => ['{"$schema":"a","$schema":"b"}', '$schema'],
+            'whitespace between tokens'   => ["{\n  \"a\" : 1 ,\n  \"a\" : 2\n}", 'a'],
+        ];
+    }
+
+    /**
+     * @dataProvider duplicateKeyRejectionProvider
+     */
+    public function testDuplicateKeys_rejected(string $json, string $expectedKey): void
+    {
+        try {
+            XdrJsonHelper::rejectDuplicateKeys($json);
+            $this->fail("Expected a duplicate-key rejection for: $json");
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString('Duplicate key in JSON input:', $e->getMessage());
+            $this->assertStringContainsString(
+                XdrJsonHelper::safePreview($expectedKey, 40),
+                $e->getMessage(),
+                'Rejection message must name the repeated key'
+            );
+        }
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function duplicateKeyAcceptanceProvider(): array
+    {
+        return [
+            'distinct keys'                 => ['{"a":1,"b":2}'],
+            'empty object'                  => ['{}'],
+            'empty array'                   => ['[]'],
+            'sibling objects share names'   => ['[{"k":1},{"k":2}]'],
+            'sibling objects in one parent' => ['{"x":{"k":1},"y":{"k":2}}'],
+            'nested object reuses name'     => ['{"a":{"a":1}}'],
+            'nested three levels reuse'     => ['{"a":{"a":{"a":1}}}'],
+            'escaped key, no collision'     => ['{"\u006e":1,"d":2}'],
+            'value string spells a key'     => ['{"a":"b","b":"a"}'],
+            'value string holds a brace'    => ['{"a":"{\"a\":1}","b":2}'],
+            'value string holds a comma'    => ['{"a":"x,y","b":2}'],
+            'value string holds a colon'    => ['{"a":"x:y","b":2}'],
+            'top-level scalar'              => ['42'],
+            'top-level string'              => ['"a"'],
+            'top-level null'                => ['null'],
+            'array of scalars'              => ['[1,2,3]'],
+            'keys differing in case'        => ['{"a":1,"A":2}'],
+            'keys differing by one char'    => ['{"ab":1,"ac":2}'],
+        ];
+    }
+
+    /**
+     * @dataProvider duplicateKeyAcceptanceProvider
+     */
+    public function testDuplicateKeys_accepted(string $json): void
+    {
+        XdrJsonHelper::rejectDuplicateKeys($json);
+        $this->assertTrue(true, 'No object in this document repeats a key');
+    }
+
+    public function testDuplicateKeys_deepNestingDoesNotExhaustTheCallStack(): void
+    {
+        // The walk is a loop over an explicit frame stack rather than recursion,
+        // so input nesting never grows the PHP call stack. This document also
+        // runs past the depth cap, where the scan stands down; the point is that
+        // neither path lets nesting depth reach the interpreter's stack.
+        $depth = 20000;
+        $json = str_repeat('{"a":', $depth) . '1' . str_repeat('}', $depth);
+        XdrJsonHelper::rejectDuplicateKeys($json);
+        $this->assertTrue(true, 'Deeply nested input returns instead of aborting the process');
+    }
+
+    public function testDuplicateKeys_manyDistinctKeysStayFast(): void
+    {
+        // One pass with hashed lookups, so cost is linear in document size. A
+        // pairwise comparison over this many keys would not finish the budget.
+        $pairs = [];
+        for ($i = 0; $i < 50000; $i++) {
+            $pairs[] = '"k' . $i . '":' . $i;
+        }
+        $json = '{' . implode(',', $pairs) . '}';
+
+        $start = microtime(true);
+        XdrJsonHelper::rejectDuplicateKeys($json);
+        $elapsed = microtime(true) - $start;
+
+        $this->assertLessThan(
+            5.0,
+            $elapsed,
+            'Scanning 50000 distinct keys must stay linear; took ' . $elapsed . 's'
+        );
+    }
+
+    public function testDuplicateKeys_repeatIsFoundInAWideObject(): void
+    {
+        $pairs = [];
+        for ($i = 0; $i < 5000; $i++) {
+            $pairs[] = '"k' . $i . '":' . $i;
+        }
+        $pairs[] = '"k0":999';
+        $json = '{' . implode(',', $pairs) . '}';
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Duplicate key in JSON input: 'k0'");
+        XdrJsonHelper::rejectDuplicateKeys($json);
+    }
+
+    public function testDuplicateKeys_reportedKeyIsSanitised(): void
+    {
+        // Keys come from caller-supplied text, so the message echoes them through
+        // safePreview rather than raw.
+        try {
+            XdrJsonHelper::rejectDuplicateKeys('{"a\u001bb":1,"a\u001bb":2}');
+            $this->fail('Expected a duplicate-key rejection');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString('\x1B', $e->getMessage());
+            $this->assertStringNotContainsString("\x1b", $e->getMessage());
+        }
+    }
+
+    public function testDuplicateKeys_longKeyIsTruncatedInTheMessage(): void
+    {
+        $key = str_repeat('k', 200);
+        try {
+            XdrJsonHelper::rejectDuplicateKeys('{"' . $key . '":1,"' . $key . '":2}');
+            $this->fail('Expected a duplicate-key rejection');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString('...', $e->getMessage());
+            $this->assertStringNotContainsString($key, $e->getMessage());
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Interaction with malformed text
+    //
+    // The scan is a structural tokeniser, not a validator. On a structural fault
+    // it cannot navigate past it stops and returns, leaving json_decode to report
+    // the syntax error, so malformed text never draws a duplicate-key message the
+    // scan cannot justify. Where a complete repeat precedes the malformation the
+    // repeat is named first, which is what the reference implementation does.
+    // -------------------------------------------------------------------------
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function malformedTextProvider(): array
+    {
+        return [
+            'truncated after colon'      => ['{"a":1,"b":'],
+            'truncated after key'        => ['{"a"'],
+            'unterminated string value'  => ['{"a":"abc'],
+            'unterminated string key'    => ['{"abc'],
+            'unbalanced closing brace'   => ['{"a":1}}'],
+            'unbalanced closing bracket' => ['[1,2]]'],
+            'bare garbage'               => ['{invalid}'],
+            'empty input'                => [''],
+            'lone surrogate escape'      => ['{"\ud83d":1,"b":2}'],
+            'truncated unicode escape'   => ['{"\u00":1,"b":2}'],
+            'unknown escape in key'      => ['{"a\q":1,"b":2}'],
+        ];
+    }
+
+    /**
+     * @dataProvider malformedTextProvider
+     */
+    public function testDecodeText_malformedTextSurfacesTheJsonError(string $json): void
+    {
+        // The scan must stand down here; json_decode owns the verdict.
+        XdrJsonHelper::rejectDuplicateKeys($json);
+
+        $this->expectException(\JsonException::class);
+        XdrJsonHelper::decodeText($json);
+    }
+
+    public function testDecodeText_repeatBeforeMalformationIsReportedAsADuplicate(): void
+    {
+        // The repeat is complete and unambiguous by the time the scan reaches the
+        // truncation, so it is the fault worth naming.
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Duplicate key in JSON input: 'a'");
+        XdrJsonHelper::decodeText('{"a":1,"a":2,');
+    }
+
+    public function testDecodeText_nestingBeyondTheDecodeDepthSurfacesTheJsonError(): void
+    {
+        // Past json_decode's depth limit the scan stands down, and the depth error
+        // is the accurate verdict. No document json_decode accepts can outrun the
+        // scan this way, because exceeding the limit is itself a rejection.
+        $json = str_repeat('{"a":', 600) . '1' . str_repeat('}', 600);
+        XdrJsonHelper::rejectDuplicateKeys($json);
+
+        $this->expectException(\JsonException::class);
+        XdrJsonHelper::decodeText($json);
+    }
+
+    public function testDecodeText_rejectsRepeatBeforeParsing(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Duplicate key in JSON input: 'a'");
+        XdrJsonHelper::decodeText('{"a":1,"a":2}');
+    }
+
+    public function testDecodeText_returnsObjectsAsAssociativeArrays(): void
+    {
+        $decoded = XdrJsonHelper::decodeText('{"a":1,"b":[2,3]}');
+        $this->assertSame(['a' => 1, 'b' => [2, 3]], $decoded);
+    }
+
+    public function testDecodeText_returnsTopLevelScalarsUnchanged(): void
+    {
+        $this->assertSame(1, XdrJsonHelper::decodeText('1'));
+        $this->assertSame('a', XdrJsonHelper::decodeText('"a"'));
+        $this->assertNull(XdrJsonHelper::decodeText('null'));
+        $this->assertTrue(XdrJsonHelper::decodeText('true'));
     }
 }

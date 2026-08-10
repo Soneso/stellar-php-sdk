@@ -119,11 +119,13 @@ class Sep51FieldOverridesTest < Minitest::Test
     override = { asset_code: 12 }
     php = @gen.send(:field_override_to_json_expr, override, '$this->assetCode')
     # The emitted body is a static IIFE that trims, applies the
-    # AssetCode4-vs-AssetCode12 distinguishability pad, and escapes.
+    # AssetCode4-vs-AssetCode12 distinguishability pad, and escapes. An
+    # all-NUL code serialises as five escaped NULs via the pad branch,
+    # matching the rs-stellar-xdr reference; no input is rejected.
     assert_includes php, 'rtrim($bytes, "\\x00")'
     assert_includes php, 'str_pad($trimmed, 5, "\\x00", STR_PAD_RIGHT)'
     assert_includes php, 'XdrJsonHelper::escapeString($trimmed)'
-    assert_includes php, "throw new \\InvalidArgumentException('AssetCode12 must not be all-null')"
+    refute_includes php, 'throw', 'the emit path must serialise every AssetCode12, including all-NUL'
   end
 
   def test_proc_kind_dispatches_to_lambda
@@ -205,19 +207,22 @@ class Sep51FieldOverridesTest < Minitest::Test
   end
 
   # ------------------------------------------------------------------
-  # All eight strkey rows hit the registered field-override path
+  # All nine strkey rows hit the registered field-override path
   # ------------------------------------------------------------------
 
-  def test_all_eight_strkey_entries_resolve_to_a_strkey_override
+  def test_all_nine_strkey_entries_resolve_to_a_strkey_override
     strkey_entries = SEP51_FIELD_OVERRIDES.select { |_, spec| spec.key?(:strkey) }
-    assert_equal 8, strkey_entries.size,
-                 'Expected exactly 8 strkey field-override entries (7 PoolID + 1 ContractID)'
+    assert_equal 9, strkey_entries.size,
+                 'Expected exactly 9 strkey field-override entries (7 PoolID + 2 ContractID)'
   end
 
-  def test_all_four_asset_code_entries_resolve_to_an_asset_code_override
+  def test_both_asset_code_entries_resolve_to_an_asset_code_override
+    # The AllowTrust AssetCode union is handled whole-body by
+    # StellarJsonOverrides, so only the two AlphaNum struct sites carry
+    # per-field asset_code entries.
     ac_entries = SEP51_FIELD_OVERRIDES.select { |_, spec| spec.key?(:asset_code) }
-    assert_equal 4, ac_entries.size,
-                 'Expected exactly 4 asset_code field-override entries'
+    assert_equal 2, ac_entries.size,
+                 'Expected exactly 2 asset_code field-override entries'
   end
 
   def test_storage_form_per_pool_id_site
@@ -232,6 +237,7 @@ class Sep51FieldOverridesTest < Minitest::Test
       ['XdrClaimLiquidityAtom',                 'liquidityPoolID'] => :raw,
       ['XdrHashIDPreimageRevokeID',             'liquidityPoolID'] => :raw,
       ['XdrConfigUpgradeSetKeyBase',            'contractID']      => :hex,
+      ['XdrContractEvent',                      'hash']            => :raw,
     }
     expected_encoding.each do |key, expected|
       spec = SEP51_FIELD_OVERRIDES[key]

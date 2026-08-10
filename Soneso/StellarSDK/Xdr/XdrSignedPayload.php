@@ -49,6 +49,14 @@ class XdrSignedPayload {
     }
 
     public function toJsonValue(): string {
+        // A zero-length payload is valid XDR but has no SEP-23
+        // strkey the ecosystem accepts (payload must be 1 to 64
+        // bytes); there is no spec-conformant JSON rendering for it.
+        if ($this->getPayload() === '') {
+            throw new InvalidArgumentException(
+                'Zero-length signed payload has no SEP-23 strkey representation'
+            );
+        }
         return StrKey::encodeXdrSignedPayload($this);
     }
 
@@ -58,7 +66,13 @@ class XdrSignedPayload {
                 'Expected string for XdrSignedPayload JSON value, got ' . get_debug_type($value)
             );
         }
-        return StrKey::decodeXdrSignedPayload($value);
+        $result = StrKey::decodeXdrSignedPayload($value);
+        if ($result->getPayload() === '') {
+            throw new InvalidArgumentException(
+                'Zero-length signed payload has no SEP-23 strkey representation'
+            );
+        }
+        return $result;
     }
 
     /**
@@ -73,10 +87,11 @@ class XdrSignedPayload {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
     public function toTxRep(string $prefix, array &$lines): void {

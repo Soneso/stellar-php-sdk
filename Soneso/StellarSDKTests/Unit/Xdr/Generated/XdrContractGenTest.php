@@ -13,6 +13,7 @@ use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceIDType;
 use Soneso\StellarSDK\Xdr\XdrContractExecutable;
 use Soneso\StellarSDK\Xdr\XdrContractExecutableBase;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableExternalRef;
 use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 use Soneso\StellarSDK\Xdr\XdrDataValueMandatory;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
@@ -39,7 +40,7 @@ class XdrContractGenTest extends TestCase
 {
     public function testXdrSCValTypeEnumRoundTrip(): void
     {
-        $values = [XdrSCValType::SCV_BOOL, XdrSCValType::SCV_VOID, XdrSCValType::SCV_ERROR, XdrSCValType::SCV_U32, XdrSCValType::SCV_I32, XdrSCValType::SCV_U64, XdrSCValType::SCV_I64, XdrSCValType::SCV_TIMEPOINT, XdrSCValType::SCV_DURATION, XdrSCValType::SCV_U128, XdrSCValType::SCV_I128, XdrSCValType::SCV_U256, XdrSCValType::SCV_I256, XdrSCValType::SCV_BYTES, XdrSCValType::SCV_STRING, XdrSCValType::SCV_SYMBOL, XdrSCValType::SCV_VEC, XdrSCValType::SCV_MAP, XdrSCValType::SCV_ADDRESS, XdrSCValType::SCV_CONTRACT_INSTANCE, XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE, XdrSCValType::SCV_LEDGER_KEY_NONCE];
+        $values = [XdrSCValType::SCV_BOOL, XdrSCValType::SCV_VOID, XdrSCValType::SCV_ERROR, XdrSCValType::SCV_U32, XdrSCValType::SCV_I32, XdrSCValType::SCV_U64, XdrSCValType::SCV_I64, XdrSCValType::SCV_TIMEPOINT, XdrSCValType::SCV_DURATION, XdrSCValType::SCV_U128, XdrSCValType::SCV_I128, XdrSCValType::SCV_U256, XdrSCValType::SCV_I256, XdrSCValType::SCV_BYTES, XdrSCValType::SCV_STRING, XdrSCValType::SCV_SYMBOL, XdrSCValType::SCV_VEC, XdrSCValType::SCV_MAP, XdrSCValType::SCV_ADDRESS, XdrSCValType::SCV_CONTRACT_INSTANCE, XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE, XdrSCValType::SCV_LEDGER_KEY_NONCE, XdrSCValType::SCV_EXECUTABLE_TAG];
         foreach ($values as $v) {
             $original = new XdrSCValType($v);
             $encoded = $original->encode();
@@ -81,11 +82,12 @@ class XdrContractGenTest extends TestCase
         $this->assertNotNull(XdrSCValType::SCV_CONTRACT_INSTANCE());
         $this->assertNotNull(XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE());
         $this->assertNotNull(XdrSCValType::LEDGER_KEY_NONCE());
+        $this->assertNotNull(XdrSCValType::EXECUTABLE_TAG());
     }
 
     public function testXdrSCValTypeEnumJsonRoundTrip(): void
     {
-        $values = [XdrSCValType::SCV_BOOL, XdrSCValType::SCV_VOID, XdrSCValType::SCV_ERROR, XdrSCValType::SCV_U32, XdrSCValType::SCV_I32, XdrSCValType::SCV_U64, XdrSCValType::SCV_I64, XdrSCValType::SCV_TIMEPOINT, XdrSCValType::SCV_DURATION, XdrSCValType::SCV_U128, XdrSCValType::SCV_I128, XdrSCValType::SCV_U256, XdrSCValType::SCV_I256, XdrSCValType::SCV_BYTES, XdrSCValType::SCV_STRING, XdrSCValType::SCV_SYMBOL, XdrSCValType::SCV_VEC, XdrSCValType::SCV_MAP, XdrSCValType::SCV_ADDRESS, XdrSCValType::SCV_CONTRACT_INSTANCE, XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE, XdrSCValType::SCV_LEDGER_KEY_NONCE];
+        $values = [XdrSCValType::SCV_BOOL, XdrSCValType::SCV_VOID, XdrSCValType::SCV_ERROR, XdrSCValType::SCV_U32, XdrSCValType::SCV_I32, XdrSCValType::SCV_U64, XdrSCValType::SCV_I64, XdrSCValType::SCV_TIMEPOINT, XdrSCValType::SCV_DURATION, XdrSCValType::SCV_U128, XdrSCValType::SCV_I128, XdrSCValType::SCV_U256, XdrSCValType::SCV_I256, XdrSCValType::SCV_BYTES, XdrSCValType::SCV_STRING, XdrSCValType::SCV_SYMBOL, XdrSCValType::SCV_VEC, XdrSCValType::SCV_MAP, XdrSCValType::SCV_ADDRESS, XdrSCValType::SCV_CONTRACT_INSTANCE, XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE, XdrSCValType::SCV_LEDGER_KEY_NONCE, XdrSCValType::SCV_EXECUTABLE_TAG];
         foreach ($values as $v) {
             $original = new XdrSCValType($v);
             $j1 = $original->toJsonValue();
@@ -737,7 +739,7 @@ class XdrContractGenTest extends TestCase
 
     public function testXdrContractExecutableTypeEnumRoundTrip(): void
     {
-        $values = [XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM, XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET];
+        $values = [XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM, XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET, XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF];
         foreach ($values as $v) {
             $original = new XdrContractExecutableType($v);
             $encoded = $original->encode();
@@ -759,11 +761,12 @@ class XdrContractGenTest extends TestCase
     {
         $this->assertNotNull(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM());
         $this->assertNotNull(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
+        $this->assertNotNull(XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF());
     }
 
     public function testXdrContractExecutableTypeEnumJsonRoundTrip(): void
     {
-        $values = [XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM, XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET];
+        $values = [XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM, XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET, XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF];
         foreach ($values as $v) {
             $original = new XdrContractExecutableType($v);
             $j1 = $original->toJsonValue();
@@ -784,127 +787,6 @@ class XdrContractGenTest extends TestCase
             catch (\InvalidArgumentException $e) { $threw = true; }
             $this->assertTrue($threw, 'Expected rejection for XdrContractExecutableType JSON: ' . var_export($bad, true));
         }
-    }
-
-    public function testXdrContractExecutableUnionRoundTrip(): void
-    {
-        $original = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
-        $encoded = $original->encode();
-        $decoded = XdrContractExecutable::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrContractExecutable');
-        $b64Decoded = XdrContractExecutable::fromBase64Xdr($original->toBase64Xdr());
-        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrContractExecutable');
-    }
-
-    public function testXdrContractExecutableUnionJsonRoundTrip(): void
-    {
-        $arm0 = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
-        $j1 = $arm0->toJsonValue();
-        $back = XdrContractExecutable::fromJsonValue($j1);
-        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrContractExecutable arm fallback');
-        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrContractExecutable arm fallback');
-        $back2 = XdrContractExecutable::fromJson($arm0->toJson());
-        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrContractExecutable arm fallback');
-        $arm1 = (function() { $u = new XdrContractExecutableBase(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM)); $u->wasmIdHex = str_repeat('ab', 32); return $u; })();
-        $j1 = $arm1->toJsonValue();
-        $back = XdrContractExecutable::fromJsonValue($j1);
-        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrContractExecutable arm XdrContractExecutableType_CONTRACT_EXECUTABLE_WASM');
-        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrContractExecutable arm XdrContractExecutableType_CONTRACT_EXECUTABLE_WASM');
-        $back2 = XdrContractExecutable::fromJson($arm1->toJson());
-        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrContractExecutable arm XdrContractExecutableType_CONTRACT_EXECUTABLE_WASM');
-        $arm2 = new XdrContractExecutableBase(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET));
-        $j1 = $arm2->toJsonValue();
-        $back = XdrContractExecutable::fromJsonValue($j1);
-        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrContractExecutable arm XdrContractExecutableType_CONTRACT_EXECUTABLE_STELLAR_ASSET');
-        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrContractExecutable arm XdrContractExecutableType_CONTRACT_EXECUTABLE_STELLAR_ASSET');
-        $back2 = XdrContractExecutable::fromJson($arm2->toJson());
-        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrContractExecutable arm XdrContractExecutableType_CONTRACT_EXECUTABLE_STELLAR_ASSET');
-    }
-
-    public function testXdrContractExecutableUnionJsonRejectsInvalid(): void
-    {
-        $samples = [];
-        $samples[] = (new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()))->toJsonValue();
-        $samples[] = ((function() { $u = new XdrContractExecutableBase(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM)); $u->wasmIdHex = str_repeat('ab', 32); return $u; })())->toJsonValue();
-        $samples[] = (new XdrContractExecutableBase(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET)))->toJsonValue();
-        $valid = $samples[0];
-        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
-        $assertRejects = function ($bad, string $desc) {
-            $threw = false;
-            try { XdrContractExecutable::fromJsonValue($bad); }
-            catch (\InvalidArgumentException $e) { $threw = true; }
-            $this->assertTrue($threw, 'Expected rejection for XdrContractExecutable: ' . $desc);
-        };
-        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
-        if (is_string($valid)) {
-            $assertRejects(['not' => 'a string'], 'non-string union value');
-            $assertRejects('', 'empty string union value');
-            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
-        } else {
-            if ($hasStringForm) {
-                // Extension-point hybrid: an unknown bare string is rejected.
-                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
-            }
-            $assertRejects('not-an-object', 'non-array union value');
-            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
-            // Integer-keyed single-entry array hits the non-string arm key guard.
-            $assertRejects([5 => 1], 'non-string arm key');
-            // Some extension-point unions also accept bare void-arm strings;
-            // an unrecognised bare string is rejected by those, and by the
-            // object-only unions via the non-array guard above (already tested).
-            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
-            if (is_array($valid) && count($valid) === 1) {
-                $two = $valid; $two['__extra__'] = 1;
-                $assertRejects($two, 'too many arm keys');
-                $assertRejects([], 'zero arm keys');
-                // Extension-point unions reject a non-void arm name supplied
-                // as a bare string instead of a single-key object.
-                $armKey = array_key_first($valid);
-                if (is_string($armKey)) {
-                    $threwArm = false;
-                    try { XdrContractExecutable::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
-                    $this->assertTrue($threwArm, 'Expected rejection for XdrContractExecutable: non-void arm name as bare string');
-                }
-            }
-        }
-    }
-
-    public function testXdrContractExecutableGettersSetters(): void
-    {
-        $obj = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
-        $this->assertNotNull($obj->getType());
-        $obj->getWasmIdHex();
-    }
-
-    public function testXdrContractExecutableBaseRoundTrip(): void
-    {
-        $original = new XdrContractExecutableBase(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET));
-        $encoded = $original->encode();
-        $decoded = XdrContractExecutableBase::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode());
-        $b64 = $original->toBase64Xdr();
-        $fromB64 = XdrContractExecutableBase::fromBase64Xdr($b64);
-        $this->assertEquals($encoded, $fromB64->encode());
-    }
-
-    public function testXdrContractExecutable_forToken_Factory(): void
-    {
-        $result = XdrContractExecutable::forToken();
-        $this->assertInstanceOf(XdrContractExecutable::class, $result);
-        $encoded = $result->encode();
-        $this->assertNotEmpty($encoded);
-        $decoded = XdrContractExecutable::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode());
-    }
-
-    public function testXdrContractExecutable_forWasmId_Factory(): void
-    {
-        $result = XdrContractExecutable::forWasmId(str_repeat('ab', 32));
-        $this->assertInstanceOf(XdrContractExecutable::class, $result);
-        $encoded = $result->encode();
-        $this->assertNotEmpty($encoded);
-        $decoded = XdrContractExecutable::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode());
     }
 
     public function testXdrSCAddressTypeEnumRoundTrip(): void
@@ -1192,6 +1074,210 @@ class XdrContractGenTest extends TestCase
         $encoded = $result->encode();
         $this->assertNotEmpty($encoded);
         $decoded = XdrSCAddress::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrContractExecutableExternalRefStructRoundTrip(): void
+    {
+        $original = new XdrContractExecutableExternalRef(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string');
+        $encoded = $original->encode();
+        $decoded = XdrContractExecutableExternalRef::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrContractExecutableExternalRef');
+        $b64Decoded = XdrContractExecutableExternalRef::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrContractExecutableExternalRef');
+    }
+
+    public function testXdrContractExecutableExternalRefStructJsonRoundTrip(): void
+    {
+        $original = new XdrContractExecutableExternalRef(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string');
+        $j1 = $original->toJsonValue();
+        $back = XdrContractExecutableExternalRef::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrContractExecutableExternalRef');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrContractExecutableExternalRef');
+        $back2 = XdrContractExecutableExternalRef::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrContractExecutableExternalRef');
+    }
+
+    public function testXdrContractExecutableExternalRefStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrContractExecutableExternalRef(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string');
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrContractExecutableExternalRef::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrContractExecutableExternalRefGettersSetters(): void
+    {
+        $obj = new XdrContractExecutableExternalRef(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string');
+        $this->assertNotNull($obj->getExecutableOwner());
+        $newVal = XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        $obj->setExecutableOwner($newVal);
+        $this->assertSame($newVal, $obj->getExecutableOwner());
+        $this->assertNotNull($obj->getTag());
+        $newVal = 'test_string';
+        $obj->setTag($newVal);
+        $this->assertSame($newVal, $obj->getTag());
+    }
+
+    public function testXdrContractExecutableUnionRoundTrip(): void
+    {
+        $original = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
+        $encoded = $original->encode();
+        $decoded = XdrContractExecutable::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrContractExecutable');
+        $b64Decoded = XdrContractExecutable::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrContractExecutable');
+    }
+
+    public function testXdrContractExecutableUnionJsonRoundTrip(): void
+    {
+        $arm0 = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
+        $j1 = $arm0->toJsonValue();
+        $back = XdrContractExecutable::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrContractExecutable arm fallback');
+        $this->assertSame($arm0->toJson(), $back->toJson(), 'JSON string not stable for XdrContractExecutable arm fallback');
+        $back2 = XdrContractExecutable::fromJson($arm0->toJson());
+        $this->assertSame($arm0->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrContractExecutable arm fallback');
+        $arm1 = (function() { $u = new XdrContractExecutableBase(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM)); $u->wasmIdHex = str_repeat('ab', 32); return $u; })();
+        $j1 = $arm1->toJsonValue();
+        $back = XdrContractExecutable::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrContractExecutable arm XdrContractExecutableType_CONTRACT_EXECUTABLE_WASM');
+        $this->assertSame($arm1->toJson(), $back->toJson(), 'JSON string not stable for XdrContractExecutable arm XdrContractExecutableType_CONTRACT_EXECUTABLE_WASM');
+        $back2 = XdrContractExecutable::fromJson($arm1->toJson());
+        $this->assertSame($arm1->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrContractExecutable arm XdrContractExecutableType_CONTRACT_EXECUTABLE_WASM');
+        $arm2 = new XdrContractExecutableBase(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET));
+        $j1 = $arm2->toJsonValue();
+        $back = XdrContractExecutable::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrContractExecutable arm XdrContractExecutableType_CONTRACT_EXECUTABLE_STELLAR_ASSET');
+        $this->assertSame($arm2->toJson(), $back->toJson(), 'JSON string not stable for XdrContractExecutable arm XdrContractExecutableType_CONTRACT_EXECUTABLE_STELLAR_ASSET');
+        $back2 = XdrContractExecutable::fromJson($arm2->toJson());
+        $this->assertSame($arm2->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrContractExecutable arm XdrContractExecutableType_CONTRACT_EXECUTABLE_STELLAR_ASSET');
+        $arm3 = (function() { $u = new XdrContractExecutableBase(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF)); $u->externalRef = new XdrContractExecutableExternalRef(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string'); return $u; })();
+        $j1 = $arm3->toJsonValue();
+        $back = XdrContractExecutable::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrContractExecutable arm XdrContractExecutableType_CONTRACT_EXECUTABLE_EXTERNAL_REF');
+        $this->assertSame($arm3->toJson(), $back->toJson(), 'JSON string not stable for XdrContractExecutable arm XdrContractExecutableType_CONTRACT_EXECUTABLE_EXTERNAL_REF');
+        $back2 = XdrContractExecutable::fromJson($arm3->toJson());
+        $this->assertSame($arm3->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrContractExecutable arm XdrContractExecutableType_CONTRACT_EXECUTABLE_EXTERNAL_REF');
+    }
+
+    public function testXdrContractExecutableUnionJsonRejectsInvalid(): void
+    {
+        $samples = [];
+        $samples[] = (new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()))->toJsonValue();
+        $samples[] = ((function() { $u = new XdrContractExecutableBase(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM)); $u->wasmIdHex = str_repeat('ab', 32); return $u; })())->toJsonValue();
+        $samples[] = (new XdrContractExecutableBase(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET)))->toJsonValue();
+        $samples[] = ((function() { $u = new XdrContractExecutableBase(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF)); $u->externalRef = new XdrContractExecutableExternalRef(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string'); return $u; })())->toJsonValue();
+        $valid = $samples[0];
+        foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrContractExecutable::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection for XdrContractExecutable: ' . $desc);
+        };
+        $hasStringForm = false; foreach ($samples as $s) { if (is_string($s)) { $hasStringForm = true; break; } }
+        if (is_string($valid)) {
+            $assertRejects(['not' => 'a string'], 'non-string union value');
+            $assertRejects('', 'empty string union value');
+            $assertRejects('@@@invalid-prefix@@@', 'unknown prefix union value');
+        } else {
+            if ($hasStringForm) {
+                // Extension-point hybrid: an unknown bare string is rejected.
+                $assertRejects('__unknown_void_arm_string__', 'unknown void-arm string');
+            }
+            $assertRejects('not-an-object', 'non-array union value');
+            $assertRejects(['__unknown_arm_key__' => 1], 'unknown arm key');
+            // Integer-keyed single-entry array hits the non-string arm key guard.
+            $assertRejects([5 => 1], 'non-string arm key');
+            // Some extension-point unions also accept bare void-arm strings;
+            // an unrecognised bare string is rejected by those, and by the
+            // object-only unions via the non-array guard above (already tested).
+            $assertRejects('__not_a_void_arm__', 'unknown bare string arm');
+            if (is_array($valid) && count($valid) === 1) {
+                $two = $valid; $two['__extra__'] = 1;
+                $assertRejects($two, 'too many arm keys');
+                $assertRejects([], 'zero arm keys');
+                // Extension-point unions reject a non-void arm name supplied
+                // as a bare string instead of a single-key object.
+                $armKey = array_key_first($valid);
+                if (is_string($armKey)) {
+                    $threwArm = false;
+                    try { XdrContractExecutable::fromJsonValue($armKey); } catch (\InvalidArgumentException $e) { $threwArm = true; }
+                    $this->assertTrue($threwArm, 'Expected rejection for XdrContractExecutable: non-void arm name as bare string');
+                }
+            }
+        }
+    }
+
+    public function testXdrContractExecutableGettersSetters(): void
+    {
+        $obj = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
+        $this->assertNotNull($obj->getType());
+        $obj->getWasmIdHex();
+        $obj->getExternalRef();
+    }
+
+    public function testXdrContractExecutableBaseRoundTrip(): void
+    {
+        $original = new XdrContractExecutableBase(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET));
+        $encoded = $original->encode();
+        $decoded = XdrContractExecutableBase::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode());
+        $b64 = $original->toBase64Xdr();
+        $fromB64 = XdrContractExecutableBase::fromBase64Xdr($b64);
+        $this->assertEquals($encoded, $fromB64->encode());
+    }
+
+    public function testXdrContractExecutable_forToken_Factory(): void
+    {
+        $result = XdrContractExecutable::forToken();
+        $this->assertInstanceOf(XdrContractExecutable::class, $result);
+        $encoded = $result->encode();
+        $this->assertNotEmpty($encoded);
+        $decoded = XdrContractExecutable::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrContractExecutable_forWasmId_Factory(): void
+    {
+        $result = XdrContractExecutable::forWasmId(str_repeat('ab', 32));
+        $this->assertInstanceOf(XdrContractExecutable::class, $result);
+        $encoded = $result->encode();
+        $this->assertNotEmpty($encoded);
+        $decoded = XdrContractExecutable::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode());
     }
 
@@ -1517,6 +1603,13 @@ class XdrContractGenTest extends TestCase
         $this->assertSame($arm22->toJson(), $back->toJson(), 'JSON string not stable for XdrSCVal arm XdrSCValType_SCV_LEDGER_KEY_NONCE');
         $back2 = XdrSCVal::fromJson($arm22->toJson());
         $this->assertSame($arm22->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCVal arm XdrSCValType_SCV_LEDGER_KEY_NONCE');
+        $arm23 = (function() { $u = new XdrSCValBase(new XdrSCValType(XdrSCValType::SCV_EXECUTABLE_TAG)); $u->executableTag = 'test_string'; return $u; })();
+        $j1 = $arm23->toJsonValue();
+        $back = XdrSCVal::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCVal arm XdrSCValType_SCV_EXECUTABLE_TAG');
+        $this->assertSame($arm23->toJson(), $back->toJson(), 'JSON string not stable for XdrSCVal arm XdrSCValType_SCV_EXECUTABLE_TAG');
+        $back2 = XdrSCVal::fromJson($arm23->toJson());
+        $this->assertSame($arm23->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCVal arm XdrSCValType_SCV_EXECUTABLE_TAG');
     }
 
     public function testXdrSCValUnionJsonRejectsInvalid(): void
@@ -1545,6 +1638,7 @@ class XdrContractGenTest extends TestCase
         $samples[] = ((function() { $u = new XdrSCValBase(new XdrSCValType(XdrSCValType::SCV_CONTRACT_INSTANCE)); $u->instance = new XdrSCContractInstance(new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), null); return $u; })())->toJsonValue();
         $samples[] = (new XdrSCValBase(new XdrSCValType(XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE)))->toJsonValue();
         $samples[] = ((function() { $u = new XdrSCValBase(new XdrSCValType(XdrSCValType::SCV_LEDGER_KEY_NONCE)); $u->nonceKey = new XdrSCNonceKey(42); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrSCValBase(new XdrSCValType(XdrSCValType::SCV_EXECUTABLE_TAG)); $u->executableTag = 'test_string'; return $u; })())->toJsonValue();
         $valid = $samples[0];
         foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
         $assertRejects = function ($bad, string $desc) {
@@ -1611,6 +1705,7 @@ class XdrContractGenTest extends TestCase
         $obj->getAddress();
         $obj->getInstance();
         $obj->getNonceKey();
+        $obj->getExecutableTag();
     }
 
     public function testXdrSCValBaseRoundTrip(): void
@@ -1808,6 +1903,11 @@ class XdrContractGenTest extends TestCase
         $val = new XdrSCValType(XdrSCValType::SCV_LEDGER_KEY_NONCE);
         $name = $val->enumName();
         $this->assertEquals('SCV_LEDGER_KEY_NONCE', $name);
+        $back = XdrSCValType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCValType(XdrSCValType::SCV_EXECUTABLE_TAG);
+        $name = $val->enumName();
+        $this->assertEquals('SCV_EXECUTABLE_TAG', $name);
         $back = XdrSCValType::fromTxRepName($name);
         $this->assertEquals($val->getValue(), $back->getValue());
     }
@@ -2008,6 +2108,15 @@ class XdrContractGenTest extends TestCase
         $original->toTxRep('test', $lines);
         $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_LEDGER_KEY_NONCE');
+    }
+
+    public function testXdrSCValTypeTxRepRoundTrip_SCV_EXECUTABLE_TAG(): void
+    {
+        $original = new XdrSCValType(XdrSCValType::SCV_EXECUTABLE_TAG);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCValType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCValType_SCV_EXECUTABLE_TAG');
     }
 
     public function testXdrSCErrorTypeTxRepEnumNames(): void
@@ -2364,6 +2473,11 @@ class XdrContractGenTest extends TestCase
         $this->assertEquals('CONTRACT_EXECUTABLE_STELLAR_ASSET', $name);
         $back = XdrContractExecutableType::fromTxRepName($name);
         $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF);
+        $name = $val->enumName();
+        $this->assertEquals('CONTRACT_EXECUTABLE_EXTERNAL_REF', $name);
+        $back = XdrContractExecutableType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
     }
 
     public function testXdrContractExecutableTypeTxRepRoundTrip_CONTRACT_EXECUTABLE_WASM(): void
@@ -2384,13 +2498,13 @@ class XdrContractGenTest extends TestCase
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrContractExecutableType_CONTRACT_EXECUTABLE_STELLAR_ASSET');
     }
 
-    public function testXdrContractExecutableTxRepRoundTrip(): void
+    public function testXdrContractExecutableTypeTxRepRoundTrip_CONTRACT_EXECUTABLE_EXTERNAL_REF(): void
     {
-        $original = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
+        $original = new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF);
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrContractExecutableBase::fromTxRep($lines, 'test');
-        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrContractExecutable');
+        $reconstructed = XdrContractExecutableType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrContractExecutableType_CONTRACT_EXECUTABLE_EXTERNAL_REF');
     }
 
     public function testXdrSCAddressTypeTxRepEnumNames(): void
@@ -2483,6 +2597,24 @@ class XdrContractGenTest extends TestCase
         $original->toTxRep('test', $lines);
         $reconstructed = XdrSCAddressBase::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCAddress');
+    }
+
+    public function testXdrContractExecutableExternalRefTxRepRoundTrip(): void
+    {
+        $original = new XdrContractExecutableExternalRef(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string');
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrContractExecutableExternalRef::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrContractExecutableExternalRef');
+    }
+
+    public function testXdrContractExecutableTxRepRoundTrip(): void
+    {
+        $original = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrContractExecutableBase::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrContractExecutable');
     }
 
     public function testXdrSCNonceKeyTxRepRoundTrip(): void

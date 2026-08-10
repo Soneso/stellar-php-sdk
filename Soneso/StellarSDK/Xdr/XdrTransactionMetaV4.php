@@ -146,6 +146,7 @@ class XdrTransactionMetaV4 {
                 'Expected object for XdrTransactionMetaV4 JSON value, got ' . get_debug_type($value)
             );
         }
+        XdrJsonHelper::rejectUnknownFields($value, ['ext', 'tx_changes_before', 'operations', 'tx_changes_after', 'soroban_meta', 'events', 'diagnostic_events'], 'XdrTransactionMetaV4');
         if (!array_key_exists('ext', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field ext for XdrTransactionMetaV4'
@@ -241,9 +242,10 @@ class XdrTransactionMetaV4 {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

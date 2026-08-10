@@ -63,6 +63,7 @@ class XdrTTLEntry {
                 'Expected object for XdrTTLEntry JSON value, got ' . get_debug_type($value)
             );
         }
+        XdrJsonHelper::rejectUnknownFields($value, ['key_hash', 'live_until_ledger_seq'], 'XdrTTLEntry');
         if (!array_key_exists('key_hash', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field key_hash for XdrTTLEntry'
@@ -90,9 +91,10 @@ class XdrTTLEntry {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

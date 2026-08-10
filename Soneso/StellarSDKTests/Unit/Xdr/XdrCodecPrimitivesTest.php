@@ -67,4 +67,15 @@ class XdrCodecPrimitivesTest extends TestCase
         $this->assertSame(4, strlen($encoded));
         $this->assertSame("\x01\x02\x03\x00", $encoded);
     }
+
+    public function testOpaqueFixedPadsShortValueToFullDeclaredLength(): void
+    {
+        // A short value with padUnexpectedLength pads with NULs to exactly
+        // the declared fixed length, including the empty value: a decoded
+        // all-NUL fixed opaque stored as '' must re-encode to its full
+        // declared width, not to zero bytes.
+        $this->assertSame(str_repeat("\x00", 12), XdrEncoder::opaqueFixed('', 12, true));
+        $this->assertSame("AB" . str_repeat("\x00", 10), XdrEncoder::opaqueFixed('AB', 12, true));
+        $this->assertSame(str_repeat("\x00", 4), XdrEncoder::opaqueFixed('', 4, true));
+    }
 }

@@ -119,6 +119,7 @@ class XdrTimeSlicedNodeData {
                 'Expected object for XdrTimeSlicedNodeData JSON value, got ' . get_debug_type($value)
             );
         }
+        XdrJsonHelper::rejectUnknownFields($value, ['added_authenticated_peers', 'dropped_authenticated_peers', 'total_inbound_peer_count', 'total_outbound_peer_count', 'p75_scp_first_to_self_latency_ms', 'p75_scp_self_to_other_latency_ms', 'lost_sync_count', 'is_validator', 'max_inbound_peer_count', 'max_outbound_peer_count'], 'XdrTimeSlicedNodeData');
         if (!array_key_exists('added_authenticated_peers', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field added_authenticated_peers for XdrTimeSlicedNodeData'
@@ -194,9 +195,10 @@ class XdrTimeSlicedNodeData {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

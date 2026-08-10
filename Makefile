@@ -42,14 +42,20 @@ xdr-clean-all: xdr-clean-generated
 	rm -rf xdr/
 
 # Full regeneration cycle
-xdr-update: xdr-clean-all xdr-generate xdr-emit-roundtrip-tests
+xdr-update: xdr-clean-all xdr-generate xdr-emit-roundtrip-tests xdr-generate-tests
 
-# Run snapshot tests
+# Run generator tests: snapshots plus the codegen-time helper units. All four
+# files load into one minitest process so a new test file only needs adding here.
 xdr-generator-test: $(XDR_SRCS)
 	docker run --rm -v $(PWD):/wd -w /wd $(RUBY_IMAGE) /bin/bash -c '\
 		cd tools/xdr-generator && \
 		bundle install --quiet && \
-		bundle exec ruby -Itest test/generator_snapshot_test.rb'
+		bundle exec ruby -Itest -e "%w[ \
+			generator_snapshot_test \
+			generator_helpers_test \
+			json_helpers_test \
+			sep51_field_overrides_test \
+		].each { |t| require t }"'
 
 # Update snapshot baselines
 xdr-generator-update-snapshots: $(XDR_SRCS)

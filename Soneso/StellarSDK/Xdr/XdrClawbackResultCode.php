@@ -79,7 +79,7 @@ class XdrClawbackResultCode {
         return match ($this->value) {
             self::SUCCESS => 'success',
             self::MALFORMED => 'malformed',
-            self::NOT_ENABLED => 'not_enabled',
+            self::NOT_ENABLED => 'not_clawback_enabled',
             self::NO_TRUST => 'no_trust',
             self::UNDERFUNDED => 'underfunded',
             // @codeCoverageIgnoreStart
@@ -99,9 +99,13 @@ class XdrClawbackResultCode {
         return match ($value) {
             'success' => new static(self::SUCCESS),
             'malformed' => new static(self::MALFORMED),
-            'not_enabled' => new static(self::NOT_ENABLED),
+            'not_clawback_enabled' => new static(self::NOT_ENABLED),
             'no_trust' => new static(self::NO_TRUST),
             'underfunded' => new static(self::UNDERFUNDED),
+            // Deprecated input aliases: wire names emitted by SDK releases
+            // up to 1.11.x. Accepted for compatibility; toJsonValue never
+            // emits them.
+            'not_enabled' => new static(self::NOT_ENABLED),
             default => throw new InvalidArgumentException(
                 'Unknown XdrClawbackResultCode JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
@@ -120,9 +124,10 @@ class XdrClawbackResultCode {
 
     /**
      * @throws JsonException If $json is not syntactically valid JSON.
-     * @throws InvalidArgumentException If the JSON shape does not match this type.
+     * @throws InvalidArgumentException If an object in $json repeats a key, or if
+     *         the JSON shape does not match this type.
      */
     public static function fromJson(string $json): static {
-        return static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 }

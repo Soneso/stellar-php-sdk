@@ -1,10 +1,16 @@
 {
   "schema_version": 2,
   "_meta": {
-    "role": "Snapshot regression baseline for the PHP SDK's SEP-0051 emission. Each entry's spec_reference_json is the SDK's own canonical toJson() output for the entry's base64 XDR input; CorpusSnapshotTest re-asserts every entry on every CI run to catch unintended drift.",
-    "spec_anchor": "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md"
+    "role": "Correctness baseline for the PHP SDK's SEP-0051 emission. Each entry's spec_reference_json is the decode output of the rs-stellar-xdr CLI oracle for the entry's base64 XDR input; CorpusSnapshotTest asserts the SDK's toJson() output against every entry on every CI run, so divergence from the reference implementation fails fast.",
+    "spec_anchor": "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md",
+    "source": "oracle",
+    "oracle": {
+      "tool": "stellar-xdr CLI (rs-stellar-xdr)",
+      "version": "28.0.0",
+      "xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694"
+    }
   },
-  "generated_at": "2026-05-06T16:54:13.329398+00:00",
+  "generated_at": "2026-08-06T10:08:38.896093+00:00",
   "entries": [
     {
       "id": "scval_bool_true",
@@ -818,7 +824,7 @@
       "id": "scval_contract_instance_wasm",
       "type": "SCVal",
       "base64": "AAAAEwAAAAChoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoQAAAAA=",
-      "spec_reference_json": "{\"contract_instance\":{\"executable\":{\"wasm\":\"61316131613161316131613161316131613161316131613161316131613161316131613161316131613161316131613161316131613161316131613161316131\"},\"storage\":null}}",
+      "spec_reference_json": "{\"contract_instance\":{\"executable\":{\"wasm\":\"a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1\"},\"storage\":null}}",
       "spec_anchor": "SEP-0051 \u00a7Specification > SCV_CONTRACT_INSTANCE",
       "notes": null
     },
@@ -978,7 +984,7 @@
       "id": "operation_allow_trust",
       "type": "Operation",
       "base64": "AAAAAAAAAAcAAAAAPww0v5OtDZlx0EzMkPcFURyDiq2XNKSi+w16A/x/6JoAAAABVVNEAAAAAAE=",
-      "spec_reference_json": "{\"source_account\":null,\"body\":{\"allow_trust\":{\"trustor\":\"GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ\",\"asset\":{\"credit_alphanum4\":\"USD\"},\"authorize\":1}}}",
+      "spec_reference_json": "{\"source_account\":null,\"body\":{\"allow_trust\":{\"trustor\":\"GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ\",\"asset\":\"USD\",\"authorize\":1}}}",
       "spec_anchor": "SEP-0051 \u00a7Examples > Operation > AllowTrustOp",
       "notes": null
     },
@@ -1756,7 +1762,8 @@
       "base64": "AAAAAQAAAAt2YWx1ZS1ieXRlcwA=",
       "spec_reference_json": "\"76616c75652d6279746573\"",
       "spec_anchor": "SEP-0051 \u00a7Specification > Opaque (variable)",
-      "notes": "DataValue carrying a non-null payload"
+      "notes": "DataValue carrying a non-null payload",
+      "oracle_incomparable": "XdrDataValue models the optional-wrapped DataValue* used by ManageData (leading presence flag); the CLI's standalone DataValue is the bare opaque<64> and parses these bytes differently."
     },
     {
       "id": "data_value_absent",
@@ -1764,7 +1771,8 @@
       "base64": "AAAAAA==",
       "spec_reference_json": "null",
       "spec_anchor": "SEP-0051 \u00a7Specification > Opaque (variable, optional)",
-      "notes": "DataValue with null payload (optional-absent form)"
+      "notes": "DataValue with null payload (optional-absent form)",
+      "oracle_incomparable": "XdrDataValue models the optional-wrapped DataValue*; the absent form (presence flag 0) has no standalone CLI equivalent and the SDK emits JSON null where a bare empty DataValue would emit \"\"."
     },
     {
       "id": "ledger_key_claimable_balance_standalone",
@@ -1834,25 +1842,28 @@
       "id": "peer_address_ip_ipv4",
       "type": "PeerAddressIp",
       "base64": "AAAAAH8AAAE=",
-      "spec_reference_json": "{\"ipv4\":\"7f000001\"}",
+      "spec_reference_json": "{\"i_pv4\":\"7f000001\"}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > PeerAddress > IPv4",
-      "notes": null
+      "notes": null,
+      "oracle_incomparable": "SEP-0051 \u00a7Opaque Data (Fixed Length) mandates a hexadecimal string for opaque[N]; rs-stellar-xdr serialises fixed opaque declared INLINE in the .x (rather than through a named typedef) as a JSON array of numbers, diverging from the spec text. The SDK follows the spec (hex string)."
     },
     {
       "id": "peer_address_ip_ipv6",
       "type": "PeerAddressIp",
       "base64": "AAAAAQAAAAAAAAAAAAAAAAAAAAE=",
-      "spec_reference_json": "{\"ipv6\":\"00000000000000000000000000000001\"}",
+      "spec_reference_json": "{\"i_pv6\":\"00000000000000000000000000000001\"}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > PeerAddress > IPv6",
-      "notes": null
+      "notes": null,
+      "oracle_incomparable": "SEP-0051 \u00a7Opaque Data (Fixed Length) mandates a hexadecimal string for opaque[N]; rs-stellar-xdr serialises fixed opaque declared INLINE in the .x (rather than through a named typedef) as a JSON array of numbers, diverging from the spec text. The SDK follows the spec (hex string)."
     },
     {
       "id": "peer_address_ipv4_loopback",
       "type": "PeerAddress",
       "base64": "AAAAAH8AAAEAAC1pAAAAAA==",
-      "spec_reference_json": "{\"ip\":{\"ipv4\":\"7f000001\"},\"port\":11625,\"num_failures\":0}",
+      "spec_reference_json": "{\"ip\":{\"i_pv4\":\"7f000001\"},\"port\":11625,\"num_failures\":0}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > PeerAddress",
-      "notes": "PeerAddress carrying an IPv4 loopback at the standard Stellar overlay port"
+      "notes": "PeerAddress carrying an IPv4 loopback at the standard Stellar overlay port",
+      "oracle_incomparable": "SEP-0051 \u00a7Opaque Data (Fixed Length) mandates a hexadecimal string for opaque[N]; rs-stellar-xdr serialises fixed opaque declared INLINE in the .x (rather than through a named typedef) as a JSON array of numbers, diverging from the spec text. The SDK follows the spec (hex string)."
     },
     {
       "id": "contract_event_no_contract_id",
@@ -1866,7 +1877,7 @@
       "id": "contract_event_with_contract_id",
       "type": "ContractEvent",
       "base64": "AAAAAAAAAAHl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5QAAAAEAAAAAAAAAAQAAAA8AAAAIdHJhbnNmZXIAAAADAAAAew==",
-      "spec_reference_json": "{\"ext\":\"v0\",\"contract_id\":\"e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5\",\"type\":\"contract\",\"body\":{\"v0\":{\"topics\":[{\"symbol\":\"transfer\"}],\"data\":{\"u32\":123}}}}",
+      "spec_reference_json": "{\"ext\":\"v0\",\"contract_id\":\"CDS6LZPF4XS6LZPF4XS6LZPF4XS6LZPF4XS6LZPF4XS6LZPF4XS6KCXD\",\"type\":\"contract\",\"body\":{\"v0\":{\"topics\":[{\"symbol\":\"transfer\"}],\"data\":{\"u32\":123}}}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > ContractEvent",
       "notes": "ContractEvent carrying the optional contract id hash"
     },
@@ -1898,7 +1909,7 @@
       "id": "transaction_result_meta_success",
       "type": "TransactionResultMeta",
       "base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-      "spec_reference_json": "{\"result\":{\"transaction_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"result\":{\"fee_charged\":\"100\",\"result\":{\"txsuccess\":[]},\"ext\":\"v0\"}},\"fee_processing\":[],\"tx_apply_processing\":{\"v0\":[]}}",
+      "spec_reference_json": "{\"result\":{\"transaction_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"result\":{\"fee_charged\":\"100\",\"result\":{\"tx_success\":[]},\"ext\":\"v0\"}},\"fee_processing\":[],\"tx_apply_processing\":{\"v0\":[]}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > TransactionResultMeta",
       "notes": "SUCCESS result with empty operation results, empty fee processing, v0 meta"
     },
@@ -1906,9 +1917,167 @@
       "id": "transaction_result_meta_v1_success",
       "type": "TransactionResultMetaV1",
       "base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-      "spec_reference_json": "{\"ext\":\"v0\",\"result\":{\"transaction_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"result\":{\"fee_charged\":\"100\",\"result\":{\"txsuccess\":[]},\"ext\":\"v0\"}},\"fee_processing\":[],\"tx_apply_processing\":{\"v0\":[]},\"post_tx_apply_fee_processing\":[]}",
+      "spec_reference_json": "{\"ext\":\"v0\",\"result\":{\"transaction_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"result\":{\"fee_charged\":\"100\",\"result\":{\"tx_success\":[]},\"ext\":\"v0\"}},\"fee_processing\":[],\"tx_apply_processing\":{\"v0\":[]},\"post_tx_apply_fee_processing\":[]}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > TransactionResultMetaV1",
       "notes": "SUCCESS result with empty fee processing arrays and v0 meta"
+    },
+    {
+      "id": "curve25519_secret_standalone",
+      "type": "Curve25519Secret",
+      "base64": "UVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVE=",
+      "spec_reference_json": "{\"key\":\"5151515151515151515151515151515151515151515151515151515151515151\"}",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Opaque Data (Fixed Length)",
+      "notes": "Inline opaque[32] key field; spec-mandated hex form",
+      "oracle_incomparable": "SEP-0051 \u00a7Opaque Data (Fixed Length) mandates a hexadecimal string for opaque[N]; rs-stellar-xdr serialises fixed opaque declared INLINE in the .x (rather than through a named typedef) as a JSON array of numbers, diverging from the spec text. The SDK follows the spec (hex string)."
+    },
+    {
+      "id": "curve25519_public_standalone",
+      "type": "Curve25519Public",
+      "base64": "UlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlJSUlI=",
+      "spec_reference_json": "{\"key\":\"5252525252525252525252525252525252525252525252525252525252525252\"}",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Opaque Data (Fixed Length)",
+      "notes": "Inline opaque[32] key field; spec-mandated hex form",
+      "oracle_incomparable": "SEP-0051 \u00a7Opaque Data (Fixed Length) mandates a hexadecimal string for opaque[N]; rs-stellar-xdr serialises fixed opaque declared INLINE in the .x (rather than through a named typedef) as a JSON array of numbers, diverging from the spec text. The SDK follows the spec (hex string)."
+    },
+    {
+      "id": "hmac_sha256_key_standalone",
+      "type": "HmacSha256Key",
+      "base64": "U1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1NTU1M=",
+      "spec_reference_json": "{\"key\":\"5353535353535353535353535353535353535353535353535353535353535353\"}",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Opaque Data (Fixed Length)",
+      "notes": "Inline opaque[32] key field; spec-mandated hex form",
+      "oracle_incomparable": "SEP-0051 \u00a7Opaque Data (Fixed Length) mandates a hexadecimal string for opaque[N]; rs-stellar-xdr serialises fixed opaque declared INLINE in the .x (rather than through a named typedef) as a JSON array of numbers, diverging from the spec text. The SDK follows the spec (hex string)."
+    },
+    {
+      "id": "hmac_sha256_mac_standalone",
+      "type": "HmacSha256Mac",
+      "base64": "VFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFRUVFQ=",
+      "spec_reference_json": "{\"mac\":\"5454545454545454545454545454545454545454545454545454545454545454\"}",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Opaque Data (Fixed Length)",
+      "notes": "Inline opaque[32] mac field; spec-mandated hex form",
+      "oracle_incomparable": "SEP-0051 \u00a7Opaque Data (Fixed Length) mandates a hexadecimal string for opaque[N]; rs-stellar-xdr serialises fixed opaque declared INLINE in the .x (rather than through a named typedef) as a JSON array of numbers, diverging from the spec text. The SDK follows the spec (hex string)."
+    },
+    {
+      "id": "short_hash_seed_standalone",
+      "type": "ShortHashSeed",
+      "base64": "VVVVVVVVVVVVVVVVVVVVVQ==",
+      "spec_reference_json": "{\"seed\":\"55555555555555555555555555555555\"}",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Opaque Data (Fixed Length)",
+      "notes": "Inline opaque[16] seed field; spec-mandated hex form",
+      "oracle_incomparable": "SEP-0051 \u00a7Opaque Data (Fixed Length) mandates a hexadecimal string for opaque[N]; rs-stellar-xdr serialises fixed opaque declared INLINE in the .x (rather than through a named typedef) as a JSON array of numbers, diverging from the spec text. The SDK follows the spec (hex string)."
+    },
+    {
+      "id": "serialized_binary_fuse_filter",
+      "type": "SerializedBinaryFuseFilter",
+      "base64": "AAAAAFZWVlZWVlZWVlZWVlZWVlZXV1dXV1dXV1dXV1dXV1dXAAAABAAAAAMAAAACAAAAAgAAAAEAAAAE8PHy8w==",
+      "spec_reference_json": "{\"type\":\"b8_bit\",\"input_hash_seed\":{\"seed\":\"56565656565656565656565656565656\"},\"filter_seed\":{\"seed\":\"57575757575757575757575757575757\"},\"segment_length\":4,\"segement_length_mask\":3,\"segment_count\":2,\"segment_count_length\":2,\"fingerprint_length\":1,\"fingerprints\":\"f0f1f2f3\"}",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Opaque Data (Fixed Length)",
+      "notes": "Embeds two inline-opaque ShortHashSeed fields and the b8_bit enum arm",
+      "oracle_incomparable": "SEP-0051 \u00a7Opaque Data (Fixed Length) mandates a hexadecimal string for opaque[N]; rs-stellar-xdr serialises fixed opaque declared INLINE in the .x (rather than through a named typedef) as a JSON array of numbers, diverging from the spec text. The SDK follows the spec (hex string)."
+    },
+    {
+      "id": "ip_addr_type_v4",
+      "type": "IPAddrType",
+      "base64": "AAAAAA==",
+      "spec_reference_json": "\"i_pv4\"",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Enum",
+      "notes": "CamelCase member with acronym run (IPv4 -> i_pv4)"
+    },
+    {
+      "id": "ip_addr_type_v6",
+      "type": "IPAddrType",
+      "base64": "AAAAAQ==",
+      "spec_reference_json": "\"i_pv6\"",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Enum",
+      "notes": "CamelCase member with acronym run (IPv6 -> i_pv6)"
+    },
+    {
+      "id": "contract_cost_type_wasm_insn_exec",
+      "type": "ContractCostType",
+      "base64": "AAAAAA==",
+      "spec_reference_json": "\"wasm_insn_exec\"",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Enum",
+      "notes": "CamelCase member word-split (WasmInsnExec -> wasm_insn_exec)"
+    },
+    {
+      "id": "binary_fuse_filter_type_8bit",
+      "type": "BinaryFuseFilterType",
+      "base64": "AAAAAA==",
+      "spec_reference_json": "\"b8_bit\"",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Enum",
+      "notes": "Digit-leading remainder after prefix strip (b8_bit)"
+    },
+    {
+      "id": "binary_fuse_filter_type_16bit",
+      "type": "BinaryFuseFilterType",
+      "base64": "AAAAAQ==",
+      "spec_reference_json": "\"b16_bit\"",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Enum",
+      "notes": "Digit-leading remainder after prefix strip (b16_bit)"
+    },
+    {
+      "id": "binary_fuse_filter_type_32bit",
+      "type": "BinaryFuseFilterType",
+      "base64": "AAAAAg==",
+      "spec_reference_json": "\"b32_bit\"",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Enum",
+      "notes": "Digit-leading remainder after prefix strip (b32_bit)"
+    },
+    {
+      "id": "claimant_type_v0_standalone",
+      "type": "ClaimantType",
+      "base64": "AAAAAA==",
+      "spec_reference_json": "\"claimant_type_v0\"",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Enum",
+      "notes": "Single-member enum emits the full identifier (claimant_type_v0)"
+    },
+    {
+      "id": "create_account_result_already_exist",
+      "type": "CreateAccountResult",
+      "base64": "/////A==",
+      "spec_reference_json": "\"already_exist\"",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Enum",
+      "notes": "Multi-token byte-wise prefix strip (CREATE_ACCOUNT_ -> already_exist)"
+    },
+    {
+      "id": "clawback_result_not_clawback_enabled",
+      "type": "ClawbackResult",
+      "base64": "/////g==",
+      "spec_reference_json": "\"not_clawback_enabled\"",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Enum",
+      "notes": "Prefix strip is positional; interior CLAWBACK token retained (not_clawback_enabled)"
+    },
+    {
+      "id": "operation_result_bad_auth",
+      "type": "OperationResult",
+      "base64": "/////w==",
+      "spec_reference_json": "\"op_bad_auth\"",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Discriminated Union",
+      "notes": "Void arm keyed by a prefix without trailing underscore (op_bad_auth)"
+    },
+    {
+      "id": "operation_result_inner_create_account",
+      "type": "OperationResult",
+      "base64": "AAAAAAAAAAD////8",
+      "spec_reference_json": "{\"op_inner\":{\"create_account\":\"already_exist\"}}",
+      "spec_anchor": "SEP-0051 \u00a7Specification > Discriminated Union",
+      "notes": "Non-void op_inner arm carrying a create_account result"
+    },
+    {
+      "id": "allow_trust_operation_alphanum12",
+      "type": "AllowTrustOperation",
+      "base64": "AAAAAGL8HQvQkbK2HA3WVjRrKmjX00fG8sLI7m0ERwJW/AX3AAAAAkVVUlRPSwAAAAAAAAAAAAE=",
+      "spec_reference_json": "{\"trustor\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\",\"asset\":\"EURTOK\",\"authorize\":1}",
+      "spec_anchor": "SEP-0051 \u00a7Asset Code Types",
+      "notes": "AssetCode union 12-byte arm as bare length-discriminated string"
+    },
+    {
+      "id": "asset_alpha_num12_all_nul",
+      "type": "AssetAlphaNum12",
+      "base64": "AAAAAAAAAAAAAAAAAAAAAGL8HQvQkbK2HA3WVjRrKmjX00fG8sLI7m0ERwJW/AX3",
+      "spec_reference_json": "{\"asset_code\":\"\\\\0\\\\0\\\\0\\\\0\\\\0\",\"issuer\":\"GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H\"}",
+      "spec_anchor": "SEP-0051 \u00a7Asset Code Types",
+      "notes": "All-NUL AssetCode12 emits five escaped NULs"
     }
   ]
 }
