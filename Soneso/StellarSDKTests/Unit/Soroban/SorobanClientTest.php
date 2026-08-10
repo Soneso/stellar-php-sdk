@@ -19,6 +19,7 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperation;
 use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Contract\AssembledTransaction;
 use Soneso\StellarSDK\Soroban\Contract\ClientOptions;
@@ -434,6 +435,9 @@ class SorobanClientTest extends TestCase
     public function testDeployThrowsWhenNoContractIdReturned(): void
     {
         $mock = new MockHandler([
+            // deploy loads the spec from the uploaded code before deploying;
+            // an empty result leaves the client on the forClientOptions fallback.
+            $this->emptyLedgerEntriesResponse(),
             $this->accountEntryResponse(),
             $this->simulateResponse(XdrSCVal::forVoid(), true),
             $this->sendTransactionResponse(),
@@ -455,6 +459,41 @@ class SorobanClientTest extends TestCase
         $this->expectExceptionMessage('Could not get contract id for deployed contract');
 
         SorobanClient::deploy($deployRequest);
+    }
+
+    public function testDeployLoadsSpecBeforeDeploying(): void
+    {
+        $wasmHash = hash('sha256', 'test-wasm', true);
+        $byteCode = $this->createContractByteCode('hello');
+        $createdContract = Address::fromContractId(StrKey::decodeContractIdHex(self::TEST_CONTRACT_ID))->toXdrSCVal();
+
+        // The spec loads from the uploaded code before the deployment; the
+        // returned client carries it without reading back the instance entry
+        // the deployment just wrote (an exhausted mock proves no such read).
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $byteCode)),
+            $this->accountEntryResponse(),
+            $this->simulateResponse(XdrSCVal::forVoid(), true),
+            $this->sendTransactionResponse(),
+            $this->getTransactionRpcResponse(GetTransactionResponse::STATUS_SUCCESS, $createdContract),
+        ]);
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
+
+        $deployRequest = new DeployRequest(
+            rpcUrl: self::TEST_RPC_URL,
+            network: $this->testNetwork,
+            sourceAccountKeyPair: $keyPair,
+            wasmHash: bin2hex($wasmHash),
+            constructorArgs: [XdrSCVal::forU32(1)],
+            server: $server,
+        );
+
+        $client = SorobanClient::deploy($deployRequest);
+
+        $this->assertContains('hello', $client->getMethodNames());
+        $this->assertSame(self::TEST_CONTRACT_ID, $client->getContractId());
+        $this->assertSame(0, $mock->count());
     }
 
     // ---------------------------------------------------------------------
@@ -484,10 +523,7 @@ class SorobanClientTest extends TestCase
     public function testForClientOptionsThrowsWhenContractNotFound(): void
     {
         $mock = new MockHandler([
-            $this->jsonRpcResponse([
-                'entries' => [],
-                'latestLedger' => 1000,
-            ]),
+            $this->emptyLedgerEntriesResponse(),
         ]);
         $server = $this->createMockedServer($mock);
 
@@ -661,6 +697,18 @@ class SorobanClientTest extends TestCase
         $entryData = new XdrLedgerEntryData(XdrLedgerEntryType::CONTRACT_CODE());
         $entryData->contractCode = $codeEntry;
         return $entryData;
+    }
+
+    /**
+     * getLedgerEntries response with no entries, as returned when the queried
+     * key does not exist on the ledger.
+     */
+    private function emptyLedgerEntriesResponse(): Response
+    {
+        return $this->jsonRpcResponse([
+            'entries' => [],
+            'latestLedger' => 1000,
+        ]);
     }
 
     /**

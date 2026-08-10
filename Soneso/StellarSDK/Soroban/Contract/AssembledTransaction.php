@@ -27,6 +27,7 @@ use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
+use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
@@ -435,10 +436,35 @@ class AssembledTransaction
             throw new Exception("The transaction has not yet been signed. Run `sign` first, or use `signAndSend` instead.");
         }
         $sendTxResponse = $this->server->sendTransaction($this->signed);
-        if ($sendTxResponse->status === SendTransactionResponse::STATUS_ERROR) {
-            throw new Exception("Send transaction failed with error transaction result xdr: {$sendTxResponse->errorResultXdr}");
-        } else if ($sendTxResponse->status === SendTransactionResponse::STATUS_DUPLICATE) {
-            throw new Exception("Send transaction failed with status: DUPLICATE");
+        // A PENDING submission was accepted into the queue, and a DUPLICATE one
+        // names a transaction the network already knows, so both poll to their
+        // true outcome. Any other status reports a submission the network did
+        // not accept, so polling its hash cannot find a result.
+        if ($sendTxResponse->status !== SendTransactionResponse::STATUS_PENDING
+            && $sendTxResponse->status !== SendTransactionResponse::STATUS_DUPLICATE) {
+            $message = "Send transaction failed with status: " . ($sendTxResponse->status ?? "unknown");
+            if ($sendTxResponse->errorResultXdr !== null) {
+                $message .= ", error result xdr: {$sendTxResponse->errorResultXdr}";
+                try {
+                    $parsed = $sendTxResponse->getErrorXdrTransactionResult();
+                    if ($parsed !== null) {
+                        $message .= ", parsed error: " . $parsed->toJson();
+                    }
+                } catch (Exception $e) {
+                    $message .= " (could not parse error XDR: {$e->getMessage()})";
+                }
+            }
+            if ($sendTxResponse->diagnosticEvents !== null && count($sendTxResponse->diagnosticEvents) > 0) {
+                $eventsXdr = array_map(
+                    fn (XdrDiagnosticEvent $event) => $event->toBase64Xdr(),
+                    $sendTxResponse->diagnosticEvents,
+                );
+                $message .= ", diagnostic events: " . implode(", ", $eventsXdr);
+            }
+            throw new Exception($message);
+        }
+        if ($sendTxResponse->hash === null) {
+            throw new Exception("Send transaction response carries no transaction hash");
         }
         return $this->pollStatus($sendTxResponse->hash);
     }

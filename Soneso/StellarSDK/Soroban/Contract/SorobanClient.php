@@ -12,6 +12,7 @@ use Soneso\StellarSDK\CreateContractWithConstructorHostFunction;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Exceptions\SorobanContractParserException;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
@@ -124,6 +125,22 @@ class SorobanClient
      * @throws GuzzleException If the RPC request fails
      */
     public static function deploy(DeployRequest $deployRequest) : SorobanClient {
+        // Load the spec from the uploaded code before deploying: the code entry
+        // is already settled, while the instance entry this call is about to
+        // write can trail the transaction status on a busy RPC, whose
+        // ledger-entry ingestion runs behind. Code without a parseable spec
+        // deploys anyway; the forClientOptions fallback reports it with its
+        // usual error semantics.
+        $specServer = $deployRequest->server ?? new SorobanServer($deployRequest->rpcUrl);
+        if ($deployRequest->logger !== null) {
+            $specServer->setLogger($deployRequest->logger);
+        }
+        try {
+            $contractInfo = $specServer->loadContractInfoForWasmId($deployRequest->wasmHash);
+        } catch (SorobanContractParserException $e) {
+            $contractInfo = null;
+        }
+
         $sourceAddress = Address::fromAccountId($deployRequest->sourceAccountKeyPair->getAccountId());
         $createContractHostFunction = new CreateContractWithConstructorHostFunction(
             address: $sourceAddress,
@@ -155,6 +172,9 @@ class SorobanClient
             throw new Exception("Could not get contract id for deployed contract");
         }
         $clientOptions->contractId = StrKey::encodeContractIdHex($contractId);
+        if ($contractInfo !== null && count($contractInfo->specEntries) > 0) {
+            return new SorobanClient($contractInfo->specEntries, $clientOptions);
+        }
         return SorobanClient::forClientOptions(options: $clientOptions);
     }
 

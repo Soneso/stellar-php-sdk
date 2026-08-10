@@ -99,23 +99,6 @@ class AssembledTransactionTest extends TestCase
     }
 
     /**
-     * Creates a mock HTTP response for sendTransaction with PENDING status.
-     */
-    private function createSendTransactionResponse(): Response
-    {
-        return new Response(200, [], json_encode([
-            'jsonrpc' => '2.0',
-            'id' => 1,
-            'result' => [
-                'status' => 'PENDING',
-                'hash' => str_repeat('ab', 32),
-                'latestLedger' => 1000,
-                'latestLedgerCloseTime' => '1700000000',
-            ]
-        ]));
-    }
-
-    /**
      * Creates a mock HTTP response for getTransaction with SUCCESS status.
      */
     private function createGetTransactionSuccessResponse(): Response
@@ -797,6 +780,27 @@ class AssembledTransactionTest extends TestCase
 
     public function testSignAndSubmitCombinesSignAndSend(): void
     {
+        $tx = $this->createWriteReadyAssembledTransaction();
+
+        $mock = $this->injectMockedServer($tx, [
+            $this->createSendTransactionStatusResponse('PENDING'),
+            $this->createGetTransactionSuccessResponse(),
+        ]);
+
+        $response = $tx->signAndSend();
+
+        $this->assertSame(GetTransactionResponse::STATUS_SUCCESS, $response->status);
+        $this->assertNotNull($tx->signed);
+        $this->assertCount(1, $tx->signed->getSignatures());
+        $this->assertSame(0, $mock->count());
+    }
+
+    /**
+     * Builds a signable write-type AssembledTransaction whose simulation state
+     * is prefilled, ready for signAndSend against an injected mock server.
+     */
+    private function createWriteReadyAssembledTransaction(): AssembledTransaction
+    {
         $clientOptions = $this->createClientOptionsWithSecret();
         $methodOptions = new MethodOptions(simulate: false);
 
@@ -809,39 +813,107 @@ class AssembledTransactionTest extends TestCase
 
         $tx = $this->createMockedAssembledTransaction($txOptions);
         $tx->tx = $tx->raw->build();
-
-        // Set up a simulation result so isReadCall() returns false (write transaction)
-        $simulationResponse = $this->createMockSimulationResponse();
-        $tx->simulationResponse = $simulationResponse;
+        $tx->simulationResponse = $this->createMockSimulationResponse();
 
         $reflection = new \ReflectionClass($tx);
         $property = $reflection->getProperty('simulationResult');
         $property->setAccessible(true);
-
-        // Create a write-type result (non-empty readWrite footprint)
         $footprint = new XdrLedgerFootprint([], [new XdrLedgerKey(XdrLedgerEntryType::ACCOUNT())]);
         $resources = new XdrSorobanResources($footprint, 100, 100, 100);
         $ext = new XdrSorobanTransactionDataExt(0);
         $txData = new XdrSorobanTransactionData($ext, $resources, 100);
+        $property->setValue($tx, new SimulateHostFunctionResult($txData, XdrSCVal::forVoid(), []));
 
-        $mockResult = new SimulateHostFunctionResult(
-            $txData,
-            XdrSCVal::forVoid(),
-            []
-        );
-        $property->setValue($tx, $mockResult);
+        return $tx;
+    }
 
+    /**
+     * Creates a mock sendTransaction response with the given status.
+     */
+    private function createSendTransactionStatusResponse(
+        string $status,
+        ?string $errorResultXdr = null,
+        ?array $diagnosticEventsXdr = null,
+    ): Response
+    {
+        $result = [
+            'status' => $status,
+            'hash' => str_repeat('ab', 32),
+            'latestLedger' => 1000,
+            'latestLedgerCloseTime' => '1700000000',
+        ];
+        if ($errorResultXdr !== null) {
+            $result['errorResultXdr'] = $errorResultXdr;
+        }
+        if ($diagnosticEventsXdr !== null) {
+            $result['diagnosticEventsXdr'] = $diagnosticEventsXdr;
+        }
+        return new Response(200, [], json_encode([
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'result' => $result,
+        ]));
+    }
+
+    public function testSignAndSendPollsDuplicateSubmission(): void
+    {
+        // A DUPLICATE response names a transaction the network already knows,
+        // so the submission polls to its true outcome instead of failing.
+        $tx = $this->createWriteReadyAssembledTransaction();
         $mock = $this->injectMockedServer($tx, [
-            $this->createSendTransactionResponse(),
+            $this->createSendTransactionStatusResponse('DUPLICATE'),
             $this->createGetTransactionSuccessResponse(),
         ]);
 
         $response = $tx->signAndSend();
 
         $this->assertSame(GetTransactionResponse::STATUS_SUCCESS, $response->status);
-        $this->assertNotNull($tx->signed);
-        $this->assertCount(1, $tx->signed->getSignatures());
         $this->assertSame(0, $mock->count());
+    }
+
+    public function testSignAndSendThrowsOnTryAgainLater(): void
+    {
+        // TRY_AGAIN_LATER means the network did not accept the transaction, so
+        // polling its hash cannot find a result.
+        $tx = $this->createWriteReadyAssembledTransaction();
+        $this->injectMockedServer($tx, [
+            $this->createSendTransactionStatusResponse('TRY_AGAIN_LATER'),
+        ]);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Send transaction failed with status: TRY_AGAIN_LATER');
+        $tx->signAndSend();
+    }
+
+    public function testSignAndSendThrowsOnErrorNamingResultXdr(): void
+    {
+        // A diagnostic event with an "error" topic and a string payload,
+        // generated through the SDK's own XDR types.
+        $diagnosticEventXdr =
+            'AAAAAAAAAAAAAAAAAAAAAgAAAAAAAAABAAAADwAAAAVlcnJvcgAAAAAAAA4AAAAUaW5zdWZmaWNpZW50IGJhbGFuY2U=';
+        $tx = $this->createWriteReadyAssembledTransaction();
+        $this->injectMockedServer($tx, [
+            $this->createSendTransactionStatusResponse(
+                'ERROR',
+                'AAAAAAAAAGT////7AAAAAA==',
+                [$diagnosticEventXdr],
+            ),
+        ]);
+
+        try {
+            $tx->signAndSend();
+        } catch (Exception $e) {
+            $this->assertStringContainsString(
+                'Send transaction failed with status: ERROR, error result xdr: AAAAAAAAAGT////7AAAAAA==',
+                $e->getMessage()
+            );
+            $this->assertStringContainsString(
+                'diagnostic events: ' . $diagnosticEventXdr,
+                $e->getMessage()
+            );
+            return;
+        }
+        $this->fail('An ERROR submission must not be polled');
     }
 
     public function testIsReadOnlyReturnsFalseWithoutSimulation(): void
