@@ -2,8 +2,8 @@
 
 **RPC Version:** v27.1.1 (released 2026-07-07)  
 **RPC Source:** [v27.1.1](https://github.com/stellar/stellar-rpc/releases/tag/v27.1.1)  
-**SDK Version:** 1.11.0  
-**Generated:** 2026-07-13 16:26 UTC
+**SDK Version:** 1.12.0  
+**Generated:** 2026-08-10 18:45 UTC
 
 ## Overall Coverage
 
@@ -64,7 +64,7 @@ Detailed breakdown of parameter support per method.
 | getTransactions | 2 | 4 | - |
 | getVersionInfo | 0 | 0 | - |
 | sendTransaction | 1 | 1 | - |
-| simulateTransaction | 3 | 4 | - |
+| simulateTransaction | 4 | 5 | - |
 
 ## Response Field Coverage
 
@@ -74,7 +74,7 @@ Detailed breakdown of response field support per method.
 |------------|------------|------------|---------|
 | getEvents | 6 | 7 | - |
 | getFeeStats | 3 | 4 | - |
-| getHealth | 4 | 7 | - |
+| getHealth | 6 | 7 | - |
 | getLatestLedger | 6 | 7 | - |
 | getLedgerEntries | 2 | 3 | - |
 | getLedgers | 6 | 7 | - |

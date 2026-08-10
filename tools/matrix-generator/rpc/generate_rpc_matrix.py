@@ -121,7 +121,7 @@ IGNORED_RPC_PARAMS: set[str] = {"xdrFormat"}
 # PHP request-object parameter expansion, keyed by (rpc_method, php_param_name).
 # Each entry lists the RPC params that the PHP request object wraps for that method.
 REQUEST_OBJECT_PARAMS: dict[tuple[str, str], list[str]] = {
-    ("simulateTransaction", "request"): ["transaction", "resourceConfig", "authMode"],
+    ("simulateTransaction", "request"): ["transaction", "resourceConfig", "authMode", "useUpgradedAuth"],
     ("getEvents", "request"): ["startLedger", "endLedger", "filters", "pagination"],
     ("getTransactions", "request"): ["startLedger", "endLedger", "pagination"],
     ("getLedgers", "request"): ["startLedger", "endLedger", "pagination"],

@@ -1,8 +1,8 @@
 # SEP-31: Cross-Border Payments API
 
 **Status:** ✅ Supported  
-**SDK Version:** 1.11.0  
-**Generated:** 2026-07-13 16:25 UTC  
+**SDK Version:** 1.12.0  
+**Generated:** 2026-08-10 18:43 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md)
 
 ## Overall Coverage
