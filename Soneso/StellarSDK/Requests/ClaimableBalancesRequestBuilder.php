@@ -3,11 +3,12 @@
 namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
+use InvalidArgumentException;
 use Soneso\StellarSDK\Asset;
-use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\ClaimableBalances\ClaimableBalanceResponse;
 use Soneso\StellarSDK\Responses\ClaimableBalances\ClaimableBalancesPageResponse;
+use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
 
 /**
  * Builds requests for the claimable balances endpoint in Horizon
@@ -64,15 +65,19 @@ class ClaimableBalancesRequestBuilder  extends RequestBuilder
 
     /**
      * The claimable balance details endpoint provides information on a claimable balance.
-     * @param string $claimableBalanceId Specifies which claimable balance to load.
+     * @param string $claimableBalanceId Specifies which claimable balance to load:
+     * "B..." strkey, or hex as the bare hash, the strkey payload, or the XDR form
+     * Horizon reports.
      * @return ClaimableBalanceResponse The claimable balance details.
+     * @throws InvalidArgumentException when $claimableBalanceId holds none of the
+     * accepted spellings
      * @throws HorizonRequestException
      */
     public function claimableBalance(string $claimableBalanceId) : ClaimableBalanceResponse {
-        $idHex = $claimableBalanceId;
-        if (str_starts_with($idHex, "B")) {
-            $idHex = StrKey::decodeClaimableBalanceIdHex($idHex);
-        }
+        // Horizon spells the id in the XDR form: the discriminant as 4 bytes ahead of
+        // the hash. The resolver takes every accepted spelling and emits that form.
+        $idHex = XdrClaimableBalanceID::forClaimableBalanceId($claimableBalanceId)
+            ->getPaddedBalanceIdHex();
         $this->setSegments("claimable_balances", $idHex);
         return parent::executeRequest($this->buildUrl(),RequestType::SINGLE_CLAIMABLE_BALANCE);
     }

@@ -4,10 +4,12 @@ namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionsPageResponse;
+use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
 
 /**
  * Builds requests for the transactions endpoint in Horizon
@@ -108,15 +110,18 @@ class TransactionsRequestBuilder extends RequestBuilder
      *
      * Builds request to GET /claimable_balances/{claimable_balance_id}/transactions
      *
-     * @param string $claimableBalanceId ID of the claimable balance (B-address or hex format)
+     * @param string $claimableBalanceId ID of the claimable balance: "B..." strkey,
+     * or hex as the bare hash, the strkey payload, or the XDR form Horizon reports
      * @return TransactionsRequestBuilder This instance for method chaining
+     * @throws InvalidArgumentException when $claimableBalanceId holds none of the
+     * accepted spellings
      * @see https://developers.stellar.org Stellar developer docs Transactions for ClaimableBalance
      */
     public function forClaimableBalance(string $claimableBalanceId) : TransactionsRequestBuilder {
-        $idHex = $claimableBalanceId;
-        if (str_starts_with($idHex, "B")) {
-            $idHex = StrKey::decodeClaimableBalanceIdHex($idHex);
-        }
+        // Horizon spells the id in the XDR form: the discriminant as 4 bytes ahead of
+        // the hash. The resolver takes every accepted spelling and emits that form.
+        $idHex = XdrClaimableBalanceID::forClaimableBalanceId($claimableBalanceId)
+            ->getPaddedBalanceIdHex();
         $this->setSegments("claimable_balances", $idHex, "transactions");
         return $this;
     }

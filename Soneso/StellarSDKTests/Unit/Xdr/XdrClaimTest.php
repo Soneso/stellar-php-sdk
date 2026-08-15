@@ -6,8 +6,10 @@
 
 namespace Soneso\StellarSDKTests\Unit\Xdr;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use phpseclib3\Math\BigInteger;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrAsset;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
@@ -21,6 +23,7 @@ use Soneso\StellarSDK\Xdr\XdrClaimantType;
 use Soneso\StellarSDK\Xdr\XdrClaimantV0;
 use Soneso\StellarSDK\Xdr\XdrClaimPredicate;
 use Soneso\StellarSDK\Xdr\XdrClaimPredicateType;
+use Soneso\StellarSDK\Xdr\XdrSCAddress;
 
 class XdrClaimTest extends TestCase
 {
@@ -48,15 +51,160 @@ class XdrClaimTest extends TestCase
 
     public function testXdrClaimableBalanceIDPaddedBalanceIdHex(): void
     {
-        $shortHash = '1234567890abcdef';
-        $type = XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0();
-        $balanceId = new XdrClaimableBalanceID($type, $shortHash);
+        $balanceId = XdrClaimableBalanceID::forClaimableBalanceId(self::TEST_BALANCE_ID);
 
         $paddedHex = $balanceId->getPaddedBalanceIdHex();
 
         $this->assertEquals(72, strlen($paddedHex));
-        $this->assertTrue(str_starts_with($paddedHex, '00000000000000000000000000000000000000000000000000000000'));
-        $this->assertTrue(str_ends_with($paddedHex, $shortHash));
+        // The eight leading zeros are the 4-byte XDR union discriminant naming
+        // CLAIMABLE_BALANCE_ID_TYPE_V0; the rest is the balance hash unchanged.
+        $this->assertEquals('00000000' . self::TEST_BALANCE_ID, $paddedHex);
+    }
+
+    public function testXdrClaimableBalanceIDPaddedBalanceIdHexRejectsAShortHash(): void
+    {
+        // Padding a hash shorter than 32 bytes would invent hash material and hand back
+        // an id Horizon would answer for a different balance.
+        $type = XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0();
+        $balanceId = new XdrClaimableBalanceID($type, '1234567890abcdef');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Claimable balance id must be 58 characters as a "B..." strkey, or the balance'
+            . ' hash as 64 hexadecimal characters, which a type discriminant may prefix to'
+            . ' 66 or 72 characters; 16 characters given'
+        );
+        $balanceId->getPaddedBalanceIdHex();
+    }
+
+    public function testXdrClaimableBalanceIDReadersAgreeOnEverySpellingOfTheHash(): void
+    {
+        $hashHex = 'ceab14eebbdbfe25a1830e39e311c2180846df74947ba24a386b8314ccba6622';
+        $strKey = StrKey::encodeClaimableBalanceIdHex('00' . $hashHex);
+        $spellings = [
+            'bare hash as 64 hexadecimal characters' => $hashHex,
+            'hash behind the 1-byte strkey discriminant' => '00' . $hashHex,
+            'hash behind the 4-byte XDR discriminant' => '00000000' . $hashHex,
+            '"B..." strkey' => $strKey,
+        ];
+
+        $expectedXdr = XdrClaimableBalanceID::forClaimableBalanceId($hashHex)->encode();
+
+        foreach ($spellings as $label => $value) {
+            $balanceId = XdrClaimableBalanceID::forClaimableBalanceId($value);
+
+            $this->assertEquals($expectedXdr, $balanceId->encode(), $label);
+            $this->assertEquals($strKey, $balanceId->toJsonValue(), $label);
+            $this->assertEquals($strKey, XdrSCAddress::forClaimableBalanceId($value)->toStrKey(), $label);
+            $this->assertEquals('00000000' . $hashHex, $balanceId->getPaddedBalanceIdHex(), $label);
+
+            $lines = [];
+            $balanceId->toTxRep('bal', $lines);
+            $this->assertEquals(
+                [
+                    'bal.type' => 'CLAIMABLE_BALANCE_ID_TYPE_V0',
+                    'bal.v0' => $hashHex,
+                ],
+                $lines,
+                $label
+            );
+
+            $decoded = XdrClaimableBalanceID::decode(new XdrBuffer($balanceId->encode()));
+            $this->assertEquals($hashHex, $decoded->getHash(), $label);
+        }
+    }
+
+    public function testXdrClaimableBalanceIDRejectsANonZeroTypePrefix(): void
+    {
+        // A prefixed spelling carries the union discriminant ahead of the hash, and
+        // CLAIMABLE_BALANCE_ID_TYPE_V0 (0) is the only case ClaimableBalanceID defines.
+        // A prefix naming any other type has to be refused rather than dropped, which
+        // would relabel the id as V0 and denote a balance the caller never named.
+        $hashHex = 'ceab14eebbdbfe25a1830e39e311c2180846df74947ba24a386b8314ccba6622';
+
+        foreach (['00000001', 'ff'] as $prefix) {
+            $value = $prefix . $hashHex;
+            $expected = sprintf(
+                'Claimable balance id carries the type prefix "%s", which does not name '
+                    . 'CLAIMABLE_BALANCE_ID_TYPE_V0 (0), the only case ClaimableBalanceID has',
+                $prefix
+            );
+
+            $readers = [
+                'encode' => function () use ($value) {
+                    XdrClaimableBalanceID::forClaimableBalanceId($value)->encode();
+                },
+                'toJsonValue' => function () use ($value) {
+                    XdrClaimableBalanceID::forClaimableBalanceId($value)->toJsonValue();
+                },
+                'getPaddedBalanceIdHex' => function () use ($value) {
+                    XdrClaimableBalanceID::forClaimableBalanceId($value)->getPaddedBalanceIdHex();
+                },
+                'toTxRep' => function () use ($value) {
+                    $lines = [];
+                    XdrClaimableBalanceID::forClaimableBalanceId($value)->toTxRep('bal', $lines);
+                },
+                'toStrKey' => function () use ($value) {
+                    XdrSCAddress::forClaimableBalanceId($value)->toStrKey();
+                },
+            ];
+
+            foreach ($readers as $label => $reader) {
+                try {
+                    $reader();
+                    $this->fail($label . ' accepted the type prefix ' . $prefix);
+                } catch (InvalidArgumentException $e) {
+                    $this->assertEquals($expected, $e->getMessage(), $label);
+                }
+            }
+        }
+    }
+
+    public function testXdrClaimableBalanceIDReadersAgreeOnEitherCaseOfTheHash(): void
+    {
+        // Hexadecimal is case insensitive, so the two spellings denote one balance.
+        // Every reader has to report it as one string, including the two that hand the
+        // hexadecimal on unchanged: the TxRep form and the padded hex.
+        $lowerHex = 'ceab14eebbdbfe25a1830e39e311c2180846df74947ba24a386b8314ccba6622';
+        $upperHex = strtoupper($lowerHex);
+
+        $lower = XdrClaimableBalanceID::forClaimableBalanceId($lowerHex);
+        $upper = XdrClaimableBalanceID::forClaimableBalanceId($upperHex);
+
+        $this->assertEquals($lower->encode(), $upper->encode());
+        $this->assertEquals($lower->toJsonValue(), $upper->toJsonValue());
+        $this->assertEquals(
+            XdrSCAddress::forClaimableBalanceId($lowerHex)->toStrKey(),
+            XdrSCAddress::forClaimableBalanceId($upperHex)->toStrKey()
+        );
+        $this->assertEquals($lower->getPaddedBalanceIdHex(), $upper->getPaddedBalanceIdHex());
+
+        $lowerLines = [];
+        $lower->toTxRep('bal', $lowerLines);
+        $upperLines = [];
+        $upper->toTxRep('bal', $upperLines);
+        $this->assertEquals($lowerLines, $upperLines);
+
+        // The shared spelling is the lower case one, which is what SEP-11 TxRep and
+        // Horizon carry.
+        $this->assertEquals('00000000' . $lowerHex, $upper->getPaddedBalanceIdHex());
+        $this->assertEquals(
+            [
+                'bal.type' => 'CLAIMABLE_BALANCE_ID_TYPE_V0',
+                'bal.v0' => $lowerHex,
+            ],
+            $upperLines
+        );
+
+        // The longer hexadecimal spellings normalise the same way.
+        $this->assertEquals(
+            '00000000' . $lowerHex,
+            XdrClaimableBalanceID::forClaimableBalanceId('00' . $upperHex)->getPaddedBalanceIdHex()
+        );
+        $this->assertEquals(
+            '00000000' . $lowerHex,
+            XdrClaimableBalanceID::forClaimableBalanceId('00000000' . $upperHex)->getPaddedBalanceIdHex()
+        );
     }
 
     public function testXdrClaimPredicateComplex(): void

@@ -23,6 +23,7 @@ use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\CreateClaimableBalanceOperationBuilder;
 use Soneso\StellarSDK\CreatePassiveSellOfferOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\LiquidityPoolDepositOperationBuilder;
@@ -1068,6 +1069,24 @@ class OperationBuilderTest extends TestCase
 
         $xdr = $operation->toXdr();
         $this->assertNotNull($xdr->getBody()->getClaimClaimableBalanceOperation());
+    }
+
+    public function testClaimClaimableBalanceHorizonBalanceIdEncodesAndSerializesToJson(): void
+    {
+        // The balance id Horizon reports carries the 4-byte XDR type discriminant ahead
+        // of the hash, and that is the spelling docs/sdk-usage.md hands the builder.
+        $balanceId = "00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072";
+        $operation = (new ClaimClaimableBalanceOperationBuilder($balanceId))->build();
+        $expectedStrKey = StrKey::encodeClaimableBalanceIdHex('00' . substr($balanceId, 8));
+
+        $xdr = $operation->toXdr();
+
+        $this->assertNotEmpty($xdr->encode());
+        $this->assertEquals(
+            $expectedStrKey,
+            $xdr->getBody()->getClaimClaimableBalanceOperation()->getBalanceID()->toJsonValue()
+        );
+        $this->assertStringContainsString($expectedStrKey, $xdr->toJson());
     }
 
     // ClawbackClaimableBalanceOperationBuilder Tests

@@ -68,6 +68,14 @@ use phpseclib3\Math\BigInteger;
  */
 class StellarSpecificTypesTest extends TestCase
 {
+    /**
+     * A G-strkey whose payload is 37 bytes rather than the 32 an ed25519 key
+     * has. Its 64 characters carry a correct checksum, so nothing but the
+     * payload size stands between it and a caller that reads the key behind it.
+     */
+    private const G_STRKEY_WITH_37_BYTE_PAYLOAD =
+        'GABAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAE4FK';
+
     // -----------------------------------------------------------------
     // XdrPublicKey / XdrNodeID — G-strkey
     // -----------------------------------------------------------------
@@ -100,6 +108,15 @@ class StellarSpecificTypesTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Expected string for XdrPublicKey JSON value');
         XdrPublicKey::fromJsonValue(['invalid' => 'shape']);
+    }
+
+    public function testXdrPublicKeyRejectsOversizedEd25519Payload(): void
+    {
+        // The decoded payload is assigned straight into the ed25519 field,
+        // which holds 32 bytes, so a 37-byte payload must not reach it.
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('G-strkey must be 56 characters long, 64 characters given');
+        XdrPublicKey::fromJsonValue(self::G_STRKEY_WITH_37_BYTE_PAYLOAD);
     }
 
     public function testXdrNodeIDRoundTrip(): void
@@ -223,8 +240,11 @@ class StellarSpecificTypesTest extends TestCase
         // A structurally well-formed P-strkey (version byte, checksum, padding)
         // carrying a zero-length payload for the \x88-repeated signer key. A
         // hardcoded literal: StrKey refuses to encode a zero-length payload,
-        // so the SDK cannot produce this string.
-        $strkey = 'PCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIQAAAAAAI4NI';
+        // so the SDK cannot produce this string. Its 69 characters are inside
+        // the SEP-23 length bounds, so what turns it away is the declared
+        // payload length of zero rather than the length of the string.
+        $strkey = 'PCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIQAAAAAAAAAAAAD33A';
+        $this->assertSame(69, strlen($strkey));
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Zero-length signed payload has no SEP-23 strkey representation');
@@ -246,8 +266,12 @@ class StellarSpecificTypesTest extends TestCase
         // A structurally well-formed P-strkey carrying a zero-length payload
         // for the \x99-repeated signer key. A hardcoded literal: StrKey
         // refuses to encode a zero-length payload, so the SDK cannot produce
-        // this string.
-        $strkey = 'PCMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZSAAAAAACXQA';
+        // this string. Its 69 characters are inside the SEP-23 length bounds,
+        // so what turns it away is the declared payload length of zero rather
+        // than the length of the string.
+        $strkey = 'PCMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZTGMZSAAAAAAAAAAAACJ4K';
+        $this->assertSame(69, strlen($strkey));
+
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Zero-length signed payload has no SEP-23 strkey representation');
         XdrSignedPayload::fromJsonValue($strkey);
@@ -1033,6 +1057,17 @@ class StellarSpecificTypesTest extends TestCase
         // time, before the wrapper stores the raw string.
         $this->expectException(\InvalidArgumentException::class);
         XdrAccountID::fromJsonValue('G' . str_repeat('A', 55));
+    }
+
+    public function testXdrAccountIDRejectsOversizedEd25519Payload(): void
+    {
+        // A G-strkey over a 37-byte payload with a correct checksum. The
+        // wrapper stores the string and hands it to callers that expect a
+        // 32-byte ed25519 key behind it, so parsing has to refuse a payload
+        // of any other size rather than validate the checksum alone.
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('G-strkey must be 56 characters long, 64 characters given');
+        XdrAccountID::fromJsonValue(self::G_STRKEY_WITH_37_BYTE_PAYLOAD);
     }
 
     // -----------------------------------------------------------------

@@ -69,6 +69,8 @@ class ClaimableBalancesTest extends TestCase
         $response = $this->sdk->submitTransaction($transaction);
         $this->assertTrue($response->isSuccessful());
         TestUtils::resultDeAndEncodingTest($this, $transaction, $response);
+        $createdBalanceId = $response->getCreatedClaimableBalanceId();
+        $this->assertNotNull($createdBalanceId);
 
         $requestBuilder = $this->sdk->effects()->forAccount($sourceAccountId)->limit(5)->order("desc");
         $response = $requestBuilder->execute();
@@ -84,6 +86,8 @@ class ClaimableBalancesTest extends TestCase
         $this->assertNotEquals("", $bId);
         print($bId . PHP_EOL);
         print(StrKey::encodeClaimableBalanceIdHex($bId) . PHP_EOL);
+        // The id from the transaction result and the id from the effect name one balance.
+        $this->assertEquals($createdBalanceId, StrKey::encodeClaimableBalanceIdHex($bId));
         $requestBuilder = $this->sdk->claimableBalances()->forClaimant($fistClaimantId);
         $response = $requestBuilder->execute();
         $this->assertTrue($response->getClaimableBalances()->count() > 0);

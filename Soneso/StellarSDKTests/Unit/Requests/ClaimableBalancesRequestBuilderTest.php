@@ -24,18 +24,18 @@ class ClaimableBalancesRequestBuilderTest extends TestCase
 {
   "_links": {
     "self": {
-      "href": "https://horizon-testnet.stellar.org/claimable_balances/00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb8ecfb01e"
+      "href": "https://horizon-testnet.stellar.org/claimable_balances/00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb4ecbf98b471d9e"
     },
     "transactions": {
-      "href": "https://horizon-testnet.stellar.org/claimable_balances/00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb8ecfb01e/transactions{?cursor,limit,order}",
+      "href": "https://horizon-testnet.stellar.org/claimable_balances/00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb4ecbf98b471d9e/transactions{?cursor,limit,order}",
       "templated": true
     },
     "operations": {
-      "href": "https://horizon-testnet.stellar.org/claimable_balances/00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb8ecfb01e/operations{?cursor,limit,order}",
+      "href": "https://horizon-testnet.stellar.org/claimable_balances/00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb4ecbf98b471d9e/operations{?cursor,limit,order}",
       "templated": true
     }
   },
-  "id": "00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb8ecfb01e",
+  "id": "00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb4ecbf98b471d9e",
   "asset": "native",
   "amount": "100.0000000",
   "sponsor": "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
@@ -52,7 +52,7 @@ class ClaimableBalancesRequestBuilderTest extends TestCase
   "flags": {
     "clawback_enabled": false
   },
-  "paging_token": "123456-00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb8ecfb01e"
+  "paging_token": "123456-00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb4ecbf98b471d9e"
 }
 JSON;
 
@@ -66,7 +66,7 @@ JSON;
       "href": "https://horizon-testnet.stellar.org/claimable_balances?cursor=2-00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072\u0026limit=2\u0026order=asc"
     },
     "prev": {
-      "href": "https://horizon-testnet.stellar.org/claimable_balances?cursor=1-00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb8ecfb01e\u0026limit=2\u0026order=desc"
+      "href": "https://horizon-testnet.stellar.org/claimable_balances?cursor=1-00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb4ecbf98b471d9e\u0026limit=2\u0026order=desc"
     }
   },
   "_embedded": {
@@ -74,10 +74,10 @@ JSON;
       {
         "_links": {
           "self": {
-            "href": "https://horizon-testnet.stellar.org/claimable_balances/00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb8ecfb01e"
+            "href": "https://horizon-testnet.stellar.org/claimable_balances/00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb4ecbf98b471d9e"
           }
         },
-        "id": "00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb8ecfb01e",
+        "id": "00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb4ecbf98b471d9e",
         "asset": "native",
         "amount": "100.0000000",
         "sponsor": "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
@@ -94,7 +94,7 @@ JSON;
         "flags": {
           "clawback_enabled": false
         },
-        "paging_token": "123456-00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb8ecfb01e"
+        "paging_token": "123456-00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb4ecbf98b471d9e"
       },
       {
         "_links": {
@@ -136,20 +136,44 @@ JSON;
         $stack->setHandler($mock);
         $stack->push(Middleware::mapRequest(function (RequestInterface $request) {
             $this->assertEquals("GET", $request->getMethod());
-            $this->assertStringContainsString("claimable_balances/00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb8ecfb01e",
+            $this->assertStringContainsString("claimable_balances/00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb4ecbf98b471d9e",
                 $request->getUri()->getPath());
             return $request;
         }));
 
         $httpClient = new Client(['handler' => $stack]);
         $requestBuilder = new ClaimableBalancesRequestBuilder($httpClient);
-        $response = $requestBuilder->claimableBalance("00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb8ecfb01e");
+        $response = $requestBuilder->claimableBalance("00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb4ecbf98b471d9e");
 
         $this->assertInstanceOf(ClaimableBalanceResponse::class, $response);
-        $this->assertEquals("00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb8ecfb01e", $response->getBalanceId());
+        $this->assertEquals("00000000846c047755e4a46912336f56096b48ece78ddb5fbf6d90f0eb4ecbf98b471d9e", $response->getBalanceId());
         $this->assertInstanceOf(\Soneso\StellarSDK\AssetTypeNative::class, $response->getAsset());
         $this->assertEquals("100.0000000", $response->getAmount());
         $this->assertEquals("GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5", $response->getSponsor());
+    }
+
+    public function testClaimableBalanceWithBAddress(): void
+    {
+        $mock = new MockHandler([
+            new Response(200, [], $this->claimableBalanceResponse)
+        ]);
+
+        $stack = new HandlerStack();
+        $stack->setHandler($mock);
+        $stack->push(Middleware::mapRequest(function (RequestInterface $request) {
+            // Horizon takes the XDR spelling: the discriminant as 4 bytes ahead of the hash.
+            $this->assertStringContainsString(
+                "claimable_balances/00000000f5ea7fb3de18dae9f12af96cf0750749016fbcba6bf09e902a69e54568771d82",
+                $request->getUri()->getPath()
+            );
+            return $request;
+        }));
+
+        $httpClient = new Client(['handler' => $stack]);
+        $requestBuilder = new ClaimableBalancesRequestBuilder($httpClient);
+        $response = $requestBuilder->claimableBalance("BAAPL2T7WPPBRWXJ6EVPS3HQOUDUSALPXS5GX4E6SAVGTZKFNB3R3ATZWM");
+
+        $this->assertInstanceOf(ClaimableBalanceResponse::class, $response);
     }
 
     public function testGetClaimableBalancesPage(): void

@@ -157,7 +157,7 @@ class OperationsRequestBuilderTest extends TestCase
         $this->assertCount(2, $result->getOperations()->toArray());
     }
 
-    public function testForClaimableBalanceWithBAddress(): void
+    public function testForClaimableBalanceWithHexId(): void
     {
         $mockResponse = $this->createMockOperationsPageResponse();
 
@@ -170,6 +170,21 @@ class OperationsRequestBuilderTest extends TestCase
             ->execute();
 
         $this->assertInstanceOf(OperationsPageResponse::class, $result);
+    }
+
+    public function testForClaimableBalanceWithBAddress(): void
+    {
+        $sdk = $this->createMockedSdk([]);
+
+        $url = $sdk->operations()
+            ->forClaimableBalance('BAAPL2T7WPPBRWXJ6EVPS3HQOUDUSALPXS5GX4E6SAVGTZKFNB3R3ATZWM')
+            ->buildUrl();
+
+        // Horizon takes the XDR spelling: the discriminant as 4 bytes ahead of the hash.
+        $this->assertStringContainsString(
+            'claimable_balances/00000000f5ea7fb3de18dae9f12af96cf0750749016fbcba6bf09e902a69e54568771d82/operations',
+            $url
+        );
     }
 
     public function testForLiquidityPoolWithLAddress(): void

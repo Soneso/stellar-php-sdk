@@ -7,6 +7,7 @@
 
 namespace Soneso\StellarSDK\Responses\Transaction;
 
+use Soneso\StellarSDK\Xdr\XdrOperationResult;
 use Soneso\StellarSDK\Xdr\XdrTransactionResultCode;
 
 /**
@@ -110,5 +111,35 @@ class SubmitTransactionResponse extends TransactionResponse
     public function setExtras(?SubmitTransactionResponseExtras $extras): void
     {
         $this->extras = $extras;
+    }
+
+    /**
+     * Returns the id of the claimable balance created by the operation at
+     * $operationIndex, as a "B..." strkey.
+     *
+     * Answers null when the transaction did not succeed, when no operation sits at
+     * the index, or when the operation there is not a CreateClaimableBalance. For a
+     * fee-bump transaction the inner transaction's operations are read.
+     *
+     * @param int $operationIndex index of the CreateClaimableBalance operation
+     * within the transaction, 0 for the first
+     * @return string|null the created balance id as a "B..." strkey, or null
+     */
+    public function getCreatedClaimableBalanceId(int $operationIndex = 0): ?string
+    {
+        if (!$this->isSuccessful()) {
+            return null;
+        }
+        $result = $this->getResultXdr()->getResult();
+        $operationResults = $result->getResults()
+            ?? $result->getInnerResultPair()?->getResult()->getResult()->getResults();
+        $operationResult = $operationResults[$operationIndex] ?? null;
+        if (!$operationResult instanceof XdrOperationResult) {
+            return null;
+        }
+        return $operationResult->getResultTr()
+            ?->getCreateClaimableBalanceResult()
+            ?->getBalanceID()
+            ?->toJsonValue();
     }
 }

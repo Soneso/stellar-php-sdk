@@ -189,6 +189,11 @@ class Address
      * Tries to convert a given id to an Address. The given id can be a contract id,
      * an account id, a muxed account id, a claimable balance id, or a liquidity pool id.
      * If not, returns null.
+     *
+     * A bare 32-byte hash in hexadecimal is not self-describing, so 64 hex characters
+     * resolve as a contract id. For a claimable balance, pass the "B..." strkey or the
+     * hexadecimal that carries its type discriminant (66 or 72 characters).
+     *
      * @param string $id a contract id, an account id, a muxed account id, a claimable balance id, or a liquidity pool id.
      * @return Address|null The address if could be converted.
      */
