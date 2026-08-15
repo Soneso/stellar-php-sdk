@@ -47,7 +47,7 @@ use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk           = StellarSDK::getTestNetInstance();
 $senderKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
-$destinationId = 'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT';
+$destinationId = 'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY';
 
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 
@@ -167,10 +167,10 @@ $senderKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 
 $op1 = (new PaymentOperationBuilder(
-    'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT',
+    'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY',
     Asset::native(), '100.0'))->build();
 $op2 = (new PaymentOperationBuilder(
-    'GCKUD4BHIYSBER7DI6TPMYQ4KNDEUKVMN44VKSUQGEFXWLNTHIIQE7FB',
+    'GCKUD4BHIYSBER7DI6TPMYQ4KNDEUKVMN44VKSUQGEFXWLNTHIIQF22Z',
     Asset::native(), '50.0'))->build();
 
 $transaction = (new TransactionBuilder($senderAccount))
@@ -216,7 +216,7 @@ use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk           = StellarSDK::getTestNetInstance();
 $sourceKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
-$destinationId = 'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT';
+$destinationId = 'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY';
 
 $sourceAccount = $sdk->requestAccount($sourceKeyPair->getAccountId());
 
@@ -268,7 +268,7 @@ $feePayerKeyPair = KeyPair::fromSeed(getenv('FEE_PAYER_SECRET_SEED'));
 $innerAccount = $sdk->requestAccount($innerKeyPair->getAccountId());
 
 $paymentOp = (new PaymentOperationBuilder(
-    'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT',
+    'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY',
     Asset::native(), '100.0'))->build();
 
 // Build and check the INNER transaction before wrapping
@@ -324,7 +324,7 @@ $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 
 // G-address of the exchange, plus user ID 12345 embedded in the address
 $muxedDestination = new MuxedAccount(
-    'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT',
+    'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY',
     12345  // user ID encoded in M-address
 );
 
@@ -432,7 +432,7 @@ $senderKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 
 $paymentOp = (new PaymentOperationBuilder(
-    'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT',
+    'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY',
     Asset::native(), '50.0'))->build();
 
 $transaction = (new TransactionBuilder($senderAccount))

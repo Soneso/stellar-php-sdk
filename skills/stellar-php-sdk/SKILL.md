@@ -4,9 +4,9 @@ description: Build Stellar blockchain applications in PHP using soneso/stellar-p
 license: Apache 2.0
 compatibility: Requires PHP 8.0+, ext-bcmath, ext-gmp, and Composer
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
   sdk_version: "1.12.0"
-  last_updated: "2026-08-10"
+  last_updated: "2026-08-14"
 ---
 
 # Stellar SDK for PHP

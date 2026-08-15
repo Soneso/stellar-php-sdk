@@ -256,7 +256,7 @@ $request->jwt = $jwtToken;
 $request->assetCode = "USD";
 $request->amount = 100.00;
 // Receive on a different account than the authenticated one
-$request->account = "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+$request->account = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
 $request->memo = "12345";
 $request->memoType = "id";   // "text", "id", or "hash"
 $request->lang = "en";

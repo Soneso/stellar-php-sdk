@@ -112,7 +112,7 @@ use Soneso\StellarSDK\Xdr\XdrSignerKey;
 $muxed = XdrMuxedAccount::fromJson('"GDTJSJTEYGG7L23UZSROA5SNR4GJMOUXYNRDCVMEY3FPB22HUYWQBZIA"');
 $muxed->toJsonValue(); // "GDTJSJTEY..."
 
-$signer = XdrSignerKey::fromJson('"TAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB7"');
+$signer = XdrSignerKey::fromJson('"TAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABLVU"');
 $signer->getType()->getValue(); // SIGNER_KEY_TYPE_PRE_AUTH_TX
 ```
 

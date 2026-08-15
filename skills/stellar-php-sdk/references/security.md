@@ -9,7 +9,7 @@
 
 // WRONG -- secret key exposed in source code
 $keyPair = \Soneso\StellarSDK\Crypto\KeyPair::fromSeed(
-    'SCZANGBA5YHTNYVVV3C7CAZMCLXPILHSE7HG3EQOVLU7BFXQMB3AVJY'
+    'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE'
 );
 
 // CORRECT -- load from environment variable
@@ -124,9 +124,43 @@ function validateSecretSeed(string $seed): void
     }
 }
 
+function validateSignedPayloadSigner(string $signer): void
+{
+    if (!StrKey::isValidSignedPayload($signer)) {
+        throw new \InvalidArgumentException(
+            'Invalid signed payload signer. Must be a valid P-address.'
+        );
+    }
+}
+
 // Usage
 $destinationId = $_POST['destination'] ?? '';
 validateStellarAddress($destinationId);
+```
+
+### What StrKey Validation Guarantees
+
+`isValid*` returns `bool` and never throws. `decode*` throws `InvalidArgumentException`. Both families enforce the same rules, so a string that passes `isValidAccountId()` decodes, and one that fails it throws. The rules (encoded length checked before base32 decoding, decoded payload length, signed payload framing, claimable balance discriminant) are specified in [sep-23.md](sep-23.md). No PHP warning precedes any rejection, so an application that promotes warnings to exceptions still sees a plain rejection.
+
+The zero-padding rule on P-strkeys is the one with direct security consequences: because non-zero padding is rejected, a validated P-address has exactly one spelling per signer, which makes comparing validated P-addresses as strings (allowlists, deduplication, equality) sound.
+
+Encoding is held to the same rules, so a value your code encodes always decodes back. `encodeContractIdHex()`, `encodeLiquidityPoolIdHex()` and `encodeClaimableBalanceIdHex()` reject non-hexadecimal input with `InvalidArgumentException` naming the argument and the offending character, not with a PHP warning followed by a `TypeError`, so hex taken from a request body can be passed straight in and the rejection handled like any other validation failure:
+
+```php
+<?php declare(strict_types=1);
+
+use Soneso\StellarSDK\Crypto\StrKey;
+
+$contractIdHex = $_POST['contract_id'] ?? '';
+
+try {
+    $contractId = StrKey::encodeContractIdHex($contractIdHex);
+} catch (\InvalidArgumentException $e) {
+    // Reports the argument and the offending character, e.g.
+    // $contractId must contain only hexadecimal characters [0-9a-fA-F], "z" found at index 3
+    http_response_code(400);
+    exit('Invalid contract id');
+}
 ```
 
 ### Validate Asset Codes
@@ -694,6 +728,7 @@ if (!verifyWebhookSignature($body, $signature, $signerAccountId)) {
 - [ ] Secret keys loaded from environment variables or secure vault, never hardcoded
 - [ ] Secret keys cleared from memory after KeyPair creation
 - [ ] All user-supplied Stellar addresses validated with `StrKey::isValidAccountId()`
+- [ ] P-address signers validated with `StrKey::isValidSignedPayload()` before being stored or compared
 - [ ] Amounts validated as positive decimals with at most 7 decimal places
 - [ ] Transactions inspected before signing (source account, operations, fee, memo)
 - [ ] Network passphrase verified to match Horizon/RPC endpoint

@@ -32,7 +32,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 
 // Your contract account (C... address) — must implement __check_auth
-$contractId = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ';
+$contractId = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ';
 
 // Signer registered in your contract's __check_auth — must have private key
 $signer = KeyPair::fromSeed(getenv('CONTRACT_SIGNER_SEED'));
@@ -88,7 +88,7 @@ use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 
 $webAuth = new WebAuthForContracts(
     authEndpoint:      'https://auth.anchor.example.com/sep45',
-    webAuthContractId: 'CCALHRGH5RXIDJDRLPPG4ZX2S563TB2QKKJR4STWKVQCYB6JVPYQXHRG',
+    webAuthContractId: 'CCALHRGH5RXIDJDRLPPG4ZX2S563TB2QKKJR4STWKVQCYB6JVPYQX57U',
     serverSigningKey:  'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
     serverHomeDomain:  'anchor.example.com',
     network:           Network::testnet()
@@ -117,7 +117,7 @@ By default the SDK uses `https://soroban-testnet.stellar.org` (testnet) or `http
 ```php
 $webAuth = new WebAuthForContracts(
     authEndpoint:      'https://auth.anchor.example.com/sep45',
-    webAuthContractId: 'CCALHRGH5RXIDJDRLPPG4ZX2S563TB2QKKJR4STWKVQCYB6JVPYQXHRG',
+    webAuthContractId: 'CCALHRGH5RXIDJDRLPPG4ZX2S563TB2QKKJR4STWKVQCYB6JVPYQX57U',
     serverSigningKey:  'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
     serverHomeDomain:  'anchor.example.com',
     network:           Network::testnet(),
@@ -163,7 +163,7 @@ use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 
 $webAuth = WebAuthForContracts::fromDomain('anchor.example.com', Network::testnet());
 
-$contractId = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ';
+$contractId = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ';
 $signer     = KeyPair::fromSeed(getenv('CONTRACT_SIGNER_SEED'));
 
 // Simple: auto-expiration, default home domain
@@ -198,7 +198,7 @@ $webAuth = WebAuthForContracts::fromDomain('anchor.example.com', Network::testne
 
 // Empty signers array — no signatures added, no Soroban RPC call made
 $jwtToken = $webAuth->jwtToken(
-    clientAccountId: 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ',
+    clientAccountId: 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ',
     signers:         []
 );
 ```
@@ -222,7 +222,7 @@ use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 
 $webAuth = WebAuthForContracts::fromDomain('anchor.example.com', Network::testnet());
 
-$contractId          = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ';
+$contractId          = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ';
 $signer              = KeyPair::fromSeed(getenv('CONTRACT_SIGNER_SEED'));
 $clientDomainKeyPair = KeyPair::fromSeed(getenv('WALLET_SIGNING_KEY_SEED'));
 
@@ -249,7 +249,7 @@ use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 
 $webAuth    = WebAuthForContracts::fromDomain('anchor.example.com', Network::testnet());
-$contractId = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ';
+$contractId = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ';
 $signer     = KeyPair::fromSeed(getenv('CONTRACT_SIGNER_SEED'));
 
 // Callback receives ONE SorobanAuthorizationEntry and must return a signed one
@@ -304,7 +304,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 
-$contractId = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ';
+$contractId = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ';
 $signer     = KeyPair::fromSeed(getenv('CONTRACT_SIGNER_SEED'));
 $homeDomain = 'anchor.example.com';
 
@@ -456,7 +456,7 @@ use Soneso\StellarSDK\SEP\WebAuthForContracts\SubmitContractChallengeUnknownResp
 use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 
 $webAuth    = WebAuthForContracts::fromDomain('anchor.example.com', Network::testnet());
-$contractId = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ';
+$contractId = 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ';
 $signer     = KeyPair::fromSeed(getenv('CONTRACT_SIGNER_SEED'));
 
 try {
@@ -690,7 +690,7 @@ $mock = new MockHandler([
 $webAuth->jwtToken('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP', [$signer]);
 
 // CORRECT: pass the C... contract address
-$webAuth->jwtToken('CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ', [$signer]);
+$webAuth->jwtToken('CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ', [$signer]);
 ```
 
 **WRONG: signers must contain KeyPair objects with private keys**

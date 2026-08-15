@@ -268,7 +268,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Crypto\KeyPair;
 
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
-$sourceKeyPair = KeyPair::fromSeed('SCZANGBA5YHTNYVVV3C7CAZMCLXPILHSE7HG3EQOVLU7BFXQMB3AVJY');
+$sourceKeyPair = KeyPair::fromSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
 
 $simResponse = $server->simulateTransaction(
     new SimulateTransactionRequest(transaction: $transaction)

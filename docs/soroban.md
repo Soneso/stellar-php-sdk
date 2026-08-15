@@ -1310,7 +1310,7 @@ foreach ($auth as $entry) {
 $transaction->setSorobanAuth($auth);
 ```
 
-> **Tip**: Contract IDs must be C-prefixed strkey format. To convert from hex: `StrKey::encodeContractIdHex($hexContractId)`
+> **Tip**: Contract IDs must be C-prefixed strkey format. To convert from hex, use `StrKey::encodeContractIdHex($hexContractId)`. It takes exactly 64 hexadecimal characters (the 32-byte hash) and throws `InvalidArgumentException` for anything else.
 
 ## Contract Parser
 

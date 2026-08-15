@@ -110,6 +110,8 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 $keyPair = KeyPair::fromSeed("SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE");
 ```
 
+`fromSeed()` and `fromAccountId()` verify their input and throw `InvalidArgumentException` for anything malformed. The examples in these guides call the API directly when the input is a fixed, known-good value — a failure there is a programming error. Wrap the call in `try`/`catch` where the value arrives at runtime, such as user input, or check it first with `StrKey::isValidSeed()` / `StrKey::isValidAccountId()`.
+
 ### Import from Account ID
 
 You can create a keypair from just an account ID (public key). This is useful for verifying signatures or specifying destinations, but you can't sign transactions without the secret seed.

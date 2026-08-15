@@ -25,8 +25,8 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$senderKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
-$destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT";
+$senderKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
+$destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY";
 
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 
@@ -122,16 +122,16 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$senderKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
+$senderKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 
 // Batch payment to multiple recipients
 $transaction = (new TransactionBuilder($senderAccount))
     ->addOperation((new PaymentOperationBuilder(
-        "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT",
+        "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY",
         Asset::native(), "100.0"))->build())
     ->addOperation((new PaymentOperationBuilder(
-        "GCKUD4BHIYSBER7DI6TPMYQ4KNDEUKVMN44VKSUQGEFXWLNTHIIQE7FB",
+        "GCKUD4BHIYSBER7DI6TPMYQ4KNDEUKVMN44VKSUQGEFXWLNTHIIQF22Z",
         Asset::native(), "50.0"))->build())
     ->build();
 
@@ -157,8 +157,8 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$sourceKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
-$destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT";
+$sourceKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
+$destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY";
 
 $sourceAccount = $sdk->requestAccount($sourceKeyPair->getAccountId());
 
@@ -198,11 +198,11 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$senderKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
+$senderKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 
 // Create a muxed destination with user ID embedded
-$baseAccountId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT";
+$baseAccountId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY";
 $muxedDestination = new MuxedAccount($baseAccountId, 12345);
 
 $paymentOp = (PaymentOperationBuilder::forMuxedDestinationAccount(
@@ -305,11 +305,11 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$senderKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
+$senderKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 
 $paymentOp = (new PaymentOperationBuilder(
-    "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENO5GT",
+    "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY",
     Asset::native(), "50.0"))->build();
 
 $transaction = (new TransactionBuilder($senderAccount))

@@ -39,7 +39,7 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 
 // Your contract account (must implement __check_auth)
-$contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ";
+$contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ";
 
 // Signer registered in your contract's __check_auth implementation
 $signer = KeyPair::fromSeed("SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
@@ -94,7 +94,7 @@ use Soneso\StellarSDK\Network;
 
 $webAuth = new WebAuthForContracts(
     authEndpoint: "https://anchor.example.com/auth/sep45",
-    webAuthContractId: "CCALHRGH5RXIDJDRLPPG4ZX2S563TB2QKKJR4STWKVQCYB6JVPYQXHRG",
+    webAuthContractId: "CCALHRGH5RXIDJDRLPPG4ZX2S563TB2QKKJR4STWKVQCYB6JVPYQX57U",
     serverSigningKey: "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP",
     serverHomeDomain: "anchor.example.com",
     network: Network::testnet()
@@ -113,7 +113,7 @@ use Soneso\StellarSDK\Network;
 
 $webAuth = new WebAuthForContracts(
     authEndpoint: "https://anchor.example.com/auth/sep45",
-    webAuthContractId: "CCALHRGH5RXIDJDRLPPG4ZX2S563TB2QKKJR4STWKVQCYB6JVPYQXHRG",
+    webAuthContractId: "CCALHRGH5RXIDJDRLPPG4ZX2S563TB2QKKJR4STWKVQCYB6JVPYQX57U",
     serverSigningKey: "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP",
     serverHomeDomain: "anchor.example.com",
     network: Network::testnet(),
@@ -133,7 +133,7 @@ use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 
-$contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ";
+$contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ";
 $signer = KeyPair::fromSeed("SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 
 $webAuth = WebAuthForContracts::fromDomain("anchor.example.com", Network::testnet());
@@ -222,7 +222,7 @@ use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 
-$contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ";
+$contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ";
 $signer = KeyPair::fromSeed("SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 
 // Your wallet's SIGNING_KEY from stellar.toml
@@ -252,7 +252,7 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 use GuzzleHttp\Client;
 
-$contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ";
+$contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ";
 $signer = KeyPair::fromSeed("SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 
 $clientDomainSigningCallback = function(SorobanAuthorizationEntry $entry): SorobanAuthorizationEntry {
@@ -294,7 +294,7 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 
-$contractAccountId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ";
+$contractAccountId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ";
 $signerKeyPair = KeyPair::fromSeed("SXXXXX...");
 $homeDomain = "anchor.example.com";
 

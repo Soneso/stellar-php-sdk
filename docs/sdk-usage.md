@@ -941,6 +941,13 @@ $createOp = (new CreateClaimableBalanceOperationBuilder(
 ))->build();
 ```
 
+After the transaction is submitted, the response carries the id of the balance it created:
+
+```php
+$response = $sdk->submitTransaction($transaction);
+$balanceId = $response->getCreatedClaimableBalanceId(); // "B..." strkey, null if not created
+```
+
 #### Predicates
 
 Predicates control when a claimant can claim. You can combine them for complex conditions.
@@ -1897,7 +1904,7 @@ Find claimable balances you can claim, or look up a specific balance by ID.
 
 #### Get Single Balance
 
-Fetch a specific claimable balance by its ID. Accepts both hex format and strkey format (starts with "B"). See [SEP-23](sep/sep-23.md) for more on strkey encoding.
+Fetch a specific claimable balance by its ID. Accepts the "B..." strkey or hex: the id Horizon reports (72 characters), the bare balance hash (64), or the hash behind the 1-byte strkey discriminant (66). See [SEP-23](sep/sep-23.md) for more on strkey encoding.
 
 ```php
 <?php
@@ -1906,13 +1913,13 @@ use Soneso\StellarSDK\Asset;
 
 $sdk = StellarSDK::getTestNetInstance();
 
-// Using hex format
+// Using the id as Horizon reports it
 $balance = $sdk->requestClaimableBalance("00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072");
 echo "Amount: " . $balance->getAmount() . "\n";
 echo "Asset: " . Asset::canonicalForm($balance->getAsset()) . "\n";
 
-// Strkey format also works (starts with "B")
-$balance = $sdk->requestClaimableBalance("BAEKKL...");
+// The same balance by its strkey
+$balance = $sdk->requestClaimableBalance("BAAJFGZAW4XFREFLKHBE6HGEN6QBYTZRRWGTGNT5ETOWCTH56VERA4SHWU");
 ```
 
 #### Find by Claimant
