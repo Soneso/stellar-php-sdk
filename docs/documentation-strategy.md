@@ -357,6 +357,7 @@ docs/
 │   ├── sep-29.md              # Memo requirement discovery
 │   ├── sep-30.md              # Account recovery
 │   ├── sep-31.md              # Cross-border payments
+│   ├── sep-35.md              # Operation IDs
 │   ├── sep-38.md              # Anchor quotes
 │   ├── sep-45.md              # Contract account authentication
 │   ├── sep-51.md              # XDR-JSON encoding
