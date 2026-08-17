@@ -667,12 +667,14 @@ class StrKey
         // bytes, so no input reaches this today; it holds the reads safe should a
         // shorter strkey type ever join the table.
         if (strlen($decoded) < self::DECODED_FRAMING_LENGTH) {
+            // @codeCoverageIgnoreStart
             throw new InvalidArgumentException(sprintf(
                 'Decoded strkey data of %d bytes is too short to hold the %d framing bytes'
                     . ' (1-byte version prefix and 2-byte checksum)',
                 strlen($decoded),
                 self::DECODED_FRAMING_LENGTH
             ));
+            // @codeCoverageIgnoreEnd
         }
 
         // Unpack version byte
@@ -696,12 +698,14 @@ class StrKey
         // handed back, so that no caller has to trust the encoded length to stand in
         // for it.
         if ($rule['payloadLength'] !== null && strlen($payload) !== $rule['payloadLength']) {
+            // @codeCoverageIgnoreStart
             throw new InvalidArgumentException(sprintf(
                 '%s-strkey must carry a payload of %d bytes, %d bytes decoded',
                 $rule['prefix'],
                 $rule['payloadLength'],
                 strlen($payload)
             ));
+            // @codeCoverageIgnoreEnd
         }
 
         if ($versionByte === VersionByte::CLAIMABLE_BALANCE_ID) {
@@ -798,10 +802,12 @@ class StrKey
         if ($bytes === false) {
             // hex2bin() answers false only for the two shapes rejected above. The guard
             // keeps the declared string return honest rather than passing a bool on.
+            // @codeCoverageIgnoreStart
             throw new InvalidArgumentException(sprintf(
                 '%s could not be decoded from hexadecimal to bytes',
                 $argumentName
             ));
+            // @codeCoverageIgnoreEnd
         }
         return $bytes;
     }

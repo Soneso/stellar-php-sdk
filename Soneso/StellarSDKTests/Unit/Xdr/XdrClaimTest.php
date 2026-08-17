@@ -207,6 +207,54 @@ class XdrClaimTest extends TestCase
         );
     }
 
+    public function testXdrClaimableBalanceIDRejectsAnUnsetHash(): void
+    {
+        $id = new XdrClaimableBalanceID(
+            XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0(),
+            ''
+        );
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Claimable balance id is not set');
+        $id->getCanonicalHashHex();
+    }
+
+    /**
+     * A 58-character value is read as a strkey, so a non-hex one is refused with the
+     * strkey rejection rather than the spelling list.
+     */
+    public function testXdrClaimableBalanceIDReportsTheStrkeyRejectionForAStrkeyShapedNonHexId(): void
+    {
+        $id = new XdrClaimableBalanceID(
+            XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0(),
+            'B' . str_repeat('Z', 57)
+        );
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('invalid encoded string');
+        $id->getCanonicalHashHex();
+    }
+
+    public function testXdrClaimableBalanceIDRejectsANonHexId(): void
+    {
+        $id = new XdrClaimableBalanceID(
+            XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0(),
+            'not a balance id'
+        );
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be a "B..." strkey or a hexadecimal string');
+        $id->getCanonicalHashHex();
+    }
+
+    public function testXdrClaimableBalanceIDToJsonValueRejectsAnUnknownDiscriminant(): void
+    {
+        $id = new XdrClaimableBalanceID(
+            new XdrClaimableBalanceIDType(7),
+            '00' . self::TEST_BALANCE_ID
+        );
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrClaimableBalanceID discriminant: 7');
+        $id->toJsonValue();
+    }
+
     public function testXdrClaimPredicateComplex(): void
     {
         $absTime1Type = new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME);

@@ -443,4 +443,36 @@ class XdrSCAddressTest extends TestCase
         $address->setAccountId(null);
         $this->assertNull($address->getAccountId());
     }
+
+    public function testGetCanonicalContractIdHexRejectsAnUnsetId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Contract id is not set');
+        XdrSCAddress::forContractId('')->getCanonicalContractIdHex();
+    }
+
+    /**
+     * A 56-character value is read as a strkey, so a non-hex one is refused with the
+     * strkey rejection rather than the spelling list.
+     */
+    public function testGetCanonicalContractIdHexReportsTheStrkeyRejectionForAStrkeyShapedNonHexId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('version byte in encoded data does not match');
+        XdrSCAddress::forContractId('C' . str_repeat('Z', 55))->getCanonicalContractIdHex();
+    }
+
+    public function testGetCanonicalLiquidityPoolIdHexRejectsAnUnsetId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Liquidity pool id is not set');
+        XdrSCAddress::forLiquidityPoolId('')->getCanonicalLiquidityPoolIdHex();
+    }
+
+    public function testGetCanonicalLiquidityPoolIdHexRejectsANonHexId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be an "L..." strkey or a hexadecimal string');
+        XdrSCAddress::forLiquidityPoolId('not a pool id')->getCanonicalLiquidityPoolIdHex();
+    }
 }

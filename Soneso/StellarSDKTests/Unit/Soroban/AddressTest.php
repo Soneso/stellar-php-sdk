@@ -314,25 +314,46 @@ class AddressTest extends TestCase
     }
 
     /**
-     * Test fromAnyId with liquidity pool ID (hex format)
-     * Note: fromAnyId tries multiple ID types and returns the first valid match
+     * A bare 32-byte hash in hexadecimal is not self-describing, so fromAnyId resolves
+     * 64 hex characters as a contract id; a pool named by hex alone cannot be told apart
+     * from a contract. The strkey spelling resolves as the pool (see the strkey test below).
      */
     public function testFromAnyIdWithLiquidityPoolIdHex(): void
     {
         $address = Address::fromAnyId($this->testLiquidityPoolIdHex);
 
         $this->assertNotNull($address);
-        // The hex ID may be interpreted as contract or liquidity pool depending on validation order
-        $this->assertTrue(
-            $address->getType() === Address::TYPE_LIQUIDITY_POOL ||
-            $address->getType() === Address::TYPE_CONTRACT,
-            'Address type should be either LIQUIDITY_POOL or CONTRACT'
-        );
-        $this->assertEquals($this->testLiquidityPoolIdHex,
-            $address->getType() === Address::TYPE_LIQUIDITY_POOL
-                ? $address->getLiquidityPoolId()
-                : $address->getContractId()
-        );
+        $this->assertEquals(Address::TYPE_CONTRACT, $address->getType());
+        $this->assertEquals($this->testLiquidityPoolIdHex, $address->getContractId());
+    }
+
+    public function testFromAnyIdReadsALiquidityPoolStrkey(): void
+    {
+        $strKey = StrKey::encodeLiquidityPoolIdHex($this->testLiquidityPoolIdHex);
+        $address = Address::fromAnyId($strKey);
+
+        $this->assertNotNull($address);
+        $this->assertEquals(Address::TYPE_LIQUIDITY_POOL, $address->getType());
+        $this->assertEquals($this->testLiquidityPoolIdHex, $address->getLiquidityPoolId());
+    }
+
+    public function testFromAnyIdReadsAStrkeyPrefixedClaimableBalanceHex(): void
+    {
+        $bareHash = substr($this->testClaimableBalanceIdHex, 8);
+        $address = Address::fromAnyId('00' . $bareHash);
+
+        $this->assertNotNull($address);
+        $this->assertEquals(Address::TYPE_CLAIMABLE_BALANCE, $address->getType());
+        $this->assertEquals($this->testClaimableBalanceIdHex, $address->getClaimableBalanceId());
+    }
+
+    public function testFromAnyIdReadsAnXdrPrefixedClaimableBalanceHex(): void
+    {
+        $address = Address::fromAnyId($this->testClaimableBalanceIdHex);
+
+        $this->assertNotNull($address);
+        $this->assertEquals(Address::TYPE_CLAIMABLE_BALANCE, $address->getType());
+        $this->assertEquals($this->testClaimableBalanceIdHex, $address->getClaimableBalanceId());
     }
 
     /**
