@@ -1911,6 +1911,67 @@ class SEP31Analyzer(SEPAnalyzerBase):
 
 
 # ===========================================================================
+# SEP-35: Operation IDs
+# ===========================================================================
+
+class SEP35Analyzer(SEPAnalyzerBase):
+    sep_number = 35
+    sep_title = "Operation IDs"
+    sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0035.md"
+
+    def analyze(self) -> CompatibilityMatrix:
+        matrix = self._make_matrix()
+
+        toid_members = self.sdk.get_class_members("TOID")
+
+        # Read TOID source to verify range-boundary behavior
+        toid_path = self.sdk.find_class("TOID")
+        toid_src = toid_path.read_text(encoding="utf-8") if toid_path else ""
+
+        # -- ID Encoding --
+        encoding_section = SEPSection(
+            name="ID Encoding",
+            description="SEP-35 ID construction and 64-bit integer encoding on TOID",
+        )
+        encoding_section.fields = [
+            self._field("constructor", "Construct a TOID from ledger sequence, transaction order, and operation index fields",
+                        "__construct" in toid_members,
+                        sdk_class="TOID.__construct()"),
+            self._field("toInt64", "Encode the three fields into a single signed 64-bit integer ID",
+                        "toInt64" in toid_members and "($this->ledgerSequence << 32) | ($this->transactionOrder << 12) | $this->operationIndex" in toid_src,
+                        sdk_class="TOID.toInt64()"),
+            self._field("fromInt64", "Decode a signed 64-bit integer ID back into its three fields",
+                        "fromInt64" in toid_members and "$ledgerSequence = $value >> 32;" in toid_src and "$transactionOrder = ($value >> 12) & 0xFFFFF;" in toid_src,
+                        sdk_class="TOID.fromInt64()"),
+        ]
+
+        # -- Cursor and Range Helpers --
+        cursor_section = SEPSection(
+            name="Cursor and Range Helpers",
+            description="SEP-35 pagination cursor and ledger range utilities",
+        )
+        cursor_section.fields = [
+            self._field("incrementOperationIndex", "Advance an ID to the next operation slot, for use as a pagination cursor",
+                        "incrementOperationIndex" in toid_members and "MAX_OPERATION_INDEX" in toid_src and "ledgerSequence++" in toid_src,
+                        sdk_class="TOID.incrementOperationIndex()"),
+            self._field("afterLedger", "Return the largest encodable ID within a given ledger, for use as an inclusive upper query bound",
+                        "afterLedger" in toid_members and "new TOID($ledgerSequence, self::MAX_TRANSACTION_ORDER, self::MAX_OPERATION_INDEX)" in toid_src,
+                        sdk_class="TOID.afterLedger()"),
+            self._field("ledgerRangeInclusive", "Return the range of encoded IDs covering a span of ledgers, with an exclusive range end",
+                        "ledgerRangeInclusive" in toid_members and "$end = (new TOID($to + 1, 0, 0))->toInt64();" in toid_src,
+                        sdk_class="TOID.ledgerRangeInclusive()"),
+            self._field("TOIDRange", "Value class pairing a range start and end as encoded IDs",
+                        self.sdk.class_exists("TOIDRange"),
+                        sdk_class="TOIDRange"),
+        ]
+
+        sections = [encoding_section, cursor_section]
+        matrix.sections = sections
+        matrix.overall_status = self._overall(sections)
+        return matrix
+
+
+# ===========================================================================
 # SEP-38: Anchor RFQ API
 # ===========================================================================
 
@@ -3112,6 +3173,7 @@ class SEPAnalyzerFactory:
         24: SEP24Analyzer,
         30: SEP30Analyzer,
         31: SEP31Analyzer,
+        35: SEP35Analyzer,
         38: SEP38Analyzer,
         45: SEP45Analyzer,
         46: SEP46Analyzer,
