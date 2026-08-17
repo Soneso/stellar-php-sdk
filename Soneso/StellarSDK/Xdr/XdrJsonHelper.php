@@ -701,17 +701,22 @@ final class XdrJsonHelper
      * without being exploitable.
      *
      * @param string $s   The user-supplied string.
-     * @param int    $max Maximum characters before truncation (must be > 3).
+     * @param int    $max Maximum bytes before truncation (must be > 3).
      * @return string A safe, bounded preview.
      */
     public static function safePreview(string $s, int $max = 80): string
     {
-        // Replace ASCII control characters (0x00-0x1F, 0x7F) with their hex
-        // escape form. Without this, attacker-controlled input echoed through
-        // exception messages can inject ANSI escape sequences when those
-        // messages are rendered to a terminal (log injection / amplification).
+        // ASCII control characters (0x00-0x1F, 0x7F) are always replaced with their
+        // hex escape form: attacker-controlled input echoed through exception
+        // messages could otherwise inject ANSI escape sequences when those messages
+        // are rendered to a terminal (log injection / amplification). Bytes above
+        // the ASCII range are kept when the whole string is valid UTF-8, so real
+        // text previews stay readable, and escaped otherwise, so the preview is
+        // never invalid UTF-8 - a message a caller cannot serialize, for example
+        // to JSON.
+        $isUtf8 = mb_check_encoding($s, 'UTF-8');
         $sanitised = preg_replace_callback(
-            '/[\x00-\x1F\x7F]/',
+            $isUtf8 ? '/[\x00-\x1F\x7F]/' : '/[\x00-\x1F\x7F-\xFF]/',
             static function (array $m): string {
                 return '\\x' . strtoupper(bin2hex($m[0]));
             },
@@ -726,7 +731,10 @@ final class XdrJsonHelper
         if (strlen($sanitised) <= $max) {
             return $sanitised;
         }
-        return substr($sanitised, 0, $max - 3) . '...';
+        // mb_strcut bounds by bytes without splitting a UTF-8 character, so the
+        // truncated preview stays valid UTF-8; on the escaped branch the string is
+        // pure ASCII and the cut is a plain substr.
+        return mb_strcut($sanitised, 0, $max - 3, 'UTF-8') . '...';
     }
 
     /**

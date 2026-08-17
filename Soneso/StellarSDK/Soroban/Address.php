@@ -7,8 +7,10 @@
 namespace Soneso\StellarSDK\Soroban;
 
 use Exception;
+use InvalidArgumentException;
 use RuntimeException;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
@@ -150,22 +152,29 @@ class Address
 
     /**
      * Creates an Address object from the given XdrSCAddress object.
+     *
+     * Contract and liquidity pool ids are reported in their canonical hex form, a
+     * claimable balance id in the 72-character form Horizon serves - whichever
+     * spelling the XDR object was built from.
+     *
      * @param XdrSCAddress $xdrAddress the xdr object to create the Address object from.
      * @return Address the created Address object.
      * @throws RuntimeException if the XDR address type is unknown or unsupported
+     * @throws InvalidArgumentException if the XDR object holds an id in none of the
+     * accepted spellings
      */
     public static function fromXdr(XdrSCAddress $xdrAddress) : Address
     {
         if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT) {
             return new Address(Address::TYPE_ACCOUNT, accountId: $xdrAddress->accountId->getAccountId());
         } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT) {
-            return new Address(Address::TYPE_CONTRACT, contractId: $xdrAddress->contractId);
+            return new Address(Address::TYPE_CONTRACT, contractId: $xdrAddress->getCanonicalContractIdHex());
         } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT) {
             return new Address(Address::TYPE_MUXED_ACCOUNT, muxedAccountId: $xdrAddress->muxedAccount->getAccountId());
         } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE) {
-            return new Address(Address::TYPE_CLAIMABLE_BALANCE, claimableBalanceId: $xdrAddress->getClaimableBalanceId()?->getHash());
+            return new Address(Address::TYPE_CLAIMABLE_BALANCE, claimableBalanceId: $xdrAddress->getClaimableBalanceId()?->getPaddedBalanceIdHex());
         } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL) {
-            return new Address(Address::TYPE_LIQUIDITY_POOL, liquidityPoolId: $xdrAddress->getLiquidityPoolId());
+            return new Address(Address::TYPE_LIQUIDITY_POOL, liquidityPoolId: $xdrAddress->getCanonicalLiquidityPoolIdHex());
         }else {
             throw new RuntimeException("unknown XdrSCAddress type " . $xdrAddress->type->value);
         }
@@ -198,6 +207,27 @@ class Address
      * @return Address|null The address if could be converted.
      */
     public static function fromAnyId(string $id) : ?Address {
+        // A strkey names its own type, so the strkey readings run first: a valid
+        // "B..." or "C..." strkey can be spelled entirely in hexadecimal digits, and
+        // no strkey length matches an accepted hexadecimal width, so nothing a
+        // strkey reading claims could have meant a hexadecimal id.
+        if (StrKey::isValidAccountId($id)) {
+            return Address::fromAccountId($id);
+        }
+        if (StrKey::isValidMuxedAccountId($id)) {
+            return Address::fromMuxedAccountId($id);
+        }
+        if (StrKey::isValidContractId($id)) {
+            return Address::fromContractId(StrKey::decodeContractIdHex($id));
+        }
+        if (StrKey::isValidClaimableBalanceId($id)) {
+            return Address::fromClaimableBalanceId(
+                XdrClaimableBalanceID::forClaimableBalanceId($id)->getPaddedBalanceIdHex()
+            );
+        }
+        if (StrKey::isValidLiquidityPoolId($id)) {
+            return Address::fromLiquidityPoolId(StrKey::decodeLiquidityPoolIdHex($id));
+        }
         if (ctype_xdigit($id)) { // is hex string
             try {
                 $strKeyContractId = StrKey::encodeContractIdHex($id);
@@ -215,25 +245,11 @@ class Address
             try {
                 $strKeyClaimableBalanceId = StrKey::encodeClaimableBalanceIdHex($id);
                 if (StrKey::isValidClaimableBalanceId($strKeyClaimableBalanceId)) {
-                    return Address::fromClaimableBalanceId($id);
+                    return Address::fromClaimableBalanceId(
+                        XdrClaimableBalanceID::forClaimableBalanceId($id)->getPaddedBalanceIdHex()
+                    );
                 }
             } catch (Exception $e) {}
-        } else {
-            if (StrKey::isValidAccountId($id)) {
-                return Address::fromAccountId($id);
-            }
-            if (StrKey::isValidMuxedAccountId($id)) {
-                return Address::fromMuxedAccountId($id);
-            }
-            if (StrKey::isValidContractId($id)) {
-                return Address::fromContractId(StrKey::decodeContractIdHex($id));
-            }
-            if (StrKey::isValidClaimableBalanceId($id)) {
-                return Address::fromClaimableBalanceId(StrKey::decodeClaimableBalanceIdHex($id));
-            }
-            if (StrKey::isValidLiquidityPoolId($id)) {
-                return Address::fromLiquidityPoolId(StrKey::decodeLiquidityPoolIdHex($id));
-            }
         }
         return null;
     }

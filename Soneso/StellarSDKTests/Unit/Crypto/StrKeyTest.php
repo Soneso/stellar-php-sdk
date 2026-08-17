@@ -1144,7 +1144,7 @@ class StrKeyTest extends TestCase
     /**
      * @dataProvider wrongPayloadLengthProvider
      */
-    public function testDecodeRejectsWrongPayloadLength(
+    public function testDecodeRejectsAWrongPayloadLengthByItsEncodedLength(
         string $decodeMethod,
         int $versionByte,
         string $prefix,

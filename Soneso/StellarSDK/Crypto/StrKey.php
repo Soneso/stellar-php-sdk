@@ -662,8 +662,10 @@ class StrKey
             throw new InvalidArgumentException("invalid encoded string");
         }
 
-        // The version and checksum reads below address fixed offsets, so the framing
-        // bytes they reach for have to be present first.
+        // Total-function guard for the fixed-offset version and checksum reads below.
+        // Every length the current rule table admits decodes to well past the framing
+        // bytes, so no input reaches this today; it holds the reads safe should a
+        // shorter strkey type ever join the table.
         if (strlen($decoded) < self::DECODED_FRAMING_LENGTH) {
             throw new InvalidArgumentException(sprintf(
                 'Decoded strkey data of %d bytes is too short to hold the %d framing bytes'

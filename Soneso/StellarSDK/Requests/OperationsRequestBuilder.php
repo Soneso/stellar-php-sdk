@@ -122,10 +122,7 @@ class OperationsRequestBuilder extends RequestBuilder
      * @see https://developers.stellar.org Stellar developer docs Operations for ClaimableBalance
      */
     public function forClaimableBalance(string $claimableBalanceId) : OperationsRequestBuilder {
-        // Horizon spells the id in the XDR form: the discriminant as 4 bytes ahead of
-        // the hash. The resolver takes every accepted spelling and emits that form.
-        $idHex = XdrClaimableBalanceID::forClaimableBalanceId($claimableBalanceId)
-            ->getPaddedBalanceIdHex();
+        $idHex = XdrClaimableBalanceID::paddedBalanceIdHexFor($claimableBalanceId);
         $this->setSegments("claimable_balances", $idHex, "operations");
         return $this;
     }

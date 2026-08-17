@@ -82,13 +82,27 @@ class XdrClaimableBalanceID extends XdrClaimableBalanceIDBase
      * @throws InvalidArgumentException when the hash field holds none of the spellings
      * getCanonicalHashHex() accepts
      */
-    public function getPaddedBalanceIdHex() {
+    public function getPaddedBalanceIdHex(): string {
         return str_pad(
             $this->getCanonicalHashHex(),
             self::XDR_PREFIXED_HEX_LENGTH,
             '0',
             STR_PAD_LEFT
         );
+    }
+
+    /**
+     * The id in the spelling Horizon takes in request URLs: the 4-byte XDR union
+     * discriminant ahead of the hash, as 72 hexadecimal characters.
+     *
+     * @param string $claimableBalanceId the balance id in any spelling
+     * forClaimableBalanceId() accepts
+     * @return string the 72-character hexadecimal form
+     * @throws InvalidArgumentException when $claimableBalanceId holds none of the
+     * accepted spellings
+     */
+    public static function paddedBalanceIdHexFor(string $claimableBalanceId): string {
+        return self::forClaimableBalanceId($claimableBalanceId)->getPaddedBalanceIdHex();
     }
 
     /**
@@ -103,10 +117,6 @@ class XdrClaimableBalanceID extends XdrClaimableBalanceIDBase
      * reports and what getPaddedBalanceIdHex() produces. A discriminant carried in the
      * hexadecimal must name CLAIMABLE_BALANCE_ID_TYPE_V0, the case this id holds;
      * anything else means the prefix and the type field describe different balance ids.
-     *
-     * Every reader of the hash field resolves it here: the XDR this object encodes, the
-     * strkey it reports, its SEP-51 JSON and SEP-11 TxRep forms, and the padded hex
-     * Horizon takes.
      *
      * @return string the balance hash as 64 lower case hexadecimal characters
      * @throws InvalidArgumentException when the hash field is unset, holds a string

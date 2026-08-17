@@ -168,7 +168,7 @@ class XdrSCAddress extends XdrSCAddressBase
      * @throws InvalidArgumentException when the field is unset, holds a string that is
      * neither a "C..." strkey nor hexadecimal, or has a length matching neither shape
      */
-    private function getCanonicalContractIdHex(): string {
+    public function getCanonicalContractIdHex(): string {
         $value = $this->contractId;
         if ($value === null || $value === '') {
             throw new InvalidArgumentException('Contract id is not set');
@@ -220,7 +220,7 @@ class XdrSCAddress extends XdrSCAddressBase
      * @throws InvalidArgumentException when the field is unset, holds a string that is
      * neither an "L..." strkey nor hexadecimal, or has a length matching neither shape
      */
-    private function getCanonicalLiquidityPoolIdHex(): string {
+    public function getCanonicalLiquidityPoolIdHex(): string {
         $value = $this->liquidityPoolId;
         if ($value === null || $value === '') {
             throw new InvalidArgumentException('Liquidity pool id is not set');

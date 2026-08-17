@@ -70,8 +70,8 @@ class StellarSpecificTypesTest extends TestCase
 {
     /**
      * A G-strkey whose payload is 37 bytes rather than the 32 an ed25519 key
-     * has. Its 64 characters carry a correct checksum, so nothing but the
-     * payload size stands between it and a caller that reads the key behind it.
+     * has. Its 64 characters carry a correct checksum; the encoded-length rule
+     * (56 characters for G) is what stands between it and a caller.
      */
     private const G_STRKEY_WITH_37_BYTE_PAYLOAD =
         'GABAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAE4FK';
@@ -110,10 +110,10 @@ class StellarSpecificTypesTest extends TestCase
         XdrPublicKey::fromJsonValue(['invalid' => 'shape']);
     }
 
-    public function testXdrPublicKeyRejectsOversizedEd25519Payload(): void
+    public function testXdrPublicKeyRejectsAnOversizedPayloadByItsEncodedLength(): void
     {
-        // The decoded payload is assigned straight into the ed25519 field,
-        // which holds 32 bytes, so a 37-byte payload must not reach it.
+        // A 37-byte payload encodes to 64 characters, so the encoded-length
+        // rule stops it before any payload byte is read.
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('G-strkey must be 56 characters long, 64 characters given');
         XdrPublicKey::fromJsonValue(self::G_STRKEY_WITH_37_BYTE_PAYLOAD);
@@ -1059,12 +1059,11 @@ class StellarSpecificTypesTest extends TestCase
         XdrAccountID::fromJsonValue('G' . str_repeat('A', 55));
     }
 
-    public function testXdrAccountIDRejectsOversizedEd25519Payload(): void
+    public function testXdrAccountIDRejectsAnOversizedPayloadByItsEncodedLength(): void
     {
-        // A G-strkey over a 37-byte payload with a correct checksum. The
-        // wrapper stores the string and hands it to callers that expect a
-        // 32-byte ed25519 key behind it, so parsing has to refuse a payload
-        // of any other size rather than validate the checksum alone.
+        // A G-strkey over a 37-byte payload with a correct checksum encodes to
+        // 64 characters, so the encoded-length rule stops it before any payload
+        // byte is read.
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('G-strkey must be 56 characters long, 64 characters given');
         XdrAccountID::fromJsonValue(self::G_STRKEY_WITH_37_BYTE_PAYLOAD);

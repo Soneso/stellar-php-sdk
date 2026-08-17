@@ -74,10 +74,7 @@ class ClaimableBalancesRequestBuilder  extends RequestBuilder
      * @throws HorizonRequestException
      */
     public function claimableBalance(string $claimableBalanceId) : ClaimableBalanceResponse {
-        // Horizon spells the id in the XDR form: the discriminant as 4 bytes ahead of
-        // the hash. The resolver takes every accepted spelling and emits that form.
-        $idHex = XdrClaimableBalanceID::forClaimableBalanceId($claimableBalanceId)
-            ->getPaddedBalanceIdHex();
+        $idHex = XdrClaimableBalanceID::paddedBalanceIdHexFor($claimableBalanceId);
         $this->setSegments("claimable_balances", $idHex);
         return parent::executeRequest($this->buildUrl(),RequestType::SINGLE_CLAIMABLE_BALANCE);
     }

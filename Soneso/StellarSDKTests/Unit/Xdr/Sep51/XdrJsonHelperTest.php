@@ -1459,6 +1459,34 @@ class XdrJsonHelperTest extends TestCase
     }
 
     /**
+     * Input that is not valid UTF-8 must be escaped to pure ASCII, so the
+     * preview can be embedded in an exception message a caller serializes.
+     */
+    public function testSafePreview_escapesInvalidUtf8ToPureAscii(): void
+    {
+        $preview = XdrJsonHelper::safePreview("abc\xC3(\xFF\xFEdef");
+
+        $this->assertSame('abc\xC3(\xFF\xFEdef', $preview);
+        $this->assertTrue(mb_check_encoding($preview, 'UTF-8'));
+        $this->assertNotFalse(json_encode($preview));
+    }
+
+    /**
+     * Truncation is bounded by bytes but may never split a multi-byte character,
+     * or the preview stops being valid UTF-8.
+     */
+    public function testSafePreview_truncationNeverSplitsAMultibyteCharacter(): void
+    {
+        // 45 two-byte characters are 90 bytes; the 77-byte cut falls inside the
+        // 39th character and has to back off to its boundary at 76 bytes.
+        $preview = XdrJsonHelper::safePreview(str_repeat("\u{00E4}", 45));
+
+        $this->assertSame(str_repeat("\u{00E4}", 38) . '...', $preview);
+        $this->assertTrue(mb_check_encoding($preview, 'UTF-8'));
+        $this->assertNotFalse(json_encode($preview));
+    }
+
+    /**
      * ksortRecursive must throw when the depth bound is exceeded.
      *
      * Public callers constructing deeply-nested arrays by hand and passing them

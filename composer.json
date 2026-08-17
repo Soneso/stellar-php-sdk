@@ -22,6 +22,7 @@
 		"yosymfony/toml" : "~1.0",
       	"ext-bcmath": "*",
 		"ext-gmp": "*",
+		"ext-mbstring": "*",
 		"ext-sodium": "*"
     },
 	"suggest": {
