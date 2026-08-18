@@ -114,7 +114,7 @@ class CreateContractWithConstructorHostFunction extends HostFunction
             throw new Exception("invalid argument");
         }
         return new CreateContractWithConstructorHostFunction(Address::fromXdr($xdrAddress), $wasmId,
-            $xdr->createContractV2->constructorArgs, $xdr->createContract->contractIDPreimage->salt);
+            $xdr->createContractV2->constructorArgs, $xdr->createContractV2->contractIDPreimage->salt);
     }
 
     /**

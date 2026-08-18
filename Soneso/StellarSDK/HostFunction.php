@@ -19,6 +19,8 @@ use Soneso\StellarSDK\Xdr\XdrHostFunction;
  * - InvokeContractHostFunction: Call smart contract functions
  * - CreateContractHostFunction: Deploy contracts from WASM hash
  * - CreateContractWithConstructorHostFunction: Deploy contracts with constructor arguments
+ * - CreateContractFromExternalRefHostFunction: Deploy contracts from a CAP-85 external reference
+ * - CreateContractFromExternalRefWithConstructorHostFunction: Deploy contracts from a CAP-85 external reference with constructor arguments
  * - UploadContractWasmHostFunction: Upload contract WASM code
  * - DeploySACWithAssetHostFunction: Deploy Stellar Asset Contracts for assets
  *

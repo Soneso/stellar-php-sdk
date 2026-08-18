@@ -88,6 +88,48 @@ class XdrHostFunction extends XdrHostFunctionBase
         return $result;
     }
 
+    /**
+     * Builds a create contract host function whose executable is a CAP-85 external
+     * reference: the instance runs the wasm named by the owner contract's persistent
+     * entry under the given tag.
+     *
+     * @param XdrSCAddress $address the deployer address
+     * @param XdrSCAddress $executableOwner the contract holding the executable tag entry
+     * @param string $tag the tag of the executable entry on the owner
+     * @param string $salt 32 byte salt for contract id generation
+     * @return XdrHostFunction
+     */
+    public static function forCreatingContractWithExternalRef(XdrSCAddress $address, XdrSCAddress $executableOwner, string $tag, string $salt) :  XdrHostFunction {
+        $result = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT());
+        $cId = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS());
+        $cId->address = $address;
+        $cId->salt = $salt;
+        $cCode = XdrContractExecutable::forExternalRef($executableOwner, $tag);
+        $result->createContract = new XdrCreateContractArgs($cId, $cCode);
+        return $result;
+    }
+
+    /**
+     * Builds a create contract v2 host function whose executable is a CAP-85 external
+     * reference, passing constructor arguments to the created instance.
+     *
+     * @param XdrSCAddress $address the deployer address
+     * @param XdrSCAddress $executableOwner the contract holding the executable tag entry
+     * @param string $tag the tag of the executable entry on the owner
+     * @param string $salt 32 byte salt for contract id generation
+     * @param array<XdrSCVal> $constructorArgs arguments passed to the contract constructor
+     * @return XdrHostFunction
+     */
+    public static function forCreatingContractV2WithExternalRef(XdrSCAddress $address, XdrSCAddress $executableOwner, string $tag, string $salt, array $constructorArgs) :  XdrHostFunction {
+        $result = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT_V2());
+        $cId = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS());
+        $cId->address = $address;
+        $cId->salt = $salt;
+        $cCode = XdrContractExecutable::forExternalRef($executableOwner, $tag);
+        $result->createContractV2 = new XdrCreateContractArgsV2($cId, $cCode, $constructorArgs);
+        return $result;
+    }
+
     public static function forDeploySACWithAsset(XdrAsset $asset) :  XdrHostFunction {
         $result = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT());
         $cId = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET());
