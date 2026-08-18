@@ -10,8 +10,10 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Requests\GetEventsRequest;
 use Soneso\StellarSDK\Soroban\Requests\GetLedgersRequest;
@@ -36,7 +38,26 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Xdr\XdrContractCodeEntry;
+use Soneso\StellarSDK\Xdr\XdrContractCodeEntryExt;
+use Soneso\StellarSDK\Xdr\XdrContractDataEntry;
+use Soneso\StellarSDK\Xdr\XdrContractExecutable;
+use Soneso\StellarSDK\Xdr\XdrDataValueMandatory;
+use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
+use Soneso\StellarSDK\Xdr\XdrLedgerEntryData;
+use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
+use Soneso\StellarSDK\Xdr\XdrLedgerKey;
+use Soneso\StellarSDK\Xdr\XdrSCContractInstance;
+use Soneso\StellarSDK\Xdr\XdrSCEnvMetaEntry;
+use Soneso\StellarSDK\Xdr\XdrSCEnvMetaEntryInterfaceVersion;
+use Soneso\StellarSDK\Xdr\XdrSCEnvMetaKind;
+use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
+use Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind;
+use Soneso\StellarSDK\Xdr\XdrSCSpecFunctionV0;
+use Soneso\StellarSDK\Xdr\XdrSCSpecType;
+use Soneso\StellarSDK\Xdr\XdrSCSpecTypeDef;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
+use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\Asset;
@@ -57,15 +78,19 @@ class SorobanServerTest extends TestCase
     private const TEST_CONTRACT_ID = 'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM';
     private const TEST_WASM_ID = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
     private const TEST_TRANSACTION_HASH = 'a12b3c4d5e6f7890abcdef1234567890abcdef1234567890abcdef1234567890';
+    private const TEST_OWNER_CONTRACT_ID_HEX = 'c0decafec0decafec0decafec0decafec0decafec0decafec0decafec0decafe';
+    private const TEST_EXECUTABLE_TAG = 'token-v1';
 
     /**
      * Helper method to create a mocked SorobanServer with predefined responses
-     * Uses reflection to inject the mock HTTP client
+     * Uses reflection to inject the mock HTTP client. When a history container is
+     * passed, every request the server sends is recorded into it.
      */
-    private function createMockedSorobanServer(array $responses): SorobanServer
+    private function createMockedSorobanServer(array $responses, array &$requestHistory = []): SorobanServer
     {
         $mock = new MockHandler($responses);
         $handlerStack = HandlerStack::create($mock);
+        $handlerStack->push(Middleware::history($requestHistory));
         $client = new Client(['handler' => $handlerStack]);
 
         $server = new SorobanServer(self::TEST_ENDPOINT);
@@ -967,5 +992,337 @@ class SorobanServerTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Service URL must use HTTPS');
         new SorobanServer('http://soroban-testnet.stellar.org');
+    }
+
+    // External reference executable (CAP-85) tests
+
+    /**
+     * getLedgerEntries response containing the given ledger entry as its single result.
+     */
+    private function ledgerEntryResponse(XdrLedgerEntryData $entryData): Response
+    {
+        return new Response(200, [], json_encode([
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'result' => [
+                'entries' => [
+                    [
+                        'key' => 'AAAABgAAAAA=',
+                        'xdr' => $entryData->toBase64Xdr(),
+                        'lastModifiedLedgerSeq' => 1000,
+                    ],
+                ],
+                'latestLedger' => 1000,
+            ]
+        ]));
+    }
+
+    /**
+     * getLedgerEntries response with no entries, as returned when the queried key does
+     * not exist on the ledger.
+     */
+    private function emptyLedgerEntriesResponse(): Response
+    {
+        return new Response(200, [], json_encode([
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'result' => [
+                'entries' => [],
+                'latestLedger' => 1000,
+            ]
+        ]));
+    }
+
+    /**
+     * CONTRACT_DATA ledger entry holding the contract instance with a wasm executable.
+     */
+    private function wasmInstanceEntryData(string $wasmIdHex): XdrLedgerEntryData
+    {
+        return $this->instanceEntryData(XdrContractExecutable::forWasmId($wasmIdHex));
+    }
+
+    /**
+     * CONTRACT_DATA ledger entry holding the contract instance with an external
+     * reference executable pointing at the given owner contract and tag.
+     */
+    private function externalRefInstanceEntryData(string $ownerContractIdHex, string $tag): XdrLedgerEntryData
+    {
+        return $this->instanceEntryData(XdrContractExecutable::forExternalRef(
+            Address::fromContractId($ownerContractIdHex)->toXdr(),
+            $tag,
+        ));
+    }
+
+    private function instanceEntryData(XdrContractExecutable $executable): XdrLedgerEntryData
+    {
+        $dataEntry = new XdrContractDataEntry(
+            new XdrExtensionPoint(0),
+            Address::fromContractId(self::TEST_CONTRACT_ID)->toXdr(),
+            XdrSCVal::forLedgerKeyContractInstance(),
+            XdrContractDataDurability::PERSISTENT(),
+            XdrSCVal::forContractInstance(new XdrSCContractInstance($executable)),
+        );
+        $entryData = new XdrLedgerEntryData(XdrLedgerEntryType::CONTRACT_DATA());
+        $entryData->contractData = $dataEntry;
+        return $entryData;
+    }
+
+    /**
+     * CONTRACT_DATA ledger entry holding the executable tag entry on the owner
+     * contract: keyed by the tag, PERSISTENT, with the given value.
+     */
+    private function executableTagEntryData(string $ownerContractIdHex, string $tag, XdrSCVal $value): XdrLedgerEntryData
+    {
+        $dataEntry = new XdrContractDataEntry(
+            new XdrExtensionPoint(0),
+            Address::fromContractId($ownerContractIdHex)->toXdr(),
+            XdrSCVal::forExecutableTag($tag),
+            XdrContractDataDurability::PERSISTENT(),
+            $value,
+        );
+        $entryData = new XdrLedgerEntryData(XdrLedgerEntryType::CONTRACT_DATA());
+        $entryData->contractData = $dataEntry;
+        return $entryData;
+    }
+
+    /**
+     * CONTRACT_CODE ledger entry holding the given byte code under the given wasm hash.
+     */
+    private function contractCodeEntryData(string $wasmIdHex, string $byteCode): XdrLedgerEntryData
+    {
+        $codeEntry = new XdrContractCodeEntry(
+            new XdrContractCodeEntryExt(0),
+            hex2bin($wasmIdHex),
+            new XdrDataValueMandatory($byteCode),
+        );
+        $entryData = new XdrLedgerEntryData(XdrLedgerEntryType::CONTRACT_CODE());
+        $entryData->contractCode = $codeEntry;
+        return $entryData;
+    }
+
+    /**
+     * Synthetic contract byte code containing an env meta section followed by a spec
+     * section with a single function entry, as parsed by SorobanContractParser.
+     */
+    private function specTestByteCode(string $functionName): string
+    {
+        $envMeta = new XdrSCEnvMetaEntry(new XdrSCEnvMetaKind(XdrSCEnvMetaKind::SC_ENV_META_KIND_INTERFACE_VERSION));
+        $envMeta->interfaceVersion = new XdrSCEnvMetaEntryInterfaceVersion(23, 0);
+        $specEntry = new XdrSCSpecEntry(new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_FUNCTION_V0));
+        $specEntry->functionV0 = new XdrSCSpecFunctionV0(
+            '',
+            $functionName,
+            [],
+            [new XdrSCSpecTypeDef(XdrSCSpecType::VOID())],
+        );
+        return 'contractenvmetav0' . $envMeta->encode() . 'contractspecv0' . $specEntry->encode();
+    }
+
+    /**
+     * The ledger key of the recorded getLedgerEntries request at the given position.
+     */
+    private function requestedLedgerKey(array $requestHistory, int $index): XdrLedgerKey
+    {
+        $body = json_decode((string)$requestHistory[$index]['request']->getBody(), true);
+        $this->assertSame('getLedgerEntries', $body['method']);
+        $this->assertCount(1, $body['params']['keys']);
+        return XdrLedgerKey::fromBase64Xdr($body['params']['keys'][0]);
+    }
+
+    public function testLoadContractCodeForContractIdWasmArm(): void
+    {
+        $byteCode = 'test wasm byte code';
+        $server = $this->createMockedSorobanServer([
+            $this->ledgerEntryResponse($this->wasmInstanceEntryData(self::TEST_WASM_ID)),
+            $this->ledgerEntryResponse($this->contractCodeEntryData(self::TEST_WASM_ID, $byteCode)),
+        ]);
+
+        $codeEntry = $server->loadContractCodeForContractId(self::TEST_CONTRACT_ID);
+
+        $this->assertNotNull($codeEntry);
+        $this->assertSame($byteCode, $codeEntry->code->value);
+    }
+
+    public function testLoadContractCodeForContractIdExternalRefArm(): void
+    {
+        $byteCode = 'external ref wasm byte code';
+        $requestHistory = [];
+        $server = $this->createMockedSorobanServer([
+            $this->ledgerEntryResponse($this->externalRefInstanceEntryData(
+                self::TEST_OWNER_CONTRACT_ID_HEX, self::TEST_EXECUTABLE_TAG)),
+            $this->ledgerEntryResponse($this->executableTagEntryData(
+                self::TEST_OWNER_CONTRACT_ID_HEX, self::TEST_EXECUTABLE_TAG,
+                XdrSCVal::forBytes(hex2bin(self::TEST_WASM_ID)))),
+            $this->ledgerEntryResponse($this->contractCodeEntryData(self::TEST_WASM_ID, $byteCode)),
+        ], $requestHistory);
+
+        $codeEntry = $server->loadContractCodeForContractId(self::TEST_CONTRACT_ID);
+
+        $this->assertNotNull($codeEntry);
+        $this->assertSame($byteCode, $codeEntry->code->value);
+
+        $this->assertCount(3, $requestHistory);
+        $tagKey = $this->requestedLedgerKey($requestHistory, 1);
+        $this->assertSame(XdrLedgerEntryType::CONTRACT_DATA, $tagKey->type->value);
+        $this->assertNotNull($tagKey->contractData);
+        $this->assertSame(self::TEST_OWNER_CONTRACT_ID_HEX, $tagKey->contractData->contract->contractId);
+        $this->assertSame(XdrSCValType::SCV_EXECUTABLE_TAG, $tagKey->contractData->key->type->value);
+        $this->assertSame(self::TEST_EXECUTABLE_TAG, $tagKey->contractData->key->executableTag);
+        $this->assertSame(XdrContractDataDurability::PERSISTENT, $tagKey->contractData->durability->value);
+        $codeKey = $this->requestedLedgerKey($requestHistory, 2);
+        $this->assertNotNull($codeKey->contractCode);
+        $this->assertSame(self::TEST_WASM_ID, bin2hex($codeKey->contractCode->hash));
+    }
+
+    public function testExternalRefMissingTagEntryReturnsNull(): void
+    {
+        $directServer = $this->createMockedSorobanServer([$this->emptyLedgerEntriesResponse()]);
+        $ref = XdrContractExecutable::forExternalRef(
+            Address::fromContractId(self::TEST_OWNER_CONTRACT_ID_HEX)->toXdr(),
+            self::TEST_EXECUTABLE_TAG,
+        )->externalRef;
+        $this->assertNotNull($ref);
+        $this->assertNull($directServer->loadWasmIdForExternalRef($ref));
+
+        $loadServer = $this->createMockedSorobanServer([
+            $this->ledgerEntryResponse($this->externalRefInstanceEntryData(
+                self::TEST_OWNER_CONTRACT_ID_HEX, self::TEST_EXECUTABLE_TAG)),
+            $this->emptyLedgerEntriesResponse(),
+        ]);
+        $this->assertNull($loadServer->loadContractCodeForContractId(self::TEST_CONTRACT_ID));
+    }
+
+    public function testLoadWasmIdForExternalRefRejectsNonBytesValue(): void
+    {
+        $server = $this->createMockedSorobanServer([
+            $this->ledgerEntryResponse($this->executableTagEntryData(
+                self::TEST_OWNER_CONTRACT_ID_HEX, self::TEST_EXECUTABLE_TAG,
+                XdrSCVal::forSymbol('not-a-hash'))),
+        ]);
+        $ref = XdrContractExecutable::forExternalRef(
+            Address::fromContractId(self::TEST_OWNER_CONTRACT_ID_HEX)->toXdr(),
+            self::TEST_EXECUTABLE_TAG,
+        )->externalRef;
+        $this->assertNotNull($ref);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The executable tag entry on contract '
+            . StrKey::encodeContractIdHex(self::TEST_OWNER_CONTRACT_ID_HEX)
+            . ' does not hold a 32-byte wasm hash');
+        $server->loadWasmIdForExternalRef($ref);
+    }
+
+    public function testLoadWasmIdForExternalRefRejectsWrongLengthBytes(): void
+    {
+        $server = $this->createMockedSorobanServer([
+            $this->ledgerEntryResponse($this->executableTagEntryData(
+                self::TEST_OWNER_CONTRACT_ID_HEX, self::TEST_EXECUTABLE_TAG,
+                XdrSCVal::forBytes(hex2bin('e3b0c44298fc1c149afbf4c8996fb924')))),
+        ]);
+        $ref = XdrContractExecutable::forExternalRef(
+            Address::fromContractId(self::TEST_OWNER_CONTRACT_ID_HEX)->toXdr(),
+            self::TEST_EXECUTABLE_TAG,
+        )->externalRef;
+        $this->assertNotNull($ref);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('does not hold a 32-byte wasm hash');
+        $server->loadWasmIdForExternalRef($ref);
+    }
+
+    public function testLoadWasmIdForExternalRefRejectsNonContractDataEntry(): void
+    {
+        $server = $this->createMockedSorobanServer([
+            $this->ledgerEntryResponse($this->contractCodeEntryData(self::TEST_WASM_ID, 'x')),
+        ]);
+        $ref = XdrContractExecutable::forExternalRef(
+            Address::fromContractId(self::TEST_OWNER_CONTRACT_ID_HEX)->toXdr(),
+            self::TEST_EXECUTABLE_TAG,
+        )->externalRef;
+        $this->assertNotNull($ref);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The executable tag entry on contract '
+            . StrKey::encodeContractIdHex(self::TEST_OWNER_CONTRACT_ID_HEX)
+            . ' is not a contract data ledger entry');
+        $server->loadWasmIdForExternalRef($ref);
+    }
+
+    public function testLoadWasmIdForExternalRefRejectsNonContractOwner(): void
+    {
+        $requestHistory = [];
+        $server = $this->createMockedSorobanServer([], $requestHistory);
+        $ref = XdrContractExecutable::forExternalRef(
+            Address::fromAccountId(self::TEST_ACCOUNT_ID)->toXdr(),
+            self::TEST_EXECUTABLE_TAG,
+        )->externalRef;
+        $this->assertNotNull($ref);
+
+        $caught = null;
+        try {
+            $server->loadWasmIdForExternalRef($ref);
+        } catch (InvalidArgumentException $e) {
+            $caught = $e;
+        }
+
+        $this->assertNotNull($caught);
+        $this->assertSame('External reference owner ' . self::TEST_ACCOUNT_ID
+            . ' is not a contract address; only a contract can hold the executable tag entry',
+            $caught->getMessage());
+        $this->assertCount(0, $requestHistory);
+    }
+
+    public function testLoadWasmIdForExternalRefBinaryTag(): void
+    {
+        $binaryTag = "\x00\x01\x02\xff\xfe\x80token";
+        $requestHistory = [];
+        $server = $this->createMockedSorobanServer([
+            $this->ledgerEntryResponse($this->executableTagEntryData(
+                self::TEST_OWNER_CONTRACT_ID_HEX, $binaryTag,
+                XdrSCVal::forBytes(hex2bin(self::TEST_WASM_ID)))),
+        ], $requestHistory);
+        $ref = XdrContractExecutable::forExternalRef(
+            Address::fromContractId(self::TEST_OWNER_CONTRACT_ID_HEX)->toXdr(),
+            $binaryTag,
+        )->externalRef;
+        $this->assertNotNull($ref);
+
+        $this->assertSame(self::TEST_WASM_ID, $server->loadWasmIdForExternalRef($ref));
+
+        $this->assertCount(1, $requestHistory);
+        $tagKey = $this->requestedLedgerKey($requestHistory, 0);
+        $this->assertNotNull($tagKey->contractData);
+        $this->assertSame($binaryTag, $tagKey->contractData->key->executableTag);
+    }
+
+    public function testLoadContractInfoForContractIdExternalRefArm(): void
+    {
+        $server = $this->createMockedSorobanServer([
+            $this->ledgerEntryResponse($this->externalRefInstanceEntryData(
+                self::TEST_OWNER_CONTRACT_ID_HEX, self::TEST_EXECUTABLE_TAG)),
+            $this->ledgerEntryResponse($this->executableTagEntryData(
+                self::TEST_OWNER_CONTRACT_ID_HEX, self::TEST_EXECUTABLE_TAG,
+                XdrSCVal::forBytes(hex2bin(self::TEST_WASM_ID)))),
+            $this->ledgerEntryResponse($this->contractCodeEntryData(
+                self::TEST_WASM_ID, $this->specTestByteCode('hello'))),
+        ]);
+
+        $info = $server->loadContractInfoForContractId(self::TEST_CONTRACT_ID);
+
+        $this->assertNotNull($info);
+        $this->assertSame(23, $info->envMetaProtocol);
+        $this->assertCount(1, $info->funcs);
+        $this->assertSame('hello', $info->funcs[0]->name);
+    }
+
+    public function testLoadContractCodeForContractIdStellarAssetArm(): void
+    {
+        $requestHistory = [];
+        $server = $this->createMockedSorobanServer([
+            $this->ledgerEntryResponse($this->instanceEntryData(XdrContractExecutable::forToken())),
+        ], $requestHistory);
+
+        $this->assertNull($server->loadContractCodeForContractId(self::TEST_CONTRACT_ID));
+        $this->assertCount(1, $requestHistory);
     }
 }
