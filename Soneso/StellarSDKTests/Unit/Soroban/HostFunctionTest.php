@@ -9,14 +9,19 @@ namespace Soneso\StellarSDKTests\Unit\Soroban;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeNative;
+use Soneso\StellarSDK\CreateContractFromExternalRefHostFunction;
+use Soneso\StellarSDK\CreateContractFromExternalRefWithConstructorHostFunction;
 use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\CreateContractWithConstructorHostFunction;
 use Soneso\StellarSDK\DeploySACWithAssetHostFunction;
 use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperation;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrContractExecutable;
 use Soneso\StellarSDK\Xdr\XdrContractIDPreimage;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
+use Soneso\StellarSDK\Xdr\XdrCreateContractArgs;
 use Soneso\StellarSDK\Xdr\XdrCreateContractArgsV2;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionOp;
@@ -33,8 +38,9 @@ use Exception;
 class HostFunctionTest extends TestCase
 {
     private const TEST_ACCOUNT_ID = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
-    private const TEST_ISSUER_ID = 'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3DANUBER3WPR';
+    private const TEST_ISSUER_ID = 'GABAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEJXA';
     private const TEST_CONTRACT_ID = 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC';
+    private const TEST_OWNER_ID_HEX = 'cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd';
 
     // CreateContractHostFunction Tests
 
@@ -465,5 +471,263 @@ class HostFunctionTest extends TestCase
         /** @var DeploySACWithAssetHostFunction $hostFunction */
         $hostFunction = $operation->getFunction();
         $this->assertInstanceOf(AssetTypeNative::class, $hostFunction->getAsset());
+    }
+
+    // CreateContractFromExternalRefHostFunction Tests
+
+    public function testCreateContractFromExternalRefToXdrRoundTrip(): void
+    {
+        $address = Address::fromAccountId(self::TEST_ACCOUNT_ID);
+        $owner = Address::fromContractId(self::TEST_OWNER_ID_HEX);
+        $salt = str_repeat("\x11", 32);
+
+        $original = new CreateContractFromExternalRefHostFunction($address, $owner, "token-v1", $salt);
+        $xdr = $original->toXdr();
+        $decodedXdr = XdrHostFunction::decode(new XdrBuffer($xdr->encode()));
+        $decoded = CreateContractFromExternalRefHostFunction::fromXdr($decodedXdr);
+
+        $this->assertEquals(self::TEST_ACCOUNT_ID, $decoded->getAddress()->accountId);
+        $this->assertEquals(self::TEST_OWNER_ID_HEX, $decoded->getExecutableOwner()->contractId);
+        $this->assertEquals("token-v1", $decoded->getTag());
+        $this->assertSame($salt, $decoded->getSalt());
+        $this->assertEquals(base64_encode($xdr->encode()), base64_encode($decoded->toXdr()->encode()));
+    }
+
+    public function testCreateContractFromExternalRefWithConstructorToXdrRoundTrip(): void
+    {
+        $address = Address::fromAccountId(self::TEST_ACCOUNT_ID);
+        $owner = Address::fromContractId(self::TEST_OWNER_ID_HEX);
+        $salt = str_repeat("\x11", 32);
+        $args = [XdrSCVal::forU32(7)];
+
+        $original = new CreateContractFromExternalRefWithConstructorHostFunction($address, $owner, "token-v1", $args, $salt);
+        $xdr = $original->toXdr();
+        $decodedXdr = XdrHostFunction::decode(new XdrBuffer($xdr->encode()));
+        $decoded = CreateContractFromExternalRefWithConstructorHostFunction::fromXdr($decodedXdr);
+
+        $this->assertEquals(self::TEST_ACCOUNT_ID, $decoded->getAddress()->accountId);
+        $this->assertEquals(self::TEST_OWNER_ID_HEX, $decoded->getExecutableOwner()->contractId);
+        $this->assertEquals("token-v1", $decoded->getTag());
+        $this->assertSame($salt, $decoded->getSalt());
+        $this->assertCount(1, $decoded->getConstructorArgs());
+        $this->assertEquals(7, $decoded->getConstructorArgs()[0]->u32);
+        $this->assertEquals(base64_encode($xdr->encode()), base64_encode($decoded->toXdr()->encode()));
+    }
+
+    public function testCreateContractFromExternalRefWithoutSaltGeneratesSalt(): void
+    {
+        $address = Address::fromAccountId(self::TEST_ACCOUNT_ID);
+        $owner = Address::fromContractId(self::TEST_OWNER_ID_HEX);
+
+        $plain = new CreateContractFromExternalRefHostFunction($address, $owner, "token-v1");
+        $this->assertEquals(32, strlen($plain->getSalt()));
+        $this->assertSame($plain->getSalt(), $plain->toXdr()->createContract->contractIDPreimage->salt);
+
+        $withConstructor = new CreateContractFromExternalRefWithConstructorHostFunction($address, $owner, "token-v1", []);
+        $this->assertEquals(32, strlen($withConstructor->getSalt()));
+        $this->assertSame($withConstructor->getSalt(), $withConstructor->toXdr()->createContractV2->contractIDPreimage->salt);
+    }
+
+    public function testCreateContractFromExternalRefSettersReplaceEveryField(): void
+    {
+        $salt1 = str_repeat("\x11", 32);
+        $salt2 = str_repeat("\x22", 32);
+        $ownerIdHex2 = str_repeat("ef", 32);
+
+        $hostFunction = new CreateContractFromExternalRefHostFunction(
+            Address::fromAccountId(self::TEST_ACCOUNT_ID),
+            Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            "token-v1",
+            $salt1
+        );
+        $hostFunction->setAddress(Address::fromAccountId(self::TEST_ISSUER_ID));
+        $hostFunction->setExecutableOwner(Address::fromContractId($ownerIdHex2));
+        $hostFunction->setTag("token-v2");
+        $hostFunction->setSalt($salt2);
+
+        $expected = new CreateContractFromExternalRefHostFunction(
+            Address::fromAccountId(self::TEST_ISSUER_ID),
+            Address::fromContractId($ownerIdHex2),
+            "token-v2",
+            $salt2
+        );
+        $this->assertEquals(self::TEST_ISSUER_ID, $hostFunction->getAddress()->accountId);
+        $this->assertEquals(base64_encode($expected->toXdr()->encode()), base64_encode($hostFunction->toXdr()->encode()));
+    }
+
+    public function testCreateContractFromExternalRefWithConstructorSettersReplaceEveryField(): void
+    {
+        $salt1 = str_repeat("\x11", 32);
+        $salt2 = str_repeat("\x22", 32);
+        $ownerIdHex2 = str_repeat("ef", 32);
+
+        $hostFunction = new CreateContractFromExternalRefWithConstructorHostFunction(
+            Address::fromAccountId(self::TEST_ACCOUNT_ID),
+            Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            "token-v1",
+            [XdrSCVal::forU32(7)],
+            $salt1
+        );
+        $hostFunction->setAddress(Address::fromAccountId(self::TEST_ISSUER_ID));
+        $hostFunction->setExecutableOwner(Address::fromContractId($ownerIdHex2));
+        $hostFunction->setTag("token-v2");
+        $hostFunction->setConstructorArgs([XdrSCVal::forU32(9)]);
+        $hostFunction->setSalt($salt2);
+
+        $expected = new CreateContractFromExternalRefWithConstructorHostFunction(
+            Address::fromAccountId(self::TEST_ISSUER_ID),
+            Address::fromContractId($ownerIdHex2),
+            "token-v2",
+            [XdrSCVal::forU32(9)],
+            $salt2
+        );
+        $this->assertEquals(self::TEST_ISSUER_ID, $hostFunction->getAddress()->accountId);
+        $this->assertEquals(base64_encode($expected->toXdr()->encode()), base64_encode($hostFunction->toXdr()->encode()));
+    }
+
+    public function testExternalRefBinaryTagSurvivesRoundTrip(): void
+    {
+        $tag = "\x80\xff\x00tag\x01";
+        $address = Address::fromAccountId(self::TEST_ACCOUNT_ID);
+        $owner = Address::fromContractId(self::TEST_OWNER_ID_HEX);
+        $salt = str_repeat("\x11", 32);
+
+        $original = new CreateContractFromExternalRefHostFunction($address, $owner, $tag, $salt);
+        $decodedXdr = XdrHostFunction::decode(new XdrBuffer($original->toXdr()->encode()));
+        $decoded = CreateContractFromExternalRefHostFunction::fromXdr($decodedXdr);
+
+        $this->assertSame($tag, $decoded->getTag());
+        $this->assertEquals(base64_encode($original->toXdr()->encode()), base64_encode($decoded->toXdr()->encode()));
+    }
+
+    public function testFromXdrOperationParsesExternalRefCreate(): void
+    {
+        $hostFunction = new CreateContractFromExternalRefHostFunction(
+            Address::fromAccountId(self::TEST_ACCOUNT_ID),
+            Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            "token-v1",
+            str_repeat("\x11", 32)
+        );
+        $xdrOp = new XdrInvokeHostFunctionOp($hostFunction->toXdr(), []);
+
+        $operation = InvokeHostFunctionOperation::fromXdrOperation($xdrOp);
+
+        $this->assertInstanceOf(CreateContractFromExternalRefHostFunction::class, $operation->getFunction());
+        /** @var CreateContractFromExternalRefHostFunction $parsed */
+        $parsed = $operation->getFunction();
+        $this->assertEquals(self::TEST_OWNER_ID_HEX, $parsed->getExecutableOwner()->contractId);
+        $this->assertEquals("token-v1", $parsed->getTag());
+        $this->assertEquals(base64_encode($hostFunction->toXdr()->encode()), base64_encode($parsed->toXdr()->encode()));
+    }
+
+    public function testFromXdrOperationParsesExternalRefCreateWithConstructor(): void
+    {
+        $hostFunction = new CreateContractFromExternalRefWithConstructorHostFunction(
+            Address::fromAccountId(self::TEST_ACCOUNT_ID),
+            Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            "token-v1",
+            [XdrSCVal::forU32(7)],
+            str_repeat("\x11", 32)
+        );
+        $xdrOp = new XdrInvokeHostFunctionOp($hostFunction->toXdr(), []);
+
+        $operation = InvokeHostFunctionOperation::fromXdrOperation($xdrOp);
+
+        $this->assertInstanceOf(CreateContractFromExternalRefWithConstructorHostFunction::class, $operation->getFunction());
+        /** @var CreateContractFromExternalRefWithConstructorHostFunction $parsed */
+        $parsed = $operation->getFunction();
+        $this->assertEquals(self::TEST_OWNER_ID_HEX, $parsed->getExecutableOwner()->contractId);
+        $this->assertEquals("token-v1", $parsed->getTag());
+        $this->assertCount(1, $parsed->getConstructorArgs());
+        $this->assertEquals(base64_encode($hostFunction->toXdr()->encode()), base64_encode($parsed->toXdr()->encode()));
+    }
+
+    public function testFromXdrOperationRejectsInvalidExecutableCombinations(): void
+    {
+        $ownerXdr = Address::fromContractId(self::TEST_OWNER_ID_HEX)->toXdr();
+        $assetPreimage = XdrContractIDPreimage::forAsset((new AssetTypeNative())->toXdr());
+        $addressPreimage = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS());
+        $addressPreimage->address = Address::fromAccountId(self::TEST_ACCOUNT_ID)->toXdr();
+        $addressPreimage->salt = str_repeat("\x11", 32);
+        $externalRefExecutable = XdrContractExecutable::forExternalRef($ownerXdr, "token-v1");
+        $tokenExecutable = XdrContractExecutable::forToken();
+
+        $cases = [
+            'CREATE_CONTRACT asset preimage with external ref executable' =>
+                XdrHostFunction::forCreatingContractWithArgs(new XdrCreateContractArgs($assetPreimage, $externalRefExecutable)),
+            'CREATE_CONTRACT_V2 asset preimage with external ref executable' =>
+                XdrHostFunction::forCreatingContractV2WithArgs(new XdrCreateContractArgsV2($assetPreimage, $externalRefExecutable, [])),
+            'CREATE_CONTRACT address preimage with stellar asset executable' =>
+                XdrHostFunction::forCreatingContractWithArgs(new XdrCreateContractArgs($addressPreimage, $tokenExecutable)),
+            'CREATE_CONTRACT_V2 address preimage with stellar asset executable' =>
+                XdrHostFunction::forCreatingContractV2WithArgs(new XdrCreateContractArgsV2($addressPreimage, $tokenExecutable, [])),
+        ];
+
+        foreach ($cases as $label => $xdrHostFunction) {
+            $threw = false;
+            try {
+                InvokeHostFunctionOperation::fromXdrOperation(new XdrInvokeHostFunctionOp($xdrHostFunction, []));
+            } catch (Exception $e) {
+                $threw = true;
+                $this->assertStringContainsStringIgnoringCase("invalid argument", $e->getMessage(), $label);
+            }
+            $this->assertTrue($threw, "expected an exception for: " . $label);
+        }
+    }
+
+    public function testWasmCreateContractClassesRejectExternalRefXdr(): void
+    {
+        $address = Address::fromAccountId(self::TEST_ACCOUNT_ID);
+        $owner = Address::fromContractId(self::TEST_OWNER_ID_HEX);
+        $salt = str_repeat("\x11", 32);
+
+        $externalRefXdr = (new CreateContractFromExternalRefHostFunction($address, $owner, "token-v1", $salt))->toXdr();
+        $threw = false;
+        try {
+            CreateContractHostFunction::fromXdr($externalRefXdr);
+        } catch (Exception $e) {
+            $threw = true;
+            $this->assertStringContainsStringIgnoringCase("invalid argument", $e->getMessage());
+        }
+        $this->assertTrue($threw, "CreateContractHostFunction accepted an external ref executable");
+
+        $externalRefV2Xdr = (new CreateContractFromExternalRefWithConstructorHostFunction($address, $owner, "token-v1", [], $salt))->toXdr();
+        $threw = false;
+        try {
+            CreateContractWithConstructorHostFunction::fromXdr($externalRefV2Xdr);
+        } catch (Exception $e) {
+            $threw = true;
+            $this->assertStringContainsStringIgnoringCase("invalid argument", $e->getMessage());
+        }
+        $this->assertTrue($threw, "CreateContractWithConstructorHostFunction accepted an external ref executable");
+    }
+
+    public function testCreateContractFromExternalRefFromXdrWrongExecutableThrows(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Invalid argument");
+
+        // Create contract XDR with a wasm executable instead of an external reference
+        $wasmHostFunction = new CreateContractHostFunction(
+            Address::fromAccountId(self::TEST_ACCOUNT_ID),
+            str_repeat("ab", 32)
+        );
+
+        CreateContractFromExternalRefHostFunction::fromXdr($wasmHostFunction->toXdr());
+    }
+
+    public function testCreateContractFromExternalRefWithConstructorFromXdrWrongExecutableThrows(): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Invalid argument");
+
+        // Create contract v2 XDR with a wasm executable instead of an external reference
+        $wasmHostFunction = new CreateContractWithConstructorHostFunction(
+            Address::fromAccountId(self::TEST_ACCOUNT_ID),
+            str_repeat("ab", 32),
+            []
+        );
+
+        CreateContractFromExternalRefWithConstructorHostFunction::fromXdr($wasmHostFunction->toXdr());
     }
 }
