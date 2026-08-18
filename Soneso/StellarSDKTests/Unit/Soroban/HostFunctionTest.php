@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeNative;
 use Soneso\StellarSDK\CreateContractHostFunction;
+use Soneso\StellarSDK\CreateContractWithConstructorHostFunction;
 use Soneso\StellarSDK\DeploySACWithAssetHostFunction;
 use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperation;
@@ -114,6 +115,27 @@ class HostFunctionTest extends TestCase
 
         $hostFunction->setSalt($salt2);
         $this->assertEquals($salt2, $hostFunction->getSalt());
+    }
+
+    // CreateContractWithConstructorHostFunction Tests
+
+    public function testCreateContractWithConstructorToXdrRoundTrip(): void
+    {
+        $address = Address::fromAccountId(self::TEST_ACCOUNT_ID);
+        $wasmId = str_repeat("ab", 32);
+        $salt = str_repeat("\x11", 32);
+        $args = [XdrSCVal::forU32(7)];
+
+        $original = new CreateContractWithConstructorHostFunction($address, $wasmId, $args, $salt);
+        $xdr = $original->toXdr();
+        $decoded = CreateContractWithConstructorHostFunction::fromXdr($xdr);
+
+        $this->assertEquals($original->getWasmId(), $decoded->getWasmId());
+        $this->assertEquals($original->getSalt(), $decoded->getSalt());
+        $this->assertEquals($original->getAddress()->accountId, $decoded->getAddress()->accountId);
+        $this->assertCount(1, $decoded->getConstructorArgs());
+        $this->assertEquals(7, $decoded->getConstructorArgs()[0]->u32);
+        $this->assertEquals(base64_encode($xdr->encode()), base64_encode($decoded->toXdr()->encode()));
     }
 
     // DeploySACWithAssetHostFunction Tests
