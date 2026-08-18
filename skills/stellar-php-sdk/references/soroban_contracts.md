@@ -86,6 +86,41 @@ $client = SorobanClient::deploy(new DeployRequest(
 ));
 ```
 
+### Deploy from an External Reference (Protocol 28)
+
+A CAP-85 external reference names an owner contract and a tag; the owner's persistent
+entry under that tag holds the wasm hash the new instance runs. There is no install step,
+and `SorobanClient::deploy` covers only wasm-hash deploys -- build the create operation
+directly and submit it like any `InvokeHostFunctionOperation`:
+
+```php
+<?php
+declare(strict_types=1);
+
+use Soneso\StellarSDK\CreateContractFromExternalRefHostFunction;
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
+use Soneso\StellarSDK\Soroban\Address;
+
+$keyPair = KeyPair::random(); // or KeyPair::fromSeed($yourSecret)
+
+// Address::fromContractId() takes the hex form of the owner contract id
+$ownerIdHex = StrKey::decodeContractIdHex('CCXYZ...');
+
+$createOp = (new InvokeHostFunctionOperationBuilder(
+    new CreateContractFromExternalRefHostFunction(
+        Address::fromAccountId($keyPair->getAccountId()),  // deployer
+        Address::fromContractId($ownerIdHex),
+        'token-v1',  // tag; matched byte for byte
+    )
+))->build();
+// Then: build transaction, simulate, set auth + resource fee, sign, send
+```
+
+`CreateContractFromExternalRefWithConstructorHostFunction` adds `array $constructorArgs`
+after the tag. Envelope parsing returns these classes for external-ref create operations.
+
 ## Contract Invocation
 
 ### High-Level: SorobanClient

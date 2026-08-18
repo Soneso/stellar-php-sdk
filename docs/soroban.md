@@ -255,6 +255,9 @@ entry under the tag. It throws `InvalidArgumentException` if the reference's own
 contract address or the tag entry does not hold a 32-byte wasm hash. The owner contract is
 read, never invoked.
 
+To deploy a contract from an external reference, see "Create Contract from an External
+Reference (Protocol 28)" further down.
+
 ## SorobanClient
 
 High-level API for contract interaction.
@@ -1273,6 +1276,36 @@ $createOp = (new InvokeHostFunctionOperationBuilder(
 
 // Build, simulate, sign, and send (same pattern)
 ```
+
+### Create Contract from an External Reference (Protocol 28)
+
+Deploy a contract instance that runs the wasm named by a CAP-85 external reference
+(see External Reference Executables above). The owner contract already holds the tag
+entry, so there is no upload step.
+
+```php
+<?php
+use Soneso\StellarSDK\CreateContractFromExternalRefHostFunction;
+use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
+use Soneso\StellarSDK\Soroban\Address;
+
+// Address::fromContractId() takes the hex form of the owner contract id
+$ownerIdHex = StrKey::decodeContractIdHex('CCXYZ...');
+
+$createOp = (new InvokeHostFunctionOperationBuilder(
+    new CreateContractFromExternalRefHostFunction(
+        Address::fromAccountId($keyPair->getAccountId()),
+        Address::fromContractId($ownerIdHex),
+        'token-v1'  // Tag of the executable entry on the owner; matched byte for byte
+    )
+))->build();
+
+// Build, simulate, set auth, sign, and send (same pattern)
+```
+
+For constructor arguments, use `CreateContractFromExternalRefWithConstructorHostFunction`
+and pass the argument list after the tag.
 
 ### Invoke Contract (Low-Level)
 
