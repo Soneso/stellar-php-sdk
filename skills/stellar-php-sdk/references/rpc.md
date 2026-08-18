@@ -467,6 +467,14 @@ $wasmHash = 'abc123...'; // Hex-encoded WASM hash
 $codeEntry = $server->loadContractCodeForWasmId($wasmHash);
 ```
 
+The `...ForContractId` loaders resolve a CAP-85 external reference executable (Protocol 28)
+automatically: the instance names an owner contract and a tag, and the owner's persistent tag
+entry holds the wasm hash. `loadWasmIdForExternalRef(XdrContractExecutableExternalRef $ref)`
+resolves a reference directly: hex wasm id, `null` when the owner has no tag entry,
+`InvalidArgumentException` when the owner is not a contract address or the entry does not
+hold a 32-byte wasm hash. A Stellar asset contract has no wasm, so the loaders yield `null`
+for it.
+
 ### Introspecting Contract Interface
 
 Load parsed contract info to discover functions, types, and events.
@@ -531,5 +539,6 @@ Helper methods (not direct RPC calls):
 - `loadContractCodeForWasmId(string $wasmId): ?XdrContractCodeEntry`
 - `loadContractInfoForContractId(string $contractId): ?SorobanContractInfo`
 - `loadContractInfoForWasmId(string $wasmId): ?SorobanContractInfo`
+- `loadWasmIdForExternalRef(XdrContractExecutableExternalRef $ref): ?string`
 
 All RPC methods throw `GuzzleException` on network errors. Non-200 HTTP responses throw `\RuntimeException`. JSON parse failures throw `\InvalidArgumentException`. RPC-level errors are captured in the response object's `error` property.

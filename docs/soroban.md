@@ -192,7 +192,9 @@ foreach ($response->entries as $entry) {
 
 ### Load Contract Code
 
-Helper methods to load contract bytecode from the network.
+Helper methods to load contract bytecode from the network. An instance created from a CAP-85
+external reference resolves automatically; a Stellar asset contract has no wasm, so it
+yields `null`.
 
 ```php
 <?php
@@ -210,6 +212,48 @@ if ($contractCodeEntry !== null) {
 // By WASM ID
 $contractCodeEntry = $server->loadContractCodeForWasmId($wasmId);
 ```
+
+### External Reference Executables (CAP-85)
+
+From Protocol 28 on, a contract can be created from an external reference: instead of
+carrying its own wasm hash, the instance names an owner contract and a tag, and the owner
+holds a persistent contract data entry under that tag whose value is the 32-byte hash of an
+already uploaded wasm. `loadContractCodeForContractId()` and `loadContractInfoForContractId()`
+resolve such instances without any extra step. To resolve a reference directly, use
+`loadWasmIdForExternalRef()`:
+
+```php
+<?php
+use Soneso\StellarSDK\Soroban\SorobanServer;
+use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
+
+$server = new SorobanServer('https://soroban-testnet.stellar.org');
+
+// Read the contract instance to inspect its executable.
+$entry = $server->getContractData(
+    contractId: 'CCXYZ...',
+    key: XdrSCVal::forLedgerKeyContractInstance(),
+    durability: XdrContractDataDurability::PERSISTENT()
+);
+
+$executable = $entry?->getLedgerEntryDataXdr()->contractData?->val->instance?->executable;
+if ($executable !== null
+    && $executable->type->value === XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF
+    && $executable->externalRef !== null) {
+    // The tag entry on the owner contract holds the wasm hash the instance runs.
+    $wasmId = $server->loadWasmIdForExternalRef($executable->externalRef);
+    if ($wasmId !== null) {
+        $codeEntry = $server->loadContractCodeForWasmId($wasmId);
+    }
+}
+```
+
+`loadWasmIdForExternalRef()` returns the hex-encoded wasm id, or `null` if the owner has no
+entry under the tag. It throws `InvalidArgumentException` if the reference's owner is not a
+contract address or the tag entry does not hold a 32-byte wasm hash. The owner contract is
+read, never invoked.
 
 ## SorobanClient
 
@@ -1342,7 +1386,8 @@ $meta = $contractInfo->metaEntries;
 
 ### Parse from Network
 
-Load and parse contract info from a deployed contract.
+Load and parse contract info from a deployed contract. A contract created from a CAP-85
+external reference (Protocol 28) is resolved automatically.
 
 ```php
 <?php

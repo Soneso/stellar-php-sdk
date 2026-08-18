@@ -6,7 +6,7 @@ compatibility: Requires PHP 8.0+, ext-bcmath, ext-gmp, and Composer
 metadata:
   version: "1.4.0"
   sdk_version: "1.12.0"
-  last_updated: "2026-08-14"
+  last_updated: "2026-08-18"
 ---
 
 # Stellar SDK for PHP

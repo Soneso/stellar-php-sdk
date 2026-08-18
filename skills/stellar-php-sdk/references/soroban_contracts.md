@@ -546,6 +546,9 @@ $info = $server->loadContractInfoForWasmId('a1b2c3...');
 $info = $server->loadContractInfoForContractId('CABC123...');
 ```
 
+A contract created from a CAP-85 external reference (Protocol 28) resolves automatically.
+See `rpc.md` > Contract Introspection Helpers for `loadWasmIdForExternalRef()`.
+
 ### Pre-Extracted Arrays
 
 `SorobanContractInfo` provides pre-extracted plain PHP arrays from the raw spec entries.
