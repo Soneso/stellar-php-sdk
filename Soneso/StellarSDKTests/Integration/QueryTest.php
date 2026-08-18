@@ -173,7 +173,7 @@ class QueryTest extends TestCase
         $response = $this->sdk->transactions()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();
         $this->assertTrue($response->getTransactions()->count() == 1);
 
-        $bId = "BAAAAAAA6XVH7M66DDNOT4JK7FWPA5IHJEAW7PF2NPYJ5EBKNHSUK2DXDWBGVQA";
+        $bId = "BAAPL2T7WPPBRWXJ6EVPS3HQOUDUSALPXS5GX4E6SAVGTZKFNB3R3ATZWM";
         $response = $this->sdk->operations()->forClaimableBalance($bId)->limit(1)->order("desc")->execute();
         $this->assertTrue($response->getOperations()->count() == 1);
     }

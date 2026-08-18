@@ -36,7 +36,11 @@ class ClawbackClaimableBalanceOperation extends AbstractOperation
     /**
      * Gets the claimable balance ID.
      *
-     * @return string The claimable balance ID in hex format
+     * An operation read from XDR reports the 72-character form Horizon serves: the four-byte
+     * big-endian union discriminant ahead of the 32-byte hash. An operation built from a
+     * string reports that string as given.
+     *
+     * @return string The claimable balance ID
      */
     public function getBalanceId(): string
     {
@@ -50,7 +54,7 @@ class ClawbackClaimableBalanceOperation extends AbstractOperation
      * @return ClawbackClaimableBalanceOperation The resulting ClawbackClaimableBalanceOperation instance
      */
     public static function fromXdrOperation(XdrClawbackClaimableBalanceOperation $xdrOp): ClawbackClaimableBalanceOperation {
-        $bId = $xdrOp->getBalanceID()->getHash();
+        $bId = $xdrOp->getBalanceID()->getPaddedBalanceIdHex();
         return new ClawbackClaimableBalanceOperation($bId);
     }
 

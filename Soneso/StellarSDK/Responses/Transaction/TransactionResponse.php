@@ -272,6 +272,17 @@ class TransactionResponse extends Response
     }
 
     /**
+     * Reports whether the response carried a result XDR. A response without one
+     * cannot answer any question about its transaction result.
+     *
+     * @return bool true when getResultXdr() can be called
+     */
+    public function hasResultXdr(): bool
+    {
+        return isset($this->resultXdr);
+    }
+
+    /**
      * Gets the parsed transaction metadata XDR
      *
      * @return XdrTransactionMeta|null The transaction metadata containing ledger changes, or null

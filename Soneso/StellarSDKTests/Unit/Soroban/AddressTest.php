@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
@@ -179,6 +180,7 @@ class AddressTest extends TestCase
         $decoded = Address::fromXdr($xdr);
 
         $this->assertEquals(Address::TYPE_CLAIMABLE_BALANCE, $decoded->getType());
+        // fromXdr reports the 72-character Horizon form whatever spelling built the XDR.
         $this->assertEquals($this->testClaimableBalanceIdHex, $decoded->getClaimableBalanceId());
     }
 
@@ -312,25 +314,46 @@ class AddressTest extends TestCase
     }
 
     /**
-     * Test fromAnyId with liquidity pool ID (hex format)
-     * Note: fromAnyId tries multiple ID types and returns the first valid match
+     * A bare 32-byte hash in hexadecimal is not self-describing, so fromAnyId resolves
+     * 64 hex characters as a contract id; a pool named by hex alone cannot be told apart
+     * from a contract. The strkey spelling resolves as the pool (see the strkey test below).
      */
     public function testFromAnyIdWithLiquidityPoolIdHex(): void
     {
         $address = Address::fromAnyId($this->testLiquidityPoolIdHex);
 
         $this->assertNotNull($address);
-        // The hex ID may be interpreted as contract or liquidity pool depending on validation order
-        $this->assertTrue(
-            $address->getType() === Address::TYPE_LIQUIDITY_POOL ||
-            $address->getType() === Address::TYPE_CONTRACT,
-            'Address type should be either LIQUIDITY_POOL or CONTRACT'
-        );
-        $this->assertEquals($this->testLiquidityPoolIdHex,
-            $address->getType() === Address::TYPE_LIQUIDITY_POOL
-                ? $address->getLiquidityPoolId()
-                : $address->getContractId()
-        );
+        $this->assertEquals(Address::TYPE_CONTRACT, $address->getType());
+        $this->assertEquals($this->testLiquidityPoolIdHex, $address->getContractId());
+    }
+
+    public function testFromAnyIdReadsALiquidityPoolStrkey(): void
+    {
+        $strKey = StrKey::encodeLiquidityPoolIdHex($this->testLiquidityPoolIdHex);
+        $address = Address::fromAnyId($strKey);
+
+        $this->assertNotNull($address);
+        $this->assertEquals(Address::TYPE_LIQUIDITY_POOL, $address->getType());
+        $this->assertEquals($this->testLiquidityPoolIdHex, $address->getLiquidityPoolId());
+    }
+
+    public function testFromAnyIdReadsAStrkeyPrefixedClaimableBalanceHex(): void
+    {
+        $bareHash = substr($this->testClaimableBalanceIdHex, 8);
+        $address = Address::fromAnyId('00' . $bareHash);
+
+        $this->assertNotNull($address);
+        $this->assertEquals(Address::TYPE_CLAIMABLE_BALANCE, $address->getType());
+        $this->assertEquals($this->testClaimableBalanceIdHex, $address->getClaimableBalanceId());
+    }
+
+    public function testFromAnyIdReadsAnXdrPrefixedClaimableBalanceHex(): void
+    {
+        $address = Address::fromAnyId($this->testClaimableBalanceIdHex);
+
+        $this->assertNotNull($address);
+        $this->assertEquals(Address::TYPE_CLAIMABLE_BALANCE, $address->getType());
+        $this->assertEquals($this->testClaimableBalanceIdHex, $address->getClaimableBalanceId());
     }
 
     /**
@@ -504,5 +527,48 @@ class AddressTest extends TestCase
         $this->assertEquals(Address::TYPE_CONTRACT, $address2->getType());
         $this->assertEquals($this->testAccountId, $address1->getAccountId());
         $this->assertEquals($this->testContractIdHex, $address2->getContractId());
+    }
+
+    public function testFromXdrReportsOneIdForEitherConstructionOfTheXdr(): void
+    {
+        // An XdrSCAddress built from a strkey holds that spelling, while one decoded
+        // from bytes holds the raw id. Both name one entity, so fromXdr must report
+        // one spelling for both constructions of every id-carrying arm: the Horizon
+        // 72-character form for a claimable balance, canonical hex for the rest.
+        $hashHex = str_repeat('cd', 32);
+
+        $inMemory = XdrSCAddress::forClaimableBalanceId(StrKey::encodeClaimableBalanceIdHex($hashHex));
+        $decoded = XdrSCAddress::decode(new XdrBuffer($inMemory->encode()));
+        $this->assertEquals('00000000' . $hashHex, Address::fromXdr($inMemory)->getClaimableBalanceId());
+        $this->assertEquals('00000000' . $hashHex, Address::fromXdr($decoded)->getClaimableBalanceId());
+
+        $inMemory = XdrSCAddress::forContractId(StrKey::encodeContractIdHex($hashHex));
+        $decoded = XdrSCAddress::decode(new XdrBuffer($inMemory->encode()));
+        $this->assertEquals($hashHex, Address::fromXdr($inMemory)->getContractId());
+        $this->assertEquals($hashHex, Address::fromXdr($decoded)->getContractId());
+
+        $inMemory = XdrSCAddress::forLiquidityPoolId(StrKey::encodeLiquidityPoolIdHex($hashHex));
+        $decoded = XdrSCAddress::decode(new XdrBuffer($inMemory->encode()));
+        $this->assertEquals($hashHex, Address::fromXdr($inMemory)->getLiquidityPoolId());
+        $this->assertEquals($hashHex, Address::fromXdr($decoded)->getLiquidityPoolId());
+    }
+
+    public function testFromAnyIdReadsAStrkeyOfHexDigitsAsAStrkey(): void
+    {
+        // Every character of this valid B-strkey is a hexadecimal digit. A hex-first
+        // reading would see a hex string of a width no id has and answer null; a
+        // strkey names its own type, so it must resolve as one, reporting the
+        // 72-character Horizon form.
+        $strKey = 'BAAB5E6FEA37BFA5EFDD75E4D7ED75A74FBBF5FA5EBBE733DE5ECE34D4';
+        $this->assertTrue(ctype_xdigit($strKey));
+
+        $address = Address::fromAnyId($strKey);
+
+        $this->assertNotNull($address);
+        $this->assertEquals(Address::TYPE_CLAIMABLE_BALANCE, $address->getType());
+        $this->assertEquals(
+            '000000001e93c52037f0941d21463ff49c1fc83ff41fe14212f4a0e902127f7b193a4113',
+            $address->getClaimableBalanceId()
+        );
     }
 }
