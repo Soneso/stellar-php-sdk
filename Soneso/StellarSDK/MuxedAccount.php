@@ -60,7 +60,8 @@ class MuxedAccount
      * Constructs a new MuxedAccount instance
      *
      * @param string $ed25519AccountId The Ed25519 account ID (G-address)
-     * @param int|null $id Optional 64-bit ID for multiplexing (creates M-address when set)
+     * @param int|null $id Optional 64-bit ID for multiplexing (creates M-address when set).
+     *                     Only null means "not multiplexed"; 0 is a valid multiplexing ID.
      * @throws InvalidArgumentException If the account ID does not start with 'G'
      */
     public function __construct(string $ed25519AccountId, ?int $id = null) {
@@ -103,7 +104,7 @@ class MuxedAccount
         if ($this->xdr === null) {
             $this->xdr = $this->toXdr();
         }
-        return $this->toXdr();
+        return $this->xdr;
     }
 
     /**
@@ -186,7 +187,7 @@ class MuxedAccount
      * @return XdrMuxedAccount The XDR representation
      */
     public function toXdr() : XdrMuxedAccount {
-        if (!$this->id) {
+        if ($this->id === null) {
             return KeyPair::fromAccountId($this->ed25519AccountId)->getXdrMuxedAccount();
         } else {
             $bytes = StrKey::decodeAccountId($this->ed25519AccountId);

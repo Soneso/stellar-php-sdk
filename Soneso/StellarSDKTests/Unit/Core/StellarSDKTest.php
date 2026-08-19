@@ -20,6 +20,8 @@ use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Memo;
+use Soneso\StellarSDK\MuxedAccount;
+use Soneso\StellarSDK\PaymentOperation;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Requests\AccountsRequestBuilder;
@@ -1055,5 +1057,22 @@ class StellarSDKTest extends TestCase
         $this->assertFalse(
             $sdk->checkMemoRequired($this->paymentTransaction($source, $destination, $destination))
         );
+    }
+
+    public function testCheckMemoRequiredSkipsMuxedDestination(): void
+    {
+        $source = KeyPair::random()->getAccountId();
+        // Empty mock queue: a muxed destination carries its own multiplexing id,
+        // so SEP-0029 does not apply and no account lookup must happen. An id of
+        // 0 is a valid multiplexing id.
+        $sdk = $this->createMockedSdk([]);
+
+        $builder = new TransactionBuilder(new Account($source, new BigInteger('123')));
+        foreach ([0, 1234] as $muxedId) {
+            $destination = new MuxedAccount(KeyPair::random()->getAccountId(), $muxedId);
+            $builder->addOperation(new PaymentOperation($destination, Asset::native(), '10'));
+        }
+
+        $this->assertFalse($sdk->checkMemoRequired($builder->build()));
     }
 }

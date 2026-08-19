@@ -557,7 +557,10 @@ class StellarSDK
                     || $operation instanceof PathPaymentStrictReceiveOperation
                     || $operation instanceof AccountMergeOperation) {
                     $destination = $operation->getDestination();
-                    if (!$destination->getId()) {
+                    // Muxed destinations carry their own multiplexing id, so SEP-0029
+                    // does not apply to them. Only a null id means "not multiplexed";
+                    // 0 is a valid multiplexing id.
+                    if ($destination->getId() === null) {
                         array_push($destinations, $destination->getAccountId());
                     }
                 }
