@@ -15,6 +15,7 @@ use GuzzleHttp\Psr7\Response;
 use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 use ReflectionClass;
 use ReflectionProperty;
 use Soneso\StellarSDK\AbstractTransaction;
@@ -559,6 +560,7 @@ class SorobanClientTest extends TestCase
 
         $hostFunction = $this->capturedCreateHostFunction($history);
         $this->assertInstanceOf(CreateContractFromExternalRefWithConstructorHostFunction::class, $hostFunction);
+        $this->assertSame(self::TEST_ACCOUNT_ID, $hostFunction->getAddress()->accountId);
         $this->assertSame(self::TEST_OWNER_ID_HEX, $hostFunction->getExecutableOwner()->contractId);
         $this->assertSame(self::TEST_EXECUTABLE_TAG, $hostFunction->getTag());
         $this->assertSame($salt, $hostFunction->getSalt());
@@ -601,6 +603,7 @@ class SorobanClientTest extends TestCase
 
         $hostFunction = $this->capturedCreateHostFunction($history);
         $this->assertInstanceOf(CreateContractFromExternalRefHostFunction::class, $hostFunction);
+        $this->assertSame(self::TEST_ACCOUNT_ID, $hostFunction->getAddress()->accountId);
         $this->assertSame(self::TEST_OWNER_ID_HEX, $hostFunction->getExecutableOwner()->contractId);
         $this->assertSame(self::TEST_EXECUTABLE_TAG, $hostFunction->getTag());
         $this->assertSame(32, strlen($hostFunction->getSalt()));
@@ -623,15 +626,17 @@ class SorobanClientTest extends TestCase
             server: $server,
         );
 
+        $caught = null;
         try {
             SorobanClient::deployFromExternalRef($deployRequest);
-            $this->fail('expected an exception for an unresolvable reference');
         } catch (Exception $e) {
-            $this->assertStringContainsString('does not resolve', $e->getMessage());
-            $this->assertStringContainsString(
-                StrKey::encodeContractIdHex(self::TEST_OWNER_ID_HEX), $e->getMessage());
-            $this->assertStringContainsString(self::TEST_EXECUTABLE_TAG, $e->getMessage());
+            $caught = $e;
         }
+        $this->assertNotNull($caught, 'expected an exception for an unresolvable reference');
+        $this->assertStringContainsString('does not resolve', $caught->getMessage());
+        $this->assertStringContainsString(
+            StrKey::encodeContractIdHex(self::TEST_OWNER_ID_HEX), $caught->getMessage());
+        $this->assertStringContainsString(self::TEST_EXECUTABLE_TAG, $caught->getMessage());
         $this->assertSame(0, $mock->count());
     }
 
@@ -689,6 +694,77 @@ class SorobanClientTest extends TestCase
             $this->assertStringContainsString('is not a contract address', $e->getMessage());
             $this->assertStringContainsString(self::TEST_ACCOUNT_ID, $e->getMessage());
         }
+    }
+
+    public function testDeployFromExternalRefFallsBackWhenCodeHasNoParseableSpec(): void
+    {
+        $wasmHash = hash('sha256', 'test-wasm', true);
+        $createdContract = Address::fromContractId(StrKey::decodeContractIdHex(self::TEST_CONTRACT_ID))->toXdrSCVal();
+
+        // The resolved code is not parseable wasm, so the spec preload throws and the
+        // deployment proceeds without a spec; the client is then built through the
+        // forClientOptions fallback, which loads the instance and its code entry.
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->executableTagEntryData(
+                self::TEST_OWNER_ID_HEX, self::TEST_EXECUTABLE_TAG, XdrSCVal::forBytes($wasmHash))),
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, 'not wasm')),
+            $this->accountEntryResponse(),
+            $this->simulateResponse(XdrSCVal::forVoid(), true),
+            $this->sendTransactionResponse(),
+            $this->getTransactionRpcResponse(GetTransactionResponse::STATUS_SUCCESS, $createdContract),
+            $this->ledgerEntryResponse($this->contractInstanceEntryData($wasmHash)),
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $this->createContractByteCode('hello'))),
+        ]);
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
+
+        $deployRequest = new DeployFromExternalRefRequest(
+            rpcUrl: self::TEST_RPC_URL,
+            network: $this->testNetwork,
+            sourceAccountKeyPair: $keyPair,
+            executableOwner: Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            tag: self::TEST_EXECUTABLE_TAG,
+            logger: new NullLogger(),
+            server: $server,
+        );
+
+        $client = SorobanClient::deployFromExternalRef($deployRequest);
+
+        $this->assertContains('hello', $client->getMethodNames());
+        $this->assertSame(self::TEST_CONTRACT_ID, $client->getContractId());
+        $this->assertSame(0, $mock->count());
+    }
+
+    public function testDeployFromExternalRefThrowsWhenNoContractIdReturned(): void
+    {
+        $wasmHash = hash('sha256', 'test-wasm', true);
+        $byteCode = $this->createContractByteCode('hello');
+
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->executableTagEntryData(
+                self::TEST_OWNER_ID_HEX, self::TEST_EXECUTABLE_TAG, XdrSCVal::forBytes($wasmHash))),
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $byteCode)),
+            $this->accountEntryResponse(),
+            $this->simulateResponse(XdrSCVal::forVoid(), true),
+            $this->sendTransactionResponse(),
+            $this->getTransactionRpcResponse(GetTransactionResponse::STATUS_FAILED, null),
+        ]);
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
+
+        $deployRequest = new DeployFromExternalRefRequest(
+            rpcUrl: self::TEST_RPC_URL,
+            network: $this->testNetwork,
+            sourceAccountKeyPair: $keyPair,
+            executableOwner: Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            tag: self::TEST_EXECUTABLE_TAG,
+            server: $server,
+        );
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Could not get contract id for deployed contract');
+
+        SorobanClient::deployFromExternalRef($deployRequest);
     }
 
     // ---------------------------------------------------------------------
