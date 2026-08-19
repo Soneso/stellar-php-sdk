@@ -929,4 +929,50 @@ class KYCServiceTest extends TestCase
             $this->assertArrayNotHasKey("memo", $fields, $message);
         }
     }
+
+    public function testPutCustomerInfoSendsZeroValuedKycFields(): void {
+        $history = [];
+        $kycService = $this->kycServiceRecordingRequests(
+            [new Response(200, ['X-Foo' => 'Bar'], $this->requestPutCustomerInfo())],
+            $history,
+        );
+
+        $naturalPersonFinancialAccount = new FinancialAccountKYCFields();
+        $naturalPersonFinancialAccount->externalTransferMemo = "0";
+        $naturalPersonFinancialAccount->cryptoMemo = "0";
+
+        $naturalPerson = new NaturalPersonKYCFields();
+        $naturalPerson->occupation = 0;
+        $naturalPerson->referralId = "0";
+        $naturalPerson->financialAccountKYCFields = $naturalPersonFinancialAccount;
+
+        $organizationFinancialAccount = new FinancialAccountKYCFields();
+        $organizationFinancialAccount->externalTransferMemo = "0";
+
+        $organization = new OrganizationKYCFields();
+        $organization->numberOfShareholders = 0;
+        $organization->financialAccountKYCFields = $organizationFinancialAccount;
+
+        $kycFields = new StandardKYCFields();
+        $kycFields->naturalPersonKYCFields = $naturalPerson;
+        $kycFields->organizationKYCFields = $organization;
+
+        $request = new PutCustomerInfoRequest();
+        $request->account = $this->accountId;
+        $request->KYCFields = $kycFields;
+        $request->jwt = $this->jwtToken;
+
+        $kycService->putCustomerInfo($request);
+
+        $fields = $this->recordedMultipartFields($history);
+        $this->assertSame("0", $fields[FinancialAccountKYCFields::EXTERNAL_TRANSFER_MEMO_KEY]);
+        $this->assertSame("0", $fields[FinancialAccountKYCFields::CRYPTO_MEMO_KEY]);
+        $this->assertSame("0", $fields[NaturalPersonKYCFields::OCCUPATION_KEY]);
+        $this->assertSame("0", $fields[NaturalPersonKYCFields::REFERRAL_ID_KEY]);
+        $this->assertSame("0", $fields[OrganizationKYCFields::NUMBER_OF_SHAREHOLDERS_KEY]);
+        $this->assertSame(
+            "0",
+            $fields[OrganizationKYCFields::KEY_PREFIX . FinancialAccountKYCFields::EXTERNAL_TRANSFER_MEMO_KEY],
+        );
+    }
 }

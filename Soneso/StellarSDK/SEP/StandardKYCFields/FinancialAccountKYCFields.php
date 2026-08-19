@@ -77,7 +77,8 @@ class FinancialAccountKYCFields
     public ?string $bankBranchNumber = null;
 
     /**
-     * @var string|null Destination tag/memo used to identify a transaction
+     * @var string|null Destination tag/memo used to identify a transaction.
+     * Null and the empty string mean no memo; every other value, including "0", is sent as given.
      */
     public ?string $externalTransferMemo = null;
 
@@ -113,7 +114,8 @@ class FinancialAccountKYCFields
     public ?string $cryptoAddress = null;
 
     /**
-     * @var string|null Destination tag/memo used to identify a cryptocurrency transaction
+     * @var string|null Destination tag/memo used to identify a cryptocurrency transaction.
+     * Null and the empty string mean no memo; every other value, including "0", is sent as given.
      * @deprecated Use $externalTransferMemo instead
      */
     public ?string $cryptoMemo = null;
@@ -151,7 +153,7 @@ class FinancialAccountKYCFields
         if ($this->bankBranchNumber) {
             $fields += [ $keyPrefix . self::BANK_BRANCH_NUMBER_KEY => $this->bankBranchNumber ];
         }
-        if ($this->externalTransferMemo) {
+        if ($this->externalTransferMemo !== null && $this->externalTransferMemo !== '') {
             $fields += [ $keyPrefix . self::EXTERNAL_TRANSFER_MEMO_KEY => $this->externalTransferMemo ];
         }
         if ($this->clabeNumber) {
@@ -172,7 +174,7 @@ class FinancialAccountKYCFields
         if ($this->cryptoAddress) {
             $fields += [ $keyPrefix . self::CRYPTO_ADDRESS_KEY => $this->cryptoAddress ];
         }
-        if ($this->cryptoMemo) {
+        if ($this->cryptoMemo !== null && $this->cryptoMemo !== '') {
             $fields += [ $keyPrefix . self::CRYPTO_MEMO_KEY => $this->cryptoMemo ];
         }
         return $fields;

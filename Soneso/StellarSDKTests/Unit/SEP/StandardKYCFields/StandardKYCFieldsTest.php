@@ -584,4 +584,148 @@ class StandardKYCFieldsTest extends TestCase
         $this->assertCount(1, $files);
         $this->assertEquals(base64_encode('incorporation_certificate'), $files[OrganizationKYCFields::PHOTO_INCORPORATION_DOC_KEY]);
     }
+
+    // Zero-valued fields. SEP-9 draws external_transfer_memo and crypto_memo from the
+    // destination tag space, occupation from the ISCO08 codes (major group 0 is armed forces
+    // occupations), referral_id from the ids and codes of another application, and
+    // organization.number_of_shareholders from the counts. Zero is a value in each of those
+    // spaces. Only null means "not supplied", plus the empty string for the string fields.
+
+    public function testFinancialAccountKYCFieldsZeroMemos(): void
+    {
+        $financialAccount = new FinancialAccountKYCFields();
+        $financialAccount->externalTransferMemo = '0';
+        $financialAccount->cryptoMemo = '0';
+
+        $fields = $financialAccount->fields();
+
+        $this->assertCount(2, $fields);
+        $this->assertSame('0', $fields[FinancialAccountKYCFields::EXTERNAL_TRANSFER_MEMO_KEY]);
+        $this->assertSame('0', $fields[FinancialAccountKYCFields::CRYPTO_MEMO_KEY]);
+    }
+
+    public function testFinancialAccountKYCFieldsZeroMemosWithPrefix(): void
+    {
+        $financialAccount = new FinancialAccountKYCFields();
+        $financialAccount->externalTransferMemo = '0';
+        $financialAccount->cryptoMemo = '0';
+
+        $fields = $financialAccount->fields(OrganizationKYCFields::KEY_PREFIX);
+
+        $this->assertCount(2, $fields);
+        $this->assertSame('0', $fields[OrganizationKYCFields::KEY_PREFIX . FinancialAccountKYCFields::EXTERNAL_TRANSFER_MEMO_KEY]);
+        $this->assertSame('0', $fields[OrganizationKYCFields::KEY_PREFIX . FinancialAccountKYCFields::CRYPTO_MEMO_KEY]);
+    }
+
+    public function testFinancialAccountKYCFieldsOmitMemosWhenNotSupplied(): void
+    {
+        foreach ([null, ''] as $memo) {
+            $financialAccount = new FinancialAccountKYCFields();
+            $financialAccount->externalTransferMemo = $memo;
+            $financialAccount->cryptoMemo = $memo;
+
+            $fields = $financialAccount->fields();
+
+            $message = 'memo: ' . var_export($memo, true);
+            $this->assertCount(0, $fields, $message);
+        }
+    }
+
+    public function testNaturalPersonKYCFieldsZeroOccupation(): void
+    {
+        $naturalPerson = new NaturalPersonKYCFields();
+        $naturalPerson->occupation = 0;
+
+        $fields = $naturalPerson->fields();
+
+        $this->assertCount(1, $fields);
+        $this->assertSame('0', $fields[NaturalPersonKYCFields::OCCUPATION_KEY]);
+    }
+
+    public function testNaturalPersonKYCFieldsOmitOccupationWhenNull(): void
+    {
+        $naturalPerson = new NaturalPersonKYCFields();
+        $naturalPerson->occupation = null;
+
+        $fields = $naturalPerson->fields();
+
+        $this->assertArrayNotHasKey(NaturalPersonKYCFields::OCCUPATION_KEY, $fields);
+    }
+
+    public function testNaturalPersonKYCFieldsZeroReferralId(): void
+    {
+        $naturalPerson = new NaturalPersonKYCFields();
+        $naturalPerson->referralId = '0';
+
+        $fields = $naturalPerson->fields();
+
+        $this->assertCount(1, $fields);
+        $this->assertSame('0', $fields[NaturalPersonKYCFields::REFERRAL_ID_KEY]);
+    }
+
+    public function testNaturalPersonKYCFieldsOmitReferralIdWhenNotSupplied(): void
+    {
+        foreach ([null, ''] as $referralId) {
+            $naturalPerson = new NaturalPersonKYCFields();
+            $naturalPerson->referralId = $referralId;
+
+            $fields = $naturalPerson->fields();
+
+            $message = 'referralId: ' . var_export($referralId, true);
+            $this->assertArrayNotHasKey(NaturalPersonKYCFields::REFERRAL_ID_KEY, $fields, $message);
+        }
+    }
+
+    public function testNaturalPersonKYCFieldsZeroNestedFinancialMemos(): void
+    {
+        $financialAccount = new FinancialAccountKYCFields();
+        $financialAccount->externalTransferMemo = '0';
+        $financialAccount->cryptoMemo = '0';
+
+        $naturalPerson = new NaturalPersonKYCFields();
+        $naturalPerson->financialAccountKYCFields = $financialAccount;
+
+        $fields = $naturalPerson->fields();
+
+        $this->assertCount(2, $fields);
+        $this->assertSame('0', $fields[FinancialAccountKYCFields::EXTERNAL_TRANSFER_MEMO_KEY]);
+        $this->assertSame('0', $fields[FinancialAccountKYCFields::CRYPTO_MEMO_KEY]);
+    }
+
+    public function testOrganizationKYCFieldsZeroNumberOfShareholders(): void
+    {
+        $organization = new OrganizationKYCFields();
+        $organization->numberOfShareholders = 0;
+
+        $fields = $organization->fields();
+
+        $this->assertCount(1, $fields);
+        $this->assertSame(0, $fields[OrganizationKYCFields::NUMBER_OF_SHAREHOLDERS_KEY]);
+    }
+
+    public function testOrganizationKYCFieldsOmitNumberOfShareholdersWhenNull(): void
+    {
+        $organization = new OrganizationKYCFields();
+        $organization->numberOfShareholders = null;
+
+        $fields = $organization->fields();
+
+        $this->assertArrayNotHasKey(OrganizationKYCFields::NUMBER_OF_SHAREHOLDERS_KEY, $fields);
+    }
+
+    public function testOrganizationKYCFieldsZeroNestedFinancialMemos(): void
+    {
+        $financialAccount = new FinancialAccountKYCFields();
+        $financialAccount->externalTransferMemo = '0';
+        $financialAccount->cryptoMemo = '0';
+
+        $organization = new OrganizationKYCFields();
+        $organization->financialAccountKYCFields = $financialAccount;
+
+        $fields = $organization->fields();
+
+        $this->assertCount(2, $fields);
+        $this->assertSame('0', $fields[OrganizationKYCFields::KEY_PREFIX . FinancialAccountKYCFields::EXTERNAL_TRANSFER_MEMO_KEY]);
+        $this->assertSame('0', $fields[OrganizationKYCFields::KEY_PREFIX . FinancialAccountKYCFields::CRYPTO_MEMO_KEY]);
+    }
 }

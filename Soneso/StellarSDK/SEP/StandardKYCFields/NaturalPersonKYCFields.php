@@ -152,7 +152,8 @@ class NaturalPersonKYCFields
     public ?string $taxIdName = null;
 
     /**
-     * @var int|null Occupation ISCO08 code
+     * @var int|null Occupation ISCO08 code. Null means no occupation; every code is sent as
+     * given, including 0 (armed forces occupations).
      */
     public ?int $occupation = null;
 
@@ -237,7 +238,8 @@ class NaturalPersonKYCFields
     public ?string $proofOfLiveness = null;
 
     /**
-     * @var string|null User's origin (such as an id in another application) or a referral code
+     * @var string|null User's origin (such as an id in another application) or a referral code.
+     * Null and the empty string mean no referral; every other value, including "0", is sent as given.
      */
     public ?string $referralId = null;
 
@@ -313,7 +315,7 @@ class NaturalPersonKYCFields
         if ($this->taxIdName) {
             $fields += [ self::TAX_ID_NAME_KEY => $this->taxIdName ];
         }
-        if ($this->occupation) {
+        if ($this->occupation !== null) {
             $fields += [ self::OCCUPATION_KEY => strval($this->occupation) ];
         }
         if ($this->employerName) {
@@ -346,7 +348,7 @@ class NaturalPersonKYCFields
         if ($this->sex) {
             $fields += [ self::SEX_KEY => $this->sex];
         }
-        if ($this->referralId) {
+        if ($this->referralId !== null && $this->referralId !== '') {
             $fields += [ self::REFERRAL_ID_KEY => $this->referralId ];
         }
 
