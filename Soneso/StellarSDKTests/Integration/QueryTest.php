@@ -132,35 +132,69 @@ class QueryTest extends TestCase
     public function testQueryEffects(): void
     {
 
-        $response = $this->sdk->assets()->forAssetCode("ASTRO")->limit(5)->order("desc")->execute();
-        $this->assertTrue($response->getAssets()->count() > 0);
-        $this->assertTrue($response->getAssets()->count() < 6);
-        $issuer = $response->getAssets()->toArray()[0]->getAssetIssuer();
-        $response = $this->sdk->effects()->forAccount($issuer)->limit(3)->order("asc")->execute();
-        $this->assertTrue($response->getEffects()->count() > 0);
-        $this->assertTrue($response->getEffects()->count() < 4);
-        $response = $this->sdk->ledgers()->limit(1)->order("desc")->execute();
-        $this->assertTrue($response->getLedgers()->count() == 1);
-        $ledgerSeq = $response->getLedgers()->toArray()[0]->getSequence();
-        $response = $this->sdk->effects()->forLedger($ledgerSeq->toString())->limit(3)->order("asc")->execute();
-        $this->assertTrue($response->getEffects()->count() > 0);
-        $response = $this->sdk->transactions()->forLedger($ledgerSeq->toString())->limit(1)->order("desc")->execute();
-        $this->assertTrue($response->getTransactions()->count() > 0);
-        $trHash = $response->getTransactions()->toArray()[0]->getHash();
-        $response = $this->sdk->effects()->forTransaction($trHash)->limit(3)->order("asc")->execute();
-        $this->assertTrue($response->getEffects()->count() > 0);
-        $response = $this->sdk->operations()->forLedger($ledgerSeq->toString())->limit(10)->order("desc")->execute();
-        $this->assertTrue($response->getOperations()->count() > 0);
-        $found = false;
-        foreach ($response->getOperations() as $op) {
-            $opId = $op->getOperationId();
-            $response = $this->sdk->effects()->forOperation($opId)->limit(3)->order("asc")->execute();
-            if ($response->getEffects()->count() > 0) {
-                $found = true;
-                break;
-            }
+        // Exercises every effects() filter by walking outwards from one real effect.
+        // The anchor effect fixes an operation, a transaction, a ledger and an account
+        // that provably produced an effect, so each filter below is queried with an
+        // identifier that must match at least the anchor itself. No assertion depends
+        // on unqueried data happening to have effects.
+        $response = $this->sdk->effects()->limit(1)->order("desc")->execute();
+        $this->assertTrue($response->getEffects()->count() == 1);
+        $anchor = $response->getEffects()->toArray()[0];
+
+        $operationId = self::operationIdOfEffect($anchor);
+        $response = $this->sdk->effects()->forOperation($operationId)->limit(3)->order("asc")->execute();
+        $effects = $response->getEffects()->toArray();
+        $this->assertTrue(count($effects) > 0);
+        $this->assertTrue(count($effects) < 4);
+        foreach ($effects as $effect) {
+            $this->assertEquals($operationId, self::operationIdOfEffect($effect));
         }
-        $this->assertTrue($found);
+
+        $operation = $this->sdk->requestOperation($operationId);
+        $this->assertEquals($operationId, $operation->getOperationId());
+        $transactionHash = $operation->getTransactionHash();
+        $response = $this->sdk->effects()->forTransaction($transactionHash)->limit(3)->order("asc")->execute();
+        $effects = $response->getEffects()->toArray();
+        $this->assertTrue(count($effects) > 0);
+        $this->assertTrue(count($effects) < 4);
+        // The operation that produced a returned effect must belong to the queried transaction.
+        $producer = $this->sdk->requestOperation(self::operationIdOfEffect($effects[0]));
+        $this->assertEquals($transactionHash, $producer->getTransactionHash());
+
+        $transaction = $this->sdk->requestTransaction($transactionHash);
+        $this->assertEquals($transactionHash, $transaction->getHash());
+        $ledgerSeq = $transaction->getLedger();
+        $response = $this->sdk->effects()->forLedger(strval($ledgerSeq))->limit(3)->order("asc")->execute();
+        $effects = $response->getEffects()->toArray();
+        $this->assertTrue(count($effects) > 0);
+        $this->assertTrue(count($effects) < 4);
+        // The transaction that produced a returned effect must be contained in the queried ledger.
+        $producer = $this->sdk->requestOperation(self::operationIdOfEffect($effects[0]));
+        $this->assertEquals($ledgerSeq, $this->sdk->requestTransaction($producer->getTransactionHash())->getLedger());
+
+        $accountId = $anchor->getAccount();
+        $response = $this->sdk->effects()->forAccount($accountId)->limit(3)->order("desc")->execute();
+        $effects = $response->getEffects()->toArray();
+        $this->assertTrue(count($effects) > 0);
+        $this->assertTrue(count($effects) < 4);
+        foreach ($effects as $effect) {
+            $this->assertEquals($accountId, $effect->getAccount());
+        }
+    }
+
+    /**
+     * Returns the id of the operation that produced the given effect.
+     *
+     * Horizon exposes the producing operation only as a link on the effect; its last
+     * path segment is the operation id accepted by the operations endpoints.
+     *
+     * @param EffectResponse $effect The effect to resolve the operation id for.
+     * @return string The operation id.
+     */
+    private static function operationIdOfEffect(EffectResponse $effect): string
+    {
+        $segments = explode("/", $effect->getLinks()->getOperation()->getHref());
+        return $segments[count($segments) - 1];
     }
 
     public function testQueryForClaimableBalance(): void
