@@ -11,6 +11,12 @@
 # two fields; the SEP-51 pair is carried by the type's entry in
 # stellar_json_overrides.rb, which resolves the field through the same helper.
 #
+# XdrContractExecutable keeps the wasm hash as the 32-byte hash in hexadecimal
+# in wasmIdHex, the one spelling forWasmId() and the SEP-51 pair accept, so its
+# arm needs no resolver: the readers take the field as it stands. SEP-0011 gives
+# an opaque[32] field 64 hexadecimal characters, which is what the field already
+# holds, so the TxRep line carries it through untouched in both directions.
+#
 # ---------------------------------------------------------------------------
 # ARM_STORAGE_OVERRIDES
 # Per-arm emission, keyed by [<PhpUnionName>, <armFieldName>]:
@@ -35,6 +41,12 @@ ARM_STORAGE_OVERRIDES = {
     decode: '$result->liquidityPoolId = bin2hex($xdr->readOpaqueFixed(32));',
     to_txrep: "$lines[$prefix . '.liquidityPoolId'] = $this->getCanonicalLiquidityPoolIdHex();",
     from_txrep: "$result->liquidityPoolId = TxRepHelper::getValue($map, $prefix . '.liquidityPoolId') ?? '';",
+  },
+  ['XdrContractExecutable', 'wasmIdHex'] => {
+    encode: "$bytes .= XdrEncoder::opaqueFixed(pack('H*', $this->wasmIdHex), 32);",
+    decode: '$result->wasmIdHex = bin2hex($xdr->readOpaqueFixed(32));',
+    to_txrep: "$lines[$prefix . '.wasm_hash'] = $this->wasmIdHex;",
+    from_txrep: "$result->wasmIdHex = TxRepHelper::getValue($map, $prefix . '.wasm_hash') ?? '';",
   },
 }.freeze
 

@@ -24,7 +24,7 @@ class XdrContractExecutableBase {
         $bytes = $this->type->encode();
         switch ($this->type->getValue()) {
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM:
-                $bytes .= XdrEncoder::opaqueFixed($this->wasmIdHex, 32);
+                $bytes .= XdrEncoder::opaqueFixed(pack('H*', $this->wasmIdHex), 32);
                 break;
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
                 break;
@@ -41,7 +41,7 @@ class XdrContractExecutableBase {
         $result = new static(XdrContractExecutableType::decode($xdr));
         switch ($result->type->getValue()) {
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM:
-                $result->wasmIdHex = $xdr->readOpaqueFixed(32);
+                $result->wasmIdHex = bin2hex($xdr->readOpaqueFixed(32));
                 break;
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
                 break;
@@ -148,7 +148,7 @@ class XdrContractExecutableBase {
         $this->type->toTxRep($prefix . '.type', $lines);
         switch ($this->type->getValue()) {
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM:
-                $lines[$prefix . '.wasm_hash'] = TxRepHelper::bytesToHex($this->wasmIdHex);
+                $lines[$prefix . '.wasm_hash'] = $this->wasmIdHex;
                 break;
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
                 break;
@@ -165,7 +165,7 @@ class XdrContractExecutableBase {
         $result = new static($disc);
         switch ($result->type->getValue()) {
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM:
-                $result->wasmIdHex = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.wasm_hash') ?? '');
+                $result->wasmIdHex = TxRepHelper::getValue($map, $prefix . '.wasm_hash') ?? '';
                 break;
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
                 break;

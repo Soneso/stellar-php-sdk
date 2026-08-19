@@ -326,6 +326,33 @@ class GeneratorSnapshotTest < Minitest::Test
     end
   end
 
+  def test_arm_storage_overrides_contract_executable_keeps_wasm_hash_hex
+    base_contents = File.read(File.join(OUTPUT_DIR, "XdrContractExecutableBase.php"))
+
+    {
+      "encode" => /\$bytes \.= XdrEncoder::opaqueFixed\(pack\('H\*', \$this->wasmIdHex\), 32\);/,
+      "decode" => /\$result->wasmIdHex = bin2hex\(\$xdr->readOpaqueFixed\(32\)\);/,
+      "toTxRep" => /\$lines\[\$prefix \. '\.wasm_hash'\] = \$this->wasmIdHex;/,
+      "fromTxRep" => /\$result->wasmIdHex = TxRepHelper::getValue\(\$map, \$prefix \. '\.wasm_hash'\) \?\? '';/,
+    }.each do |site, pattern|
+      assert_match pattern, base_contents,
+        "XdrContractExecutableBase.php #{site} must read the wasm hash in the representation the field holds"
+    end
+
+    # SEP-0011 gives an opaque[32] field 64 hexadecimal characters, which is what
+    # the field already holds; the raw-bytes default would render 128.
+    refute_match(/TxRepHelper::bytesToHex\(\$this->wasmIdHex\)/, base_contents,
+      "XdrContractExecutableBase.php must not hex-encode a field that already holds hexadecimal")
+    refute_match(/TxRepHelper::hexToBytes\(TxRepHelper::getValue\(\$map, \$prefix \. '\.wasm_hash'\)/, base_contents,
+      "XdrContractExecutableBase.php must not decode a TxRep line the field stores verbatim")
+
+    wrapper_contents = File.read(File.join(OUTPUT_DIR, "XdrContractExecutable.php"))
+    %w[encode decode].each do |method|
+      refute_match(/function #{method}\(/, wrapper_contents,
+        "XdrContractExecutable.php (Cat-B wrapper) must not duplicate the base's #{method}()")
+    end
+  end
+
   def test_sep51_xdr_memo_emits_bespoke_shape
     # XdrMemo is in CAT_A_INLINE_TARGETS with a stellar_json_overrides
     # entry; the override emits "none" bare-string and per-arm objects.

@@ -1560,8 +1560,81 @@ class TxRepBaseTypesTest extends TestCase
     }
 
     // ------------------------------------------------------------------
-    // XdrContractExecutableBase — EXTERNAL_REF arm
+    // XdrContractExecutableBase — WASM, STELLAR_ASSET and EXTERNAL_REF arms
     // ------------------------------------------------------------------
+
+    public function testContractExecutableBaseWasmRoundtrip(): void
+    {
+        // The wasm hash is held as the 32-byte hash in hexadecimal, and SEP-0011
+        // gives an opaque[32] field the same 64 characters, so the line carries the
+        // hash unchanged.
+        $wasmIdHex = '7f6b1c0d9e8a3f42b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9012345';
+        $expectedXdr = 'AAAAAH9rHA2eij9CtcbX6PkKGyw9Tl9gcYKTpLXG1+j5ASNF';
+
+        $original = XdrContractExecutable::forWasmId($wasmIdHex);
+        $this->assertSame($expectedXdr, $original->toBase64Xdr());
+
+        $lines = [];
+        $original->toTxRep('executable', $lines);
+
+        $this->assertSame('CONTRACT_EXECUTABLE_WASM', $lines['executable.type']);
+        $this->assertSame($wasmIdHex, $lines['executable.wasm_hash']);
+        $this->assertSame(64, strlen($lines['executable.wasm_hash']));
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $lines['executable.wasm_hash']);
+
+        $restored = XdrContractExecutableBase::fromTxRep($lines, 'executable');
+
+        $this->assertSame(
+            XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM,
+            $restored->getType()->getValue()
+        );
+        $this->assertSame($wasmIdHex, $restored->getWasmIdHex());
+        $this->assertSame($expectedXdr, $restored->toBase64Xdr());
+
+        // The wire form reads back into the same representation the field holds.
+        $this->assertSame($wasmIdHex, XdrContractExecutable::fromBase64Xdr($expectedXdr)->getWasmIdHex());
+    }
+
+    public function testContractExecutableBaseTokenRoundtrip(): void
+    {
+        $original = XdrContractExecutable::forToken();
+        $this->assertSame('AAAAAQ==', $original->toBase64Xdr());
+
+        $lines = [];
+        $original->toTxRep('executable', $lines);
+
+        $this->assertSame(['executable.type' => 'CONTRACT_EXECUTABLE_STELLAR_ASSET'], $lines);
+
+        $restored = XdrContractExecutableBase::fromTxRep($lines, 'executable');
+
+        $this->assertSame('AAAAAQ==', $restored->toBase64Xdr());
+        $this->assertNull($restored->getWasmIdHex());
+    }
+
+    public function testContractExecutableBaseExternalRefLines(): void
+    {
+        $accountId = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
+        $expectedXdr = 'AAAAAgAAAAAAAAAAYvwdC9CRsrYcDdZWNGsqaNfTR8bywsjubQRHAlb8BfcAAAAJb3duZXJfdGFn'
+            . 'AAAA';
+
+        $original = XdrContractExecutable::forExternalRef(XdrSCAddress::forAccountId($accountId), 'owner_tag');
+        $this->assertSame($expectedXdr, $original->toBase64Xdr());
+
+        $lines = [];
+        $original->toTxRep('executable', $lines);
+
+        $this->assertSame([
+            'executable.type' => 'CONTRACT_EXECUTABLE_EXTERNAL_REF',
+            'executable.external_ref.executable_owner.type' => 'SC_ADDRESS_TYPE_ACCOUNT',
+            'executable.external_ref.executable_owner.accountId' => $accountId,
+            'executable.external_ref.tag' => '"owner_tag"',
+        ], $lines);
+
+        $restored = XdrContractExecutableBase::fromTxRep($lines, 'executable');
+
+        $this->assertSame($expectedXdr, $restored->toBase64Xdr());
+        $this->assertNull($restored->getWasmIdHex());
+    }
 
     public function testContractExecutableBaseExternalRefRoundtrip(): void
     {
@@ -2604,7 +2677,7 @@ class TxRepBaseTypesTest extends TestCase
     {
         $executable = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM());
         // The wasm hash is held as the 32-byte hash in hexadecimal.
-        $executable->wasmIdHex = $this->randomBytes(32);
+        $executable->wasmIdHex = $this->randomHex(32);
         return $executable;
     }
 
