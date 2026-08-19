@@ -29,6 +29,13 @@ class XdrSCAddressTest extends TestCase
     private const TEST_CLAIMABLE_BALANCE_ID = 'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
     private const TEST_LIQUIDITY_POOL_ID = 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
 
+    // The strkey and XDR spellings of the two ids above, as the stellar-xdr tool
+    // renders them.
+    private const TEST_CONTRACT_ID_STRKEY = 'CDS4ERHXP6HGXAXRVDJ6TMGFU3L7R2NAWHBNHZHVU234RWPA6GRLHZ4R';
+    private const TEST_CONTRACT_ID_XDR = 'AAAAAeXCRPd/jmuC8ajT6bDFptf46aCxwtPk9aa3yNng8aKz';
+    private const TEST_LIQUIDITY_POOL_ID_STRKEY = 'LDOXWGVYGHBHGMIN3PWG7F4HBKUDYL55PDHCFLPNG7WL6TZTQD5MP4GN';
+    private const TEST_LIQUIDITY_POOL_ID_XDR = 'AAAABN17GrgxwnMxDdvsb5eHCqg8L714ziKt7Tfsv08zgPrH';
+
     // Account Address Tests
 
     public function testForAccountIdWithGAddress(): void
@@ -375,6 +382,242 @@ class XdrSCAddressTest extends TestCase
         $this->assertEquals($original->getType()->getValue(), $decoded->getType()->getValue());
         // After decode, it's hex format
         $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID, $decoded->getLiquidityPoolId());
+    }
+
+    // SEP-51 JSON and SEP-0011 TxRep rendering
+    //
+    // Both renderings resolve the contract id and the liquidity pool id through their
+    // canonical resolver, so either accepted spelling of an id renders identically:
+    // SEP-51 gives an SCAddress its strkey, SEP-0011 gives an opaque[32] field the bare
+    // 32-byte hash in lower case hexadecimal.
+
+    /**
+     * @return array<string, array{string}> the accepted spellings of the contract id
+     */
+    public static function contractIdSpellingProvider(): array
+    {
+        return [
+            'hex' => [self::TEST_CONTRACT_ID_HEX],
+            'strkey' => [self::TEST_CONTRACT_ID_STRKEY],
+        ];
+    }
+
+    /**
+     * @return array<string, array{string}> the accepted spellings of the pool id
+     */
+    public static function liquidityPoolIdSpellingProvider(): array
+    {
+        return [
+            'hex' => [self::TEST_LIQUIDITY_POOL_ID],
+            'strkey' => [self::TEST_LIQUIDITY_POOL_ID_STRKEY],
+        ];
+    }
+
+    /**
+     * @dataProvider contractIdSpellingProvider
+     */
+    public function testContractAddressToJsonValueIsTheContractStrKey(string $id): void
+    {
+        $address = XdrSCAddress::forContractId($id);
+
+        $this->assertEquals(self::TEST_CONTRACT_ID_STRKEY, $address->toJsonValue());
+    }
+
+    /**
+     * @dataProvider liquidityPoolIdSpellingProvider
+     */
+    public function testLiquidityPoolAddressToJsonValueIsThePoolStrKey(string $id): void
+    {
+        $address = XdrSCAddress::forLiquidityPoolId($id);
+
+        $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID_STRKEY, $address->toJsonValue());
+    }
+
+    /**
+     * @dataProvider contractIdSpellingProvider
+     */
+    public function testContractAddressToTxRepEmitsTheBareHashInHex(string $id): void
+    {
+        $lines = [];
+        XdrSCAddress::forContractId($id)->toTxRep('addr', $lines);
+
+        $this->assertEquals('SC_ADDRESS_TYPE_CONTRACT', $lines['addr.type']);
+        $this->assertEquals(self::TEST_CONTRACT_ID_HEX, $lines['addr.contractId']);
+    }
+
+    /**
+     * @dataProvider liquidityPoolIdSpellingProvider
+     */
+    public function testLiquidityPoolAddressToTxRepEmitsTheBareHashInHex(string $id): void
+    {
+        $lines = [];
+        XdrSCAddress::forLiquidityPoolId($id)->toTxRep('addr', $lines);
+
+        $this->assertEquals('SC_ADDRESS_TYPE_LIQUIDITY_POOL', $lines['addr.type']);
+        $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID, $lines['addr.liquidityPoolId']);
+    }
+
+    /**
+     * @dataProvider contractIdSpellingProvider
+     */
+    public function testContractAddressJsonRoundTrip(string $id): void
+    {
+        $original = XdrSCAddress::forContractId($id);
+
+        $restored = XdrSCAddress::fromJsonValue($original->toJsonValue());
+
+        $this->assertEquals(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT, $restored->getType()->getValue());
+        $this->assertEquals(self::TEST_CONTRACT_ID_XDR, $restored->toBase64Xdr());
+        $this->assertEquals(self::TEST_CONTRACT_ID_STRKEY, $restored->toJsonValue());
+    }
+
+    /**
+     * @dataProvider liquidityPoolIdSpellingProvider
+     */
+    public function testLiquidityPoolAddressJsonRoundTrip(string $id): void
+    {
+        $original = XdrSCAddress::forLiquidityPoolId($id);
+
+        $restored = XdrSCAddress::fromJsonValue($original->toJsonValue());
+
+        $this->assertEquals(XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL, $restored->getType()->getValue());
+        $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID_XDR, $restored->toBase64Xdr());
+        $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID_STRKEY, $restored->toJsonValue());
+    }
+
+    /**
+     * @dataProvider contractIdSpellingProvider
+     */
+    public function testContractAddressTxRepRoundTrip(string $id): void
+    {
+        $lines = [];
+        XdrSCAddress::forContractId($id)->toTxRep('addr', $lines);
+
+        $restored = XdrSCAddress::fromTxRep($lines, 'addr');
+
+        $this->assertEquals(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT, $restored->getType()->getValue());
+        $this->assertEquals(self::TEST_CONTRACT_ID_XDR, $restored->toBase64Xdr());
+
+        $reEmitted = [];
+        $restored->toTxRep('addr', $reEmitted);
+        $this->assertEquals($lines, $reEmitted);
+    }
+
+    /**
+     * @dataProvider liquidityPoolIdSpellingProvider
+     */
+    public function testLiquidityPoolAddressTxRepRoundTrip(string $id): void
+    {
+        $lines = [];
+        XdrSCAddress::forLiquidityPoolId($id)->toTxRep('addr', $lines);
+
+        $restored = XdrSCAddress::fromTxRep($lines, 'addr');
+
+        $this->assertEquals(XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL, $restored->getType()->getValue());
+        $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID_XDR, $restored->toBase64Xdr());
+
+        $reEmitted = [];
+        $restored->toTxRep('addr', $reEmitted);
+        $this->assertEquals($lines, $reEmitted);
+    }
+
+    /**
+     * A TxRep line written by another SDK carries the bare hash, so reading one back
+     * has to land on the same address the SDK's own rendering does.
+     */
+    public function testContractAddressFromTxRepTakesTheBareHashInHex(): void
+    {
+        $restored = XdrSCAddress::fromTxRep([
+            'addr.type' => 'SC_ADDRESS_TYPE_CONTRACT',
+            'addr.contractId' => self::TEST_CONTRACT_ID_HEX,
+        ], 'addr');
+
+        $this->assertEquals(self::TEST_CONTRACT_ID_XDR, $restored->toBase64Xdr());
+        $this->assertEquals(self::TEST_CONTRACT_ID_STRKEY, $restored->toStrKey());
+    }
+
+    /**
+     * A TxRep line written by another SDK carries the bare hash, so reading one back
+     * has to land on the same address the SDK's own rendering does.
+     */
+    public function testLiquidityPoolAddressFromTxRepTakesTheBareHashInHex(): void
+    {
+        $restored = XdrSCAddress::fromTxRep([
+            'addr.type' => 'SC_ADDRESS_TYPE_LIQUIDITY_POOL',
+            'addr.liquidityPoolId' => self::TEST_LIQUIDITY_POOL_ID,
+        ], 'addr');
+
+        $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID_XDR, $restored->toBase64Xdr());
+        $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID_STRKEY, $restored->toStrKey());
+    }
+
+    public function testAccountAddressJsonAndTxRepRoundTrip(): void
+    {
+        $original = XdrSCAddress::forAccountId(self::TEST_ACCOUNT_ID);
+
+        $this->assertEquals(self::TEST_ACCOUNT_ID, $original->toJsonValue());
+        $this->assertEquals(
+            $original->toBase64Xdr(),
+            XdrSCAddress::fromJsonValue($original->toJsonValue())->toBase64Xdr()
+        );
+
+        $lines = [];
+        $original->toTxRep('addr', $lines);
+        $this->assertEquals('SC_ADDRESS_TYPE_ACCOUNT', $lines['addr.type']);
+        $this->assertEquals(self::TEST_ACCOUNT_ID, $lines['addr.accountId']);
+        $this->assertEquals(
+            $original->toBase64Xdr(),
+            XdrSCAddress::fromTxRep($lines, 'addr')->toBase64Xdr()
+        );
+    }
+
+    public function testMuxedAccountAddressJsonAndTxRepRoundTrip(): void
+    {
+        $muxedAccountId = 'MBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OAAAAAAAAABQHGPDC';
+        $original = XdrSCAddress::forAccountId($muxedAccountId);
+
+        $this->assertEquals($muxedAccountId, $original->toJsonValue());
+        $this->assertEquals(
+            $original->toBase64Xdr(),
+            XdrSCAddress::fromJsonValue($original->toJsonValue())->toBase64Xdr()
+        );
+
+        $lines = [];
+        $original->toTxRep('addr', $lines);
+        $this->assertEquals('SC_ADDRESS_TYPE_MUXED_ACCOUNT', $lines['addr.type']);
+        $this->assertEquals('12345', $lines['addr.muxedAccount.id']);
+        $this->assertEquals(
+            $original->toBase64Xdr(),
+            XdrSCAddress::fromTxRep($lines, 'addr')->toBase64Xdr()
+        );
+    }
+
+    public function testClaimableBalanceAddressJsonAndTxRepRoundTrip(): void
+    {
+        $balanceStrKey = 'BAANUDKX3J6UQUHH7QINFKOQ5PDTD55PWQCXJQBTSWYX2SIUTOI7LPQEI4';
+        $original = XdrSCAddress::forClaimableBalanceId(self::TEST_CLAIMABLE_BALANCE_ID);
+
+        $this->assertEquals($balanceStrKey, $original->toJsonValue());
+        $this->assertEquals(
+            $original->toBase64Xdr(),
+            XdrSCAddress::fromJsonValue($original->toJsonValue())->toBase64Xdr()
+        );
+
+        $lines = [];
+        $original->toTxRep('addr', $lines);
+        $this->assertEquals('SC_ADDRESS_TYPE_CLAIMABLE_BALANCE', $lines['addr.type']);
+        $this->assertEquals(
+            'CLAIMABLE_BALANCE_ID_TYPE_V0',
+            $lines['addr.claimableBalanceId.type']
+        );
+        $this->assertEquals(
+            self::TEST_CLAIMABLE_BALANCE_ID,
+            $lines['addr.claimableBalanceId.v0']
+        );
+        $this->assertEquals(
+            $original->toBase64Xdr(),
+            XdrSCAddress::fromTxRep($lines, 'addr')->toBase64Xdr()
+        );
     }
 
     // Getter/Setter Tests

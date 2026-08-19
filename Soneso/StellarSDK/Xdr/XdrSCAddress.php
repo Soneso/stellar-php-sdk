@@ -10,6 +10,13 @@ use Exception;
 use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\StrKey;
 
+/**
+ * SCAddress union override that stores the contract id and the liquidity pool id as
+ * hexadecimal rather than as the raw bytes the generated base expects, and accepts
+ * their strkey spelling as well; see getCanonicalContractIdHex() and
+ * getCanonicalLiquidityPoolIdHex(). Every renderer resolves those two fields through
+ * their canonical resolver, so no reader takes what another refuses.
+ */
 class XdrSCAddress extends XdrSCAddressBase
 {
     /**
@@ -154,6 +161,79 @@ class XdrSCAddress extends XdrSCAddressBase
                 return StrKey::encodeLiquidityPoolIdHex($this->getCanonicalLiquidityPoolIdHex());
         }
         throw new Exception("unknown address type: " . $this->type->value);
+    }
+
+    /**
+     * Returns the address as the strkey that SEP-51 uses for SCAddress, resolving
+     * whichever spelling the contract id or liquidity pool id field holds.
+     *
+     * @return string a "G...", "C...", "M...", "B..." or "L..." strkey
+     * @throws InvalidArgumentException when the field the discriminant selects is unset
+     * or holds none of the spellings its canonical resolver accepts
+     */
+    public function toJsonValue(): string {
+        switch ($this->type->getValue()) {
+            case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
+                return StrKey::encodeContractIdHex($this->getCanonicalContractIdHex());
+            case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
+                return StrKey::encodeLiquidityPoolIdHex($this->getCanonicalLiquidityPoolIdHex());
+            default:
+                // ACCOUNT, MUXED_ACCOUNT and CLAIMABLE_BALANCE hold their ids in the
+                // shape the base renders.
+                return parent::toJsonValue();
+        }
+    }
+
+    /**
+     * Emits the contract id and the liquidity pool id as the bare 32-byte hash in
+     * lower case hexadecimal, the rendering SEP-0011 gives an opaque[32] field,
+     * resolving whichever spelling the field holds.
+     *
+     * @param string               $prefix
+     * @param array<string,string> $lines
+     * @throws InvalidArgumentException when the field the discriminant selects is unset
+     * or holds none of the spellings its canonical resolver accepts
+     */
+    public function toTxRep(string $prefix, array &$lines): void {
+        switch ($this->type->getValue()) {
+            case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
+                $this->type->toTxRep($prefix . '.type', $lines);
+                $lines[$prefix . '.contractId'] = $this->getCanonicalContractIdHex();
+                break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
+                $this->type->toTxRep($prefix . '.type', $lines);
+                $lines[$prefix . '.liquidityPoolId'] = $this->getCanonicalLiquidityPoolIdHex();
+                break;
+            default:
+                parent::toTxRep($prefix, $lines);
+                break;
+        }
+    }
+
+    /**
+     * Reads the contract id and the liquidity pool id lines into their fields verbatim,
+     * so the field holds the hexadecimal this class stores rather than the raw bytes the
+     * generated base expects. Either accepted spelling of the id parses; the canonical
+     * resolvers judge it when a reader resolves the field.
+     *
+     * @param array<string,string> $map
+     * @param string               $prefix
+     * @return static
+     */
+    public static function fromTxRep(array $map, string $prefix): static {
+        $disc = XdrSCAddressType::fromTxRep($map, $prefix . '.type');
+        switch ($disc->getValue()) {
+            case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
+                $result = new static($disc);
+                $result->contractId = TxRepHelper::getValue($map, $prefix . '.contractId') ?? '';
+                return $result;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
+                $result = new static($disc);
+                $result->liquidityPoolId = TxRepHelper::getValue($map, $prefix . '.liquidityPoolId') ?? '';
+                return $result;
+            default:
+                return parent::fromTxRep($map, $prefix);
+        }
     }
 
     /**
