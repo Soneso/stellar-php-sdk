@@ -22,6 +22,10 @@ use Soneso\StellarSDK\ManageDataOperationBuilder;
 use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Responses\Effects\SignerCreatedEffectResponse;
+use Soneso\StellarSDK\Responses\Effects\SignerEffectResponse;
+use Soneso\StellarSDK\Responses\Effects\SignerRemovedEffectResponse;
+use Soneso\StellarSDK\Responses\Effects\SignerUpdatedEffectResponse;
 use Soneso\StellarSDK\SetOptionsOperation;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
@@ -130,6 +134,86 @@ final class AccountTest extends TestCase
         $this->assertTrue($accountA->getFlags()->isAuthRequired() == false);
         $this->assertTrue($accountA->getFlags()->isAuthRevocable() == true);
         $this->assertTrue($accountA->getFlags()->isAuthImmutable() == false);
+
+        // Walk signer B through the rest of its lifecycle. Adding it above emitted a
+        // signer_created effect; raising its weight emits signer_updated and zeroing
+        // it emits signer_removed.
+        $accountA = $this->sdk->requestAccount($accountId);
+        $updateSignerTransaction = (new TransactionBuilder($accountA))
+            ->addOperation((new SetOptionsOperationBuilder())->setSigner($bkey, 8)->build())
+            ->build();
+        $updateSignerTransaction->sign($keyPairA, $this->network);
+        $response = $this->sdk->submitTransaction($updateSignerTransaction);
+        $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $updateSignerTransaction, $response);
+
+        $accountA = $this->sdk->requestAccount($accountId);
+        $removeSignerTransaction = (new TransactionBuilder($accountA))
+            ->addOperation((new SetOptionsOperationBuilder())->setSigner($bkey, 0)->build())
+            ->build();
+        $removeSignerTransaction->sign($keyPairA, $this->network);
+        $response = $this->sdk->submitTransaction($removeSignerTransaction);
+        $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $removeSignerTransaction, $response);
+
+        $accountA = $this->sdk->requestAccount($accountId);
+        $bStillPresent = false;
+        foreach ($accountA->getSigners() as $signer) {
+            if ($signer->getKey() === $keyPairB->getAccountId()) {
+                $bStillPresent = true;
+            }
+        }
+        $this->assertFalse($bStillPresent);
+
+        // Horizon ingests effects behind transaction inclusion, so poll until all
+        // three signer effects for B are served or the budget runs out.
+        $bAccountId = $keyPairB->getAccountId();
+        $signerCreated = null;
+        $signerUpdated = null;
+        $signerRemoved = null;
+        $start = microtime(true);
+        while (true) {
+            $effectsResponse = $this->sdk->effects()->forAccount($accountId)->limit(200)->order("desc")->execute();
+            foreach ($effectsResponse->getEffects() as $effect) {
+                if (!($effect instanceof SignerEffectResponse) || $effect->getPublicKey() !== $bAccountId) {
+                    continue;
+                }
+                if ($effect instanceof SignerCreatedEffectResponse) {
+                    $signerCreated = $effect;
+                } elseif ($effect instanceof SignerUpdatedEffectResponse) {
+                    $signerUpdated = $effect;
+                } elseif ($effect instanceof SignerRemovedEffectResponse) {
+                    $signerRemoved = $effect;
+                }
+            }
+            if ($signerCreated !== null && $signerUpdated !== null && $signerRemoved !== null) {
+                break;
+            }
+            if (microtime(true) - $start >= 60) {
+                self::fail('Horizon did not serve all three signer effects for ' . $bAccountId . ' within 60 s');
+            }
+            sleep(3);
+        }
+
+        // Assert the wire codes as literals. The response class alone only shows that
+        // dispatch agreed with the SDK's own constants; the literal type_i values are
+        // what tie those constants to Horizon. Horizon renders all three through the
+        // same resource struct, so signer_removed reports a zero weight rather than
+        // omitting the field.
+        $this->assertEquals('signer_created', $signerCreated->getHumanReadableEffectType());
+        $this->assertEquals(10, $signerCreated->getEffectType());
+        $this->assertEquals($bAccountId, $signerCreated->getPublicKey());
+        $this->assertEquals(6, $signerCreated->getWeight());
+
+        $this->assertEquals('signer_updated', $signerUpdated->getHumanReadableEffectType());
+        $this->assertEquals(12, $signerUpdated->getEffectType());
+        $this->assertEquals($bAccountId, $signerUpdated->getPublicKey());
+        $this->assertEquals(8, $signerUpdated->getWeight());
+
+        $this->assertEquals('signer_removed', $signerRemoved->getHumanReadableEffectType());
+        $this->assertEquals(11, $signerRemoved->getEffectType());
+        $this->assertEquals($bAccountId, $signerRemoved->getPublicKey());
+        $this->assertEquals(0, $signerRemoved->getWeight());
     }
 
     public function testFindAccountforAsset(): void {
