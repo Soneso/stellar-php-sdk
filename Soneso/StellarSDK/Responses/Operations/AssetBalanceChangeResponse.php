@@ -23,7 +23,7 @@ class AssetBalanceChangeResponse
     public ?string $assetIssuer = null;
     public string $type;
     public ?string $from = null;
-    public string $to;
+    public ?string $to = null;
     public string $amount;
     public ?string $destinationMuxedId = null; // a uint64
 
@@ -40,7 +40,9 @@ class AssetBalanceChangeResponse
         if (isset($json['from'])) {
             $this->from = $json['from'];
         }
-        $this->to = $json['to'];
+        if (isset($json['to'])) {
+            $this->to = $json['to'];
+        }
         $this->amount = $json['amount'];
         if (isset($json['destination_muxed_id'])) {
             $this->destinationMuxedId = $json['destination_muxed_id'];
@@ -161,9 +163,9 @@ class AssetBalanceChangeResponse
     /**
      * Gets the destination account of the transfer
      *
-     * @return string The destination account ID
+     * @return string|null The destination account ID or null for burn and clawback operations
      */
-    public function getTo(): string
+    public function getTo(): ?string
     {
         return $this->to;
     }
@@ -171,10 +173,10 @@ class AssetBalanceChangeResponse
     /**
      * Sets the destination account of the transfer
      *
-     * @param string $to The destination account ID
+     * @param string|null $to The destination account ID
      * @return void
      */
-    public function setTo(string $to): void
+    public function setTo(?string $to): void
     {
         $this->to = $to;
     }
