@@ -643,4 +643,290 @@ class KYCServiceTest extends TestCase
         $files = $response->files;
         $this->assertCount(0, $files);
     }
+
+    // Zero-valued parameters. "0" is a legitimate SEP-12 customer memo: a SEP-10 session
+    // authenticated with memo id 0 carries "G...:0" in the JWT sub, and the memo parameter
+    // must match it. Customer ids, customer types and transaction ids are anchor-defined
+    // strings, so "0" is legitimate there too. Only null and the empty string mean
+    // "not supplied".
+
+    /**
+     * Builds a KYCService backed by the given queued responses and records every outgoing
+     * request in $history, so tests can assert on what reached the wire.
+     *
+     * @param array<int, Response> $responses
+     * @param array<int, array<string, mixed>> $history
+     */
+    private function kycServiceRecordingRequests(array $responses, array &$history) : KYCService {
+        $stack = HandlerStack::create(new MockHandler($responses));
+        $stack->push(Middleware::history($history));
+        $kycService = new KYCService($this->serviceAddress);
+        $kycService->setMockHandlerStack($stack);
+        return $kycService;
+    }
+
+    /**
+     * Returns the parsed query parameters of the recorded request.
+     *
+     * @param array<int, array<string, mixed>> $history
+     * @return array<string, mixed>
+     */
+    private function recordedQuery(array $history) : array {
+        $this->assertNotEmpty($history);
+        parse_str($history[0]['request']->getUri()->getQuery(), $query);
+        return $query;
+    }
+
+    /**
+     * Returns the recorded request's multipart/form-data body as a map of part name to contents.
+     *
+     * @param array<int, array<string, mixed>> $history
+     * @return array<string, string>
+     */
+    private function recordedMultipartFields(array $history) : array {
+        $this->assertNotEmpty($history);
+        $request = $history[0]['request'];
+        $this->assertSame(1, preg_match('/boundary="?([^";]+)"?/', $request->getHeaderLine('Content-Type'), $matches));
+
+        $fields = array();
+        foreach (explode('--' . $matches[1], $request->getBody()->__toString()) as $part) {
+            $part = trim($part, "\r\n");
+            if ($part === '' || $part === '--') {
+                continue;
+            }
+            $split = explode("\r\n\r\n", $part, 2);
+            $this->assertCount(2, $split);
+            $this->assertSame(1, preg_match('/name="([^"]+)"/', $split[0], $nameMatch));
+            $fields[$nameMatch[1]] = $split[1];
+        }
+        return $fields;
+    }
+
+    public function testGetCustomerInfoSendsZeroValuedParameters(): void {
+        $history = [];
+        $kycService = $this->kycServiceRecordingRequests(
+            [new Response(200, ['X-Foo' => 'Bar'], $this->requestGetCustomerSuccess())],
+            $history,
+        );
+        $request = new GetCustomerInfoRequest();
+        $request->id = "0";
+        $request->account = $this->accountId;
+        $request->memo = "0";
+        $request->memoType = "id";
+        $request->type = "0";
+        $request->transactionId = "0";
+        $request->lang = "en";
+        $request->jwt = $this->jwtToken;
+
+        $kycService->getCustomerInfo($request);
+
+        $query = $this->recordedQuery($history);
+        $this->assertSame("0", $query["id"]);
+        $this->assertSame($this->accountId, $query["account"]);
+        $this->assertSame("0", $query["memo"]);
+        $this->assertSame("id", $query["memo_type"]);
+        $this->assertSame("0", $query["type"]);
+        $this->assertSame("0", $query["transaction_id"]);
+        $this->assertSame("en", $query["lang"]);
+    }
+
+    public function testGetCustomerInfoOmitsNullParameters(): void {
+        $history = [];
+        $kycService = $this->kycServiceRecordingRequests(
+            [new Response(200, ['X-Foo' => 'Bar'], $this->requestGetCustomerSuccess())],
+            $history,
+        );
+        $request = new GetCustomerInfoRequest();
+        $request->account = $this->accountId;
+        $request->jwt = $this->jwtToken;
+
+        $kycService->getCustomerInfo($request);
+
+        $query = $this->recordedQuery($history);
+        $this->assertSame($this->accountId, $query["account"]);
+        $this->assertArrayNotHasKey("id", $query);
+        $this->assertArrayNotHasKey("memo", $query);
+        $this->assertArrayNotHasKey("type", $query);
+        $this->assertArrayNotHasKey("transaction_id", $query);
+    }
+
+    public function testGetCustomerInfoOmitsEmptyParameters(): void {
+        $history = [];
+        $kycService = $this->kycServiceRecordingRequests(
+            [new Response(200, ['X-Foo' => 'Bar'], $this->requestGetCustomerSuccess())],
+            $history,
+        );
+        $request = new GetCustomerInfoRequest();
+        $request->id = "";
+        $request->account = $this->accountId;
+        $request->memo = "";
+        $request->type = "";
+        $request->transactionId = "";
+        $request->jwt = $this->jwtToken;
+
+        $kycService->getCustomerInfo($request);
+
+        $query = $this->recordedQuery($history);
+        $this->assertSame($this->accountId, $query["account"]);
+        $this->assertArrayNotHasKey("id", $query);
+        $this->assertArrayNotHasKey("memo", $query);
+        $this->assertArrayNotHasKey("type", $query);
+        $this->assertArrayNotHasKey("transaction_id", $query);
+    }
+
+    public function testPutCustomerInfoSendsZeroValuedParameters(): void {
+        $history = [];
+        $kycService = $this->kycServiceRecordingRequests(
+            [new Response(200, ['X-Foo' => 'Bar'], $this->requestPutCustomerInfo())],
+            $history,
+        );
+        $request = new PutCustomerInfoRequest();
+        $request->id = "0";
+        $request->account = $this->accountId;
+        $request->memo = "0";
+        $request->memoType = "id";
+        $request->type = "0";
+        $request->transactionId = "0";
+        $request->jwt = $this->jwtToken;
+
+        $kycService->putCustomerInfo($request);
+
+        $fields = $this->recordedMultipartFields($history);
+        $this->assertSame("0", $fields["id"]);
+        $this->assertSame($this->accountId, $fields["account"]);
+        $this->assertSame("0", $fields["memo"]);
+        $this->assertSame("id", $fields["memo_type"]);
+        $this->assertSame("0", $fields["type"]);
+        $this->assertSame("0", $fields["transaction_id"]);
+    }
+
+    public function testPutCustomerInfoOmitsNullParameters(): void {
+        $history = [];
+        $kycService = $this->kycServiceRecordingRequests(
+            [new Response(200, ['X-Foo' => 'Bar'], $this->requestPutCustomerInfo())],
+            $history,
+        );
+        $request = new PutCustomerInfoRequest();
+        $request->account = $this->accountId;
+        $request->jwt = $this->jwtToken;
+
+        $kycService->putCustomerInfo($request);
+
+        $fields = $this->recordedMultipartFields($history);
+        $this->assertSame($this->accountId, $fields["account"]);
+        $this->assertArrayNotHasKey("id", $fields);
+        $this->assertArrayNotHasKey("memo", $fields);
+        $this->assertArrayNotHasKey("type", $fields);
+        $this->assertArrayNotHasKey("transaction_id", $fields);
+    }
+
+    public function testPutCustomerInfoOmitsEmptyParameters(): void {
+        $history = [];
+        $kycService = $this->kycServiceRecordingRequests(
+            [new Response(200, ['X-Foo' => 'Bar'], $this->requestPutCustomerInfo())],
+            $history,
+        );
+        $request = new PutCustomerInfoRequest();
+        $request->id = "";
+        $request->account = $this->accountId;
+        $request->memo = "";
+        $request->type = "";
+        $request->transactionId = "";
+        $request->jwt = $this->jwtToken;
+
+        $kycService->putCustomerInfo($request);
+
+        $fields = $this->recordedMultipartFields($history);
+        $this->assertSame($this->accountId, $fields["account"]);
+        $this->assertArrayNotHasKey("id", $fields);
+        $this->assertArrayNotHasKey("memo", $fields);
+        $this->assertArrayNotHasKey("type", $fields);
+        $this->assertArrayNotHasKey("transaction_id", $fields);
+    }
+
+    public function testPutCustomerVerificationSendsZeroCustomerId(): void {
+        $history = [];
+        $kycService = $this->kycServiceRecordingRequests(
+            [new Response(200, ['X-Foo' => 'Bar'], $this->requestPutCustomerVerification())],
+            $history,
+        );
+        $request = new PutCustomerVerificationRequest();
+        $request->id = "0";
+        $request->verificationFields = ["mobile_number_verification" => "2735021"];
+        $request->jwt = $this->jwtToken;
+
+        $kycService->putCustomerVerification($request);
+
+        $fields = $this->recordedMultipartFields($history);
+        $this->assertSame("0", $fields["id"]);
+        $this->assertSame("2735021", $fields["mobile_number_verification"]);
+    }
+
+    public function testDeleteCustomerSendsZeroMemo(): void {
+        $history = [];
+        $kycService = $this->kycServiceRecordingRequests([new Response(200, ['X-Foo' => 'Bar'], "")], $history);
+
+        $kycService->deleteCustomer($this->accountId, $this->jwtToken, "0", "id");
+
+        $fields = $this->recordedMultipartFields($history);
+        $this->assertSame("0", $fields["memo"]);
+        $this->assertSame("id", $fields["memo_type"]);
+    }
+
+    public function testDeleteCustomerOmitsMemoWhenNotSupplied(): void {
+        foreach ([null, ""] as $memo) {
+            $history = [];
+            $kycService = $this->kycServiceRecordingRequests([new Response(200, ['X-Foo' => 'Bar'], "")], $history);
+
+            $kycService->deleteCustomer($this->accountId, $this->jwtToken, $memo, "id");
+
+            $fields = $this->recordedMultipartFields($history);
+            $message = "memo: " . var_export($memo, true);
+            $this->assertSame("id", $fields["memo_type"], $message);
+            $this->assertArrayNotHasKey("memo", $fields, $message);
+        }
+    }
+
+    public function testPutCustomerCallbackSendsZeroValuedParameters(): void {
+        $history = [];
+        $kycService = $this->kycServiceRecordingRequests([new Response(200, ['X-Foo' => 'Bar'], "")], $history);
+        $request = new PutCustomerCallbackRequest();
+        $request->url = "https://test.com/callback";
+        $request->id = "0";
+        $request->account = $this->accountId;
+        $request->memo = "0";
+        $request->memoType = "id";
+        $request->jwt = $this->jwtToken;
+
+        $kycService->putCustomerCallback($request);
+
+        $fields = $this->recordedMultipartFields($history);
+        $this->assertSame("https://test.com/callback", $fields["url"]);
+        $this->assertSame("0", $fields["id"]);
+        $this->assertSame($this->accountId, $fields["account"]);
+        $this->assertSame("0", $fields["memo"]);
+        $this->assertSame("id", $fields["memo_type"]);
+    }
+
+    public function testPutCustomerCallbackOmitsParametersWhenNotSupplied(): void {
+        foreach ([null, ""] as $value) {
+            $history = [];
+            $kycService = $this->kycServiceRecordingRequests([new Response(200, ['X-Foo' => 'Bar'], "")], $history);
+            $request = new PutCustomerCallbackRequest();
+            $request->url = "https://test.com/callback";
+            $request->id = $value;
+            $request->account = $this->accountId;
+            $request->memo = $value;
+            $request->memoType = "id";
+            $request->jwt = $this->jwtToken;
+
+            $kycService->putCustomerCallback($request);
+
+            $fields = $this->recordedMultipartFields($history);
+            $message = "value: " . var_export($value, true);
+            $this->assertSame($this->accountId, $fields["account"], $message);
+            $this->assertArrayNotHasKey("id", $fields, $message);
+            $this->assertArrayNotHasKey("memo", $fields, $message);
+        }
+    }
 }
