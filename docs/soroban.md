@@ -385,6 +385,62 @@ $client = SorobanClient::deploy(new DeployRequest(
 ));
 ```
 
+### Deployment from an External Reference (Protocol 28)
+
+Create a contract instance that runs the wasm named by a CAP-85 external reference:
+the owner contract holds a persistent entry under a tag, and its value is the hash of
+the wasm the instance runs. There is no install step; the owner already holds the tag
+entry. The reference is resolved before the transaction is built, so an unresolvable
+reference fails with a message naming the owner and the tag rather than failing
+on-chain.
+
+```php
+<?php
+
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Contract\DeployFromExternalRefRequest;
+use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
+
+// Address::fromContractId() takes the hex form of the owner contract id
+$ownerIdHex = StrKey::decodeContractIdHex('CCXYZ...');
+
+$client = SorobanClient::deployFromExternalRef(new DeployFromExternalRefRequest(
+    rpcUrl: 'https://soroban-testnet.stellar.org',
+    network: Network::testnet(),
+    sourceAccountKeyPair: KeyPair::fromSeed('SXXX...'),
+    executableOwner: Address::fromContractId($ownerIdHex),
+    tag: 'token-v1'  // Tag of the executable entry on the owner; matched byte for byte
+));
+```
+
+`constructorArgs` and `salt` work as in `DeployRequest`. The contract spec is loaded
+from the resolved wasm before submission and the returned client is ready to invoke.
+
+### Deriving a Contract Id Before Deploying
+
+`Address::deriveContractId()` returns the contract id ("C...") a deployment by a given
+deployer with a given salt creates on a given network. The id derives from the
+deployer, the salt and the network only; the executable (wasm hash, external reference
+or Stellar asset) does not enter the derivation. Use it when the address is needed
+before the deployment, for example in constructor arguments of another contract.
+
+```php
+<?php
+
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Address;
+
+$deployer = Address::fromAccountId('GABC...');
+$salt = random_bytes(32);
+
+$futureContractId = Address::deriveContractId($deployer, $salt, Network::testnet());
+
+// Deploying with the same deployer and salt creates exactly this contract id
+```
+
 ## AssembledTransaction
 
 Fine-grained control over the transaction lifecycle. Use `buildInvokeMethodTx()` instead of `invokeMethod()` when you need to inspect simulation results, add memos, or handle multi-signature workflows.
@@ -1281,7 +1337,8 @@ $createOp = (new InvokeHostFunctionOperationBuilder(
 
 Deploy a contract instance that runs the wasm named by a CAP-85 external reference
 (see External Reference Executables above). The owner contract already holds the tag
-entry, so there is no upload step.
+entry, so there is no upload step. For the one-call variant, see "Deployment from an
+External Reference (Protocol 28)" under Installing and Deploying.
 
 ```php
 <?php

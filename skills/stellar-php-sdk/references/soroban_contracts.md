@@ -89,37 +89,48 @@ $client = SorobanClient::deploy(new DeployRequest(
 ### Deploy from an External Reference (Protocol 28)
 
 A CAP-85 external reference names an owner contract and a tag; the owner's persistent
-entry under that tag holds the wasm hash the new instance runs. There is no install step,
-and `SorobanClient::deploy` covers only wasm-hash deploys -- build the create operation
-directly and submit it like any `InvokeHostFunctionOperation`:
+entry under that tag holds the wasm hash the new instance runs. There is no install
+step. `SorobanClient::deployFromExternalRef` resolves the reference before the
+transaction is built (an unresolvable reference throws naming the owner and the tag),
+loads the spec from the resolved wasm, and returns a ready client:
 
 ```php
 <?php
 declare(strict_types=1);
 
-use Soneso\StellarSDK\CreateContractFromExternalRefHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
-use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
+use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Contract\DeployFromExternalRefRequest;
+use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 
 $keyPair = KeyPair::random(); // or KeyPair::fromSeed($yourSecret)
 
 // Address::fromContractId() takes the hex form of the owner contract id
 $ownerIdHex = StrKey::decodeContractIdHex('CCXYZ...');
 
-$createOp = (new InvokeHostFunctionOperationBuilder(
-    new CreateContractFromExternalRefHostFunction(
-        Address::fromAccountId($keyPair->getAccountId()),  // deployer
-        Address::fromContractId($ownerIdHex),
-        'token-v1',  // tag; matched byte for byte
-    )
-))->build();
-// Then: build transaction, simulate, set auth + resource fee, sign, send
+$client = SorobanClient::deployFromExternalRef(new DeployFromExternalRefRequest(
+    rpcUrl: 'https://soroban-testnet.stellar.org',
+    network: Network::testnet(),
+    sourceAccountKeyPair: $keyPair,
+    executableOwner: Address::fromContractId($ownerIdHex),
+    tag: 'token-v1', // matched byte for byte
+    // constructorArgs and salt work as in DeployRequest
+));
 ```
 
+Without SorobanClient, build the create operation directly with
+`CreateContractFromExternalRefHostFunction(Address $address, Address $executableOwner,
+string $tag, ?string $salt = null)` in an `InvokeHostFunctionOperationBuilder` and
+submit it like any `InvokeHostFunctionOperation`.
 `CreateContractFromExternalRefWithConstructorHostFunction` adds `array $constructorArgs`
 after the tag. Envelope parsing returns these classes for external-ref create operations.
+
+`Address::deriveContractId(Address $deployer, string $salt, Network $network)` returns
+the contract id ("C...") a deployment creates. The id derives from deployer, salt and
+network only (the executable does not enter it), so the address is known before
+deploying. The salt is 32 raw bytes, not hex.
 
 ## Contract Invocation
 
