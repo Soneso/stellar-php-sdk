@@ -386,20 +386,23 @@ class TxRepBaseTypesTest extends TestCase
 
     public function testSCAddressBaseContractRoundtrip(): void
     {
-        $contractIdBytes = $this->randomBytes(32);
+        // SCAddress holds the contract id as the 32-byte hash in hexadecimal, and
+        // SEP-0011 gives an opaque[32] field the same 64 characters, so the line
+        // carries the id unchanged.
+        $contractIdHex = $this->randomHex(32);
         $original = new XdrSCAddressBase(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT());
-        $original->contractId = $contractIdBytes;
+        $original->contractId = $contractIdHex;
 
         $lines = [];
         $original->toTxRep('addr', $lines);
 
-        $this->assertArrayHasKey('addr.contractId', $lines);
+        $this->assertEquals($contractIdHex, $lines['addr.contractId']);
 
         $restored = XdrSCAddressBase::fromTxRep($lines, 'addr');
 
         $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
         $this->assertEquals(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT, $restored->getType()->getValue());
-        $this->assertEquals($contractIdBytes, $restored->getContractId());
+        $this->assertEquals($contractIdHex, $restored->getContractId());
     }
 
     public function testSCAddressBaseMuxedAccountRoundtrip(): void
@@ -446,19 +449,22 @@ class TxRepBaseTypesTest extends TestCase
 
     public function testSCAddressBaseLiquidityPoolRoundtrip(): void
     {
-        $poolIdBytes = $this->randomBytes(32);
+        // SCAddress holds the pool id as the 32-byte hash in hexadecimal, and SEP-0011
+        // gives an opaque[32] field the same 64 characters, so the line carries the id
+        // unchanged.
+        $poolIdHex = $this->randomHex(32);
         $original = new XdrSCAddressBase(XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL());
-        $original->liquidityPoolId = $poolIdBytes;
+        $original->liquidityPoolId = $poolIdHex;
 
         $lines = [];
         $original->toTxRep('addr', $lines);
 
-        $this->assertArrayHasKey('addr.liquidityPoolId', $lines);
+        $this->assertEquals($poolIdHex, $lines['addr.liquidityPoolId']);
 
         $restored = XdrSCAddressBase::fromTxRep($lines, 'addr');
 
         $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
-        $this->assertEquals($poolIdBytes, $restored->getLiquidityPoolId());
+        $this->assertEquals($poolIdHex, $restored->getLiquidityPoolId());
     }
 
     // ------------------------------------------------------------------
@@ -808,11 +814,7 @@ class TxRepBaseTypesTest extends TestCase
 
     public function testHostFunctionBaseInvokeContractRoundtrip(): void
     {
-        $contractIdBytes = $this->randomBytes(32);
-        $contractAddr = new XdrSCAddressBase(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT());
-        $contractAddr->contractId = $contractIdBytes;
-        // XdrInvokeContractArgs requires XdrSCAddress, so use the wrapper
-        $contractAddrWrapper = XdrSCAddress::forContractId(bin2hex($contractIdBytes));
+        $contractAddrWrapper = XdrSCAddress::forContractId($this->randomHex(32));
 
         $argVal = XdrSCVal::forU32(42);
         $args = new XdrInvokeContractArgs($contractAddrWrapper, 'my_function', [$argVal]);
@@ -2601,7 +2603,7 @@ class TxRepBaseTypesTest extends TestCase
     private function buildMinimalWasmExecutable(): XdrContractExecutable
     {
         $executable = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM());
-        // wasmIdHex stored as raw bytes in the base toTxRep path
+        // The wasm hash is held as the 32-byte hash in hexadecimal.
         $executable->wasmIdHex = $this->randomBytes(32);
         return $executable;
     }

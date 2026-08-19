@@ -259,6 +259,73 @@ class GeneratorSnapshotTest < Minitest::Test
       "XdrSCAddress.php (Cat-B wrapper) must not duplicate base SEP-51 (mixed)"
   end
 
+  # ------------------------------------------------------------------
+  # ARM_STORAGE_OVERRIDES emission
+  #
+  # XdrSCAddress keeps the contract id and the liquidity pool id as the
+  # 32-byte hash in hexadecimal and accepts their strkey spelling, so every
+  # generated reader of those two fields has to resolve them through the
+  # canonical resolver the generator emits alongside. A reader left on the
+  # raw-bytes default would render the hexadecimal of the hexadecimal.
+  # ------------------------------------------------------------------
+
+  def test_arm_storage_overrides_sc_address_resolves_every_reader
+    base_contents = File.read(File.join(OUTPUT_DIR, "XdrSCAddressBase.php"))
+
+    %w[getCanonicalContractIdHex getCanonicalLiquidityPoolIdHex].each do |resolver|
+      assert_match(/public function #{resolver}\(\): string/, base_contents,
+        "XdrSCAddressBase.php must define #{resolver}()")
+    end
+
+    {
+      "encode" => [
+        /\$bytes \.= XdrEncoder::opaqueFixed\(pack\('H\*', \$this->getCanonicalContractIdHex\(\)\), 32\);/,
+        /\$bytes \.= XdrEncoder::opaqueFixed\(pack\('H\*', \$this->getCanonicalLiquidityPoolIdHex\(\)\), 32\);/,
+      ],
+      "decode" => [
+        /\$result->contractId = bin2hex\(\$xdr->readOpaqueFixed\(32\)\);/,
+        /\$result->liquidityPoolId = bin2hex\(\$xdr->readOpaqueFixed\(32\)\);/,
+      ],
+      "SEP-51 toJsonValue" => [
+        /StrKey::encodeContractIdHex\(\$this->getCanonicalContractIdHex\(\)\)/,
+        /StrKey::encodeLiquidityPoolIdHex\(\$this->getCanonicalLiquidityPoolIdHex\(\)\)/,
+      ],
+      "toTxRep" => [
+        /\$lines\[\$prefix \. '\.contractId'\] = \$this->getCanonicalContractIdHex\(\);/,
+        /\$lines\[\$prefix \. '\.liquidityPoolId'\] = \$this->getCanonicalLiquidityPoolIdHex\(\);/,
+      ],
+      "fromTxRep" => [
+        /\$result->contractId = TxRepHelper::getValue\(\$map, \$prefix \. '\.contractId'\) \?\? '';/,
+        /\$result->liquidityPoolId = TxRepHelper::getValue\(\$map, \$prefix \. '\.liquidityPoolId'\) \?\? '';/,
+      ],
+    }.each do |site, patterns|
+      patterns.each do |pattern|
+        assert_match pattern, base_contents,
+          "XdrSCAddressBase.php #{site} must read the id in the representation the field holds"
+      end
+    end
+
+    # The raw-bytes default would double the hexadecimal on the way out and
+    # halve it on the way back.
+    refute_match(/TxRepHelper::bytesToHex\(\$this->(contractId|liquidityPoolId)\)/, base_contents,
+      "XdrSCAddressBase.php must not hex-encode a field that already holds hexadecimal")
+    refute_match(/TxRepHelper::hexToBytes\(TxRepHelper::getValue\(\$map, \$prefix \. '\.(contractId|liquidityPoolId)'\)/,
+      base_contents,
+      "XdrSCAddressBase.php must not decode a TxRep line the field stores verbatim")
+
+    # One implementation only: the wrapper inherits the resolvers and the
+    # renderers rather than carrying its own.
+    wrapper_contents = File.read(File.join(OUTPUT_DIR, "XdrSCAddress.php"))
+    %w[getCanonicalContractIdHex getCanonicalLiquidityPoolIdHex].each do |resolver|
+      refute_match(/public function #{resolver}\(\)/, wrapper_contents,
+        "XdrSCAddress.php must inherit #{resolver}() rather than redefine it")
+    end
+    %w[encode decode toTxRep fromTxRep].each do |method|
+      refute_match(/function #{method}\(/, wrapper_contents,
+        "XdrSCAddress.php (Cat-B wrapper) must not duplicate the base's #{method}()")
+    end
+  end
+
   def test_sep51_xdr_memo_emits_bespoke_shape
     # XdrMemo is in CAT_A_INLINE_TARGETS with a stellar_json_overrides
     # entry; the override emits "none" bare-string and per-arm objects.
