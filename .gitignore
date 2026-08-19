@@ -27,3 +27,6 @@ tools/sep-51-fixtures/orchestration-state.json
 tools/sep-51-fixtures/halt-report.md
 tools/sep-51-fixtures/deferred-nits.md
 tools/.venv-corpus-refresh/
+
+# P28 owner fixture build output
+tools/p28-owner-fixture/target/

@@ -6,9 +6,11 @@
 
 namespace Soneso\StellarSDKTests\Unit\Soroban;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
@@ -570,5 +572,60 @@ class AddressTest extends TestCase
             '000000001e93c52037f0941d21463ff49c1fc83ff41fe14212f4a0e902127f7b193a4113',
             $address->getClaimableBalanceId()
         );
+    }
+
+    // deriveContractId
+
+    public function testDeriveContractIdMatchesTheSharedCrossSdkVector(): void
+    {
+        // Shared vector pinned across all four Soneso SDKs; independently computed
+        // (js-stellar-base and a hand-encoded preimage), never from this implementation.
+        $deployer = Address::fromAccountId('GABAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEJXA');
+        $salt = str_repeat("\x11", 32);
+
+        $this->assertSame(
+            'CADHEGA2PTPG6IJXYA62AY6JUQLQWOHRYX7A6FAZ4GL747OLBDQU7QXR',
+            Address::deriveContractId($deployer, $salt, Network::testnet())
+        );
+        $this->assertSame(
+            'CC22JLXJCLGHDQDBHJXTOEAFRM7GIS3D7CBQXR7M22HMWYNPUUPH6GKV',
+            Address::deriveContractId($deployer, $salt, Network::public())
+        );
+    }
+
+    public function testDeriveContractIdAcceptsAContractDeployer(): void
+    {
+        // Contracts deploy contracts too; the preimage takes any SC address. The
+        // expected id was computed independently with js-stellar-base, covering the
+        // contract arm of the address encoding that the account vector does not reach.
+        $deployer = Address::fromContractId($this->testContractIdHex);
+        $salt = str_repeat("\x11", 32);
+
+        $this->assertSame(
+            'CBU52TQFSCXOGX5OOE6QQKBRD3XNXAS2MRLI2XFKLGEODECDADE32QYU',
+            Address::deriveContractId($deployer, $salt, Network::testnet())
+        );
+        $this->assertSame(
+            'CAXJ2CGFFIGYDFF55V64NWWUASL7IMAZTVVECYOKOVQWF4KQGXP2HH3U',
+            Address::deriveContractId($deployer, $salt, Network::public())
+        );
+    }
+
+    public function testDeriveContractIdRejectsWrongSaltLength(): void
+    {
+        $deployer = Address::fromAccountId('GABAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEJXA');
+
+        // 31 for the off-by-one, 64 for the likeliest real mistake: a hex string
+        // where raw bytes are expected.
+        foreach ([31, 64] as $length) {
+            $threw = false;
+            try {
+                Address::deriveContractId($deployer, str_repeat("\x11", $length), Network::testnet());
+            } catch (InvalidArgumentException $e) {
+                $threw = true;
+                $this->assertStringContainsString("must be exactly 32 bytes, got $length", $e->getMessage());
+            }
+            $this->assertTrue($threw, "expected an exception for salt length $length");
+        }
     }
 }

@@ -10,7 +10,13 @@ use Exception;
 use InvalidArgumentException;
 use RuntimeException;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimage;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
+use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
+use Soneso\StellarSDK\Xdr\XdrHashIDPreimage;
+use Soneso\StellarSDK\Xdr\XdrHashIDPreimageContractID;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
@@ -420,5 +426,38 @@ class Address
     public function setLiquidityPoolId(?string $liquidityPoolId): void
     {
         $this->liquidityPoolId = $liquidityPoolId;
+    }
+
+    /**
+     * Derives the contract id a deployment by the given deployer with the given salt
+     * creates on the given network.
+     *
+     * The id depends only on the deployer address, the salt and the network; the
+     * executable the contract is created with (wasm hash, CAP-85 external reference or
+     * Stellar asset) does not enter the derivation. Use it to know a contract's address
+     * before deploying, for example when the address is needed in constructor arguments
+     * of another contract.
+     *
+     * @param Address $deployer the address the deployment is issued from (account or contract)
+     * @param string $salt the 32 byte salt the deployment uses
+     * @param Network $network the network the contract is deployed to
+     * @return string the derived contract id ("C...")
+     * @throws InvalidArgumentException if the salt is not exactly 32 bytes
+     */
+    public static function deriveContractId(Address $deployer, string $salt, Network $network) : string {
+        if (strlen($salt) !== 32) {
+            throw new InvalidArgumentException("salt must be exactly 32 bytes, got " . strlen($salt));
+        }
+        $contractIdPreimage = new XdrContractIDPreimage(
+            XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS());
+        $contractIdPreimage->address = $deployer->toXdr();
+        $contractIdPreimage->salt = $salt;
+
+        $networkId = hash('sha256', $network->getNetworkPassphrase(), true);
+        $preimage = new XdrHashIDPreimage(XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID());
+        $preimage->contractID = new XdrHashIDPreimageContractID($networkId, $contractIdPreimage);
+
+        $contractIdHex = bin2hex(hash('sha256', $preimage->encode(), true));
+        return StrKey::encodeContractIdHex($contractIdHex);
     }
 }

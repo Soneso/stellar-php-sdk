@@ -10,12 +10,19 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
+use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 use ReflectionClass;
 use ReflectionProperty;
+use Soneso\StellarSDK\AbstractTransaction;
+use Soneso\StellarSDK\CreateContractFromExternalRefHostFunction;
+use Soneso\StellarSDK\CreateContractFromExternalRefWithConstructorHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\HostFunction;
 use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperation;
 use Soneso\StellarSDK\Network;
@@ -24,6 +31,7 @@ use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Contract\AssembledTransaction;
 use Soneso\StellarSDK\Soroban\Contract\ClientOptions;
 use Soneso\StellarSDK\Soroban\Contract\ContractSpec;
+use Soneso\StellarSDK\Soroban\Contract\DeployFromExternalRefRequest;
 use Soneso\StellarSDK\Soroban\Contract\DeployRequest;
 use Soneso\StellarSDK\Soroban\Contract\InstallRequest;
 use Soneso\StellarSDK\Soroban\Contract\MethodOptions;
@@ -31,6 +39,7 @@ use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SorobanRpcErrorResponse;
 use Soneso\StellarSDK\Soroban\SorobanServer;
+use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\Xdr\XdrAccountEntry;
 use Soneso\StellarSDK\Xdr\XdrAccountEntryExt;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
@@ -86,6 +95,8 @@ class SorobanClientTest extends TestCase
     private const TEST_RPC_URL = "http://localhost:1";
     private const TEST_TX_HASH = "a4721e2a61e9a6b3f97c6b06427a2f8aacbdcbdbf30bbf52a4ce2c8fcbd2fc10";
     private const TEST_WASM_HASH = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+    private const TEST_OWNER_ID_HEX = "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd";
+    private const TEST_EXECUTABLE_TAG = "token-v1";
 
     private Network $testNetwork;
 
@@ -497,6 +508,266 @@ class SorobanClientTest extends TestCase
     }
 
     // ---------------------------------------------------------------------
+    // deployFromExternalRef
+    // ---------------------------------------------------------------------
+
+    public function testDeployFromExternalRefResolvesAndDeploys(): void
+    {
+        $wasmHash = hash('sha256', 'test-wasm', true);
+        $byteCode = $this->createContractByteCode('hello');
+        $createdContract = Address::fromContractId(StrKey::decodeContractIdHex(self::TEST_CONTRACT_ID))->toXdrSCVal();
+        $salt = str_repeat("\x11", 32);
+
+        // Resolution reads the tag entry, the spec loads from the resolved code,
+        // then the usual deploy flow follows.
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->executableTagEntryData(
+                self::TEST_OWNER_ID_HEX, self::TEST_EXECUTABLE_TAG, XdrSCVal::forBytes($wasmHash))),
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $byteCode)),
+            $this->accountEntryResponse(),
+            $this->simulateResponse(XdrSCVal::forVoid(), true),
+            $this->sendTransactionResponse(),
+            $this->getTransactionRpcResponse(GetTransactionResponse::STATUS_SUCCESS, $createdContract),
+        ]);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
+
+        $deployRequest = new DeployFromExternalRefRequest(
+            rpcUrl: self::TEST_RPC_URL,
+            network: $this->testNetwork,
+            sourceAccountKeyPair: $keyPair,
+            executableOwner: Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            tag: self::TEST_EXECUTABLE_TAG,
+            constructorArgs: [XdrSCVal::forU32(1)],
+            salt: $salt,
+            server: $server,
+        );
+
+        $client = SorobanClient::deployFromExternalRef($deployRequest);
+
+        $this->assertContains('hello', $client->getMethodNames());
+        $this->assertSame(self::TEST_CONTRACT_ID, $client->getContractId());
+        $this->assertSame(0, $mock->count());
+
+        // The resolution asks for the owner's executable tag entry and the preload
+        // for the code entry under the exact hash the resolver returned.
+        $tagKey = $this->requestedLedgerKey($history, 0);
+        $this->assertSame(self::TEST_OWNER_ID_HEX, $tagKey->contractData->contract->contractId);
+        $this->assertSame(self::TEST_EXECUTABLE_TAG, $tagKey->contractData->key->executableTag);
+        $codeKey = $this->requestedLedgerKey($history, 1);
+        $this->assertSame($wasmHash, $codeKey->contractCode->hash);
+
+        $hostFunction = $this->capturedCreateHostFunction($history);
+        $this->assertInstanceOf(CreateContractFromExternalRefWithConstructorHostFunction::class, $hostFunction);
+        $this->assertSame(self::TEST_ACCOUNT_ID, $hostFunction->getAddress()->accountId);
+        $this->assertSame(self::TEST_OWNER_ID_HEX, $hostFunction->getExecutableOwner()->contractId);
+        $this->assertSame(self::TEST_EXECUTABLE_TAG, $hostFunction->getTag());
+        $this->assertSame($salt, $hostFunction->getSalt());
+        $this->assertCount(1, $hostFunction->getConstructorArgs());
+        $this->assertEquals(1, $hostFunction->getConstructorArgs()[0]->u32);
+    }
+
+    public function testDeployFromExternalRefWithoutConstructorArgsUsesPlainHostFunction(): void
+    {
+        $wasmHash = hash('sha256', 'test-wasm', true);
+        $byteCode = $this->createContractByteCode('hello');
+        $createdContract = Address::fromContractId(StrKey::decodeContractIdHex(self::TEST_CONTRACT_ID))->toXdrSCVal();
+
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->executableTagEntryData(
+                self::TEST_OWNER_ID_HEX, self::TEST_EXECUTABLE_TAG, XdrSCVal::forBytes($wasmHash))),
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $byteCode)),
+            $this->accountEntryResponse(),
+            $this->simulateResponse(XdrSCVal::forVoid(), true),
+            $this->sendTransactionResponse(),
+            $this->getTransactionRpcResponse(GetTransactionResponse::STATUS_SUCCESS, $createdContract),
+        ]);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
+
+        $deployRequest = new DeployFromExternalRefRequest(
+            rpcUrl: self::TEST_RPC_URL,
+            network: $this->testNetwork,
+            sourceAccountKeyPair: $keyPair,
+            executableOwner: Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            tag: self::TEST_EXECUTABLE_TAG,
+            server: $server,
+        );
+
+        $client = SorobanClient::deployFromExternalRef($deployRequest);
+
+        $this->assertSame(self::TEST_CONTRACT_ID, $client->getContractId());
+        $this->assertSame(0, $mock->count());
+
+        $hostFunction = $this->capturedCreateHostFunction($history);
+        $this->assertInstanceOf(CreateContractFromExternalRefHostFunction::class, $hostFunction);
+        $this->assertSame(self::TEST_ACCOUNT_ID, $hostFunction->getAddress()->accountId);
+        $this->assertSame(self::TEST_OWNER_ID_HEX, $hostFunction->getExecutableOwner()->contractId);
+        $this->assertSame(self::TEST_EXECUTABLE_TAG, $hostFunction->getTag());
+        $this->assertSame(32, strlen($hostFunction->getSalt()));
+    }
+
+    public function testDeployFromExternalRefThrowsWhenTagEntryMissing(): void
+    {
+        $mock = new MockHandler([
+            $this->emptyLedgerEntriesResponse(),
+        ]);
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
+
+        $deployRequest = new DeployFromExternalRefRequest(
+            rpcUrl: self::TEST_RPC_URL,
+            network: $this->testNetwork,
+            sourceAccountKeyPair: $keyPair,
+            executableOwner: Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            tag: self::TEST_EXECUTABLE_TAG,
+            server: $server,
+        );
+
+        $caught = null;
+        try {
+            SorobanClient::deployFromExternalRef($deployRequest);
+        } catch (Exception $e) {
+            $caught = $e;
+        }
+        $this->assertNotNull($caught, 'expected an exception for an unresolvable reference');
+        $this->assertStringContainsString('does not resolve', $caught->getMessage());
+        $this->assertStringContainsString(
+            StrKey::encodeContractIdHex(self::TEST_OWNER_ID_HEX), $caught->getMessage());
+        $this->assertStringContainsString(self::TEST_EXECUTABLE_TAG, $caught->getMessage());
+        $this->assertSame(0, $mock->count());
+    }
+
+    public function testDeployFromExternalRefPropagatesMalformedReferenceError(): void
+    {
+        // A tag entry whose value is not a 32-byte SCV_BYTES makes the resolver throw
+        // InvalidArgumentException; deployFromExternalRef passes it through unchanged.
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->executableTagEntryData(
+                self::TEST_OWNER_ID_HEX, self::TEST_EXECUTABLE_TAG, XdrSCVal::forSymbol('nope'))),
+        ]);
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
+
+        $deployRequest = new DeployFromExternalRefRequest(
+            rpcUrl: self::TEST_RPC_URL,
+            network: $this->testNetwork,
+            sourceAccountKeyPair: $keyPair,
+            executableOwner: Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            tag: self::TEST_EXECUTABLE_TAG,
+            server: $server,
+        );
+
+        try {
+            SorobanClient::deployFromExternalRef($deployRequest);
+            $this->fail('expected InvalidArgumentException for a malformed reference');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('does not hold a 32-byte wasm hash', $e->getMessage());
+        }
+        $this->assertSame(0, $mock->count());
+    }
+
+    public function testDeployFromExternalRefRejectsNonContractOwnerBeforeAnyRequest(): void
+    {
+        // The resolver rejects a non-contract owner before issuing any request; an
+        // empty mock queue turns any request into a different failure than the one
+        // expected here.
+        $mock = new MockHandler([]);
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
+
+        $deployRequest = new DeployFromExternalRefRequest(
+            rpcUrl: self::TEST_RPC_URL,
+            network: $this->testNetwork,
+            sourceAccountKeyPair: $keyPair,
+            executableOwner: Address::fromAccountId(self::TEST_ACCOUNT_ID),
+            tag: self::TEST_EXECUTABLE_TAG,
+            server: $server,
+        );
+
+        try {
+            SorobanClient::deployFromExternalRef($deployRequest);
+            $this->fail('expected InvalidArgumentException for a non-contract owner');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('is not a contract address', $e->getMessage());
+            $this->assertStringContainsString(self::TEST_ACCOUNT_ID, $e->getMessage());
+        }
+    }
+
+    public function testDeployFromExternalRefFallsBackWhenCodeHasNoParseableSpec(): void
+    {
+        $wasmHash = hash('sha256', 'test-wasm', true);
+        $createdContract = Address::fromContractId(StrKey::decodeContractIdHex(self::TEST_CONTRACT_ID))->toXdrSCVal();
+
+        // The resolved code is not parseable wasm, so the spec preload throws and the
+        // deployment proceeds without a spec; the client is then built through the
+        // forClientOptions fallback, which loads the instance and its code entry.
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->executableTagEntryData(
+                self::TEST_OWNER_ID_HEX, self::TEST_EXECUTABLE_TAG, XdrSCVal::forBytes($wasmHash))),
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, 'not wasm')),
+            $this->accountEntryResponse(),
+            $this->simulateResponse(XdrSCVal::forVoid(), true),
+            $this->sendTransactionResponse(),
+            $this->getTransactionRpcResponse(GetTransactionResponse::STATUS_SUCCESS, $createdContract),
+            $this->ledgerEntryResponse($this->contractInstanceEntryData($wasmHash)),
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $this->createContractByteCode('hello'))),
+        ]);
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
+
+        $deployRequest = new DeployFromExternalRefRequest(
+            rpcUrl: self::TEST_RPC_URL,
+            network: $this->testNetwork,
+            sourceAccountKeyPair: $keyPair,
+            executableOwner: Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            tag: self::TEST_EXECUTABLE_TAG,
+            logger: new NullLogger(),
+            server: $server,
+        );
+
+        $client = SorobanClient::deployFromExternalRef($deployRequest);
+
+        $this->assertContains('hello', $client->getMethodNames());
+        $this->assertSame(self::TEST_CONTRACT_ID, $client->getContractId());
+        $this->assertSame(0, $mock->count());
+    }
+
+    public function testDeployFromExternalRefThrowsWhenNoContractIdReturned(): void
+    {
+        $wasmHash = hash('sha256', 'test-wasm', true);
+        $byteCode = $this->createContractByteCode('hello');
+
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->executableTagEntryData(
+                self::TEST_OWNER_ID_HEX, self::TEST_EXECUTABLE_TAG, XdrSCVal::forBytes($wasmHash))),
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $byteCode)),
+            $this->accountEntryResponse(),
+            $this->simulateResponse(XdrSCVal::forVoid(), true),
+            $this->sendTransactionResponse(),
+            $this->getTransactionRpcResponse(GetTransactionResponse::STATUS_FAILED, null),
+        ]);
+        $server = $this->createMockedServer($mock);
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
+
+        $deployRequest = new DeployFromExternalRefRequest(
+            rpcUrl: self::TEST_RPC_URL,
+            network: $this->testNetwork,
+            sourceAccountKeyPair: $keyPair,
+            executableOwner: Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            tag: self::TEST_EXECUTABLE_TAG,
+            server: $server,
+        );
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Could not get contract id for deployed contract');
+
+        SorobanClient::deployFromExternalRef($deployRequest);
+    }
+
+    // ---------------------------------------------------------------------
     // forClientOptions
     // ---------------------------------------------------------------------
 
@@ -604,14 +875,70 @@ class SorobanClientTest extends TestCase
     /**
      * SorobanServer whose private httpClient is replaced with a Guzzle client backed by the
      * given mock handler, so that all RPC requests are served from the queued responses.
+     * When $history is given, every request/response pair is also recorded into it via
+     * Guzzle's history middleware, so tests can decode what was submitted.
+     *
+     * @param array<array{request: \Psr\Http\Message\RequestInterface}>|null $history
      */
-    private function createMockedServer(MockHandler $mock): SorobanServer
+    private function createMockedServer(MockHandler $mock, ?array &$history = null): SorobanServer
     {
+        $stack = HandlerStack::create($mock);
+        if ($history !== null) {
+            $stack->push(Middleware::history($history));
+        }
         $server = new SorobanServer(self::TEST_RPC_URL);
         $httpClientProperty = new ReflectionProperty(SorobanServer::class, 'httpClient');
         $httpClientProperty->setAccessible(true);
-        $httpClientProperty->setValue($server, $this->createHttpClient($mock));
+        $httpClientProperty->setValue($server, new Client(['handler' => $stack]));
         return $server;
+    }
+
+    /**
+     * The ledger key of the recorded getLedgerEntries request at the given position.
+     */
+    private function requestedLedgerKey(array $history, int $index): XdrLedgerKey
+    {
+        $body = json_decode((string)$history[$index]['request']->getBody(), true);
+        $this->assertSame('getLedgerEntries', $body['method']);
+        $this->assertCount(1, $body['params']['keys']);
+        return XdrLedgerKey::fromBase64Xdr($body['params']['keys'][0]);
+    }
+
+    /**
+     * Decodes the transaction envelope submitted via sendTransaction from the recorded
+     * request history and returns the host function of its invoke host function operation.
+     */
+    private function capturedCreateHostFunction(array $history): HostFunction
+    {
+        foreach ($history as $entry) {
+            $body = json_decode((string)$entry['request']->getBody(), true);
+            if (($body['method'] ?? null) === 'sendTransaction') {
+                $tx = AbstractTransaction::fromEnvelopeBase64XdrString($body['params']['transaction']);
+                $this->assertInstanceOf(Transaction::class, $tx);
+                $op = $tx->getOperations()[0];
+                $this->assertInstanceOf(InvokeHostFunctionOperation::class, $op);
+                return $op->getFunction();
+            }
+        }
+        $this->fail('no sendTransaction request captured');
+    }
+
+    /**
+     * CONTRACT_DATA ledger entry holding the given value under the owner's executable
+     * tag key, as served for a CAP-85 external reference resolution.
+     */
+    private function executableTagEntryData(string $ownerContractIdHex, string $tag, XdrSCVal $value): XdrLedgerEntryData
+    {
+        $dataEntry = new XdrContractDataEntry(
+            new XdrExtensionPoint(0),
+            Address::fromContractId($ownerContractIdHex)->toXdr(),
+            XdrSCVal::forExecutableTag($tag),
+            XdrContractDataDurability::PERSISTENT(),
+            $value,
+        );
+        $entryData = new XdrLedgerEntryData(XdrLedgerEntryType::CONTRACT_DATA());
+        $entryData->contractData = $dataEntry;
+        return $entryData;
     }
 
     /**
@@ -647,11 +974,6 @@ class SorobanClientTest extends TestCase
         $entry = new XdrSCSpecEntry(new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_STRUCT_V0));
         $entry->udtStructV0 = new XdrSCSpecUDTStructV0('', '', $name, []);
         return $entry;
-    }
-
-    private function createHttpClient(MockHandler $mock): Client
-    {
-        return new Client(['handler' => HandlerStack::create($mock)]);
     }
 
     /**

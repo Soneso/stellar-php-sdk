@@ -8,6 +8,8 @@ namespace Soneso\StellarSDK\Soroban\Contract;
 
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
+use Soneso\StellarSDK\CreateContractFromExternalRefHostFunction;
+use Soneso\StellarSDK\CreateContractFromExternalRefWithConstructorHostFunction;
 use Soneso\StellarSDK\CreateContractWithConstructorHostFunction;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
@@ -16,6 +18,7 @@ use Soneso\StellarSDK\Soroban\Exceptions\SorobanContractParserException;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableExternalRef;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
@@ -147,6 +150,99 @@ class SorobanClient
             wasmId: $deployRequest->wasmHash,
             constructorArgs: $deployRequest->constructorArgs ?? [],
             salt: $deployRequest->salt);
+
+        $builder = new InvokeHostFunctionOperationBuilder($createContractHostFunction);
+        $op = $builder->build();
+        $clientOptions = new ClientOptions(
+            sourceAccountKeyPair: $deployRequest->sourceAccountKeyPair,
+            contractId: "ignored",
+            network: $deployRequest->network,
+            rpcUrl: $deployRequest->rpcUrl,
+            logger: $deployRequest->logger,
+            server: $deployRequest->server
+        );
+        $options = new AssembledTransactionOptions(
+            clientOptions:$clientOptions,
+            methodOptions: $deployRequest->methodOptions,
+            method: self::CONSTRUCTOR_FUNC,
+            arguments: $deployRequest->constructorArgs,
+            logger: $deployRequest->logger);
+
+        $tx = AssembledTransaction::buildWithOp(operation: $op, options: $options);
+        $response = $tx->signAndSend();
+        $contractId = $response->getCreatedContractId();
+        if ($contractId === null) {
+            throw new Exception("Could not get contract id for deployed contract");
+        }
+        $clientOptions->contractId = StrKey::encodeContractIdHex($contractId);
+        if ($contractInfo !== null && count($contractInfo->specEntries) > 0) {
+            return new SorobanClient($contractInfo->specEntries, $clientOptions);
+        }
+        return SorobanClient::forClientOptions(options: $clientOptions);
+    }
+
+    /**
+     * Deploys a new contract instance from a CAP-85 external reference and creates a
+     * SorobanClient for it
+     *
+     * The executable of the new instance names an owner contract and a tag; the owner's
+     * persistent entry under that tag holds the hash of the wasm the instance runs.
+     * Nothing is installed as part of the deployment. The reference is resolved before
+     * the transaction is built, so an unresolvable reference fails here instead of
+     * on-chain.
+     *
+     * @param DeployFromExternalRefRequest $deployRequest Deployment parameters including the
+     * executable owner, the tag, constructor args, and salt
+     * @return SorobanClient The client for the newly deployed contract
+     * @throws Exception If the reference does not resolve (the owner holds no entry under
+     * the tag), if deployment fails, or if the contract ID cannot be extracted
+     * @throws \InvalidArgumentException If the reference is malformed (the owner is not a
+     * contract address, or the tag entry does not hold a 32-byte wasm hash)
+     * @throws GuzzleException If the RPC request fails
+     */
+    public static function deployFromExternalRef(DeployFromExternalRefRequest $deployRequest) : SorobanClient {
+        $server = $deployRequest->server ?? new SorobanServer($deployRequest->rpcUrl);
+        if ($deployRequest->logger !== null) {
+            $server->setLogger($deployRequest->logger);
+        }
+
+        $ref = new XdrContractExecutableExternalRef(
+            $deployRequest->executableOwner->toXdr(), $deployRequest->tag);
+        $wasmId = $server->loadWasmIdForExternalRef($ref);
+        if ($wasmId === null) {
+            throw new Exception("external reference does not resolve: owner contract "
+                . $deployRequest->executableOwner->toStrKey()
+                . " holds no entry under tag " . $deployRequest->tag);
+        }
+
+        // Load the spec from the resolved code before deploying: the code entry
+        // is already settled, while the instance entry this call is about to
+        // write can trail the transaction status on a busy RPC, whose
+        // ledger-entry ingestion runs behind. Code without a parseable spec
+        // deploys anyway; the forClientOptions fallback reports it with its
+        // usual error semantics.
+        try {
+            $contractInfo = $server->loadContractInfoForWasmId($wasmId);
+        } catch (SorobanContractParserException $e) {
+            $contractInfo = null;
+        }
+
+        $sourceAddress = Address::fromAccountId($deployRequest->sourceAccountKeyPair->getAccountId());
+        $constructorArgs = $deployRequest->constructorArgs ?? [];
+        if (count($constructorArgs) > 0) {
+            $createContractHostFunction = new CreateContractFromExternalRefWithConstructorHostFunction(
+                address: $sourceAddress,
+                executableOwner: $deployRequest->executableOwner,
+                tag: $deployRequest->tag,
+                constructorArgs: $constructorArgs,
+                salt: $deployRequest->salt);
+        } else {
+            $createContractHostFunction = new CreateContractFromExternalRefHostFunction(
+                address: $sourceAddress,
+                executableOwner: $deployRequest->executableOwner,
+                tag: $deployRequest->tag,
+                salt: $deployRequest->salt);
+        }
 
         $builder = new InvokeHostFunctionOperationBuilder($createContractHostFunction);
         $op = $builder->build();
