@@ -1633,6 +1633,22 @@ class TxRepBaseTypesTest extends TestCase
         $executable->toTxRep('executable', $lines);
     }
 
+    public function testContractExecutableBaseWasmRejectsAnUnsetHash(): void
+    {
+        // The WASM arm carries a hash, so an executable that names the arm without
+        // one has nothing to render. It is refused where it is read rather than
+        // reaching the wire as a zero hash.
+        $executable = new XdrContractExecutableBase(
+            XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM()
+        );
+
+        $lines = [];
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Wasm hash is not set');
+        $executable->toTxRep('executable', $lines);
+    }
+
     public function testContractExecutableBaseWasmFromTxRepRejectsANonHexHash(): void
     {
         // The line is the length the rule asks for, so only its alphabet marks it as
