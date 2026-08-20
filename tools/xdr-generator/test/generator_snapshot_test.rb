@@ -326,28 +326,45 @@ class GeneratorSnapshotTest < Minitest::Test
     end
   end
 
-  def test_arm_storage_overrides_contract_executable_keeps_wasm_hash_hex
+  def test_arm_storage_overrides_contract_executable_resolves_wasm_hash
     base_contents = File.read(File.join(OUTPUT_DIR, "XdrContractExecutableBase.php"))
 
+    assert_match(/public function getCanonicalWasmIdHex\(\): string/, base_contents,
+      "XdrContractExecutableBase.php must define getCanonicalWasmIdHex()")
+    assert_match(/private static function canonicalWasmIdHex\(\?string \$value\): string/, base_contents,
+      "XdrContractExecutableBase.php must define canonicalWasmIdHex()")
+
     {
-      "encode" => /\$bytes \.= XdrEncoder::opaqueFixed\(pack\('H\*', \$this->wasmIdHex\), 32\);/,
+      "encode" => /\$bytes \.= XdrEncoder::opaqueFixed\(pack\('H\*', \$this->getCanonicalWasmIdHex\(\)\), 32\);/,
       "decode" => /\$result->wasmIdHex = bin2hex\(\$xdr->readOpaqueFixed\(32\)\);/,
-      "toTxRep" => /\$lines\[\$prefix \. '\.wasm_hash'\] = \$this->wasmIdHex;/,
-      "fromTxRep" => /\$result->wasmIdHex = TxRepHelper::getValue\(\$map, \$prefix \. '\.wasm_hash'\) \?\? '';/,
+      "SEP-51 toJsonValue" => /'wasm' => \$this->getCanonicalWasmIdHex\(\)/,
+      "SEP-51 fromJsonValue" => /return self::canonicalWasmIdHex\(\$v\);/,
+      "toTxRep" => /\$lines\[\$prefix \. '\.wasm_hash'\] = \$this->getCanonicalWasmIdHex\(\);/,
+      "fromTxRep" =>
+        /\$result->wasmIdHex = self::canonicalWasmIdHex\(TxRepHelper::getValue\(\$map, \$prefix \. '\.wasm_hash'\)\);/,
     }.each do |site, pattern|
       assert_match pattern, base_contents,
         "XdrContractExecutableBase.php #{site} must read the wasm hash in the representation the field holds"
     end
 
+    # pack('H*') coerces a non-hexadecimal string to 32 zero bytes, so no reader
+    # may take the field without resolving it.
+    refute_match(/pack\('H\*', \$this->wasmIdHex\)/, base_contents,
+      "XdrContractExecutableBase.php must not pack the wasm hash field unresolved")
+
     # SEP-0011 gives an opaque[32] field 64 hexadecimal characters, which is what
-    # the field already holds; the raw-bytes default would render 128.
+    # the resolver returns; the raw-bytes default would render 128.
     refute_match(/TxRepHelper::bytesToHex\(\$this->wasmIdHex\)/, base_contents,
       "XdrContractExecutableBase.php must not hex-encode a field that already holds hexadecimal")
     refute_match(/TxRepHelper::hexToBytes\(TxRepHelper::getValue\(\$map, \$prefix \. '\.wasm_hash'\)/, base_contents,
       "XdrContractExecutableBase.php must not decode a TxRep line the field stores verbatim")
 
+    # One implementation only: the wrapper inherits the resolver and the
+    # renderers rather than carrying its own.
     wrapper_contents = File.read(File.join(OUTPUT_DIR, "XdrContractExecutable.php"))
-    %w[encode decode].each do |method|
+    refute_match(/function (getCanonical|canonical)WasmIdHex\(/, wrapper_contents,
+      "XdrContractExecutable.php must inherit the wasm hash resolver rather than redefine it")
+    %w[encode decode toTxRep fromTxRep].each do |method|
       refute_match(/function #{method}\(/, wrapper_contents,
         "XdrContractExecutable.php (Cat-B wrapper) must not duplicate the base's #{method}()")
     end

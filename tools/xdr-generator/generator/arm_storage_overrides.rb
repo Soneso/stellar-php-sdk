@@ -12,10 +12,14 @@
 # stellar_json_overrides.rb, which resolves the field through the same helper.
 #
 # XdrContractExecutable keeps the wasm hash as the 32-byte hash in hexadecimal
-# in wasmIdHex, the one spelling forWasmId() and the SEP-51 pair accept, so its
-# arm needs no resolver: the readers take the field as it stands. SEP-0011 gives
-# an opaque[32] field 64 hexadecimal characters, which is what the field already
-# holds, so the TxRep line carries it through untouched in both directions.
+# in wasmIdHex, the one spelling forWasmId() and the SEP-51 pair accept. The
+# field is public and settable, so the sites below that take it from the caller
+# resolve it through the canonical accessor rather than use it as it stands:
+# pack('H*') answers a non-hexadecimal string with 32 zero bytes, which would
+# name a contract the caller never asked for. decode() needs no resolver, since
+# bin2hex of a 32-byte read is canonical already. SEP-0011 gives an opaque[32]
+# field 64 hexadecimal characters, which is what the accessor returns, so the
+# TxRep line carries the hash unchanged in both directions.
 #
 # ---------------------------------------------------------------------------
 # ARM_STORAGE_OVERRIDES
@@ -43,10 +47,10 @@ ARM_STORAGE_OVERRIDES = {
     from_txrep: "$result->liquidityPoolId = TxRepHelper::getValue($map, $prefix . '.liquidityPoolId') ?? '';",
   },
   ['XdrContractExecutable', 'wasmIdHex'] => {
-    encode: "$bytes .= XdrEncoder::opaqueFixed(pack('H*', $this->wasmIdHex), 32);",
+    encode: "$bytes .= XdrEncoder::opaqueFixed(pack('H*', $this->getCanonicalWasmIdHex()), 32);",
     decode: '$result->wasmIdHex = bin2hex($xdr->readOpaqueFixed(32));',
-    to_txrep: "$lines[$prefix . '.wasm_hash'] = $this->wasmIdHex;",
-    from_txrep: "$result->wasmIdHex = TxRepHelper::getValue($map, $prefix . '.wasm_hash') ?? '';",
+    to_txrep: "$lines[$prefix . '.wasm_hash'] = $this->getCanonicalWasmIdHex();",
+    from_txrep: "$result->wasmIdHex = self::canonicalWasmIdHex(TxRepHelper::getValue($map, $prefix . '.wasm_hash'));",
   },
 }.freeze
 
@@ -172,6 +176,65 @@ ARM_STORAGE_HELPERS = {
         }
         // Hexadecimal is case insensitive, so the canonical spelling is lower case and
         // every reader of the pool id reports the same string for either spelling.
+        return strtolower($value);
+    }
+  PHP
+  'XdrContractExecutable' => <<~PHP.chomp,
+    /**
+     * Length of a 32-byte wasm hash in hexadecimal characters.
+     */
+    private const WASM_HASH_HEX_LENGTH = 64;
+
+    /**
+     * Returns the 32-byte wasm hash the field holds as 64 lower case hexadecimal
+     * characters.
+     *
+     * Every reader of the field resolves it through here, so none takes what another
+     * refuses.
+     *
+     * @return string the wasm hash as 64 lower case hexadecimal characters
+     * @throws InvalidArgumentException when the field is unset, or holds a string that
+     * is not 64 hexadecimal characters
+     */
+    public function getCanonicalWasmIdHex(): string {
+        return self::canonicalWasmIdHex($this->wasmIdHex);
+    }
+
+    /**
+     * Returns $value as 64 lower case hexadecimal characters, refusing anything else.
+     *
+     * A wasm hash has the one spelling: the bare 32-byte hash in hexadecimal. Unlike a
+     * contract id it has no strkey form, so there is no second spelling to resolve;
+     * the rule is the shape of the hexadecimal, and the canonical form its lower case.
+     *
+     * Reading a TxRep line goes through here rather than through the accessor above, so
+     * a malformed line is named where it is read.
+     *
+     * @param string|null $value the wasm hash as it was given
+     * @return string the wasm hash as 64 lower case hexadecimal characters
+     * @throws InvalidArgumentException when $value is unset, or is not 64 hexadecimal
+     * characters
+     */
+    private static function canonicalWasmIdHex(?string $value): string {
+        if ($value === null || $value === '') {
+            throw new InvalidArgumentException('Wasm hash is not set');
+        }
+        if (!ctype_xdigit($value)) {
+            throw new InvalidArgumentException(
+                'Wasm hash must be a hexadecimal string,'
+                . ' "' . XdrJsonHelper::safePreview($value) . '" given'
+            );
+        }
+        if (strlen($value) !== self::WASM_HASH_HEX_LENGTH) {
+            throw new InvalidArgumentException(sprintf(
+                'Wasm hash must be the 32-byte hash as %d hexadecimal characters;'
+                    . ' %d characters given',
+                self::WASM_HASH_HEX_LENGTH,
+                strlen($value)
+            ));
+        }
+        // Hexadecimal is case insensitive, so the canonical spelling is lower case and
+        // every reader of the wasm hash reports the same string for either spelling.
         return strtolower($value);
     }
   PHP

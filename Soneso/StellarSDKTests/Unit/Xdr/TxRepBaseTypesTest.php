@@ -1595,6 +1595,92 @@ class TxRepBaseTypesTest extends TestCase
         $this->assertSame($wasmIdHex, XdrContractExecutable::fromBase64Xdr($expectedXdr)->getWasmIdHex());
     }
 
+    public function testContractExecutableBaseWasmEncodeRefusesANonHexHashRatherThanZeroingIt(): void
+    {
+        // pack('H*') answers a string outside the hexadecimal alphabet with zero bytes,
+        // so an unresolved field encodes as the 32-byte zero hash: a contract the caller
+        // never named, serialised without complaint.
+        $zeroHashXdr = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+        $this->assertSame(
+            $zeroHashXdr,
+            XdrContractExecutable::forWasmId(str_repeat('0', 64))->toBase64Xdr()
+        );
+
+        $executable = XdrContractExecutable::forWasmId(str_repeat('z', 64));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Wasm hash must be a hexadecimal string,'
+            . ' "' . str_repeat('z', 64) . '" given'
+        );
+        $executable->toBase64Xdr();
+    }
+
+    public function testContractExecutableBaseWasmRejectsAHashOfTheWrongLength(): void
+    {
+        // Half a hash is hexadecimal throughout, so only the length rule separates it
+        // from one. The TxRep line would otherwise carry 32 characters where SEP-0011
+        // asks for 64.
+        $executable = XdrContractExecutable::forWasmId(str_repeat('ab', 16));
+
+        $lines = [];
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Wasm hash must be the 32-byte hash as 64 hexadecimal characters;'
+            . ' 32 characters given'
+        );
+        $executable->toTxRep('executable', $lines);
+    }
+
+    public function testContractExecutableBaseWasmFromTxRepRejectsANonHexHash(): void
+    {
+        // The line is the length the rule asks for, so only its alphabet marks it as
+        // something other than a hash. It is refused where it is read.
+        $lines = [
+            'executable.type' => 'CONTRACT_EXECUTABLE_WASM',
+            'executable.wasm_hash' => str_repeat('z', 64),
+        ];
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Wasm hash must be a hexadecimal string,'
+            . ' "' . str_repeat('z', 64) . '" given'
+        );
+        XdrContractExecutableBase::fromTxRep($lines, 'executable');
+    }
+
+    public function testContractExecutableBaseWasmReadersAgreeOnEitherCaseOfTheHash(): void
+    {
+        // Hexadecimal is case insensitive, so the two spellings name one contract and
+        // every reader of the field has to report it the same way. SEP-0011 renders an
+        // opaque[32] field as lower case.
+        $lowerHex = '7f6b1c0d9e8a3f42b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9012345';
+        $expectedXdr = 'AAAAAH9rHA2eij9CtcbX6PkKGyw9Tl9gcYKTpLXG1+j5ASNF';
+
+        $upper = XdrContractExecutable::forWasmId(strtoupper($lowerHex));
+
+        $this->assertSame($expectedXdr, $upper->toBase64Xdr());
+        $this->assertSame(
+            XdrContractExecutable::forWasmId($lowerHex)->toBase64Xdr(),
+            $upper->toBase64Xdr()
+        );
+        $this->assertSame('{"wasm":"' . $lowerHex . '"}', $upper->toJson());
+
+        $lines = [];
+        $upper->toTxRep('executable', $lines);
+        $this->assertSame($lowerHex, $lines['executable.wasm_hash']);
+
+        // An upper case line reads back into the canonical spelling too.
+        $restored = XdrContractExecutableBase::fromTxRep([
+            'executable.type' => 'CONTRACT_EXECUTABLE_WASM',
+            'executable.wasm_hash' => strtoupper($lowerHex),
+        ], 'executable');
+
+        $this->assertSame($lowerHex, $restored->getWasmIdHex());
+        $this->assertSame($expectedXdr, $restored->toBase64Xdr());
+    }
+
     public function testContractExecutableBaseTokenRoundtrip(): void
     {
         $original = XdrContractExecutable::forToken();

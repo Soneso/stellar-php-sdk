@@ -66,23 +66,21 @@ SEP51_FIELD_OVERRIDES = {
   # wrapper stores the hash as a 64-character hex string (decode applies
   # bin2hex), so the SEP-51 methods emitted on the Base must pass the stored
   # hex through unchanged in both directions; hex-encoding the storage again
-  # would double-encode.
+  # would double-encode. Both directions defer the shape of the hexadecimal to
+  # the canonical accessor ARM_STORAGE_HELPERS emits on the same class, so the
+  # JSON pair and the XDR and TxRep readers hold the field to one rule. The
+  # incoming JSON value is checked for being a string first, because the
+  # accessor's parameter is typed and a non-string would fail as a TypeError.
   ['XdrContractExecutableBase',             'wasmIdHex']        => {
     proc: {
-      to: lambda do |accessor|
-        "(static function ($v) { " \
-        "if (!is_string($v) || strlen($v) !== 64 || !ctype_xdigit($v)) { " \
-        "throw new InvalidArgumentException('Expected 64-character hex wasm hash, got ' . " \
-        "(is_string($v) ? strlen($v) . '-character string' : get_debug_type($v))); } " \
-        "return strtolower($v); })(#{accessor})"
+      to: lambda do |_accessor|
+        '$this->getCanonicalWasmIdHex()'
       end,
       from: lambda do |source|
         "(static function ($v) { " \
         "if (!is_string($v)) { " \
         "throw new InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } " \
-        "if (strlen($v) !== 64 || !ctype_xdigit($v)) { " \
-        "throw new InvalidArgumentException('Expected 64-character hex wasm hash, got ' . strlen($v) . '-character string'); } " \
-        "return strtolower($v); })(#{source})"
+        "return self::canonicalWasmIdHex($v); })(#{source})"
       end,
     },
   },
