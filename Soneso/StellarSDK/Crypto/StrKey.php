@@ -216,12 +216,14 @@ class StrKey
      * Encodes a SignedPayloadSigner to strkey signed payload (P...).
      * @param SignedPayloadSigner $signedPayloadSigner SignedPayloadSigner to encode
      * @return string "P..." representation of the signed payload
+     * @throws InvalidArgumentException when the payload is empty or longer than 64 bytes,
+     * or when the signer account id is not a valid "G..." strkey
      */
     public static function encodeSignedPayload(SignedPayloadSigner $signedPayloadSigner) : string {
         // SignedPayloadSigner enforces the SEP-23 bounds at construction;
         // the check here covers any future relaxation of that invariant.
         self::checkSignedPayloadLength($signedPayloadSigner->getPayload());
-        $pk = (KeyPair::fromAccountId($signedPayloadSigner->getSignerAccountId()->getAccountId()))->getPublicKey();
+        $pk = self::decodeAccountId($signedPayloadSigner->getSignerAccountId()->getAccountId());
         $signedPayload = new XdrSignedPayload($pk, $signedPayloadSigner->getPayload());
         $data = $signedPayload->encode();
         return static::encodeCheck(VersionByte::SIGNED_PAYLOAD, $data);

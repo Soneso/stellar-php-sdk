@@ -273,20 +273,25 @@ class EffectResponseTest extends TestCase
     }
 
     // Signer Effects Tests
+    //
+    // The type_i values below are Horizon's wire codes, written as literals so
+    // that these tests validate the SDK constants instead of restating them.
 
     public function testSignerCreatedEffectFromJson(): void
     {
-        $json = $this->getBaseEffectJson(EffectType::SIGNER_CREATED, 'signer_created');
+        $json = $this->getBaseEffectJson(10, 'signer_created');
 
         $response = EffectResponse::fromJson($json);
 
         $this->assertInstanceOf(SignerCreatedEffectResponse::class, $response);
         $this->assertEquals('signer_created', $response->getHumanReadableEffectType());
+        $this->assertEquals(10, $response->getEffectType());
+        $this->assertEquals(10, EffectType::SIGNER_CREATED);
     }
 
     public function testSignerCreatedEffectWithFullData(): void
     {
-        $json = $this->getBaseEffectJson(EffectType::SIGNER_CREATED, 'signer_created');
+        $json = $this->getBaseEffectJson(10, 'signer_created');
         $json['public_key'] = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
         $json['weight'] = 10;
         $json['key'] = 'some_key_value';
@@ -301,40 +306,48 @@ class EffectResponseTest extends TestCase
 
     public function testSignerRemovedEffectFromJson(): void
     {
-        $json = $this->getBaseEffectJson(EffectType::SIGNER_REMOVED, 'signer_removed');
+        $json = $this->getBaseEffectJson(11, 'signer_removed');
 
         $response = EffectResponse::fromJson($json);
 
         $this->assertInstanceOf(SignerRemovedEffectResponse::class, $response);
         $this->assertEquals('signer_removed', $response->getHumanReadableEffectType());
+        $this->assertEquals(11, $response->getEffectType());
+        $this->assertEquals(11, EffectType::SIGNER_REMOVED);
     }
 
     public function testSignerRemovedEffectWithFullData(): void
     {
-        $json = $this->getBaseEffectJson(EffectType::SIGNER_REMOVED, 'signer_removed');
+        // Horizon renders every signer effect through the same resource struct, so a
+        // signer_removed payload still carries a weight key, zero-valued.
+        $json = $this->getBaseEffectJson(11, 'signer_removed');
         $json['public_key'] = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
         $json['weight'] = 0;
+        $json['key'] = '';
 
         $response = EffectResponse::fromJson($json);
 
         $this->assertInstanceOf(SignerRemovedEffectResponse::class, $response);
         $this->assertEquals('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX', $response->getPublicKey());
         $this->assertEquals(0, $response->getWeight());
+        $this->assertEquals('', $response->getKey());
     }
 
     public function testSignerUpdatedEffectFromJson(): void
     {
-        $json = $this->getBaseEffectJson(EffectType::SIGNER_UPDATED, 'signer_updated');
+        $json = $this->getBaseEffectJson(12, 'signer_updated');
 
         $response = EffectResponse::fromJson($json);
 
         $this->assertInstanceOf(SignerUpdatedEffectResponse::class, $response);
         $this->assertEquals('signer_updated', $response->getHumanReadableEffectType());
+        $this->assertEquals(12, $response->getEffectType());
+        $this->assertEquals(12, EffectType::SIGNER_UPDATED);
     }
 
     public function testSignerUpdatedEffectWithFullData(): void
     {
-        $json = $this->getBaseEffectJson(EffectType::SIGNER_UPDATED, 'signer_updated');
+        $json = $this->getBaseEffectJson(12, 'signer_updated');
         $json['public_key'] = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
         $json['weight'] = 5;
 

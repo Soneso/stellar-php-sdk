@@ -92,12 +92,13 @@ class Signer
      *
      * @param SignedPayloadSigner $signedPayloadSigner The signed payload signer configuration
      * @return XdrSignerKey The signer key object
+     * @throws \InvalidArgumentException when the signer account id is not a valid "G..." strkey
      */
     public static function signedPayload(SignedPayloadSigner $signedPayloadSigner) : XdrSignerKey {
         $signerKey = new XdrSignerKey();
         $type = new XdrSignerKeyType(XdrSignerKeyType::ED25519_SIGNED_PAYLOAD);
         $signerKey->setType($type);
-        $pk = (KeyPair::fromAccountId($signedPayloadSigner->getSignerAccountId()->getAccountId()))->getPublicKey();
+        $pk = StrKey::decodeAccountId($signedPayloadSigner->getSignerAccountId()->getAccountId());
         $payloadSigner = new XdrSignedPayload($pk, $signedPayloadSigner->getPayload());
         $signerKey->setSignedPayload($payloadSigner);
         return $signerKey;

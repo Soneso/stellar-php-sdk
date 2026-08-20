@@ -27,9 +27,9 @@ class EffectType
     public const ACCOUNT_HOME_DOMAIN_UPDATED = 5;
     public const ACCOUNT_FLAGS_UPDATED = 6;
     public const ACCOUNT_INFLATION_DESTINATION_UPDATED = 7;
-    public const SIGNER_CREATED = 8;
-    public const SIGNER_REMOVED = 9;
-    public const SIGNER_UPDATED = 10;
+    public const SIGNER_CREATED = 10;
+    public const SIGNER_REMOVED = 11;
+    public const SIGNER_UPDATED = 12;
 
     public const TRUSTLINE_CREATED = 20;
     public const TRUSTLINE_REMOVED = 21;

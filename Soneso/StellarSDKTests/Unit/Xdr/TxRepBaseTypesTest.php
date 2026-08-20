@@ -386,20 +386,23 @@ class TxRepBaseTypesTest extends TestCase
 
     public function testSCAddressBaseContractRoundtrip(): void
     {
-        $contractIdBytes = $this->randomBytes(32);
+        // SCAddress holds the contract id as the 32-byte hash in hexadecimal, and
+        // SEP-0011 gives an opaque[32] field the same 64 characters, so the line
+        // carries the id unchanged.
+        $contractIdHex = $this->randomHex(32);
         $original = new XdrSCAddressBase(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT());
-        $original->contractId = $contractIdBytes;
+        $original->contractId = $contractIdHex;
 
         $lines = [];
         $original->toTxRep('addr', $lines);
 
-        $this->assertArrayHasKey('addr.contractId', $lines);
+        $this->assertEquals($contractIdHex, $lines['addr.contractId']);
 
         $restored = XdrSCAddressBase::fromTxRep($lines, 'addr');
 
         $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
         $this->assertEquals(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT, $restored->getType()->getValue());
-        $this->assertEquals($contractIdBytes, $restored->getContractId());
+        $this->assertEquals($contractIdHex, $restored->getContractId());
     }
 
     public function testSCAddressBaseMuxedAccountRoundtrip(): void
@@ -446,19 +449,22 @@ class TxRepBaseTypesTest extends TestCase
 
     public function testSCAddressBaseLiquidityPoolRoundtrip(): void
     {
-        $poolIdBytes = $this->randomBytes(32);
+        // SCAddress holds the pool id as the 32-byte hash in hexadecimal, and SEP-0011
+        // gives an opaque[32] field the same 64 characters, so the line carries the id
+        // unchanged.
+        $poolIdHex = $this->randomHex(32);
         $original = new XdrSCAddressBase(XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL());
-        $original->liquidityPoolId = $poolIdBytes;
+        $original->liquidityPoolId = $poolIdHex;
 
         $lines = [];
         $original->toTxRep('addr', $lines);
 
-        $this->assertArrayHasKey('addr.liquidityPoolId', $lines);
+        $this->assertEquals($poolIdHex, $lines['addr.liquidityPoolId']);
 
         $restored = XdrSCAddressBase::fromTxRep($lines, 'addr');
 
         $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
-        $this->assertEquals($poolIdBytes, $restored->getLiquidityPoolId());
+        $this->assertEquals($poolIdHex, $restored->getLiquidityPoolId());
     }
 
     // ------------------------------------------------------------------
@@ -808,11 +814,7 @@ class TxRepBaseTypesTest extends TestCase
 
     public function testHostFunctionBaseInvokeContractRoundtrip(): void
     {
-        $contractIdBytes = $this->randomBytes(32);
-        $contractAddr = new XdrSCAddressBase(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT());
-        $contractAddr->contractId = $contractIdBytes;
-        // XdrInvokeContractArgs requires XdrSCAddress, so use the wrapper
-        $contractAddrWrapper = XdrSCAddress::forContractId(bin2hex($contractIdBytes));
+        $contractAddrWrapper = XdrSCAddress::forContractId($this->randomHex(32));
 
         $argVal = XdrSCVal::forU32(42);
         $args = new XdrInvokeContractArgs($contractAddrWrapper, 'my_function', [$argVal]);
@@ -1558,8 +1560,183 @@ class TxRepBaseTypesTest extends TestCase
     }
 
     // ------------------------------------------------------------------
-    // XdrContractExecutableBase — EXTERNAL_REF arm
+    // XdrContractExecutableBase — WASM, STELLAR_ASSET and EXTERNAL_REF arms
     // ------------------------------------------------------------------
+
+    public function testContractExecutableBaseWasmRoundtrip(): void
+    {
+        // The wasm hash is held as the 32-byte hash in hexadecimal, and SEP-0011
+        // gives an opaque[32] field the same 64 characters, so the line carries the
+        // hash unchanged.
+        $wasmIdHex = '7f6b1c0d9e8a3f42b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9012345';
+        $expectedXdr = 'AAAAAH9rHA2eij9CtcbX6PkKGyw9Tl9gcYKTpLXG1+j5ASNF';
+
+        $original = XdrContractExecutable::forWasmId($wasmIdHex);
+        $this->assertSame($expectedXdr, $original->toBase64Xdr());
+
+        $lines = [];
+        $original->toTxRep('executable', $lines);
+
+        $this->assertSame('CONTRACT_EXECUTABLE_WASM', $lines['executable.type']);
+        $this->assertSame($wasmIdHex, $lines['executable.wasm_hash']);
+        $this->assertSame(64, strlen($lines['executable.wasm_hash']));
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $lines['executable.wasm_hash']);
+
+        $restored = XdrContractExecutableBase::fromTxRep($lines, 'executable');
+
+        $this->assertSame(
+            XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM,
+            $restored->getType()->getValue()
+        );
+        $this->assertSame($wasmIdHex, $restored->getWasmIdHex());
+        $this->assertSame($expectedXdr, $restored->toBase64Xdr());
+
+        // The wire form reads back into the same representation the field holds.
+        $this->assertSame($wasmIdHex, XdrContractExecutable::fromBase64Xdr($expectedXdr)->getWasmIdHex());
+    }
+
+    public function testContractExecutableBaseWasmEncodeRefusesANonHexHashRatherThanZeroingIt(): void
+    {
+        // pack('H*') answers a string outside the hexadecimal alphabet with zero bytes,
+        // so an unresolved field encodes as the 32-byte zero hash: a contract the caller
+        // never named, serialised without complaint.
+        $zeroHashXdr = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+        $this->assertSame(
+            $zeroHashXdr,
+            XdrContractExecutable::forWasmId(str_repeat('0', 64))->toBase64Xdr()
+        );
+
+        $executable = XdrContractExecutable::forWasmId(str_repeat('z', 64));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Wasm hash must be a hexadecimal string,'
+            . ' "' . str_repeat('z', 64) . '" given'
+        );
+        $executable->toBase64Xdr();
+    }
+
+    public function testContractExecutableBaseWasmRejectsAHashOfTheWrongLength(): void
+    {
+        // Half a hash is hexadecimal throughout, so only the length rule separates it
+        // from one. The TxRep line would otherwise carry 32 characters where SEP-0011
+        // asks for 64.
+        $executable = XdrContractExecutable::forWasmId(str_repeat('ab', 16));
+
+        $lines = [];
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Wasm hash must be the 32-byte hash as 64 hexadecimal characters;'
+            . ' 32 characters given'
+        );
+        $executable->toTxRep('executable', $lines);
+    }
+
+    public function testContractExecutableBaseWasmRejectsAnUnsetHash(): void
+    {
+        // The WASM arm carries a hash, so an executable that names the arm without
+        // one has nothing to render. It is refused where it is read rather than
+        // reaching the wire as a zero hash.
+        $executable = new XdrContractExecutableBase(
+            XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM()
+        );
+
+        $lines = [];
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Wasm hash is not set');
+        $executable->toTxRep('executable', $lines);
+    }
+
+    public function testContractExecutableBaseWasmFromTxRepRejectsANonHexHash(): void
+    {
+        // The line is the length the rule asks for, so only its alphabet marks it as
+        // something other than a hash. It is refused where it is read.
+        $lines = [
+            'executable.type' => 'CONTRACT_EXECUTABLE_WASM',
+            'executable.wasm_hash' => str_repeat('z', 64),
+        ];
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Wasm hash must be a hexadecimal string,'
+            . ' "' . str_repeat('z', 64) . '" given'
+        );
+        XdrContractExecutableBase::fromTxRep($lines, 'executable');
+    }
+
+    public function testContractExecutableBaseWasmReadersAgreeOnEitherCaseOfTheHash(): void
+    {
+        // Hexadecimal is case insensitive, so the two spellings name one contract and
+        // every reader of the field has to report it the same way. SEP-0011 renders an
+        // opaque[32] field as lower case.
+        $lowerHex = '7f6b1c0d9e8a3f42b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9012345';
+        $expectedXdr = 'AAAAAH9rHA2eij9CtcbX6PkKGyw9Tl9gcYKTpLXG1+j5ASNF';
+
+        $upper = XdrContractExecutable::forWasmId(strtoupper($lowerHex));
+
+        $this->assertSame($expectedXdr, $upper->toBase64Xdr());
+        $this->assertSame(
+            XdrContractExecutable::forWasmId($lowerHex)->toBase64Xdr(),
+            $upper->toBase64Xdr()
+        );
+        $this->assertSame('{"wasm":"' . $lowerHex . '"}', $upper->toJson());
+
+        $lines = [];
+        $upper->toTxRep('executable', $lines);
+        $this->assertSame($lowerHex, $lines['executable.wasm_hash']);
+
+        // An upper case line reads back into the canonical spelling too.
+        $restored = XdrContractExecutableBase::fromTxRep([
+            'executable.type' => 'CONTRACT_EXECUTABLE_WASM',
+            'executable.wasm_hash' => strtoupper($lowerHex),
+        ], 'executable');
+
+        $this->assertSame($lowerHex, $restored->getWasmIdHex());
+        $this->assertSame($expectedXdr, $restored->toBase64Xdr());
+    }
+
+    public function testContractExecutableBaseTokenRoundtrip(): void
+    {
+        $original = XdrContractExecutable::forToken();
+        $this->assertSame('AAAAAQ==', $original->toBase64Xdr());
+
+        $lines = [];
+        $original->toTxRep('executable', $lines);
+
+        $this->assertSame(['executable.type' => 'CONTRACT_EXECUTABLE_STELLAR_ASSET'], $lines);
+
+        $restored = XdrContractExecutableBase::fromTxRep($lines, 'executable');
+
+        $this->assertSame('AAAAAQ==', $restored->toBase64Xdr());
+        $this->assertNull($restored->getWasmIdHex());
+    }
+
+    public function testContractExecutableBaseExternalRefLines(): void
+    {
+        $accountId = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
+        $expectedXdr = 'AAAAAgAAAAAAAAAAYvwdC9CRsrYcDdZWNGsqaNfTR8bywsjubQRHAlb8BfcAAAAJb3duZXJfdGFn'
+            . 'AAAA';
+
+        $original = XdrContractExecutable::forExternalRef(XdrSCAddress::forAccountId($accountId), 'owner_tag');
+        $this->assertSame($expectedXdr, $original->toBase64Xdr());
+
+        $lines = [];
+        $original->toTxRep('executable', $lines);
+
+        $this->assertSame([
+            'executable.type' => 'CONTRACT_EXECUTABLE_EXTERNAL_REF',
+            'executable.external_ref.executable_owner.type' => 'SC_ADDRESS_TYPE_ACCOUNT',
+            'executable.external_ref.executable_owner.accountId' => $accountId,
+            'executable.external_ref.tag' => '"owner_tag"',
+        ], $lines);
+
+        $restored = XdrContractExecutableBase::fromTxRep($lines, 'executable');
+
+        $this->assertSame($expectedXdr, $restored->toBase64Xdr());
+        $this->assertNull($restored->getWasmIdHex());
+    }
 
     public function testContractExecutableBaseExternalRefRoundtrip(): void
     {
@@ -2601,8 +2778,8 @@ class TxRepBaseTypesTest extends TestCase
     private function buildMinimalWasmExecutable(): XdrContractExecutable
     {
         $executable = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM());
-        // wasmIdHex stored as raw bytes in the base toTxRep path
-        $executable->wasmIdHex = $this->randomBytes(32);
+        // The wasm hash is held as the 32-byte hash in hexadecimal.
+        $executable->wasmIdHex = $this->randomHex(32);
         return $executable;
     }
 

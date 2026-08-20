@@ -13,6 +13,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
 use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
@@ -95,10 +96,41 @@ class WebAuthTest extends TestCase
     }
 
     private function memoForId(?int $id = null) : Memo {
-        if ($id) {
+        if ($id !== null) {
             return Memo::id($id);
         }
         return Memo::none();
+    }
+
+    /**
+     * Builds a WebAuth backed by the given queued responses and records every outgoing
+     * request in $history, so tests can assert on the challenge request parameters.
+     *
+     * @param array<int, Response> $responses
+     * @param array<int, array<string, mixed>> $history
+     */
+    private function webAuthRecordingRequests(array $responses, array &$history) : WebAuth {
+        $handlerStack = HandlerStack::create(new MockHandler($responses));
+        $handlerStack->push(Middleware::history($history));
+        return new WebAuth(
+            $this->authServer,
+            $this->serverAccountId,
+            $this->domain,
+            Network::testnet(),
+            new Client(['handler' => $handlerStack]),
+        );
+    }
+
+    /**
+     * Returns the parsed query parameters of the recorded challenge request.
+     *
+     * @param array<int, array<string, mixed>> $history
+     * @return array<string, mixed>
+     */
+    private function challengeRequestQuery(array $history) : array {
+        $this->assertNotEmpty($history);
+        parse_str($history[0]['request']->getUri()->getQuery(), $query);
+        return $query;
     }
 
     private function validTimeBounds() : TimeBounds {
@@ -650,6 +682,77 @@ class WebAuthTest extends TestCase
             }
         }
         $this->assertTrue($exception);
+    }
+
+    // Memo id 0 tests. Zero is a valid SEP-10 client memo identifying a user of a
+    // shared account, so it must be treated exactly like any other memo id and only
+    // null may mean "no memo".
+
+    public function testMemoZeroIsSentAndValidated(): void {
+        $history = [];
+        $webAuth = $this->webAuthRecordingRequests([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestChallengeSuccess($this->clientAccountId, 0)),
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestJWTSuccess()),
+        ], $history);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+
+        $jwtToken = $webAuth->jwtToken($this->clientAccountId, [$userKeyPair], 0);
+
+        $query = $this->challengeRequestQuery($history);
+        $this->assertArrayHasKey('memo', $query);
+        $this->assertSame('0', $query['memo']);
+        $this->assertSame($this->successJWTToken, $jwtToken);
+    }
+
+    public function testMemoZeroWithMuxedAccountRejected(): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        // Empty queue: reaching the challenge request at all is a failure.
+        $webAuth->setMockHandler(new MockHandler([]));
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('memo cannot be used if accountId is a muxed account');
+        $webAuth->jwtToken($this->clientAccountIdM, [$userKeyPair], 0);
+    }
+
+    public function testMemoZeroMismatchedChallengeMemoRejected(): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $webAuth->setMockHandler(new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestChallengeSuccess($this->clientAccountId, 7)),
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestJWTSuccess()),
+        ]));
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+
+        $this->expectException(ChallengeValidationErrorInvalidMemoValue::class);
+        $this->expectExceptionMessage('invalid memo value');
+        $webAuth->jwtToken($this->clientAccountId, [$userKeyPair], 0);
+    }
+
+    public function testMemoZeroMissingChallengeMemoRejected(): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $webAuth->setMockHandler(new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestChallengeSuccess($this->clientAccountId)),
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestJWTSuccess()),
+        ]));
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+
+        $this->expectException(ChallengeValidationErrorInvalidMemoValue::class);
+        $this->expectExceptionMessage('missing memo');
+        $webAuth->jwtToken($this->clientAccountId, [$userKeyPair], 0);
+    }
+
+    public function testNullMemoOmitsMemoRequestParameter(): void {
+        $history = [];
+        $webAuth = $this->webAuthRecordingRequests([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestChallengeSuccess($this->clientAccountId)),
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestJWTSuccess()),
+        ], $history);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+
+        $jwtToken = $webAuth->jwtToken($this->clientAccountId, [$userKeyPair]);
+
+        $this->assertArrayNotHasKey('memo', $this->challengeRequestQuery($history));
+        $this->assertSame($this->successJWTToken, $jwtToken);
     }
 
     public function testSubmitChallengeErrorResponse(): void {

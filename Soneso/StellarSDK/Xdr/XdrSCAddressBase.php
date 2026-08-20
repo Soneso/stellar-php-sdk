@@ -31,7 +31,7 @@ class XdrSCAddressBase {
                 $bytes .= $this->accountId->encode();
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
-                $bytes .= XdrEncoder::opaqueFixed($this->contractId, 32);
+                $bytes .= XdrEncoder::opaqueFixed(pack('H*', $this->getCanonicalContractIdHex()), 32);
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT:
                 $bytes .= $this->muxedAccount->encode();
@@ -40,7 +40,7 @@ class XdrSCAddressBase {
                 $bytes .= $this->claimableBalanceId->encode();
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
-                $bytes .= XdrEncoder::opaqueFixed($this->liquidityPoolId, 32);
+                $bytes .= XdrEncoder::opaqueFixed(pack('H*', $this->getCanonicalLiquidityPoolIdHex()), 32);
                 break;
             default:
                 break;
@@ -55,7 +55,7 @@ class XdrSCAddressBase {
                 $result->accountId = XdrAccountID::decode($xdr);
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
-                $result->contractId = $xdr->readOpaqueFixed(32);
+                $result->contractId = bin2hex($xdr->readOpaqueFixed(32));
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT:
                 $result->muxedAccount = XdrMuxedAccountMed25519::decode($xdr);
@@ -64,7 +64,7 @@ class XdrSCAddressBase {
                 $result->claimableBalanceId = XdrClaimableBalanceID::decode($xdr);
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
-                $result->liquidityPoolId = $xdr->readOpaqueFixed(32);
+                $result->liquidityPoolId = bin2hex($xdr->readOpaqueFixed(32));
                 break;
             default:
                 break;
@@ -84,6 +84,120 @@ class XdrSCAddressBase {
     public function setClaimableBalanceId(?XdrClaimableBalanceID $claimableBalanceId): void { $this->claimableBalanceId = $claimableBalanceId; }
     public function getLiquidityPoolId(): ?string { return $this->liquidityPoolId; }
     public function setLiquidityPoolId(?string $liquidityPoolId): void { $this->liquidityPoolId = $liquidityPoolId; }
+
+    /**
+     * Length of a "C..." contract strkey.
+     */
+    private const CONTRACT_STRKEY_LENGTH = 56;
+
+    /**
+     * Length of a 32-byte contract id in hexadecimal characters.
+     */
+    private const CONTRACT_HEX_LENGTH = 64;
+
+    /**
+     * Length of an "L..." liquidity pool strkey.
+     */
+    private const LIQUIDITY_POOL_STRKEY_LENGTH = 56;
+
+    /**
+     * Length of a 32-byte liquidity pool id in hexadecimal characters.
+     */
+    private const LIQUIDITY_POOL_HEX_LENGTH = 64;
+
+    /**
+     * Returns the 32-byte contract id as 64 lower case hexadecimal characters,
+     * whichever of the accepted spellings the field holds.
+     *
+     * A contract id is accepted as its strkey form "C..." or as the bare hash in
+     * hexadecimal. Every reader of the field resolves it through here, so none takes
+     * what another refuses.
+     *
+     * @return string the contract id as 64 lower case hexadecimal characters
+     * @throws InvalidArgumentException when the field is unset, holds a string that is
+     * neither a "C..." strkey nor hexadecimal, or has a length matching neither shape
+     */
+    public function getCanonicalContractIdHex(): string {
+        $value = $this->contractId;
+        if ($value === null || $value === '') {
+            throw new InvalidArgumentException('Contract id is not set');
+        }
+        if (strlen($value) === self::CONTRACT_STRKEY_LENGTH && $value[0] === 'C') {
+            // The base32 and hexadecimal alphabets share A-F and 2-7, so a string of
+            // this length and shape can read as either. The strkey reading is taken
+            // first because it is the only one that can succeed: 56 characters is not
+            // the length of the hexadecimal spelling. A value that fails it and is
+            // hexadecimal falls to the hex rules below, which name the rule it breaks.
+            try {
+                return StrKey::decodeContractIdHex($value);
+            } catch (InvalidArgumentException $e) {
+                if (!ctype_xdigit($value)) {
+                    throw $e;
+                }
+            }
+        }
+        if (!ctype_xdigit($value)) {
+            throw new InvalidArgumentException(
+                'Contract id must be a "C..." strkey or a hexadecimal string,'
+                . ' "' . XdrJsonHelper::safePreview($value) . '" given'
+            );
+        }
+        if (strlen($value) !== self::CONTRACT_HEX_LENGTH) {
+            throw new InvalidArgumentException(sprintf(
+                'Contract id must be %d characters as a "C..." strkey, or the contract'
+                    . ' hash as %d hexadecimal characters; %d characters given',
+                self::CONTRACT_STRKEY_LENGTH,
+                self::CONTRACT_HEX_LENGTH,
+                strlen($value)
+            ));
+        }
+        // Hexadecimal is case insensitive, so the canonical spelling is lower case and
+        // every reader of the contract id reports the same string for either spelling.
+        return strtolower($value);
+    }
+
+    /**
+     * Returns the 32-byte liquidity pool id as 64 lower case hexadecimal characters,
+     * whichever of the accepted spellings the field holds.
+     *
+     * A pool id is accepted as its strkey form "L..." or as the bare hash in
+     * hexadecimal. PoolID is a plain 32-byte hash on the wire with no discriminant
+     * ahead of it, so there is no prefixed spelling to accept. Every reader of the
+     * field resolves it through here, so none takes what another refuses.
+     *
+     * @return string the pool id as 64 lower case hexadecimal characters
+     * @throws InvalidArgumentException when the field is unset, holds a string that is
+     * neither an "L..." strkey nor hexadecimal, or has a length matching neither shape
+     */
+    public function getCanonicalLiquidityPoolIdHex(): string {
+        $value = $this->liquidityPoolId;
+        if ($value === null || $value === '') {
+            throw new InvalidArgumentException('Liquidity pool id is not set');
+        }
+        if (strlen($value) === self::LIQUIDITY_POOL_STRKEY_LENGTH && $value[0] === 'L') {
+            // Requiring the version letter here leaves a hexadecimal id of the same
+            // length to the hex branches below, which name the rule it breaks.
+            return StrKey::decodeLiquidityPoolIdHex($value);
+        }
+        if (!ctype_xdigit($value)) {
+            throw new InvalidArgumentException(
+                'Liquidity pool id must be an "L..." strkey or a hexadecimal string,'
+                . ' "' . XdrJsonHelper::safePreview($value) . '" given'
+            );
+        }
+        if (strlen($value) !== self::LIQUIDITY_POOL_HEX_LENGTH) {
+            throw new InvalidArgumentException(sprintf(
+                'Liquidity pool id must be %d characters as an "L..." strkey, or the pool'
+                    . ' hash as %d hexadecimal characters; %d characters given',
+                self::LIQUIDITY_POOL_STRKEY_LENGTH,
+                self::LIQUIDITY_POOL_HEX_LENGTH,
+                strlen($value)
+            ));
+        }
+        // Hexadecimal is case insensitive, so the canonical spelling is lower case and
+        // every reader of the pool id reports the same string for either spelling.
+        return strtolower($value);
+    }
 
     public function toBase64Xdr(): string {
         return base64_encode($this->encode());
@@ -112,7 +226,7 @@ class XdrSCAddressBase {
                         'XdrSCAddress contractId field is null'
                     );
                 }
-                return StrKey::encodeContractIdHex($this->contractId);
+                return StrKey::encodeContractIdHex($this->getCanonicalContractIdHex());
             case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT:
                 if ($this->muxedAccount === null) {
                     throw new InvalidArgumentException(
@@ -135,7 +249,7 @@ class XdrSCAddressBase {
                         'XdrSCAddress liquidityPoolId field is null'
                     );
                 }
-                return StrKey::encodeLiquidityPoolIdHex($this->liquidityPoolId);
+                return StrKey::encodeLiquidityPoolIdHex($this->getCanonicalLiquidityPoolIdHex());
             default:
                 throw new InvalidArgumentException(
                     'Unknown XdrSCAddress discriminant: ' . $this->type->getValue()
@@ -220,7 +334,7 @@ class XdrSCAddressBase {
                 $lines[$prefix . '.accountId'] = TxRepHelper::formatAccountId($this->accountId);
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
-                $lines[$prefix . '.contractId'] = TxRepHelper::bytesToHex($this->contractId);
+                $lines[$prefix . '.contractId'] = $this->getCanonicalContractIdHex();
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT:
                 $this->muxedAccount->toTxRep($prefix . '.muxedAccount', $lines);
@@ -229,7 +343,7 @@ class XdrSCAddressBase {
                 $this->claimableBalanceId->toTxRep($prefix . '.claimableBalanceId', $lines);
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
-                $lines[$prefix . '.liquidityPoolId'] = TxRepHelper::bytesToHex($this->liquidityPoolId);
+                $lines[$prefix . '.liquidityPoolId'] = $this->getCanonicalLiquidityPoolIdHex();
                 break;
             default:
                 break;
@@ -244,7 +358,7 @@ class XdrSCAddressBase {
                 $result->accountId = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.accountId') ?? '');
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
-                $result->contractId = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.contractId') ?? '');
+                $result->contractId = TxRepHelper::getValue($map, $prefix . '.contractId') ?? '';
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT:
                 $result->muxedAccount = XdrMuxedAccountMed25519::fromTxRep($map, $prefix . '.muxedAccount');
@@ -253,7 +367,7 @@ class XdrSCAddressBase {
                 $result->claimableBalanceId = XdrClaimableBalanceID::fromTxRep($map, $prefix . '.claimableBalanceId');
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
-                $result->liquidityPoolId = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.liquidityPoolId') ?? '');
+                $result->liquidityPoolId = TxRepHelper::getValue($map, $prefix . '.liquidityPoolId') ?? '';
                 break;
             default:
                 break;
