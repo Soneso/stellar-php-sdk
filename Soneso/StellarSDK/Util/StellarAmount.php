@@ -151,10 +151,18 @@ class StellarAmount
      * @static
      * @param float $amount The amount as a decimal number (e.g., 100.5 for 100.5 XLM)
      * @return StellarAmount The amount object
-     * @throws \InvalidArgumentException If amount exceeds maximum or is negative
+     * @throws \InvalidArgumentException If amount is not finite, exceeds maximum or is negative.
+     *     A negative amount smaller than half a stroop rounds to zero and is accepted.
      */
     public static function fromFloat(float $amount) : StellarAmount {
-        $amountStr = number_format($amount, 7, '.', '');
+        if (!is_finite($amount)) {
+            throw new \InvalidArgumentException('Amount must be a finite number');
+        }
+        // %F renders the float itself, giving the nearest stroop to the stored value. Scaling to
+        // stroops by a decimal pre-round instead can move the amount by a stroop or more, in
+        // either direction, once the scaled value leaves the range where that rounding can place
+        // a tie.
+        $amountStr = sprintf('%.7F', $amount);
         return self::fromString($amountStr);
     }
 

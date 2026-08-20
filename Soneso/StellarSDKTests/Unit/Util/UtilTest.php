@@ -203,6 +203,36 @@ class UtilTest extends TestCase
         assertEquals("0", StellarAmount::fromString("0.0000000")->getStroopsAsString());
     }
 
+    public function testStellarAmountRejectsNonFiniteFloats()
+    {
+        foreach ([NAN, INF, -INF] as $amount) {
+            try {
+                StellarAmount::fromFloat($amount);
+                $this->fail("expected a non-finite amount to be rejected");
+            } catch (\InvalidArgumentException $e) {
+                assertEquals("Amount must be a finite number", $e->getMessage());
+            }
+        }
+    }
+
+    public function testStellarAmountFromFloatRoundsTheStoredValue()
+    {
+        // The float nearest 1.5e-7 is 1.49999999999999993e-7, so one stroop is nearer than two.
+        assertEquals("1", StellarAmount::fromFloat(1.5e-7)->getStroopsAsString());
+    }
+
+    public function testStellarAmountFromFloatInventsNoStroop()
+    {
+        // On PHP 8.4 and later, scaling to stroops by a decimal pre-round adds a stroop to each of
+        // these; earlier versions round them correctly. The first three are carried exactly by the
+        // float; the fourth is 780615714.94290959835052490234375 and rounds to the stroop asserted
+        // here. The expected values are the correctly rounded ones on every version.
+        assertEquals("5000000000000000", StellarAmount::fromFloat(500000000.0)->getStroopsAsString());
+        assertEquals("9000000000000000", StellarAmount::fromFloat(900000000.0)->getStroopsAsString());
+        assertEquals("4503599630000000", StellarAmount::fromFloat(450359963.0)->getStroopsAsString());
+        assertEquals("7806157149429096", StellarAmount::fromFloat(780615714.9429096)->getStroopsAsString());
+    }
+
     public function testStellarAmountFromFloatLargeNumber()
     {
         // Note: Float precision issues may occur with very large numbers
