@@ -122,11 +122,21 @@ class MuxedAccountTest extends TestCase
         $this->assertSame(self::XDR_ED25519, base64_encode($muxed->toXdr()->encode()));
     }
 
-    public function testGetXdrIsCached(): void
+    public function testGetXdrDoesNotExposeInternalState(): void
     {
         $muxed = new MuxedAccount(self::ED25519_ACCOUNT_ID, 0);
 
-        $this->assertSame($muxed->getXdr(), $muxed->getXdr());
+        $muxed->getXdr()->getMed25519()->setId(1234);
+
+        // The mutated copy is not this account's state.
+        $this->assertSame(0, $muxed->getId());
+        $this->assertSame(self::MUXED_ID_ZERO, $muxed->getAccountId());
+        $this->assertSame(0, $muxed->getXdr()->getMed25519()->getId());
+        $this->assertSame(
+            CryptoKeyType::KEY_TYPE_MUXED_ED25519,
+            $muxed->getXdr()->getDiscriminant()
+        );
+        $this->assertSame(self::XDR_MUXED_ID_ZERO, base64_encode($muxed->getXdr()->encode()));
     }
 
     public function testFromAccountIdRejectsUnknownPrefix(): void

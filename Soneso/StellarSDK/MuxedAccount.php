@@ -54,7 +54,6 @@ class MuxedAccount
     private string $ed25519AccountId;
     private ?string $accountId = null;
     private ?int $id;
-    private ?XdrMuxedAccount $xdr = null;
 
     /**
      * Constructs a new MuxedAccount instance
@@ -98,13 +97,13 @@ class MuxedAccount
     /**
      * Gets the XDR representation of the muxed account
      *
+     * Each call builds a new instance, so mutating the result leaves this
+     * account unchanged.
+     *
      * @return XdrMuxedAccount The XDR muxed account
      */
     public function getXdr() : XdrMuxedAccount {
-        if ($this->xdr === null) {
-            $this->xdr = $this->toXdr();
-        }
-        return $this->xdr;
+        return $this->toXdr();
     }
 
     /**
