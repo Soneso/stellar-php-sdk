@@ -250,6 +250,29 @@ class TransferServerServiceTest extends TestCase
         $this->assertSame("99999999.9999999", $capturedAmount);
     }
 
+    public function testFeeTypeZeroIsSent(): void
+    {
+        $transferService = new TransferServerService($this->serviceAddress);
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestFee())
+        ]);
+
+        $capturedType = null;
+        $stack = new HandlerStack();
+        $stack->setHandler($mock);
+        $stack->push(Middleware::mapRequest(function (RequestInterface $request) use (&$capturedType) {
+            parse_str($request->getUri()->getQuery(), $query_array);
+            $capturedType = $query_array["type"] ?? null;
+            return $request;
+        }));
+
+        $transferService->setMockHandlerStack($stack);
+
+        $transferService->fee(new FeeRequest(
+            operation: "deposit", assetCode: "ETH", amount: 1.0, type: "0", jwt: $this->jwtToken));
+        $this->assertSame("0", $capturedType);
+    }
+
     public function testDepositBankPayment(): void
     {
         $transferService = new TransferServerService($this->serviceAddress);

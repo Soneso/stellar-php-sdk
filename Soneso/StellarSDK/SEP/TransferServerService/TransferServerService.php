@@ -429,7 +429,7 @@ class TransferServerService
         $queryParameters += ["asset_code" => $request->assetCode];
         $queryParameters += ["amount" => SepRequestAmount::format($request->amount)];
 
-        if ($request->type) {
+        if ($request->type !== null) {
             $queryParameters += ["type" => $request->type];
         }
 
