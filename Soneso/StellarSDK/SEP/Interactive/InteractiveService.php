@@ -13,6 +13,7 @@ use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\HandlerStack;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
+use Soneso\StellarSDK\SEP\Shared\SepRequestAmount;
 use Soneso\StellarSDK\Util\UrlValidator;
 
 /**
@@ -97,7 +98,7 @@ class InteractiveService
          * @var array<array-key, mixed> $queryParameters
          */
         $queryParameters = ["operation" => $request->operation,
-            "asset_code" => $request->assetCode, "amount" => $request->amount];
+            "asset_code" => $request->assetCode, "amount" => SepRequestAmount::format($request->amount)];
         if ($request->type !== null) {
             $queryParameters ["type"] = $request->type;
         }
@@ -197,7 +198,7 @@ class InteractiveService
             $fields += ["source_asset" => $request->sourceAsset];
         }
         if ($request->amount !== null) {
-            $fields += ["amount" => $request->amount];
+            $fields += ["amount" => SepRequestAmount::format($request->amount)];
         }
         if ($request->quoteId !== null) {
             $fields += ["quote_id" => $request->quoteId];
@@ -295,7 +296,7 @@ class InteractiveService
             $fields += ["asset_issuer" => $request->assetIssuer];
         }
         if ($request->amount !== null) {
-            $fields += ["amount" => $request->amount];
+            $fields += ["amount" => SepRequestAmount::format($request->amount)];
         }
         if ($request->quoteId !== null) {
             $fields += ["quote_id" => $request->quoteId];

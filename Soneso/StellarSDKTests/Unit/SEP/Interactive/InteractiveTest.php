@@ -189,6 +189,85 @@ class InteractiveTest extends TestCase
         $this->assertEquals(0.013, $response->getFee());
     }
 
+    public function testFeeAmountIsSentAsPlainDecimal(): void
+    {
+        $transferService = new InteractiveService($this->serviceAddress);
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestFee()),
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestFee()),
+        ]);
+
+        $capturedAmount = null;
+        $stack = new HandlerStack();
+        $stack->setHandler($mock);
+        $stack->push(Middleware::mapRequest(function (RequestInterface $request) use (&$capturedAmount) {
+            parse_str($request->getUri()->getQuery(), $query_array);
+            $capturedAmount = $query_array["amount"] ?? null;
+            return $request;
+        }));
+
+        $transferService->setMockHandlerStack($stack);
+
+        // 123 stroops. Casting the float spells it "1.23E-5".
+        $transferService->fee(new SEP24FeeRequest("deposit", "ETH", 0.0000123, null, $this->jwtToken));
+        $this->assertSame("0.0000123", $capturedAmount);
+
+        // Casting this float spells it "100000000", a different amount.
+        $transferService->fee(new SEP24FeeRequest("deposit", "ETH", 99999999.9999999, null, $this->jwtToken));
+        $this->assertSame("99999999.9999999", $capturedAmount);
+    }
+
+    public function testDepositAndWithdrawAmountsAreSentAsPlainDecimal(): void
+    {
+        $transferService = new InteractiveService($this->serviceAddress);
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestInteractive()),
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestInteractive()),
+        ]);
+
+        $capturedBody = null;
+        $stack = new HandlerStack();
+        $stack->setHandler($mock);
+        $stack->push(Middleware::mapRequest(function (RequestInterface $request) use (&$capturedBody) {
+            $capturedBody = $request->getBody()->__toString();
+            return $request;
+        }));
+
+        $transferService->setMockHandlerStack($stack);
+
+        // 123 stroops. Casting the float spells it "1.23E-5".
+        $depositRequest = new SEP24DepositRequest();
+        $depositRequest->jwt = $this->jwtToken;
+        $depositRequest->assetCode = "USD";
+        $depositRequest->amount = 0.0000123;
+        $transferService->deposit($depositRequest);
+        $this->assertNotNull($capturedBody);
+        $this->assertSame("0.0000123", $this->multipartField("amount", $capturedBody));
+
+        // Casting this float spells it "100000000", a different amount.
+        $withdrawRequest = new SEP24WithdrawRequest();
+        $withdrawRequest->jwt = $this->jwtToken;
+        $withdrawRequest->assetCode = "USD";
+        $withdrawRequest->amount = 99999999.9999999;
+        $transferService->withdraw($withdrawRequest);
+        $this->assertSame("99999999.9999999", $this->multipartField("amount", $capturedBody));
+    }
+
+    /**
+     * Returns the value of a named field in a multipart request body, or null when absent.
+     */
+    private function multipartField(string $name, ?string $body): ?string
+    {
+        if ($body === null) {
+            return null;
+        }
+        // Further part headers, Content-Length among them, may sit between the disposition line
+        // and the blank line that starts the value.
+        $pattern = '/name="' . preg_quote($name, '/') . '"\r\n(?:[^\r\n]+\r\n)*\r\n(.*?)\r\n/s';
+
+        return preg_match($pattern, $body, $matches) === 1 ? $matches[1] : null;
+    }
+
     public function testDepositSEP24(): void
     {
         $transferService = new InteractiveService($this->serviceAddress);

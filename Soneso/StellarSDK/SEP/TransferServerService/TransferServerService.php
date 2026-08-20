@@ -14,6 +14,7 @@ use GuzzleHttp\HandlerStack;
 use Psr\Http\Message\ResponseInterface;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
+use Soneso\StellarSDK\SEP\Shared\SepRequestAmount;
 use Soneso\StellarSDK\Util\UrlValidator;
 
 /**
@@ -426,7 +427,7 @@ class TransferServerService
         $queryParameters = array();
         $queryParameters += ["operation" => $request->operation];
         $queryParameters += ["asset_code" => $request->assetCode];
-        $queryParameters += ["amount" => $request->amount];
+        $queryParameters += ["amount" => SepRequestAmount::format($request->amount)];
 
         if ($request->type) {
             $queryParameters += ["type" => $request->type];
