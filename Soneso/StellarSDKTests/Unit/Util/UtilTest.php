@@ -33,11 +33,21 @@ class UtilTest extends TestCase
         assertEquals("1005000000", $amount->getStroopsAsString());
     }
 
-    public function testStellarAmountFromStringWithCommas()
+    public function testStellarAmountFromStringRejectsCommas()
     {
-        $amount = StellarAmount::fromString("1,000.25");
-        assertEquals("1000.2500000", $amount->getDecimalValueAsString());
-        assertEquals("10002500000", $amount->getStroopsAsString());
+        // A comma groups digits in some locales and separates decimals in others, so "100,5" names
+        // both 1005 and 100.5 and the intended one cannot be recovered from the string.
+        foreach (["1,000.25", "100,5", "0,5"] as $amount) {
+            try {
+                StellarAmount::fromString($amount);
+                $this->fail("expected a comma to be rejected: " . $amount);
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringStartsWith("Amount must not contain a comma", $e->getMessage());
+            }
+        }
+
+        // A plain space stays accepted, matching the long-standing contract of this method.
+        assertEquals("10002500000", StellarAmount::fromString("1 000.25")->getStroopsAsString());
     }
 
     public function testStellarAmountFromStringWithSpaces()
@@ -95,6 +105,102 @@ class UtilTest extends TestCase
         $amount = StellarAmount::fromFloat(0.0);
         assertEquals("0.0000000", $amount->getDecimalValueAsString());
         assertEquals("0", $amount->getStroopsAsString());
+    }
+
+    public function testStellarAmountRejectsNegativeAmountsBelowOne()
+    {
+        // The sign of an amount whose integer part is zero lives nowhere else, so reading it off
+        // that part alone turns a negative amount into a payable positive one.
+        foreach ([-0.5, -0.0000123, -0.9999999] as $amount) {
+            try {
+                StellarAmount::fromFloat($amount);
+                $this->fail("expected a negative amount to be rejected: " . var_export($amount, true));
+            } catch (\InvalidArgumentException $e) {
+                assertEquals("Amount cannot be negative", $e->getMessage());
+            }
+        }
+
+        try {
+            StellarAmount::fromString("-0.5");
+            $this->fail("expected a negative amount string to be rejected");
+        } catch (\InvalidArgumentException $e) {
+            assertEquals("Amount cannot be negative", $e->getMessage());
+        }
+    }
+
+    public function testStellarAmountRejectsMalformedDecimalStrings()
+    {
+        // What follows the sign must be digits around at most one point. A second sign would
+        // otherwise be read as part of the integer and negated back, turning "--5" into a payable
+        // five, and a non-ASCII digit carries no value here.
+        foreach (["--5", "--5.0", "5-3", "++5", "+-5", "abc", "5e3", "1.2.3", "1..2",
+                     "\u{0665}\u{0660}\u{0660}", "\u{FF15}"] as $amount) {
+            try {
+                StellarAmount::fromString($amount);
+                $this->fail("expected a malformed amount to be rejected: " . $amount);
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringStartsWith("Amount is not a decimal number", $e->getMessage());
+            }
+        }
+
+        // Surrounding whitespace is padding and is removed.
+        assertEquals("5000000", StellarAmount::fromString("0.5\n")->getStroopsAsString());
+        assertEquals("1234000", StellarAmount::fromString("0.1234\n")->getStroopsAsString());
+        assertEquals("50000000", StellarAmount::fromString("\t5\r\n")->getStroopsAsString());
+
+        // Whitespace between digits is not padding, and joining the digits across it would name a
+        // different amount; only a plain space groups digits. A NUL is not whitespace at all, so a
+        // fixed-width or C-style buffer carrying one names no amount rather than the digits in it.
+        foreach (["1\x0B0", "1\x0C0", "1\n000.25", "1\t5", "100.5\x00", "\x005"] as $amount) {
+            try {
+                StellarAmount::fromString($amount);
+                $this->fail("expected the amount to be rejected: " . json_encode($amount));
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringStartsWith("Amount is not a decimal number", $e->getMessage());
+            }
+        }
+
+        // A single leading sign stays valid, and so do the shapes without one.
+        assertEquals("50000000", StellarAmount::fromString("+5")->getStroopsAsString());
+        assertEquals("5000000", StellarAmount::fromString(".5")->getStroopsAsString());
+        assertEquals("50000000", StellarAmount::fromString("5.")->getStroopsAsString());
+    }
+
+    public function testStellarAmountRejectsMoreThanSevenDecimalPlaces()
+    {
+        // An eighth significant decimal place names a value finer than a stroop, so it is rejected
+        // rather than rounded away.
+        foreach (["0.12345678", "1.23456789", "10.123456789", "0.00000005"] as $amount) {
+            try {
+                StellarAmount::fromString($amount);
+                $this->fail("expected more than seven decimal places to be rejected: " . $amount);
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringStartsWith("Amount cannot have more than 7 decimal places", $e->getMessage());
+            }
+        }
+
+        // Trailing zeroes carry no value and do not count towards the limit.
+        assertEquals("5000000", StellarAmount::fromString("0.50000000")->getStroopsAsString());
+        assertEquals("10000000", StellarAmount::fromString("1.0000000000")->getStroopsAsString());
+        assertEquals("1", StellarAmount::fromString("0.0000001")->getStroopsAsString());
+    }
+
+    public function testStellarAmountRejectsStringsNamingNoAmount()
+    {
+        // An empty, sign-only or point-only string names no amount, so it is refused rather than
+        // read as zero.
+        foreach (["", ".", "+", "-", "   ", "\n", "+.", "-."] as $amount) {
+            try {
+                StellarAmount::fromString($amount);
+                $this->fail("expected a string naming no amount to be rejected: " . json_encode($amount));
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringStartsWith("Amount is not a decimal number", $e->getMessage());
+            }
+        }
+
+        // A zero amount is a real amount: a trustline limit of "0" removes the trustline.
+        assertEquals("0", StellarAmount::fromString("0")->getStroopsAsString());
+        assertEquals("0", StellarAmount::fromString("0.0000000")->getStroopsAsString());
     }
 
     public function testStellarAmountFromFloatLargeNumber()

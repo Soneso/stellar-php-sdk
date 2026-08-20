@@ -161,31 +161,79 @@ class StellarAmount
     /**
      * Creates a StellarAmount from a decimal string
      *
-     * Supports up to 7 decimal places. Commas and spaces are automatically removed.
+     * Surrounding whitespace and any space are removed, and a comma is rejected, because a comma
+     * separates groups in some locales and decimals in others. What remains must be digits with
+     * at most one decimal point and at most one leading sign. An asset carries seven decimal
+     * places, so a finer amount is rejected rather than rounded; trailing zeroes do not count
+     * towards that limit, and "0.50000000" is accepted as 0.5.
      *
      * @static
-     * @param string $decimalAmount The amount as a string (e.g., "100.5" or "1,000.25")
+     * @param string $decimalAmount The amount as a string (e.g., "100.5" or "1000.25")
      * @return StellarAmount The amount object
-     * @throws \InvalidArgumentException If amount exceeds maximum or is negative
+     * @throws \InvalidArgumentException If amount contains a comma, is not a decimal number,
+     *     carries more than seven decimal places, exceeds maximum or is negative
      */
     public static function fromString(string $decimalAmount) : StellarAmount {
-        $amountStr = str_replace(',', '', $decimalAmount);
-        $amountStr = str_replace(' ', '', $amountStr);
+        // A comma groups digits in some locales and separates decimals in others, so "100,5" names
+        // both 1005 and 100.5 and the intended one cannot be recovered from the string.
+        if (str_contains($decimalAmount, ',')) {
+            throw new \InvalidArgumentException(
+                'Amount must not contain a comma: ' . substr($decimalAmount, 0, 64));
+        }
+
+        // Surrounding whitespace is padding: an amount read from a file or a CSV cell carries a
+        // trailing newline. Whitespace between digits is not padding, so it is left in place for
+        // the check below to refuse rather than read as a group separator. A space is the one
+        // exception, removed anywhere, which is the long-standing contract of this method.
+        $amountStr = str_replace(' ', '', trim($decimalAmount, " \t\n\r\v\f"));
+
+        // The sign belongs to the amount as a whole, since the fractional digits are unsigned.
+        $negative = str_starts_with($amountStr, '-');
+        if ($negative || str_starts_with($amountStr, '+')) {
+            $amountStr = substr($amountStr, 1);
+        }
+
+        // What remains must be digits around at most one point. That refuses a second sign, which
+        // would otherwise be read as part of the integer and negated back to a positive amount,
+        // and it requires at least one digit, so an empty, sign-only or point-only string names no
+        // amount rather than zero. A zero amount itself stays valid, since a trustline limit of
+        // "0" removes the trustline. The pattern is deliberately ASCII: with the u modifier it
+        // would accept digits that carry no value here. The D modifier keeps $ from matching
+        // before a trailing newline.
+        if (preg_match('/^(\d+(\.\d*)?|\.\d+)$/D', $amountStr) !== 1) {
+            throw new \InvalidArgumentException(
+                'Amount is not a decimal number: ' . substr($decimalAmount, 0, 64));
+        }
+
         $parts = explode('.', $amountStr);
         $unscaledAmount = self::zero();
 
         // Everything to the left of the decimal point
-        if ($parts[0]) {
+        if ($parts[0] !== '') {
             $unscaledAmountLeft = (new BigInteger($parts[0]))->multiply(self::stroopScale());
             $unscaledAmount = $unscaledAmount->add($unscaledAmountLeft);
         }
 
         // Add everything to the right of the decimal point
-        if (count($parts) == 2 && str_replace('0', '', $parts[1]) != '') {
-            // Should be a total of 7 decimal digits to the right of the decimal
-            $unscaledAmountRight = str_pad($parts[1], 7, '0',STR_PAD_RIGHT);
-            $unscaledAmount = $unscaledAmount->add(new BigInteger($unscaledAmountRight));
+        if (count($parts) == 2) {
+            // Trailing zeroes carry no value, so an amount is only out of range once they are
+            // removed: "0.50000000" is 0.5 and fits, while "0.12345678" does not.
+            $fraction = rtrim($parts[1], '0');
+            if ($fraction !== '') {
+                if (strlen($fraction) > 7) {
+                    throw new \InvalidArgumentException(
+                        'Amount cannot have more than 7 decimal places: '
+                        . substr($decimalAmount, 0, 64));
+                }
+                $unscaledAmount = $unscaledAmount->add(
+                    new BigInteger(str_pad($fraction, 7, '0', STR_PAD_RIGHT)));
+            }
         }
+
+        if ($negative) {
+            $unscaledAmount = self::zero()->subtract($unscaledAmount);
+        }
+
         return new StellarAmount($unscaledAmount);
     }
     
