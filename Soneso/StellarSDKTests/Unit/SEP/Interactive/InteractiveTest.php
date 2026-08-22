@@ -195,6 +195,7 @@ class InteractiveTest extends TestCase
         $mock = new MockHandler([
             new Response(200, ['X-Foo' => 'Bar'], $this->requestFee()),
             new Response(200, ['X-Foo' => 'Bar'], $this->requestFee()),
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestFee()),
         ]);
 
         $capturedAmount = null;
@@ -215,6 +216,11 @@ class InteractiveTest extends TestCase
         // Casting this float spells it "100000000", a different amount.
         $transferService->fee(new SEP24FeeRequest("deposit", "ETH", 99999999.9999999, null, $this->jwtToken));
         $this->assertSame("99999999.9999999", $capturedAmount);
+
+        // The stored float is 100000000000.100006103515625; the query must carry the
+        // shortest representation, not the binary expansion behind it.
+        $transferService->fee(new SEP24FeeRequest("deposit", "ETH", 100000000000.1, null, $this->jwtToken));
+        $this->assertSame("100000000000.1", $capturedAmount);
     }
 
     public function testDepositAndWithdrawAmountsAreSentAsPlainDecimal(): void

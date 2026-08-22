@@ -71,11 +71,45 @@ class SepRequestAmountTest extends TestCase
         $this->assertSame("780615714.9429096", SepRequestAmount::format(780615714.9429096));
     }
 
-    public function testHalfStroopTieFollowsTheStoredFloat(): void
+    public function testHalfwayFractionRoundsAwayFromZero(): void
     {
-        // The double nearest 1.5e-7 is 0.000000149999999999999993, so the nearer seven-decimal
-        // value is one stroop, not two.
-        $this->assertSame("0.0000001", SepRequestAmount::format(1.5e-7));
+        // The written value 0.00000015 ends exactly halfway at the seventh place.
+        $this->assertSame("0.0000002", SepRequestAmount::format(1.5e-7));
+        $this->assertSame("-0.0000002", SepRequestAmount::format(-1.5e-7));
+        // Half a stroop exactly is halfway at the zero boundary and rounds away,
+        // keeping its sign.
+        $this->assertSame("0.0000001", SepRequestAmount::format(5e-8));
+        $this->assertSame("-0.0000001", SepRequestAmount::format(-5e-8));
+    }
+
+    public function testLargeAmountKeepsTheWrittenDecimals(): void
+    {
+        // The stored float is 100000000000.100006103515625; the shortest representation is
+        // the written value, and no digit beyond it may be rendered.
+        $this->assertSame("100000000000.1", SepRequestAmount::format(100000000000.1));
+        $this->assertSame("-100000000000.1", SepRequestAmount::format(-100000000000.1));
+    }
+
+    public function testRoundingCarriesThroughTheIntegerPart(): void
+    {
+        $this->assertSame("1", SepRequestAmount::format(0.99999995));
+        $this->assertSame("2", SepRequestAmount::format(1.99999996));
+    }
+
+    public function testHostSerializePrecisionOverrideDoesNotChangeTheDigits(): void
+    {
+        // A host that caps or widens serialize_precision must neither change the rendering
+        // nor find its setting altered afterwards.
+        $previous = ini_set('serialize_precision', '17');
+        try {
+            $this->assertSame("0.1", SepRequestAmount::format(0.1));
+            $this->assertSame("100000000000.1", SepRequestAmount::format(100000000000.1));
+            $this->assertSame('17', ini_get('serialize_precision'));
+        } finally {
+            if ($previous !== false) {
+                ini_set('serialize_precision', $previous);
+            }
+        }
     }
 
     // Rounding to seven decimal places
@@ -133,7 +167,7 @@ class SepRequestAmountTest extends TestCase
      * This alone cannot tell a locale-independent rendering from a locale-following one. PHP starts
      * every process at LC_NUMERIC "C" and never adopts the host's regional format, so %f and %F
      * agree here; only a caller that has run setlocale() sees them diverge, which no test can
-     * observe without changing the process locale. testFormatterUsesTheLocaleIndependentConversion
+     * observe without changing the process locale. testFormatterUsesTheShortestRepresentation
      * covers that separately.
      */
     public function testRenderingUsesAPeriodSeparator(): void
@@ -146,18 +180,20 @@ class SepRequestAmountTest extends TestCase
     }
 
     /**
-     * The formatter must use the locale-independent %F conversion.
+     * The formatter must not use a printf float conversion.
      *
      * A caller that has run setlocale(LC_NUMERIC, ...) with a comma-separated locale gets
-     * "0,0000123" from the lowercase %f and "0.0000123" from the uppercase %F, and an anchor
-     * parses neither the comma nor a value it never expected. The difference is invisible under
-     * the "C" locale every PHP process starts in, and the CI image installs no comma locale, so
-     * this is asserted against the source rather than skipped on hosts that cannot show it.
+     * "0,0000123" from the lowercase %f, and any fixed-point conversion renders the binary
+     * expansion of the float rather than its shortest representation. The rendering is decimal
+     * string arithmetic on json_encode's output with serialize_precision pinned to -1, and the
+     * difference is invisible under the "C" locale every PHP process starts in and the default
+     * ini of the CI image, so this is asserted against the source rather than skipped on hosts
+     * that cannot show it.
      */
-    public function testFormatterUsesTheLocaleIndependentConversion(): void
+    public function testFormatterUsesTheShortestRepresentation(): void
     {
-        // Comments are stripped first: a docblock naming either conversion would otherwise decide
-        // the outcome, letting a broken implementation pass because its comment mentions %F.
+        // Comments are stripped first: a docblock naming a conversion would otherwise decide
+        // the outcome, letting a broken implementation pass because its comment mentions one.
         $file = (new \ReflectionClass(SepRequestAmount::class))->getFileName();
         $code = '';
         foreach (token_get_all((string) file_get_contents((string) $file)) as $token) {
@@ -167,8 +203,8 @@ class SepRequestAmountTest extends TestCase
             $code .= is_array($token) ? $token[1] : $token;
         }
 
-        $this->assertStringContainsString("sprintf('%.7F', \$amount)", $code);
-        $this->assertDoesNotMatchRegularExpression('/%\.\d*f/', $code);
+        $this->assertDoesNotMatchRegularExpression('/%[-+0 ]?\d*(\.\d+)?[fFgGeE]/', $code);
+        $this->assertStringContainsString("ini_set('serialize_precision', '-1')", $code);
     }
 
     /**

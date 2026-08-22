@@ -226,6 +226,7 @@ class TransferServerServiceTest extends TestCase
         $mock = new MockHandler([
             new Response(200, ['X-Foo' => 'Bar'], $this->requestFee()),
             new Response(200, ['X-Foo' => 'Bar'], $this->requestFee()),
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestFee()),
         ]);
 
         $capturedAmount = null;
@@ -248,6 +249,12 @@ class TransferServerServiceTest extends TestCase
         $transferService->fee(new FeeRequest(
             operation: "deposit", assetCode: "ETH", amount: 99999999.9999999, jwt: $this->jwtToken));
         $this->assertSame("99999999.9999999", $capturedAmount);
+
+        // The stored float is 100000000000.100006103515625; the query must carry the
+        // shortest representation, not the binary expansion behind it.
+        $transferService->fee(new FeeRequest(
+            operation: "deposit", assetCode: "ETH", amount: 100000000000.1, jwt: $this->jwtToken));
+        $this->assertSame("100000000000.1", $capturedAmount);
     }
 
     public function testFeeTypeZeroIsSent(): void
