@@ -8,6 +8,7 @@
 namespace Soneso\StellarSDK;
 
 use Exception;
+use InvalidArgumentException;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
@@ -22,6 +23,10 @@ use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
  * The executable instead names an owner contract and a tag; the owner holds a
  * persistent contract data entry under that tag whose value is the 32-byte hash of an
  * already uploaded wasm, and the created instance runs that code.
+ *
+ * The executable owner must be a contract address — only a contract can hold the
+ * executable tag entry. The constructor, setExecutableOwner(), and toXdr() reject any
+ * other address type.
  *
  * Usage:
  * <code>
@@ -70,10 +75,12 @@ class CreateContractFromExternalRefHostFunction extends HostFunction
      * @param Address $executableOwner The contract holding the executable tag entry
      * @param string $tag The tag of the executable entry on the owner; matched byte for byte
      * @param string|null $salt Optional salt (32 random bytes generated if not provided)
+     * @throws InvalidArgumentException If the executable owner is not a contract address
      * @throws Exception If random bytes generation fails
      */
     public function __construct(Address $address, Address $executableOwner, string $tag, ?string $salt = null)
     {
+        self::assertOwnerIsContract($executableOwner);
         $this->address = $address;
         $this->executableOwner = $executableOwner;
         $this->tag = $tag;
@@ -81,13 +88,18 @@ class CreateContractFromExternalRefHostFunction extends HostFunction
         parent::__construct();
     }
 
+    /**
+     * @throws InvalidArgumentException If the executable owner is not a contract address
+     */
     public function toXdr() : XdrHostFunction {
+        self::assertOwnerIsContract($this->executableOwner);
         return XdrHostFunction::forCreatingContractWithExternalRef($this->address->toXdr(),
             $this->executableOwner->toXdr(), $this->tag, $this->salt);
     }
 
     /**
-     * @throws Exception
+     * @throws InvalidArgumentException If the executable owner in the XDR is not a contract address
+     * @throws Exception If the XDR does not carry an external-ref CREATE_CONTRACT host function
      */
     public static function fromXdr(XdrHostFunction $xdr) : CreateContractFromExternalRefHostFunction {
         $type = $xdr->type;
@@ -132,9 +144,11 @@ class CreateContractFromExternalRefHostFunction extends HostFunction
 
     /**
      * @param Address $executableOwner
+     * @throws InvalidArgumentException If the executable owner is not a contract address
      */
     public function setExecutableOwner(Address $executableOwner): void
     {
+        self::assertOwnerIsContract($executableOwner);
         $this->executableOwner = $executableOwner;
     }
 
@@ -168,6 +182,17 @@ class CreateContractFromExternalRefHostFunction extends HostFunction
     public function setSalt(string $salt): void
     {
         $this->salt = $salt;
+    }
+
+    /**
+     * @throws InvalidArgumentException If the executable owner is not a contract address
+     */
+    private static function assertOwnerIsContract(Address $executableOwner): void
+    {
+        if ($executableOwner->type !== Address::TYPE_CONTRACT) {
+            throw new InvalidArgumentException(
+                "External reference owner is not a contract address; only a contract can hold the executable tag entry");
+        }
     }
 
 }
