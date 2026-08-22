@@ -238,7 +238,7 @@ class AuthorizationTest extends TestCase
         $xdr = $original->toXdr();
 
         $this->assertInstanceOf(XdrSorobanCredentials::class, $xdr);
-        $this->assertEquals(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS, $xdr->type->value);
+        $this->assertEquals(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2, $xdr->type->value);
 
         $decoded = SorobanCredentials::fromXdr($xdr);
 

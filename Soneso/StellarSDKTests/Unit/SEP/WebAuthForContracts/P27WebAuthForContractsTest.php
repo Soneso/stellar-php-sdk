@@ -87,7 +87,7 @@ class P27WebAuthForContractsTest extends TestCase
     private function makeGoldenLegacyEntry(): SorobanAuthorizationEntry
     {
         $address = Address::fromAccountId(self::GOLDEN_ACCOUNT);
-        $creds   = SorobanCredentials::forAddress(
+        $creds   = SorobanCredentials::forAddressLegacy(
             $address,
             self::GOLDEN_NONCE,
             self::GOLDEN_EXPIRY,
@@ -131,7 +131,7 @@ class P27WebAuthForContractsTest extends TestCase
             XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2
                 => SorobanCredentials::forAddressCredentialsV2($addrCreds),
             default
-                => SorobanCredentials::forAddressCredentials($addrCreds),
+                => SorobanCredentials::forAddressCredentialsLegacy($addrCreds),
         };
 
         $contractAddress = Address::fromContractId(StrKey::decodeContractIdHex($contractId));

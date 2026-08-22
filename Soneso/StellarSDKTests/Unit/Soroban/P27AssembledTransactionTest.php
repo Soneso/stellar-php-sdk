@@ -84,36 +84,38 @@ class P27AssembledTransactionTest extends TestCase
     // =========================================================================
 
     /**
-     * The "useUpgradedAuth" key must be ABSENT from request params when $useUpgradedAuth is false (default).
+     * A default request must carry "useUpgradedAuth" as boolean true.
      */
-    public function testUseUpgradedAuthKeyAbsentByDefault(): void
+    public function testUseUpgradedAuthKeyPresentTrueByDefault(): void
     {
         $tx      = $this->buildMockTx();
         $request = new SimulateTransactionRequest(transaction: $tx);
 
         $params = $request->getRequestParams();
 
-        $this->assertArrayNotHasKey('useUpgradedAuth', $params, '"useUpgradedAuth" key must not appear when flag is false (default)');
+        $this->assertArrayHasKey('useUpgradedAuth', $params, '"useUpgradedAuth" key must appear by default');
+        $this->assertSame(true, $params['useUpgradedAuth'], '"useUpgradedAuth" must be boolean true by default (not a string or int)');
         $this->assertArrayHasKey('transaction', $params);
     }
 
     /**
-     * The "useUpgradedAuth" key must be ABSENT when explicitly set to false.
+     * The legacy opt-out must send "useUpgradedAuth" as boolean false.
      */
-    public function testUseUpgradedAuthKeyAbsentWhenExplicitFalse(): void
+    public function testUseUpgradedAuthKeyPresentFalseWhenOptedOut(): void
     {
         $tx      = $this->buildMockTx();
         $request = new SimulateTransactionRequest(transaction: $tx, useUpgradedAuth: false);
 
         $params = $request->getRequestParams();
 
-        $this->assertArrayNotHasKey('useUpgradedAuth', $params, '"useUpgradedAuth" key must not appear when explicitly false');
+        $this->assertArrayHasKey('useUpgradedAuth', $params, '"useUpgradedAuth" key must appear when explicitly false');
+        $this->assertSame(false, $params['useUpgradedAuth'], '"useUpgradedAuth" must be boolean false on opt-out (not a string or int)');
     }
 
     /**
-     * The "useUpgradedAuth" key must be present and equal to boolean true when opted in.
+     * The "useUpgradedAuth" key must be present and equal to boolean true when explicitly enabled.
      */
-    public function testUseUpgradedAuthKeyPresentAsBooleanTrueWhenOptedIn(): void
+    public function testUseUpgradedAuthKeyPresentAsBooleanTrueWhenExplicitTrue(): void
     {
         $tx      = $this->buildMockTx();
         $request = new SimulateTransactionRequest(transaction: $tx, useUpgradedAuth: true);
@@ -147,22 +149,22 @@ class P27AssembledTransactionTest extends TestCase
     }
 
     /**
-     * Setter/getter round-trip for useUpgradedAuth.
+     * Setter/getter round-trip for useUpgradedAuth. The wire key follows the flag value.
      */
     public function testUseUpgradedAuthSetterGetterRoundTrip(): void
     {
         $tx      = $this->buildMockTx();
         $request = new SimulateTransactionRequest(transaction: $tx);
 
-        $this->assertFalse($request->getUseUpgradedAuth());
-
-        $request->setUseUpgradedAuth(true);
         $this->assertTrue($request->getUseUpgradedAuth());
-        $this->assertArrayHasKey('useUpgradedAuth', $request->getRequestParams());
 
         $request->setUseUpgradedAuth(false);
         $this->assertFalse($request->getUseUpgradedAuth());
-        $this->assertArrayNotHasKey('useUpgradedAuth', $request->getRequestParams());
+        $this->assertSame(false, $request->getRequestParams()['useUpgradedAuth']);
+
+        $request->setUseUpgradedAuth(true);
+        $this->assertTrue($request->getUseUpgradedAuth());
+        $this->assertSame(true, $request->getRequestParams()['useUpgradedAuth']);
     }
 
     // =========================================================================
@@ -194,9 +196,9 @@ class P27AssembledTransactionTest extends TestCase
     }
 
     /**
-     * Mirror: default MethodOptions must NOT include "useUpgradedAuth" in the RPC request body.
+     * Default MethodOptions must send "useUpgradedAuth": true in the RPC request body.
      */
-    public function testMethodOptionsDefaultOmitsUseUpgradedAuthFromSimulateRequest(): void
+    public function testMethodOptionsDefaultSendsUseUpgradedAuthTrueInSimulateRequest(): void
     {
         $capturedBodies = [];
         $tx = $this->buildAssembledTransactionWithMock(
@@ -211,7 +213,30 @@ class P27AssembledTransactionTest extends TestCase
         $body = json_decode($capturedBodies[0], true);
         $this->assertIsArray($body);
         $params = $body['params'] ?? [];
-        $this->assertArrayNotHasKey('useUpgradedAuth', $params, '"useUpgradedAuth" must NOT appear in RPC params by default');
+        $this->assertArrayHasKey('useUpgradedAuth', $params, '"useUpgradedAuth" must appear in RPC params by default');
+        $this->assertSame(true, $params['useUpgradedAuth']);
+    }
+
+    /**
+     * The legacy opt-out on MethodOptions must send "useUpgradedAuth": false in the RPC request body.
+     */
+    public function testMethodOptionsUseUpgradedAuthFalseThreadsIntoSimulateRequest(): void
+    {
+        $capturedBodies = [];
+        $tx = $this->buildAssembledTransactionWithMock(
+            methodOptions: new MethodOptions(simulate: false, restore: false, useUpgradedAuth: false),
+            mockResponses: [$this->createSimulateResponse()],
+            capturedBodies: $capturedBodies,
+        );
+
+        $tx->simulate();
+
+        $this->assertCount(1, $capturedBodies, 'Expected exactly one RPC request');
+        $body = json_decode($capturedBodies[0], true);
+        $this->assertIsArray($body);
+        $params = $body['params'] ?? [];
+        $this->assertArrayHasKey('useUpgradedAuth', $params, '"useUpgradedAuth" must appear in RPC params when MethodOptions.useUpgradedAuth = false');
+        $this->assertSame(false, $params['useUpgradedAuth']);
     }
 
     // =========================================================================
@@ -270,7 +295,7 @@ class P27AssembledTransactionTest extends TestCase
         $signerKp     = KeyPair::random();
         $address      = Address::fromAccountId($signerKp->getAccountId());
         $addressCreds = new SorobanAddressCredentials($address, 1, 100, XdrSCVal::forVoid());
-        $creds        = SorobanCredentials::forAddressCredentials($addressCreds);
+        $creds        = SorobanCredentials::forAddressCredentialsLegacy($addressCreds);
         $entry        = new SorobanAuthorizationEntry($creds, $this->makeInvocation());
 
         $tx = $this->buildAssembledTransactionWithAuthEntries([$entry], $this->invokerKp);
@@ -494,14 +519,14 @@ class P27AssembledTransactionTest extends TestCase
         $address      = Address::fromAccountId($signerKp->getAccountId());
         $addressCreds = new SorobanAddressCredentials($address, 1, 100, XdrSCVal::forVoid());
         $validEntry   = new SorobanAuthorizationEntry(
-            SorobanCredentials::forAddressCredentials($addressCreds),
+            SorobanCredentials::forAddressCredentialsLegacy($addressCreds),
             $this->makeInvocation(),
         );
 
         // Unknown-arm entry: credentialType = 99, but a non-SOURCE_ACCOUNT type so it reaches
         // the unknown-arm check inside the loop.
         $addressCreds2 = new SorobanAddressCredentials($address, 2, 100, XdrSCVal::forVoid());
-        $badCreds      = SorobanCredentials::forAddressCredentials($addressCreds2);
+        $badCreds      = SorobanCredentials::forAddressCredentialsLegacy($addressCreds2);
         $badCreds->credentialType = 99;
         $badEntry = new SorobanAuthorizationEntry($badCreds, $this->makeInvocation());
 

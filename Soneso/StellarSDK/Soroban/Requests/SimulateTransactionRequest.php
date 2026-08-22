@@ -11,16 +11,18 @@ use Soneso\StellarSDK\Transaction;
 /**
  * Soroban Simulate Transaction Request.
  *
- * The useUpgradedAuth flag requests that the RPC node return ADDRESS_V2 credential entries
- * (Protocol 27, CAP-71) instead of legacy ADDRESS entries during recording-mode simulation.
- * The flag is effective only in recording mode: when authMode is "record" or
- * "record_allow_nonroot", or when authMode is unset and the transaction carries no auth
- * entries (the RPC then defaults to recording). It is ignored under "enforce". RPCs without
- * Protocol 27 support silently ignore the flag and return legacy ADDRESS entries — support
- * is detected by inspecting the credential arm of returned entries, not by any error signal.
+ * The useUpgradedAuth flag selects the credential arm of auth entries recorded during
+ * simulation: true (the default) requests ADDRESS_V2 entries (Protocol 27, CAP-71), false
+ * requests legacy ADDRESS entries. The flag is effective only in recording mode: when
+ * authMode is "record" or "record_allow_nonroot", or when authMode is unset and the
+ * transaction carries no auth entries (the RPC then defaults to recording). It is ignored
+ * under "enforce". RPCs without Protocol 27 support silently ignore the flag and return
+ * legacy ADDRESS entries — support is detected by inspecting the credential arm of
+ * returned entries, not by any error signal.
  *
- * The key "useUpgradedAuth" is omitted from the request when the flag is false (the default), so
- * existing call sites require no changes and pre-27 RPCs never see the key.
+ * The key "useUpgradedAuth" is always present in the request params with the current flag
+ * value. Set the flag to false on a network below Protocol 27, where ADDRESS_V2 entries
+ * invalidate the transaction.
  *
  * @see https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction
  * @package Soneso\StellarSDK\Soroban\Requests
@@ -37,23 +39,23 @@ class SimulateTransactionRequest
      *  transactions.
      * @param string|null $authMode Support for non-root authorization. Only available for protocol >= 23.
      *  Possible values: "enforce" | "record" | "record_allow_nonroot"
-     * @param bool $useUpgradedAuth When true, requests ADDRESS_V2 credential entries (Protocol 27, CAP-71).
-     *  The key is omitted when false; RPCs without support silently ignore it and return legacy entries.
-     *  Invalid on pre-27 networks: emitting ADDRESS_V2 entries on a pre-27 network invalidates the transaction.
+     * @param bool $useUpgradedAuth When true (the default), requests ADDRESS_V2 credential entries
+     *  (Protocol 27, CAP-71); when false, requests legacy ADDRESS entries. RPCs without support
+     *  silently ignore the flag and return legacy entries. Set to false on a network below
+     *  Protocol 27, where ADDRESS_V2 entries invalidate the transaction.
      */
     public function __construct(
         public Transaction $transaction,
         public ?ResourceConfig $resourceConfig = null,
         public ?string $authMode = null,
-        public bool $useUpgradedAuth = false,
+        public bool $useUpgradedAuth = true,
     ) {
     }
 
     /**
      * Builds and returns the request parameters array for the RPC API call.
      *
-     * The "useUpgradedAuth" key is included only when $useUpgradedAuth is true. Omitting the key (the default)
-     * preserves compatibility with pre-27 RPCs that do not recognize it.
+     * The "useUpgradedAuth" key is always included with the current flag value.
      *
      * @return array<string, mixed> The request parameters formatted for Soroban RPC
      */
@@ -68,9 +70,7 @@ class SimulateTransactionRequest
         if ($this->authMode !== null) {
             $params['authMode'] = $this->authMode;
         }
-        if ($this->useUpgradedAuth) {
-            $params['useUpgradedAuth'] = true;
-        }
+        $params['useUpgradedAuth'] = $this->useUpgradedAuth;
         return $params;
     }
 
@@ -148,8 +148,9 @@ class SimulateTransactionRequest
     /**
      * Sets the useUpgradedAuth flag.
      *
-     * When true, "useUpgradedAuth": true is included in the request params. RPCs without Protocol 27 support
-     * silently ignore the flag. Do not enable on pre-27 networks.
+     * When true, ADDRESS_V2 credential entries are requested during recording-mode simulation;
+     * when false, legacy ADDRESS entries. RPCs without Protocol 27 support silently ignore the
+     * flag. Set to false on networks below Protocol 27.
      *
      * @param bool $useUpgradedAuth whether to request ADDRESS_V2 credential entries
      */

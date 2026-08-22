@@ -16,19 +16,21 @@ use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
  *
  * Represents one of four credential arms:
  * - SOURCE_ACCOUNT: uses the transaction source account; no address credentials.
- * - ADDRESS (legacy): address credentials without an address-bound preimage.
+ * - ADDRESS (legacy): address credentials without an address-bound preimage. Valid on
+ *   all protocol versions.
  * - ADDRESS_V2 (Protocol 27, CAP-71): address credentials with an address-bound preimage
- *   (ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS). Opt-in; invalid on pre-27 networks.
+ *   (ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS). Invalid on pre-27 networks.
  * - ADDRESS_WITH_DELEGATES (Protocol 27, CAP-71): ADDRESS_V2 with a recursive delegate
- *   tree. Opt-in; invalid on pre-27 networks.
+ *   tree. Invalid on pre-27 networks.
  *
  * The property $addressCredentials carries the inner SorobanAddressCredentials for the
  * ADDRESS and ADDRESS_V2 arms. For ADDRESS_WITH_DELEGATES, $addressWithDelegates carries
  * the full credentials-plus-delegates payload; $addressCredentials is null in that arm.
  *
- * Legacy behavior is preserved: the default arm is ADDRESS when address credentials are
- * set; existing callers that only use forSourceAccount() / forAddressCredentials() are
- * unaffected.
+ * The forAddress() and forAddressCredentials() factories build the ADDRESS_V2 arm;
+ * forAddressLegacy() and forAddressCredentialsLegacy() build the legacy ADDRESS arm.
+ * Passing a SorobanAddressCredentials object as the constructor's first argument also
+ * builds the legacy ADDRESS arm (single-argument calling convention).
  *
  * @package Soneso\StellarSDK\Soroban
  * @see SorobanAddressCredentials
@@ -97,10 +99,35 @@ class SorobanCredentials
     }
 
     /**
-     * Creates legacy ADDRESS credentials.
+     * Creates ADDRESS_V2 credentials (Protocol 27, CAP-71) for the given address.
      *
-     * Uses ENVELOPE_TYPE_SOROBAN_AUTHORIZATION (not address-bound). This is the default
-     * arm and is valid on all protocol versions.
+     * Uses ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS (address-bound preimage).
+     * Invalid on networks below Protocol 27; use forAddressLegacy() there.
+     *
+     * @param Address $address the address to authorize
+     * @param int $nonce unique nonce for replay protection
+     * @param int $signatureExpirationLedger ledger after which the signature expires
+     * @param XdrSCVal $signature the signature data
+     * @return SorobanCredentials ADDRESS_V2 credentials
+     */
+    public static function forAddress(
+        Address $address,
+        int     $nonce,
+        int     $signatureExpirationLedger,
+        XdrSCVal $signature,
+    ): SorobanCredentials {
+        $addressCredentials = new SorobanAddressCredentials($address, $nonce, $signatureExpirationLedger, $signature);
+        return new SorobanCredentials(
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
+            $addressCredentials,
+        );
+    }
+
+    /**
+     * Creates legacy ADDRESS credentials for the given address.
+     *
+     * Uses ENVELOPE_TYPE_SOROBAN_AUTHORIZATION (not address-bound). Valid on all
+     * protocol versions.
      *
      * @param Address $address the address to authorize
      * @param int $nonce unique nonce for replay protection
@@ -108,7 +135,7 @@ class SorobanCredentials
      * @param XdrSCVal $signature the signature data
      * @return SorobanCredentials legacy ADDRESS credentials
      */
-    public static function forAddress(
+    public static function forAddressLegacy(
         Address $address,
         int     $nonce,
         int     $signatureExpirationLedger,
@@ -122,12 +149,31 @@ class SorobanCredentials
     }
 
     /**
+     * Creates ADDRESS_V2 credentials (Protocol 27, CAP-71) from existing address credentials.
+     *
+     * Equivalent to forAddressCredentialsV2(). Invalid on networks below Protocol 27;
+     * use forAddressCredentialsLegacy() there.
+     *
+     * @param SorobanAddressCredentials $addressCredentials the address credentials
+     * @return SorobanCredentials ADDRESS_V2 credentials
+     */
+    public static function forAddressCredentials(SorobanAddressCredentials $addressCredentials): SorobanCredentials
+    {
+        return new SorobanCredentials(
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
+            $addressCredentials,
+        );
+    }
+
+    /**
      * Creates legacy ADDRESS credentials from existing address credentials.
+     *
+     * Valid on all protocol versions.
      *
      * @param SorobanAddressCredentials $addressCredentials the address credentials
      * @return SorobanCredentials legacy ADDRESS credentials
      */
-    public static function forAddressCredentials(SorobanAddressCredentials $addressCredentials): SorobanCredentials
+    public static function forAddressCredentialsLegacy(SorobanAddressCredentials $addressCredentials): SorobanCredentials
     {
         return new SorobanCredentials(
             XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS,
@@ -138,8 +184,8 @@ class SorobanCredentials
     /**
      * Creates ADDRESS_V2 credentials (Protocol 27, CAP-71).
      *
-     * Uses ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS (address-bound preimage).
-     * Invalid on networks below Protocol 27.
+     * Equivalent to forAddressCredentials(). Uses ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS
+     * (address-bound preimage). Invalid on networks below Protocol 27.
      *
      * @param SorobanAddressCredentials $addressCredentials the address credentials
      * @return SorobanCredentials ADDRESS_V2 credentials

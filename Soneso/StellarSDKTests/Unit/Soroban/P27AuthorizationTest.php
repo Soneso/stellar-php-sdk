@@ -80,7 +80,7 @@ class P27AuthorizationTest extends TestCase
     private function makeGoldenLegacyEntry(): SorobanAuthorizationEntry
     {
         $address = Address::fromAccountId(self::GOLDEN_ACCOUNT);
-        $creds = SorobanCredentials::forAddress($address, self::GOLDEN_NONCE, self::GOLDEN_EXPIRY, XdrSCVal::forVoid());
+        $creds = SorobanCredentials::forAddressLegacy($address, self::GOLDEN_NONCE, self::GOLDEN_EXPIRY, XdrSCVal::forVoid());
         return new SorobanAuthorizationEntry($creds, $this->makeGoldenInvocation());
     }
 
@@ -115,7 +115,7 @@ class P27AuthorizationTest extends TestCase
     public function testRoundTripAddressLegacy(): void
     {
         $address  = Address::fromAccountId(self::GOLDEN_ACCOUNT);
-        $creds    = SorobanCredentials::forAddress($address, 42, 100, XdrSCVal::forVoid());
+        $creds    = SorobanCredentials::forAddressLegacy($address, 42, 100, XdrSCVal::forVoid());
         $xdr      = $creds->toXdr();
 
         $this->assertEquals(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS, $xdr->type->value);
@@ -144,6 +144,33 @@ class P27AuthorizationTest extends TestCase
         $this->assertNotNull($decoded->addressCredentials);
         $this->assertEquals(77, $decoded->addressCredentials->nonce);
         $this->assertEquals($xdr->encode(), $decoded->toXdr()->encode());
+    }
+
+    /**
+     * Factory arm selection: forAddress() and forAddressCredentials() build ADDRESS_V2;
+     * forAddressLegacy() and forAddressCredentialsLegacy() build legacy ADDRESS.
+     */
+    public function testFactoryArmSelection(): void
+    {
+        $address      = Address::fromAccountId(self::GOLDEN_ACCOUNT);
+        $addressCreds = new SorobanAddressCredentials($address, 1, 100, XdrSCVal::forVoid());
+
+        $this->assertEquals(
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
+            SorobanCredentials::forAddress($address, 1, 100, XdrSCVal::forVoid())->credentialType,
+        );
+        $this->assertEquals(
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
+            SorobanCredentials::forAddressCredentials($addressCreds)->credentialType,
+        );
+        $this->assertEquals(
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS,
+            SorobanCredentials::forAddressLegacy($address, 1, 100, XdrSCVal::forVoid())->credentialType,
+        );
+        $this->assertEquals(
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS,
+            SorobanCredentials::forAddressCredentialsLegacy($addressCreds)->credentialType,
+        );
     }
 
     public function testRoundTripAddressWithDelegates(): void
@@ -268,6 +295,21 @@ class P27AuthorizationTest extends TestCase
         $payload  = Hash::generate($preimage->encode());
 
         $this->assertEquals(self::GOLDEN_V2_PAYLOAD_HEX, bin2hex($payload));
+    }
+
+    /**
+     * An entry built with forAddress() carries ADDRESS_V2 credentials and hashes to the
+     * golden V2 payload, byte-identical to an entry built with forAddressCredentialsV2().
+     */
+    public function testForAddressEntryMatchesGoldenV2Vectors(): void
+    {
+        $address = Address::fromAccountId(self::GOLDEN_ACCOUNT);
+        $creds   = SorobanCredentials::forAddress($address, self::GOLDEN_NONCE, self::GOLDEN_EXPIRY, XdrSCVal::forVoid());
+        $entry   = new SorobanAuthorizationEntry($creds, $this->makeGoldenInvocation());
+
+        $preimage = $entry->buildPreimage(Network::testnet());
+        $this->assertEquals(self::GOLDEN_V2_PREIMAGE_B64, base64_encode($preimage->encode()));
+        $this->assertEquals(self::GOLDEN_V2_PAYLOAD_HEX, bin2hex(Hash::generate($preimage->encode())));
     }
 
     /**
@@ -405,7 +447,7 @@ class P27AuthorizationTest extends TestCase
 
         // Entry with expiry 0 initially; sign sets it to GOLDEN_EXPIRY.
         $address = Address::fromAccountId(self::GOLDEN_ACCOUNT);
-        $creds   = SorobanCredentials::forAddress($address, self::GOLDEN_NONCE, 0, XdrSCVal::forVoid());
+        $creds   = SorobanCredentials::forAddressLegacy($address, self::GOLDEN_NONCE, 0, XdrSCVal::forVoid());
         $entry   = new SorobanAuthorizationEntry($creds, $this->makeGoldenInvocation());
 
         $entry->sign($signer, Network::testnet(), self::GOLDEN_EXPIRY);
