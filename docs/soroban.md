@@ -609,25 +609,23 @@ Protocol 27 adds two address-credential arms to `SorobanCredentials`:
 - `ADDRESS_V2` carries the same `SorobanAddressCredentials` body as the legacy `ADDRESS` arm, but the signature payload additionally binds the credential address.
 - `ADDRESS_WITH_DELEGATES` extends V2 with a tree of delegate signatures, letting additional addresses co-sign one authorization entry.
 
-The legacy `ADDRESS` arm remains the default everywhere and stays fully valid. The new arms are opt-in: emitting them on a network below protocol 27 invalidates the transaction.
+`ADDRESS_V2` is the default arm: simulation requests it, and `SorobanCredentials::forAddress()` / `forAddressCredentials()` build it. The legacy `ADDRESS` arm stays fully valid; use it on a network below protocol 27, where the newer arms invalidate the transaction — request it from simulation with `useUpgradedAuth: false` and build it with `forAddressLegacy()` / `forAddressCredentialsLegacy()`.
 
-All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry::sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry. Use `$credentials->getAddressCredentials()` to read the inner `SorobanAddressCredentials` of any address arm (it returns `null` only for source-account credentials), and `$credentials->getCredentialType()` / `$credentials->isSourceAccount()` to inspect the arm. Factories `SorobanCredentials::forAddressCredentialsV2()` and `SorobanCredentials::forAddressWithDelegates()` build the new arms directly.
+All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry::sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry. Use `$credentials->getAddressCredentials()` to read the inner `SorobanAddressCredentials` of any address arm (it returns `null` only for source-account credentials), and `$credentials->getCredentialType()` / `$credentials->isSourceAccount()` to inspect the arm. Factories: `SorobanCredentials::forAddress()` / `forAddressCredentials()` build `ADDRESS_V2` (as does the explicit `forAddressCredentialsV2()`), `forAddressLegacy()` / `forAddressCredentialsLegacy()` build legacy `ADDRESS`, and `forAddressWithDelegates()` builds the delegated arm.
 
-#### Requesting V2 Entries from Simulation
+#### V2 Entries from Simulation
 
-Set `useUpgradedAuth` to request `ADDRESS_V2` credential arms in the simulation response. The flag is honored only on RPC servers that support it and only in recording mode: `authMode` "record" or "record_allow_nonroot", or `authMode` unset on a transaction without attached auth entries — the RPC then defaults to recording, as in the examples below. RPC servers without support silently ignore it and return legacy `ADDRESS` entries — detect support by inspecting the credential arm of the returned entries, never by expecting an error. When `useUpgradedAuth` is `false` (the default), the key is omitted from the JSON-RPC params entirely.
+Simulation requests `ADDRESS_V2` credential arms by default (`useUpgradedAuth` is `true` on `MethodOptions` and `SimulateTransactionRequest`, and the key is always sent in the JSON-RPC params). The flag is honored only on RPC servers that support it and only in recording mode: `authMode` "record" or "record_allow_nonroot", or `authMode` unset on a transaction without attached auth entries — the RPC then defaults to recording, as in the examples below. RPC servers without support silently ignore it and return legacy `ADDRESS` entries — detect support by inspecting the credential arm of the returned entries, never by expecting an error. Set `useUpgradedAuth` to `false` to request legacy `ADDRESS` entries, for example on a network below protocol 27.
 
 ```php
 <?php
-use Soneso\StellarSDK\Soroban\Contract\MethodOptions;
 use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 
-// Contract client: opt in via MethodOptions
+// Contract client: ADDRESS_V2 entries are requested by default
 $tx = $client->buildInvokeMethodTx(
     name: 'swap',
     args: $args,
-    methodOptions: new MethodOptions(useUpgradedAuth: true),
 );
 
 // Detect whether the RPC honored the flag
@@ -640,8 +638,8 @@ foreach ($entries as $entry) {
     }
 }
 
-// Low-level: opt in on the simulate request
-$request = new SimulateTransactionRequest($transaction, useUpgradedAuth: true);
+// Low-level: request legacy ADDRESS entries on the simulate request
+$request = new SimulateTransactionRequest($transaction, useUpgradedAuth: false);
 $response = $server->simulateTransaction($request);
 ```
 
@@ -723,7 +721,7 @@ $delegated->sign(
 
 `SorobanDelegateDescriptor` supports nesting via `nestedDelegates` and accepts a pre-built `signature` (default void) for nodes signed externally, such as contract addresses.
 
-`SorobanCredentials::forAddressCredentialsV2` and the delegated arms are built client-side: by default simulation returns legacy `ADDRESS` entries (set `useUpgradedAuth` to request `ADDRESS_V2` from a supporting RPC), and `WITH_DELEGATES` entries are never returned by simulation, so the V2 and `WITH_DELEGATES` arms are assembled and submitted at the `SorobanServer` level.
+`WITH_DELEGATES` entries are never returned by simulation, so the delegated arm is always assembled client-side and submitted at the `SorobanServer` level. `ADDRESS_V2` entries come from a supporting RPC by default (`useUpgradedAuth`), or client-side from `SorobanCredentials::forAddressCredentialsV2` when converting an entry in place.
 
 After attaching the signed entries with `$transaction->setSorobanAuth(...)`, re-simulate in enforcing mode before submitting. The first (recording) simulation does not run the authorizing account's `__check_auth`, so it understates the resource fee and — for a custom (contract) account whose `__check_auth` reads storage or calls into delegates — omits the footprint entries that authorization touches. Re-simulate with the signed entry attached and `authMode` set to `enforce` (`new SimulateTransactionRequest(transaction: $transaction, authMode: 'enforce')`), then apply the returned data before signing: `$transaction->setSorobanTransactionData($response->getTransactionData())` and `$transaction->addResourceFee($response->getMinResourceFee())`. The already-signed auth is preserved.
 
@@ -731,7 +729,7 @@ When converting a simulated `ADDRESS` entry to `ADDRESS_V2` in place, reuse its 
 
 #### Source Compatibility
 
-The `SorobanCredentials` constructor's first parameter was generalized to `int|SorobanAddressCredentials` and renamed. Positional callers passing a `SorobanAddressCredentials` are unaffected, but a caller using the named argument `new SorobanCredentials(addressCredentials: ...)` must switch to positional or use the `SorobanCredentials::forAddressCredentials(...)` factory. The XDR types (`XdrSorobanCredentialsType`, `XdrEnvelopeType`, `XdrHashIDPreimage`) gain new cases for the V2 and delegated arms; any exhaustive `match`/`switch` over them needs a `default` arm.
+The `SorobanCredentials` constructor's first parameter was generalized to `int|SorobanAddressCredentials` and renamed. Positional callers passing a `SorobanAddressCredentials` are unaffected, but a caller using the named argument `new SorobanCredentials(addressCredentials: ...)` must switch to positional or use the `SorobanCredentials::forAddressCredentialsLegacy(...)` factory. The XDR types (`XdrSorobanCredentialsType`, `XdrEnvelopeType`, `XdrHashIDPreimage`) gain new cases for the V2 and delegated arms; any exhaustive `match`/`switch` over them needs a `default` arm.
 
 ## Type Conversions
 

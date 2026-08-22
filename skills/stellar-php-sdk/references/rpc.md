@@ -222,7 +222,7 @@ if ($simResponse->error === null) {
 }
 ```
 
-Protocol 27 (CAP-71): pass `useUpgradedAuth: true` to request `ADDRESS_V2` credential entries (`new SimulateTransactionRequest($tx, useUpgradedAuth: true)`). The `useUpgradedAuth` key is omitted from the JSON-RPC params when false (the default). RPCs without protocol 27 support silently ignore it and return legacy `ADDRESS` entries — detect support by inspecting the returned credential arm, not by expecting an error.
+Protocol 27 (CAP-71): simulation requests `ADDRESS_V2` credential entries by default (`useUpgradedAuth` is `true`); pass `false` to request legacy `ADDRESS` entries (`new SimulateTransactionRequest($tx, useUpgradedAuth: false)`). The `useUpgradedAuth` key is always sent in the JSON-RPC params. RPCs without protocol 27 support silently ignore it and return legacy `ADDRESS` entries — detect support by inspecting the returned credential arm, not by expecting an error.
 
 ### sendTransaction
 
