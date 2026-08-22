@@ -120,12 +120,17 @@ $client = SorobanClient::deployFromExternalRef(new DeployFromExternalRefRequest(
 ));
 ```
 
+`deployFromExternalRef` builds the `CREATE_CONTRACT_V2` host function form (empty
+constructor-argument vector when no args are given), as `deploy()` does.
+
 Without SorobanClient, build the create operation directly with
 `CreateContractFromExternalRefHostFunction(Address $address, Address $executableOwner,
 string $tag, ?string $salt = null)` in an `InvokeHostFunctionOperationBuilder` and
 submit it like any `InvokeHostFunctionOperation`.
 `CreateContractFromExternalRefWithConstructorHostFunction` adds `array $constructorArgs`
-after the tag. Envelope parsing returns these classes for external-ref create operations.
+after the tag. Both builders reject an executable owner that is not a contract address
+(constructor, `setExecutableOwner()`, and `toXdr()`). Envelope parsing returns these
+classes for external-ref create operations.
 
 `Address::deriveContractId(Address $deployer, string $salt, Network $network)` returns
 the contract id ("C...") a deployment creates. The id derives from deployer, salt and

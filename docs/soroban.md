@@ -416,7 +416,9 @@ $client = SorobanClient::deployFromExternalRef(new DeployFromExternalRefRequest(
 ));
 ```
 
-`constructorArgs` and `salt` work as in `DeployRequest`. The contract spec is loaded
+`constructorArgs` and `salt` work as in `DeployRequest`; the create operation uses the
+`CREATE_CONTRACT_V2` host function form with an empty constructor-argument vector when
+`constructorArgs` is not given, as `deploy()` does. The contract spec is loaded
 from the resolved wasm before submission and the returned client is ready to invoke.
 
 ### Deriving a Contract Id Before Deploying
@@ -1335,8 +1337,11 @@ $createOp = (new InvokeHostFunctionOperationBuilder(
 
 Deploy a contract instance that runs the wasm named by a CAP-85 external reference
 (see External Reference Executables above). The owner contract already holds the tag
-entry, so there is no upload step. For the one-call variant, see "Deployment from an
-External Reference (Protocol 28)" under Installing and Deploying.
+entry, so there is no upload step. The executable owner must be a contract address —
+only a contract can hold the tag entry; the constructor, setExecutableOwner(), and
+toXdr() of both builder classes reject any other address type. For the one-call
+variant, see "Deployment from an External Reference (Protocol 28)" under Installing
+and Deploying.
 
 ```php
 <?php
