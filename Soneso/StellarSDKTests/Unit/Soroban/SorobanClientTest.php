@@ -19,7 +19,6 @@ use Psr\Log\NullLogger;
 use ReflectionClass;
 use ReflectionProperty;
 use Soneso\StellarSDK\AbstractTransaction;
-use Soneso\StellarSDK\CreateContractFromExternalRefHostFunction;
 use Soneso\StellarSDK\CreateContractFromExternalRefWithConstructorHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\HostFunction;
@@ -568,7 +567,7 @@ class SorobanClientTest extends TestCase
         $this->assertEquals(1, $hostFunction->getConstructorArgs()[0]->u32);
     }
 
-    public function testDeployFromExternalRefWithoutConstructorArgsUsesPlainHostFunction(): void
+    public function testDeployFromExternalRefWithoutConstructorArgsUsesV2WithEmptyVector(): void
     {
         $wasmHash = hash('sha256', 'test-wasm', true);
         $byteCode = $this->createContractByteCode('hello');
@@ -602,11 +601,51 @@ class SorobanClientTest extends TestCase
         $this->assertSame(0, $mock->count());
 
         $hostFunction = $this->capturedCreateHostFunction($history);
-        $this->assertInstanceOf(CreateContractFromExternalRefHostFunction::class, $hostFunction);
+        $this->assertInstanceOf(CreateContractFromExternalRefWithConstructorHostFunction::class, $hostFunction);
         $this->assertSame(self::TEST_ACCOUNT_ID, $hostFunction->getAddress()->accountId);
         $this->assertSame(self::TEST_OWNER_ID_HEX, $hostFunction->getExecutableOwner()->contractId);
         $this->assertSame(self::TEST_EXECUTABLE_TAG, $hostFunction->getTag());
         $this->assertSame(32, strlen($hostFunction->getSalt()));
+        $this->assertCount(0, $hostFunction->getConstructorArgs());
+    }
+
+    public function testDeployFromExternalRefWithEmptyConstructorArgsUsesV2WithEmptyVector(): void
+    {
+        $wasmHash = hash('sha256', 'test-wasm', true);
+        $byteCode = $this->createContractByteCode('hello');
+        $createdContract = Address::fromContractId(StrKey::decodeContractIdHex(self::TEST_CONTRACT_ID))->toXdrSCVal();
+
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->executableTagEntryData(
+                self::TEST_OWNER_ID_HEX, self::TEST_EXECUTABLE_TAG, XdrSCVal::forBytes($wasmHash))),
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $byteCode)),
+            $this->accountEntryResponse(),
+            $this->simulateResponse(XdrSCVal::forVoid(), true),
+            $this->sendTransactionResponse(),
+            $this->getTransactionRpcResponse(GetTransactionResponse::STATUS_SUCCESS, $createdContract),
+        ]);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
+
+        $deployRequest = new DeployFromExternalRefRequest(
+            rpcUrl: self::TEST_RPC_URL,
+            network: $this->testNetwork,
+            sourceAccountKeyPair: $keyPair,
+            executableOwner: Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            tag: self::TEST_EXECUTABLE_TAG,
+            constructorArgs: [],
+            server: $server,
+        );
+
+        $client = SorobanClient::deployFromExternalRef($deployRequest);
+
+        $this->assertSame(self::TEST_CONTRACT_ID, $client->getContractId());
+        $this->assertSame(0, $mock->count());
+
+        $hostFunction = $this->capturedCreateHostFunction($history);
+        $this->assertInstanceOf(CreateContractFromExternalRefWithConstructorHostFunction::class, $hostFunction);
+        $this->assertCount(0, $hostFunction->getConstructorArgs());
     }
 
     public function testDeployFromExternalRefThrowsWhenTagEntryMissing(): void

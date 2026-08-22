@@ -8,7 +8,6 @@ namespace Soneso\StellarSDK\Soroban\Contract;
 
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
-use Soneso\StellarSDK\CreateContractFromExternalRefHostFunction;
 use Soneso\StellarSDK\CreateContractFromExternalRefWithConstructorHostFunction;
 use Soneso\StellarSDK\CreateContractWithConstructorHostFunction;
 use Soneso\StellarSDK\Crypto\StrKey;
@@ -191,6 +190,11 @@ class SorobanClient
      * the transaction is built, so an unresolvable reference fails here instead of
      * on-chain.
      *
+     * The create operation uses the CREATE_CONTRACT_V2 host function form with the given
+     * constructor arguments (an empty vector when none are given), as deploy() does. For
+     * the plain CREATE_CONTRACT form, build the operation directly with
+     * CreateContractFromExternalRefHostFunction.
+     *
      * @param DeployFromExternalRefRequest $deployRequest Deployment parameters including the
      * executable owner, the tag, constructor args, and salt
      * @return SorobanClient The client for the newly deployed contract
@@ -228,21 +232,12 @@ class SorobanClient
         }
 
         $sourceAddress = Address::fromAccountId($deployRequest->sourceAccountKeyPair->getAccountId());
-        $constructorArgs = $deployRequest->constructorArgs ?? [];
-        if (count($constructorArgs) > 0) {
-            $createContractHostFunction = new CreateContractFromExternalRefWithConstructorHostFunction(
-                address: $sourceAddress,
-                executableOwner: $deployRequest->executableOwner,
-                tag: $deployRequest->tag,
-                constructorArgs: $constructorArgs,
-                salt: $deployRequest->salt);
-        } else {
-            $createContractHostFunction = new CreateContractFromExternalRefHostFunction(
-                address: $sourceAddress,
-                executableOwner: $deployRequest->executableOwner,
-                tag: $deployRequest->tag,
-                salt: $deployRequest->salt);
-        }
+        $createContractHostFunction = new CreateContractFromExternalRefWithConstructorHostFunction(
+            address: $sourceAddress,
+            executableOwner: $deployRequest->executableOwner,
+            tag: $deployRequest->tag,
+            constructorArgs: $deployRequest->constructorArgs ?? [],
+            salt: $deployRequest->salt);
 
         $builder = new InvokeHostFunctionOperationBuilder($createContractHostFunction);
         $op = $builder->build();
