@@ -28,6 +28,7 @@ use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionOp;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Exception;
+use InvalidArgumentException;
 
 /**
  * Unit tests for Soroban Host Function classes
@@ -598,6 +599,128 @@ class HostFunctionTest extends TestCase
 
         $this->assertSame($tag, $decoded->getTag());
         $this->assertEquals(base64_encode($original->toXdr()->encode()), base64_encode($decoded->toXdr()->encode()));
+    }
+
+    public function testCreateContractFromExternalRefRejectsNonContractOwner(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/only a contract can hold the executable tag entry/');
+
+        new CreateContractFromExternalRefHostFunction(
+            Address::fromAccountId(self::TEST_ACCOUNT_ID),
+            Address::fromAccountId(self::TEST_ISSUER_ID),
+            "token-v1",
+        );
+    }
+
+    public function testCreateContractFromExternalRefWithConstructorRejectsNonContractOwner(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/only a contract can hold the executable tag entry/');
+
+        new CreateContractFromExternalRefWithConstructorHostFunction(
+            Address::fromAccountId(self::TEST_ACCOUNT_ID),
+            Address::fromAccountId(self::TEST_ISSUER_ID),
+            "token-v1",
+            [XdrSCVal::forU32(7)],
+        );
+    }
+
+    public function testCreateContractFromExternalRefSetterRejectsNonContractOwner(): void
+    {
+        $hostFunction = new CreateContractFromExternalRefHostFunction(
+            Address::fromAccountId(self::TEST_ACCOUNT_ID),
+            Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            "token-v1",
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/only a contract can hold the executable tag entry/');
+
+        $hostFunction->setExecutableOwner(Address::fromAccountId(self::TEST_ISSUER_ID));
+    }
+
+    public function testCreateContractFromExternalRefWithConstructorSetterRejectsNonContractOwner(): void
+    {
+        $hostFunction = new CreateContractFromExternalRefWithConstructorHostFunction(
+            Address::fromAccountId(self::TEST_ACCOUNT_ID),
+            Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            "token-v1",
+            [],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/only a contract can hold the executable tag entry/');
+
+        $hostFunction->setExecutableOwner(Address::fromAccountId(self::TEST_ISSUER_ID));
+    }
+
+    public function testCreateContractFromExternalRefToXdrRejectsDirectlyAssignedNonContractOwner(): void
+    {
+        $hostFunction = new CreateContractFromExternalRefHostFunction(
+            Address::fromAccountId(self::TEST_ACCOUNT_ID),
+            Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            "token-v1",
+        );
+        // The public property bypasses the setter; toXdr() must still reject.
+        $hostFunction->executableOwner = Address::fromAccountId(self::TEST_ISSUER_ID);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/only a contract can hold the executable tag entry/');
+
+        $hostFunction->toXdr();
+    }
+
+    public function testCreateContractFromExternalRefWithConstructorToXdrRejectsDirectlyAssignedNonContractOwner(): void
+    {
+        $hostFunction = new CreateContractFromExternalRefWithConstructorHostFunction(
+            Address::fromAccountId(self::TEST_ACCOUNT_ID),
+            Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            "token-v1",
+            [],
+        );
+        // The public property bypasses the setter; toXdr() must still reject.
+        $hostFunction->executableOwner = Address::fromAccountId(self::TEST_ISSUER_ID);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/only a contract can hold the executable tag entry/');
+
+        $hostFunction->toXdr();
+    }
+
+    public function testCreateContractFromExternalRefFromXdrRejectsNonContractOwner(): void
+    {
+        // The XDR layer serializes any owner address type; the wrapper refuses to carry one.
+        $xdr = XdrHostFunction::forCreatingContractWithExternalRef(
+            Address::fromAccountId(self::TEST_ACCOUNT_ID)->toXdr(),
+            Address::fromAccountId(self::TEST_ISSUER_ID)->toXdr(),
+            "token-v1",
+            str_repeat("\x11", 32),
+        );
+        $decodedXdr = XdrHostFunction::decode(new XdrBuffer($xdr->encode()));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/only a contract can hold the executable tag entry/');
+
+        CreateContractFromExternalRefHostFunction::fromXdr($decodedXdr);
+    }
+
+    public function testCreateContractFromExternalRefWithConstructorFromXdrRejectsNonContractOwner(): void
+    {
+        // The XDR layer serializes any owner address type; the wrapper refuses to carry one.
+        $xdr = XdrHostFunction::forCreatingContractV2WithExternalRef(
+            Address::fromAccountId(self::TEST_ACCOUNT_ID)->toXdr(),
+            Address::fromAccountId(self::TEST_ISSUER_ID)->toXdr(),
+            "token-v1",
+            str_repeat("\x11", 32),
+            [XdrSCVal::forU32(7)],
+        );
+        $decodedXdr = XdrHostFunction::decode(new XdrBuffer($xdr->encode()));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/only a contract can hold the executable tag entry/');
+
+        CreateContractFromExternalRefWithConstructorHostFunction::fromXdr($decodedXdr);
     }
 
     public function testFromXdrOperationParsesExternalRefCreate(): void

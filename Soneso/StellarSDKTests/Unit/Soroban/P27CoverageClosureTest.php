@@ -194,7 +194,7 @@ class P27CoverageClosureTest extends TestCase
         $addressCreds = new SorobanAddressCredentials($address, 1, 100, XdrSCVal::forVoid());
 
         $this->assertFalse(SorobanCredentials::forSourceAccount()->isAddressBased());
-        $this->assertTrue(SorobanCredentials::forAddressCredentials($addressCreds)->isAddressBased());
+        $this->assertTrue(SorobanCredentials::forAddressCredentialsLegacy($addressCreds)->isAddressBased());
         $this->assertTrue(SorobanCredentials::forAddressCredentialsV2($addressCreds)->isAddressBased());
 
         $withDel = new SorobanAddressCredentialsWithDelegates($addressCreds, []);
@@ -593,15 +593,15 @@ class P27CoverageClosureTest extends TestCase
     // =========================================================================
 
     /**
-     * MethodOptions useUpgradedAuth property defaults to false and can be set via constructor.
+     * MethodOptions useUpgradedAuth property defaults to true and can be disabled via constructor.
      */
     public function testMethodOptionsUseUpgradedAuthPropertyDefault(): void
     {
         $default = new MethodOptions();
-        $this->assertFalse($default->useUpgradedAuth);
+        $this->assertTrue($default->useUpgradedAuth);
 
-        $enabled = new MethodOptions(useUpgradedAuth: true);
-        $this->assertTrue($enabled->useUpgradedAuth);
+        $legacy = new MethodOptions(useUpgradedAuth: false);
+        $this->assertFalse($legacy->useUpgradedAuth);
     }
 
     // =========================================================================
@@ -616,7 +616,7 @@ class P27CoverageClosureTest extends TestCase
         $topKp    = KeyPair::random();
         $address  = Address::fromAccountId($topKp->getAccountId());
         $addrCreds = new SorobanAddressCredentials($address, 1, 100, XdrSCVal::forVoid());
-        $creds     = SorobanCredentials::forAddressCredentials($addrCreds);
+        $creds     = SorobanCredentials::forAddressCredentialsLegacy($addrCreds);
         $entry     = new SorobanAuthorizationEntry($creds, $this->makeInvocation());
 
         $tx = $this->buildAssembledTransactionWithAuthEntries([$entry], KeyPair::fromSeed(self::TEST_SECRET));
@@ -726,7 +726,7 @@ class P27CoverageClosureTest extends TestCase
         $signerKp     = KeyPair::random();
         $address      = Address::fromAccountId($signerKp->getAccountId());
         $addressCreds = new SorobanAddressCredentials($address, 1, 100, XdrSCVal::forVec([XdrSCVal::forVoid()]));
-        $creds        = SorobanCredentials::forAddressCredentials($addressCreds);
+        $creds        = SorobanCredentials::forAddressCredentialsLegacy($addressCreds);
         $entry        = new SorobanAuthorizationEntry($creds, $this->makeInvocation());
 
         $tx = $this->buildAssembledTransactionWithAuthEntries([$entry], KeyPair::fromSeed(self::TEST_SECRET));
@@ -995,7 +995,7 @@ class P27CoverageClosureTest extends TestCase
         $address      = Address::fromAccountId($signerKp->getAccountId());
         $addressCreds = new SorobanAddressCredentials($address, 1, 100, XdrSCVal::forVoid());
         $validEntry   = new SorobanAuthorizationEntry(
-            SorobanCredentials::forAddressCredentials($addressCreds),
+            SorobanCredentials::forAddressCredentialsLegacy($addressCreds),
             $this->makeInvocation(),
         );
         $sourceEntry = new SorobanAuthorizationEntry(
@@ -1262,7 +1262,7 @@ class P27CoverageClosureTest extends TestCase
         $signerAddress  = Address::fromAccountId($signerKp->getAccountId());
         $signerCreds    = new SorobanAddressCredentials($signerAddress, 2, 100, XdrSCVal::forVoid());
         $signerEntry    = new SorobanAuthorizationEntry(
-            SorobanCredentials::forAddressCredentials($signerCreds),
+            SorobanCredentials::forAddressCredentialsLegacy($signerCreds),
             $this->makeInvocation(),
         );
 
@@ -1333,7 +1333,7 @@ class P27CoverageClosureTest extends TestCase
         $signerAddress = Address::fromAccountId($signerKp->getAccountId());
         $signerCreds   = new SorobanAddressCredentials($signerAddress, 2, 100, XdrSCVal::forVoid());
         $signerEntry   = new SorobanAuthorizationEntry(
-            SorobanCredentials::forAddressCredentials($signerCreds),
+            SorobanCredentials::forAddressCredentialsLegacy($signerCreds),
             $this->makeInvocation(),
         );
 
