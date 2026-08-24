@@ -24,7 +24,7 @@ use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 
 // 1. Authenticate with the anchor via SEP-10
 $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
-$userKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
+$userKeyPair = KeyPair::fromSeed("SAP2SSCIWNH2RWIP7Q5TERS26ZORQGZJOGJJF57EKQWZ2NJMJDR233CD");
 $jwtToken = $webAuth->jwtToken($userKeyPair->getAccountId(), [$userKeyPair]);
 
 // 2. Create transfer service and request deposit
@@ -639,7 +639,6 @@ use Soneso\StellarSDK\SEP\TransferServerService\AuthenticationRequiredException;
 use Soneso\StellarSDK\SEP\TransferServerService\CustomerInformationNeededException;
 use Soneso\StellarSDK\SEP\TransferServerService\CustomerInformationStatusException;
 use GuzzleHttp\Exception\GuzzleException;
-use Exception;
 
 try {
     $transferService = TransferServerService::fromDomain("testanchor.stellar.org");
@@ -683,7 +682,7 @@ try {
     // Network/HTTP errors
     echo "Request failed: " . $e->getMessage() . PHP_EOL;
     
-} catch (Exception $e) {
+} catch (\Exception $e) {
     // Domain not found, transfer server not available, etc.
     echo "Error: " . $e->getMessage() . PHP_EOL;
 }
@@ -737,7 +736,7 @@ use Soneso\StellarSDK\SEP\TransferServerService\CustomerInformationNeededExcepti
 use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 
 $anchorDomain = "testanchor.stellar.org";
-$userKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
+$userKeyPair = KeyPair::fromSeed("SAP2SSCIWNH2RWIP7Q5TERS26ZORQGZJOGJJF57EKQWZ2NJMJDR233CD");
 
 // 1. Authenticate via SEP-10
 $webAuth = WebAuth::fromDomain($anchorDomain, Network::testnet());

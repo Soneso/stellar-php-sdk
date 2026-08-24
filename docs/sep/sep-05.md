@@ -318,7 +318,6 @@ Convert a space-separated word string back to a Mnemonic object:
 ```php
 <?php
 
-use Exception;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\SEP\Derivation\Mnemonic;
 
@@ -330,7 +329,7 @@ try {
     
     $keyPair = KeyPair::fromMnemonic($mnemonic, 0);
     echo "Recovered account: " . $keyPair->getAccountId() . PHP_EOL;
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo "Invalid mnemonic: " . $e->getMessage() . PHP_EOL;
 }
 ```
@@ -342,7 +341,6 @@ The SDK validates mnemonics and entropy according to BIP-39 standards:
 ```php
 <?php
 
-use Exception;
 use Soneso\StellarSDK\SEP\Derivation\Mnemonic;
 use Soneso\StellarSDK\SEP\Derivation\WordList;
 use Soneso\StellarSDK\SEP\Derivation\BIP39;
@@ -350,7 +348,7 @@ use Soneso\StellarSDK\SEP\Derivation\BIP39;
 // Invalid word in mnemonic (must have 12+ words to trigger word validation)
 try {
     $mnemonic = Mnemonic::mnemonicFromWords('invalid words that are not in the wordlist and need more here');
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo "Invalid words: " . $e->getMessage() . PHP_EOL;
     // Output: Invalid/unknown word at position 1
 }
@@ -358,7 +356,7 @@ try {
 // Wrong word count
 try {
     $mnemonic = Mnemonic::mnemonicFromWords('one two three');
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo "Invalid word count: " . $e->getMessage() . PHP_EOL;
 }
 
@@ -369,7 +367,7 @@ try {
         WordList::LANGUAGE_ENGLISH,
         true  // Enable checksum verification
     );
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo "Checksum failed: " . $e->getMessage() . PHP_EOL;
 }
 
@@ -377,7 +375,7 @@ try {
 try {
     $badEntropy = 'deadbeef'; // Only 32 bits, need 128+ bits
     $mnemonic = BIP39::Entropy($badEntropy);
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo "Entropy error: " . $e->getMessage() . PHP_EOL;
     // Output: Invalid entropy length
 }
@@ -385,7 +383,7 @@ try {
 // Invalid word count  
 try {
     $mnemonic = Mnemonic::generate(13); // Not divisible by 3
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo "Word count error: " . $e->getMessage() . PHP_EOL;
     // Output: Words count must be generated in multiples of 3
 }
@@ -393,7 +391,7 @@ try {
 // Unsupported language
 try {
     $mnemonic = Mnemonic::generate12WordsMnemonic('klingon');
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo "Language error: " . $e->getMessage() . PHP_EOL;
 }
 ```

@@ -30,7 +30,7 @@
 
 ### Account ID (G...)
 
-```php
+```text
 StrKey::isValidAccountId(string $accountId): bool
 StrKey::encodeAccountId(string $data): string       // raw 32 bytes → G...
 StrKey::decodeAccountId(string $accountId): string  // G... → raw 32 bytes
@@ -38,7 +38,7 @@ StrKey::decodeAccountId(string $accountId): string  // G... → raw 32 bytes
 
 ### Secret seed (S...)
 
-```php
+```text
 StrKey::isValidSeed(string $seed): bool
 StrKey::encodeSeed(string $data): string   // raw 32 bytes → S...
 StrKey::decodeSeed(string $seed): string   // S... → raw 32 bytes
@@ -46,7 +46,7 @@ StrKey::decodeSeed(string $seed): string   // S... → raw 32 bytes
 
 ### Muxed account ID (M...)
 
-```php
+```text
 StrKey::isValidMuxedAccountId(string $muxedAccountId): bool
 StrKey::encodeMuxedAccountId(string $data): string          // raw 40 bytes → M...
 StrKey::decodeMuxedAccountId(string $muxedAccountId): string // M... → raw 40 bytes
@@ -54,7 +54,7 @@ StrKey::decodeMuxedAccountId(string $muxedAccountId): string // M... → raw 40 
 
 ### Pre-auth TX (T...)
 
-```php
+```text
 StrKey::isValidPreAuthTx(string $preAuth): bool
 StrKey::encodePreAuthTx(string $data): string    // raw 32 bytes → T...
 StrKey::decodePreAuthTx(string $preAuth): string // T... → raw 32 bytes
@@ -62,7 +62,7 @@ StrKey::decodePreAuthTx(string $preAuth): string // T... → raw 32 bytes
 
 ### SHA-256 hash (X...)
 
-```php
+```text
 StrKey::isValidSha256Hash(string $hash): bool
 StrKey::encodeSha256Hash(string $data): string  // raw 32 bytes → X...
 StrKey::decodeSha256Hash(string $hash): string  // X... → raw 32 bytes
@@ -70,7 +70,7 @@ StrKey::decodeSha256Hash(string $hash): string  // X... → raw 32 bytes
 
 ### Signed payload (P...)
 
-```php
+```text
 // Higher-level: accepts SignedPayloadSigner or XdrSignedPayload
 StrKey::encodeSignedPayload(SignedPayloadSigner $signer): string
 StrKey::decodeSignedPayload(string $signedPayload): SignedPayloadSigner
@@ -82,7 +82,7 @@ StrKey::decodeXdrSignedPayload(string $signedPayload): XdrSignedPayload
 
 ### Contract ID (C...)
 
-```php
+```text
 StrKey::isValidContractId(string $contractId): bool
 StrKey::encodeContractId(string $data): string         // raw 32 bytes → C...
 StrKey::encodeContractIdHex(string $contractId): string // hex string → C...
@@ -92,7 +92,7 @@ StrKey::decodeContractIdHex(string $contractId): string // C... → hex string
 
 ### Liquidity pool ID (L...)
 
-```php
+```text
 StrKey::isValidLiquidityPoolId(string $liquidityPoolId): bool
 StrKey::encodeLiquidityPoolId(string $data): string              // raw 32 bytes → L...
 StrKey::encodeLiquidityPoolIdHex(string $liquidityPoolId): string // hex string → L...
@@ -102,7 +102,7 @@ StrKey::decodeLiquidityPoolIdHex(string $liquidityPoolId): string // L... → he
 
 ### Claimable balance ID (B...)
 
-```php
+```text
 StrKey::isValidClaimableBalanceId(string $claimableBalanceId): bool
 StrKey::encodeClaimableBalanceId(string $data): string              // raw bytes → B...
 StrKey::encodeClaimableBalanceIdHex(string $claimableBalanceId): string // hex string → B...
@@ -112,10 +112,10 @@ StrKey::decodeClaimableBalanceIdHex(string $claimableBalanceId): string // B... 
 
 ### Key derivation
 
-```php
+```text
 StrKey::accountIdFromSeed(string $seed): string           // S... → G...
 StrKey::accountIdFromPrivateKey(string $privateKey): string // raw 32-byte key → G...
-StrKey::publicKeyFromPrivateKey(string $privateKey): string // raw 32-byte key → raw 32-byte key
+StrKey::publicKeyFromPrivateKey($privateKey)                // raw 32-byte key → raw 32-byte key (untyped in source)
 ```
 
 ---
@@ -199,20 +199,20 @@ The `MuxedAccount` class is the preferred way to work with muxed accounts. See [
 
 use Soneso\StellarSDK\MuxedAccount;
 
-$gAddress = 'GAQAA5L65LSYBER7AEES5KJEK32VGMFQ7NQQCC3OHSNNLXK7774VSSRL';
+$gAddress = 'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ';
 
 // Create muxed account: G-address + 64-bit ID
 $muxed = new MuxedAccount($gAddress, 1234567890);
-$mAddress = $muxed->getAccountId(); // M...
+$mAddress = $muxed->getAccountId(); // MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAETFQC2K6JE
 
 echo $muxed->getEd25519AccountId() . PHP_EOL; // G... (underlying on-chain account)
 echo $muxed->getId() . PHP_EOL;               // 1234567890 (sub-account ID)
 echo $mAddress . PHP_EOL;                     // M... (encoded muxed address)
 
 // Parse existing M-address
-$parsed = MuxedAccount::fromAccountId('MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ');
-echo $parsed->getEd25519AccountId() . PHP_EOL; // G...
-echo $parsed->getId() . PHP_EOL;               // 1234 (or whatever the embedded ID is)
+$parsed = MuxedAccount::fromAccountId('MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAETFQC2K6JE');
+echo $parsed->getEd25519AccountId() . PHP_EOL; // GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ
+echo $parsed->getId() . PHP_EOL;               // 1234567890 (the embedded sub-account ID)
 
 // fromAccountId() accepts both G... and M...
 $plain = MuxedAccount::fromAccountId($gAddress); // wraps as non-muxed, getId() returns null
@@ -220,7 +220,7 @@ $plain = MuxedAccount::fromAccountId($gAddress); // wraps as non-muxed, getId() 
 
 ### Low-level: StrKey methods for muxed accounts
 
-The raw binary format for a muxed account is 40 bytes: 8-byte big-endian ID followed by 32-byte Ed25519 public key (in inverted byte order as XDR dictates). Use `MuxedAccount` instead of these unless you need direct binary manipulation.
+The raw binary format for a muxed account is 40 bytes: the 32-byte Ed25519 public key followed by the 8-byte big-endian ID. Use `MuxedAccount` instead of these unless you need direct binary manipulation.
 
 ```php
 <?php declare(strict_types=1);
@@ -256,12 +256,19 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
 
-$senderKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
+// getenv() answers false when the variable is unset, which fromSeed() would reject
+// with a TypeError rather than a message naming the missing configuration.
+$senderSeed = getenv('STELLAR_SECRET_SEED');
+if ($senderSeed === false) {
+    throw new \RuntimeException('STELLAR_SECRET_SEED is not set');
+}
+
+$senderKeyPair = KeyPair::fromSeed($senderSeed);
 $senderG       = $senderKeyPair->getAccountId(); // G...
 
 // Muxed source (sender, user ID 100) and destination (user ID 200)
 $muxedSource      = new MuxedAccount($senderG, 100);
-$destinationG     = 'GAQAA5L65LSYBER7AEES5KJEK32VGMFQ7NQQCC3OHSNNLXK7774VSSRL';
+$destinationG     = 'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ';
 $muxedDestination = new MuxedAccount($destinationG, 200);
 
 $sdk     = StellarSDK::getTestNetInstance();
@@ -354,7 +361,9 @@ var_dump($fromHex === $contractId); // bool(true)
 
 ## Signed payloads (P...)
 
-Signed payloads (CAP-40) combine an Ed25519 public key with 4–64 bytes of arbitrary payload data. Used for delegated signing where the signature covers both the transaction and additional application context.
+Signed payloads (CAP-40) combine an Ed25519 public key with 1–64 bytes of arbitrary payload data. Used for delegated signing where the signature covers both the transaction and additional application context.
+
+Both directions enforce SEP-23's framing; see [Signed payload framing](#signed-payload-framing-p).
 
 ### Using SignedPayloadSigner (high-level)
 
@@ -366,7 +375,7 @@ use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\SignedPayloadSigner;
 
 $keyPair = KeyPair::random();
-$payload = random_bytes(32); // 4–64 bytes
+$payload = random_bytes(32); // 1–64 bytes
 
 // Create from G-address string
 $signer  = SignedPayloadSigner::fromAccountId($keyPair->getAccountId(), $payload);
@@ -406,7 +415,7 @@ var_dump($reencoded === $encoded); // bool(true)
 
 ### SignedPayloadSigner factory methods
 
-```php
+```text
 // From G-address string (most common)
 $signer = SignedPayloadSigner::fromAccountId(string $accountId, string $payload): SignedPayloadSigner
 
@@ -481,6 +490,11 @@ var_dump($encoded === $claimableBalanceId); // bool(true)
 $hashOnly = '3f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a';
 $encoded  = StrKey::encodeClaimableBalanceIdHex($hashOnly);
 var_dump($encoded === $claimableBalanceId); // bool(true)
+
+// Encode from the 72-character id Horizon reports (4-byte discriminant prefix)
+$horizonId = '00000000' . $hashOnly;
+$encoded   = StrKey::encodeClaimableBalanceIdHex($horizonId);
+var_dump($encoded === $claimableBalanceId); // bool(true)
 ```
 
 ---
@@ -491,7 +505,7 @@ var_dump($encoded === $claimableBalanceId); // bool(true)
 
 ### Constructor
 
-```php
+```text
 // $ed25519AccountId must start with 'G' or throws InvalidArgumentException
 new MuxedAccount(string $ed25519AccountId, ?int $id = null)
 ```
@@ -501,7 +515,7 @@ new MuxedAccount(string $ed25519AccountId, ?int $id = null)
 
 ### Methods
 
-```php
+```text
 $muxed->getAccountId(): string          // M... (if muxed) or G... (if not muxed)
 $muxed->getEd25519AccountId(): string   // always the underlying G... address
 $muxed->getId(): ?int                   // 64-bit ID, or null if not muxed
@@ -511,7 +525,7 @@ $muxed->toXdr(): XdrMuxedAccount        // convert to XDR
 
 ### Static factory methods
 
-```php
+```text
 MuxedAccount::fromAccountId(string $accountId): MuxedAccount
 // Accepts G... or M...; throws InvalidArgumentException for other prefixes
 
@@ -561,10 +575,11 @@ $fromM = MuxedAccount::fromAccountId($mAddress);  // parses M-address, getId() =
 
 All `isValid*` methods return `bool` and never throw. All `decode*` and `encode*` methods throw `InvalidArgumentException` on invalid input.
 
+`isValid*` and `decode*` enforce the same rules: `isValidAccountId()` returns `true` exactly when `decodeAccountId()` returns a payload. Validate with `isValid*` when a rejection is an expected answer, and call `decode*` directly when it is an error.
+
 ```php
 <?php declare(strict_types=1);
 
-use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\MuxedAccount;
 
@@ -587,40 +602,103 @@ if (StrKey::isValidAccountId($input)) {
 try {
     // Wrong version byte (G prefix passed to decodeSeed)
     StrKey::decodeSeed('GBPXXOA5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL');
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo 'Wrong version byte: ' . $e->getMessage() . PHP_EOL;
 }
 
 try {
     // Invalid base32 characters (contains '0')
     StrKey::decodeAccountId('GBPXX0A5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL');
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo 'Invalid base32: ' . $e->getMessage() . PHP_EOL;
 }
 
 try {
     // Bad checksum (last character changed)
     StrKey::decodeAccountId('GBPXXOA5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVT');
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo 'Bad checksum: ' . $e->getMessage() . PHP_EOL;
 }
 
 try {
     // MuxedAccount constructor requires G prefix
     $muxed = new MuxedAccount('INVALID', 123);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo 'Bad muxed account: ' . $e->getMessage() . PHP_EOL;
 }
 ```
 
-### What isValid* rejects
+### Length rules
+
+Each type fixes the length of its encoded string and, except for the signed payload, the number of bytes it decodes to.
+
+| Prefix | Encoded length | Decoded payload |
+|--------|----------------|-----------------|
+| G, S, T, X, C, L | 56 characters | 32 bytes |
+| M | 69 characters | 40 bytes |
+| B | 58 characters | 33 bytes |
+| P | 69 to 165 characters | variable, see [Signed payload framing](#signed-payload-framing-p) |
+
+Empty, truncated and over-long input is rejected by this rule, with a message naming the length the type requires and the length given. No PHP warning precedes it:
+
+```text
+StrKey::decodeAccountId('')
+  InvalidArgumentException: G-strkey must be 56 characters long, 0 characters given
+
+StrKey::decodeMuxedAccountId('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ')
+  InvalidArgumentException: M-strkey must be 69 characters long, 56 characters given
+```
+
+### Signed payload framing (P...)
+
+The decoded data of a P-strkey is the 32-byte signer key, a 4-byte payload length prefix, and the payload padded with zero bytes to a multiple of 4 (RFC 4506 section 4.10 requires the fill to be zero). `decodeSignedPayload()`, `decodeXdrSignedPayload()` and `isValidSignedPayload()` require all three of:
+
+- a payload of 1 to 64 bytes. The XDR field is `opaque<64>`, and a zero-length payload has no strkey representation.
+- an exact fit, with nothing after the padding. Surplus bytes mean the length prefix understates the payload.
+- every padding byte zero.
+
+```text
+InvalidArgumentException: Signed payload padding must be zero, byte 0x01 found at offset 47
+InvalidArgumentException: Signed payload declares 10 payload bytes, but the decoded data is 52 bytes where 48 are expected
+InvalidArgumentException: Zero-length signed payload has no SEP-23 strkey representation
+```
+
+The zero-padding rule keeps one signer to one spelling, so validated P-addresses can be compared as strings (allowlists, deduplication, equality).
+
+### Claimable balance discriminant (B...)
+
+The first payload byte of a B-strkey is the `ClaimableBalanceID` union discriminant and must be 0, because `CLAIMABLE_BALANCE_ID_TYPE_V0` (0) is the only case the union defines. `decodeClaimableBalanceId()`, `decodeClaimableBalanceIdHex()` and `isValidClaimableBalanceId()` reject any other value:
+
+```text
+InvalidArgumentException: Claimable balance discriminant 0x01 is not defined: CLAIMABLE_BALANCE_ID_TYPE_V0 (0) is the only case ClaimableBalanceID has
+```
+
+### What decode* and isValid* reject
 
 - Wrong version byte (e.g., passing a G-address to `isValidSeed`)
 - Invalid base32 characters (only A–Z and 2–7 are valid; `0`, `1`, `8`, `9` are invalid)
 - Padding bytes (`=`) are not allowed in strkeys
-- Wrong string length for the key type
+- Wrong encoded string length for the key type
 - Invalid CRC-16 checksum
 - Trailing bits that are non-zero in the last encoded group
+- A decoded payload whose length is wrong for the key type
+- For B: a discriminant byte other than 0
+- For P: an empty or over-long payload, non-zero padding, or bytes after the padding
+
+### What encode* rejects
+
+- A payload whose length is wrong for the type: `encodeAccountId(random_bytes(20))` throws `G-strkey requires a payload of 32 bytes, 20 bytes given`. Encoding cannot produce a string that decoding would refuse.
+- `encodeClaimableBalanceId()` takes 33 bytes whose first byte is 0, the bare 32-byte balance hash, to which it prepends the zero discriminant, or the 36-byte XDR form (72 hex characters via `encodeClaimableBalanceIdHex()`, the id Horizon reports), whose 4-byte discriminant it narrows to one byte. A non-zero discriminant in any spelling is rejected.
+- `encodeSignedPayload()` and `encodeXdrSignedPayload()` require a payload of 1 to 64 bytes.
+- `encodeContractIdHex()`, `encodeLiquidityPoolIdHex()` and `encodeClaimableBalanceIdHex()` require hexadecimal input. An empty string, an odd number of characters, or a character outside `[0-9a-fA-F]` throws `InvalidArgumentException` naming the argument and the offending character:
+
+```text
+StrKey::encodeContractIdHex('nothex')
+  InvalidArgumentException: $contractId must contain only hexadecimal characters [0-9a-fA-F], "n" found at index 0
+
+StrKey::encodeContractIdHex('abc')
+  InvalidArgumentException: $contractId must be a hexadecimal string of even length, 3 characters given
+```
 
 ---
 
@@ -632,10 +710,10 @@ Each strkey type has a version byte that determines its prefix character:
 |--------|------|----------------------|
 | G | Account ID (Ed25519 public key) | 32 bytes |
 | S | Secret Seed (Ed25519 private key) | 32 bytes |
-| M | Muxed Account (ID + public key) | 40 bytes (8-byte ID + 32-byte key) |
+| M | Muxed Account (public key + ID) | 40 bytes (32-byte key + 8-byte big-endian ID) |
 | T | Pre-Auth TX hash | 32 bytes |
 | X | SHA-256 Hash signer | 32 bytes |
-| P | Signed Payload | 40–100 bytes (32-byte key + 4-byte length + 4–64 byte payload) |
+| P | Signed Payload | 40–100 bytes (32-byte key + 4-byte length + payload padded to 4–64 bytes) |
 | C | Contract ID | 32 bytes |
 | L | Liquidity Pool ID | 32 bytes |
 | B | Claimable Balance ID | 33 bytes (1-byte discriminant + 32-byte hash) |
@@ -647,31 +725,41 @@ Each strkey type has a version byte that determines its prefix character:
 **Passing M-address to functions expecting G-address:**
 
 ```php
+use Soneso\StellarSDK\MuxedAccount;
+
 // WRONG: MuxedAccount constructor requires G... not M...
-$muxed = new MuxedAccount('MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ', 42);
+$muxed = new MuxedAccount('MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAETFQC2K6JE', 42);
 // throws InvalidArgumentException: ed25519AccountId must start with G
 
 // CORRECT: extract the G-address first, or use fromAccountId()
-$muxed = MuxedAccount::fromAccountId('MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ');
+$muxed = MuxedAccount::fromAccountId('MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAETFQC2K6JE');
 // OR: supply only the underlying G-address
-$muxed = new MuxedAccount('GAQAA5L65LSYBER7AEES5KJEK32VGMFQ7NQQCC3OHSNNLXK7774VSSRL', 42);
+$muxed = new MuxedAccount('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ', 42);
 ```
 
 **Decoding with the wrong type method:**
 
 ```php
+use Soneso\StellarSDK\Crypto\StrKey;
+
 // WRONG: using decodeAccountId on a seed, or decodeSeed on an account ID
 StrKey::decodeSeed('GBPXXOA5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL'); // throws
 StrKey::decodeAccountId('SBGWKM3CD4IL47QN6X54N6Y33T3JDNVI6AIJ6CD5IM47HG3IG4O36XCU'); // throws
 
 // CORRECT: use the matching decode method for each type
 $raw = StrKey::decodeAccountId('GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ');
-$raw = StrKey::decodeSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34RFLWOEIA5MPI7YPQAAXX');
+$raw = StrKey::decodeSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
 ```
 
 **Requesting account with M-address instead of G-address:**
 
 ```php
+use Soneso\StellarSDK\MuxedAccount;
+use Soneso\StellarSDK\StellarSDK;
+
+$sdk = StellarSDK::getTestNetInstance();
+$muxed = MuxedAccount::fromAccountId('MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAETFQC2K6JE');
+
 // WRONG: Horizon requestAccount requires a G-address, not M...
 $sdk->requestAccount($muxed->getAccountId()); // passes M-address, will fail
 
@@ -716,6 +804,10 @@ $xdr = new XdrSignedPayload($keyPair->getPublicKey(), $payload);
 **SignedPayload payload size limits:**
 
 ```php
+use Soneso\StellarSDK\SignedPayloadSigner;
+
+$accountId = 'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ';
+
 // WRONG: empty payload or longer than 64 bytes
 $signer = SignedPayloadSigner::fromAccountId($accountId, "");               // throws InvalidArgumentException
 $signer = SignedPayloadSigner::fromAccountId($accountId, random_bytes(65)); // throws InvalidArgumentException
@@ -723,16 +815,3 @@ $signer = SignedPayloadSigner::fromAccountId($accountId, random_bytes(65)); // t
 // CORRECT: payload must be 1–64 bytes
 $signer = SignedPayloadSigner::fromAccountId($accountId, random_bytes(32));
 ```
-
-<!-- DISCREPANCIES AND NOTES:
-
-1. The SDK docs sep-23.md example for signed payload uses `$signer = SignedPayloadSigner::fromAccountId($keyPair->getAccountId(), $payload)` and states payload is "1-64 bytes". The SDK source (SignedPayloadSigner.php) enforces 1 to 64 bytes in the constructor, and StrKey enforces the same bounds when encoding and decoding P-strkeys.
-
-2. The claimable balance ID auto-discriminant behavior: `encodeClaimableBalanceId()` checks if input length equals ED25519_PUBLIC_KEY_LENGTH_BYTES (32) and if so, prepends a zero byte. This means passing raw 32 bytes or the full 33 bytes (with discriminant already present) both work. This is a subtle auto-prepend behavior documented in the pitfalls section.
-
-3. `MuxedAccount::toXdr()` is called twice per `getXdr()` call (see source: `getXdr()` assigns to $this->xdr but returns `$this->toXdr()` again — likely a minor source bug, but doesn't affect API usage). Not documented as it's an internal implementation detail.
-
-4. `SignedPayloadSigner::getSignerAccountId()` returns `XdrAccountID`, not a string. Callers must chain `->getAccountId()` to get the G... string. This is documented in the examples.
-
-5. The raw payload carries 1 to 64 bytes; SEP-23 pads it with zero bytes to a 4-byte multiple, so the padded region spans 4 to 64 bytes and the decoded data spans 40 to 100 bytes (32-byte key + 4-byte length prefix + padded payload). `StrKey::isValidSignedPayload()` performs a full decode-based check, including rejection of data beyond the padded payload.
--->

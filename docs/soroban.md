@@ -118,8 +118,11 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
 
-$account = $server->getAccount('GABC...');
-echo "Sequence: {$account->getSequenceNumber()}\n";
+// getAccount() returns null when the account does not exist on the network
+$account = $server->getAccount('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX');
+if ($account !== null) {
+    echo "Sequence: {$account->getSequenceNumber()}\n";
+}
 ```
 
 ### Contract Data
@@ -135,7 +138,7 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
 
 $entry = $server->getContractData(
-    contractId: 'CCXYZ...',
+    contractId: 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
     key: XdrSCVal::forSymbol('counter'),
     durability: XdrContractDataDurability::PERSISTENT()
 );
@@ -156,7 +159,7 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
 
 // By contract ID
-$info = $server->loadContractInfoForContractId('CCXYZ...');
+$info = $server->loadContractInfoForContractId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE');
 if ($info !== null) {
     echo "Spec entries: " . count($info->specEntries) . "\n";
 }
@@ -192,7 +195,9 @@ foreach ($response->entries as $entry) {
 
 ### Load Contract Code
 
-Helper methods to load contract bytecode from the network.
+Helper methods to load contract bytecode from the network. An instance created from a CAP-85
+external reference resolves automatically; a Stellar asset contract has no wasm, so it
+yields `null`.
 
 ```php
 <?php
@@ -201,7 +206,7 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
 
 // By contract ID
-$contractCodeEntry = $server->loadContractCodeForContractId('CCXYZ...');
+$contractCodeEntry = $server->loadContractCodeForContractId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE');
 if ($contractCodeEntry !== null) {
     $bytecode = $contractCodeEntry->code->value;
     echo "Code size: " . strlen($bytecode) . " bytes\n";
@@ -210,6 +215,51 @@ if ($contractCodeEntry !== null) {
 // By WASM ID
 $contractCodeEntry = $server->loadContractCodeForWasmId($wasmId);
 ```
+
+### External Reference Executables (CAP-85)
+
+From Protocol 28 on, a contract can be created from an external reference: instead of
+carrying its own wasm hash, the instance names an owner contract and a tag, and the owner
+holds a persistent contract data entry under that tag whose value is the 32-byte hash of an
+already uploaded wasm. `loadContractCodeForContractId()` and `loadContractInfoForContractId()`
+resolve such instances without any extra step. To resolve a reference directly, use
+`loadWasmIdForExternalRef()`:
+
+```php
+<?php
+use Soneso\StellarSDK\Soroban\SorobanServer;
+use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
+
+$server = new SorobanServer('https://soroban-testnet.stellar.org');
+
+// A contract's executable lives on its instance entry, which is always persistent.
+$entry = $server->getContractData(
+    contractId: 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
+    key: XdrSCVal::forLedgerKeyContractInstance(),
+    durability: XdrContractDataDurability::PERSISTENT()
+);
+
+$executable = $entry?->getLedgerEntryDataXdr()->contractData?->val->instance?->executable;
+if ($executable !== null
+    && $executable->type->value === XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF
+    && $executable->externalRef !== null) {
+    // The tag entry on the owner contract holds the wasm hash the instance runs.
+    $wasmId = $server->loadWasmIdForExternalRef($executable->externalRef);
+    if ($wasmId !== null) {
+        $codeEntry = $server->loadContractCodeForWasmId($wasmId);
+    }
+}
+```
+
+`loadWasmIdForExternalRef()` returns the hex-encoded wasm id, or `null` if the owner has no
+entry under the tag. It throws `InvalidArgumentException` if the reference's owner is not a
+contract address or the tag entry does not hold a 32-byte wasm hash. The owner contract is
+read, never invoked.
+
+To deploy a contract from an external reference, see "Create Contract from an External
+Reference (Protocol 28)" further down.
 
 ## SorobanClient
 
@@ -229,7 +279,7 @@ use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 
 $client = SorobanClient::forClientOptions(new ClientOptions(
     sourceAccountKeyPair: KeyPair::fromSeed('SXXX...'),
-    contractId: 'CCXYZ...',
+    contractId: 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
     network: Network::testnet(),
     rpcUrl: 'https://soroban-testnet.stellar.org'
 ));
@@ -255,20 +305,20 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 $client = SorobanClient::forClientOptions(new ClientOptions(
     sourceAccountKeyPair: KeyPair::fromSeed('SXXX...'),
-    contractId: 'CCXYZ...',
+    contractId: 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
     network: Network::testnet(),
     rpcUrl: 'https://soroban-testnet.stellar.org'
 ));
 
 // Read-only (returns simulation result)
 $balance = $client->invokeMethod('balance', [
-    Address::fromAccountId('GABC...')->toXdrSCVal()
+    Address::fromAccountId('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX')->toXdrSCVal()
 ]);
 
 // Write (auto-signs and submits)
 $result = $client->invokeMethod('transfer', [
-    Address::fromAccountId('GFROM...')->toXdrSCVal(),
-    Address::fromAccountId('GTO...')->toXdrSCVal(),
+    Address::fromAccountId('GAS352EOY437UJGADYGB4BQDMQ6YYMPP6C4XUZA2H5CDDRUSGYIKEQOJ')->toXdrSCVal(), // from
+    Address::fromAccountId('GB342ZKLPOH2VP2N5IUFKJ7E7LBGH5AY2FAI2I7MFPEAGFZCDVPFIHXC')->toXdrSCVal(), // to
     XdrSCVal::forI128BigInt(1000)
 ]);
 
@@ -338,6 +388,57 @@ $client = SorobanClient::deploy(new DeployRequest(
 ));
 ```
 
+### Deployment from an External Reference (Protocol 28)
+
+Create a contract instance that runs the wasm named by a CAP-85 external reference:
+the owner contract holds a persistent entry under a tag, and its value is the hash of
+the wasm the instance runs. There is no install step; the owner already holds the tag
+entry. The reference is resolved before the transaction is built, so an unresolvable
+reference fails with a message naming the owner and the tag.
+
+```php
+<?php
+
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Contract\DeployFromExternalRefRequest;
+use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
+
+$client = SorobanClient::deployFromExternalRef(new DeployFromExternalRefRequest(
+    rpcUrl: 'https://soroban-testnet.stellar.org',
+    network: Network::testnet(),
+    sourceAccountKeyPair: KeyPair::fromSeed('SXXX...'),
+    executableOwner: Address::fromContractId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE'),
+    tag: 'token-v1'  // Tag of the executable entry on the owner; matched byte for byte
+));
+```
+
+`constructorArgs` and `salt` work as in `DeployRequest`; the create operation uses the
+`CREATE_CONTRACT_V2` host function form with an empty constructor-argument vector when
+`constructorArgs` is not given, as `deploy()` does. The contract spec is loaded
+from the resolved wasm before submission and the returned client is ready to invoke.
+
+### Deriving a Contract Id Before Deploying
+
+`Address::deriveContractId()` returns the contract id ("C...") a deployment by a given
+deployer with a given salt creates on a given network. The id derives from the
+deployer, the salt and the network only; the executable (wasm hash, external reference
+or Stellar asset) does not enter the derivation. Use it when the address is needed
+before the deployment, for example in constructor arguments of another contract.
+
+```php
+<?php
+
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Address;
+
+$deployer = Address::fromAccountId('GBYC2T4GYXFCMZVJQATGL3475PASGITLBLWNLQ63B4U2D4ATO5X67XML');
+$salt = random_bytes(32);
+
+$futureContractId = Address::deriveContractId($deployer, $salt, Network::testnet());
+```
+
 ## AssembledTransaction
 
 Fine-grained control over the transaction lifecycle. Use `buildInvokeMethodTx()` instead of `invokeMethod()` when you need to inspect simulation results, add memos, or handle multi-signature workflows.
@@ -356,7 +457,7 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 $client = SorobanClient::forClientOptions(new ClientOptions(
     sourceAccountKeyPair: KeyPair::fromSeed('SXXX...'),
-    contractId: 'CCXYZ...',
+    contractId: 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
     network: Network::testnet(),
     rpcUrl: 'https://soroban-testnet.stellar.org'
 ));
@@ -506,25 +607,53 @@ Protocol 27 adds two address-credential arms to `SorobanCredentials`:
 - `ADDRESS_V2` carries the same `SorobanAddressCredentials` body as the legacy `ADDRESS` arm, but the signature payload additionally binds the credential address.
 - `ADDRESS_WITH_DELEGATES` extends V2 with a tree of delegate signatures, letting additional addresses co-sign one authorization entry.
 
-The legacy `ADDRESS` arm remains the default everywhere and stays fully valid. The new arms are opt-in: emitting them on a network below protocol 27 invalidates the transaction.
+`ADDRESS_V2` is the default arm: simulation requests it, and `SorobanCredentials::forAddress()` / `forAddressCredentials()` build it. The legacy `ADDRESS` arm stays fully valid; use it on a network below protocol 27, where the newer arms invalidate the transaction — request it from simulation with `useUpgradedAuth: false` and build it with `forAddressLegacy()` / `forAddressCredentialsLegacy()`.
 
-All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry::sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry. Use `$credentials->getAddressCredentials()` to read the inner `SorobanAddressCredentials` of any address arm (it returns `null` only for source-account credentials), and `$credentials->getCredentialType()` / `$credentials->isSourceAccount()` to inspect the arm. Factories `SorobanCredentials::forAddressCredentialsV2()` and `SorobanCredentials::forAddressWithDelegates()` build the new arms directly.
+All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry::sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry. Use `$credentials->getAddressCredentials()` to read the inner `SorobanAddressCredentials` of any address arm (it returns `null` only for source-account credentials), and `$credentials->getCredentialType()` / `$credentials->isSourceAccount()` to inspect the arm. Factories: `SorobanCredentials::forAddress()` / `forAddressCredentials()` build `ADDRESS_V2` (as does the explicit `forAddressCredentialsV2()`), `forAddressLegacy()` / `forAddressCredentialsLegacy()` build legacy `ADDRESS`, and `forAddressWithDelegates()` builds the delegated arm.
 
-#### Requesting V2 Entries from Simulation
+#### V2 Entries from Simulation
 
-Set `useUpgradedAuth` to request `ADDRESS_V2` credential arms in the simulation response. The flag is honored only on RPC servers that support it and only in recording mode: `authMode` "record" or "record_allow_nonroot", or `authMode` unset on a transaction without attached auth entries — the RPC then defaults to recording, as in the examples below. RPC servers without support silently ignore it and return legacy `ADDRESS` entries — detect support by inspecting the credential arm of the returned entries, never by expecting an error. When `useUpgradedAuth` is `false` (the default), the key is omitted from the JSON-RPC params entirely.
+Simulation requests `ADDRESS_V2` credential arms by default (`useUpgradedAuth` is `true` on `MethodOptions` and `SimulateTransactionRequest`, and the key is always sent in the JSON-RPC params). The flag is honored only on RPC servers that support it and only in recording mode: `authMode` "record" or "record_allow_nonroot", or `authMode` unset on a transaction without attached auth entries — the RPC then defaults to recording, as in the examples below. RPC servers without support silently ignore it and return legacy `ADDRESS` entries — detect support by inspecting the credential arm of the returned entries, never by expecting an error. Set `useUpgradedAuth` to `false` to request legacy `ADDRESS` entries, for example on a network below protocol 27.
+
+**Prerequisites for the example below:** a contract of your own, deployed on the target network, whose spec exposes a `swap(address, i128)` method, and a funded source account that holds its seed. Replace `$contractId` and the seed with your own — the id shown is a placeholder and does not resolve to a deployed contract, and a contract id is not interchangeable between examples, since each example's contract needs its own methods and storage.
 
 ```php
 <?php
-use Soneso\StellarSDK\Soroban\Contract\MethodOptions;
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\InvokeContractHostFunction;
+use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Contract\ClientOptions;
+use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
+use Soneso\StellarSDK\Soroban\SorobanServer;
+use Soneso\StellarSDK\TransactionBuilder;
+use Soneso\StellarSDK\Xdr\XdrInt128Parts;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 
-// Contract client: opt in via MethodOptions
+$rpcUrl = 'https://soroban-testnet.stellar.org';
+$contractId = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
+$keyPair = KeyPair::fromSeed('SXXX...');
+
+// Arguments of the contract's swap(address, i128) method
+$args = [
+    Address::fromAccountId($keyPair->getAccountId())->toXdrSCVal(),
+    XdrSCVal::forI128(new XdrInt128Parts(0, 1000000)),
+];
+
+$client = SorobanClient::forClientOptions(new ClientOptions(
+    sourceAccountKeyPair: $keyPair,
+    contractId: $contractId,
+    network: Network::testnet(),
+    rpcUrl: $rpcUrl,
+));
+
+// Contract client: ADDRESS_V2 entries are requested by default
 $tx = $client->buildInvokeMethodTx(
     name: 'swap',
     args: $args,
-    methodOptions: new MethodOptions(useUpgradedAuth: true),
 );
 
 // Detect whether the RPC honored the flag
@@ -537,8 +666,24 @@ foreach ($entries as $entry) {
     }
 }
 
-// Low-level: opt in on the simulate request
-$request = new SimulateTransactionRequest($transaction, useUpgradedAuth: true);
+// Low-level: request legacy ADDRESS entries on the simulate request
+$server = new SorobanServer($rpcUrl);
+
+// getAccount() returns null when the account does not exist on the network
+$account = $server->getAccount($keyPair->getAccountId());
+if ($account === null) {
+    throw new \RuntimeException(
+        'Source account not found. It must exist and be funded on the network before simulating.'
+    );
+}
+
+$invokeOp = (new InvokeHostFunctionOperationBuilder(
+    new InvokeContractHostFunction($contractId, 'swap', $args)
+))->build();
+
+$transaction = (new TransactionBuilder($account))->addOperation($invokeOp)->build();
+
+$request = new SimulateTransactionRequest($transaction, useUpgradedAuth: false);
 $response = $server->simulateTransaction($request);
 ```
 
@@ -620,15 +765,15 @@ $delegated->sign(
 
 `SorobanDelegateDescriptor` supports nesting via `nestedDelegates` and accepts a pre-built `signature` (default void) for nodes signed externally, such as contract addresses.
 
-`SorobanCredentials::forAddressCredentialsV2` and the delegated arms are built client-side: by default simulation returns legacy `ADDRESS` entries (set `useUpgradedAuth` to request `ADDRESS_V2` from a supporting RPC), and `WITH_DELEGATES` entries are never returned by simulation, so the V2 and `WITH_DELEGATES` arms are assembled and submitted at the `SorobanServer` level.
+`WITH_DELEGATES` entries are never returned by simulation, so the delegated arm is always assembled client-side and submitted at the `SorobanServer` level. `ADDRESS_V2` entries come from a supporting RPC by default (`useUpgradedAuth`), or client-side from `SorobanCredentials::forAddressCredentialsV2` when converting an entry in place.
 
 After attaching the signed entries with `$transaction->setSorobanAuth(...)`, re-simulate in enforcing mode before submitting. The first (recording) simulation does not run the authorizing account's `__check_auth`, so it understates the resource fee and — for a custom (contract) account whose `__check_auth` reads storage or calls into delegates — omits the footprint entries that authorization touches. Re-simulate with the signed entry attached and `authMode` set to `enforce` (`new SimulateTransactionRequest(transaction: $transaction, authMode: 'enforce')`), then apply the returned data before signing: `$transaction->setSorobanTransactionData($response->getTransactionData())` and `$transaction->addResourceFee($response->getMinResourceFee())`. The already-signed auth is preserved.
 
 When converting a simulated `ADDRESS` entry to `ADDRESS_V2` in place, reuse its nonce — `SorobanCredentials::forAddressCredentialsV2($credentials->getAddressCredentials())` carries the nonce over; a fresh nonce will not match the recorded footprint and then relies on the enforcing re-simulation above.
 
-#### Source Compatibility
+#### Constructing Credentials Directly
 
-The `SorobanCredentials` constructor's first parameter was generalized to `int|SorobanAddressCredentials` and renamed. Positional callers passing a `SorobanAddressCredentials` are unaffected, but a caller using the named argument `new SorobanCredentials(addressCredentials: ...)` must switch to positional or use the `SorobanCredentials::forAddressCredentials(...)` factory. The XDR types (`XdrSorobanCredentialsType`, `XdrEnvelopeType`, `XdrHashIDPreimage`) gain new cases for the V2 and delegated arms; any exhaustive `match`/`switch` over them needs a `default` arm.
+The `SorobanCredentials` constructor takes `int|SorobanAddressCredentials $credentialType` first, then the optional `$addressCredentials` and `$addressWithDelegates`. An `int` selects the arm from the `XdrSorobanCredentialsType` constants; a `SorobanAddressCredentials` passed in that first position selects the ADDRESS arm directly, which is what `SorobanCredentials::forAddressCredentialsLegacy(...)` does by name. `XdrSorobanCredentialsType`, `XdrEnvelopeType` and `XdrHashIDPreimage` each carry cases for the V2 and delegated arms, so an exhaustive `match`/`switch` over them needs a `default` arm.
 
 ## Type Conversions
 
@@ -694,10 +839,10 @@ Account and contract addresses for referencing entities on the network.
 use Soneso\StellarSDK\Soroban\Address;
 
 // Account address (G...)
-$account = Address::fromAccountId('GABC...')->toXdrSCVal();
+$account = Address::fromAccountId('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX')->toXdrSCVal();
 
 // Contract address (C...) - use fromAnyId for strkey format
-$contract = Address::fromAnyId('CABC...')->toXdrSCVal();
+$contract = Address::fromAnyId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE')->toXdrSCVal();
 ```
 
 #### Collections
@@ -969,7 +1114,7 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
 
 // Contract ID must be C-prefixed strkey
-$contractId = 'CCXYZ...';
+$contractId = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
 
 // Filter: any first topic, "transfer" as second topic
 $topicFilter = new TopicFilter([
@@ -1013,7 +1158,7 @@ use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 
 $client = SorobanClient::forClientOptions(new ClientOptions(
     sourceAccountKeyPair: KeyPair::fromSeed('SXXX...'),
-    contractId: 'CCXYZ...',
+    contractId: 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
     network: Network::testnet(),
     rpcUrl: 'https://soroban-testnet.stellar.org',
     // logger: $yourPsr3Logger  // Optional: PSR-3 logger for debug output
@@ -1119,16 +1264,18 @@ use MyApp\Contracts\TokenClient;
 
 $client = TokenClient::forClientOptions(new ClientOptions(
     sourceAccountKeyPair: KeyPair::fromSeed('SXXX...'),
-    contractId: 'CTOKEN...',
+    contractId: 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
     network: Network::testnet(),
     rpcUrl: 'https://soroban-testnet.stellar.org'
 ));
 
 // Type-safe calls with native PHP types
-$balance = $client->balance(Address::fromAccountId('GABC...'));  // i128 as decimal string
+$balance = $client->balance(
+    Address::fromAccountId('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX')
+);  // i128 as decimal string
 $client->transfer(
-    Address::fromAccountId('GFROM...'),
-    Address::fromAccountId('GTO...'),
+    Address::fromAccountId('GAS352EOY437UJGADYGB4BQDMQ6YYMPP6C4XUZA2H5CDDRUSGYIKEQOJ'), // from
+    Address::fromAccountId('GB342ZKLPOH2VP2N5IUFKJ7E7LBGH5AY2FAI2I7MFPEAGFZCDVPFIHXC'), // to
     '1000',  // i128 amount as decimal string
 );
 ```
@@ -1230,6 +1377,40 @@ $createOp = (new InvokeHostFunctionOperationBuilder(
 // Build, simulate, sign, and send (same pattern)
 ```
 
+### Create Contract from an External Reference (Protocol 28)
+
+Deploy a contract instance that runs the wasm named by a CAP-85 external reference
+(see External Reference Executables above). The owner contract already holds the tag
+entry, so there is no upload step. The executable owner must be a contract address —
+only a contract can hold the tag entry; the constructor, setExecutableOwner(), and
+toXdr() of both builder classes reject any other address type. For the one-call
+variant, see "Deployment from an External Reference (Protocol 28)" under Installing
+and Deploying.
+
+```php
+<?php
+use Soneso\StellarSDK\CreateContractFromExternalRefHostFunction;
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
+use Soneso\StellarSDK\Soroban\Address;
+
+$keyPair = KeyPair::fromSeed('SXXX...');
+
+$createOp = (new InvokeHostFunctionOperationBuilder(
+    new CreateContractFromExternalRefHostFunction(
+        Address::fromAccountId($keyPair->getAccountId()),
+        Address::fromContractId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE'),
+        'token-v1'  // Tag of the executable entry on the owner; matched byte for byte
+    )
+))->build();
+```
+
+Build, simulate, set auth, sign and send `$createOp` exactly as in
+[Create Contract Instance](#create-contract-instance) above.
+
+For constructor arguments, use `CreateContractFromExternalRefWithConstructorHostFunction`
+and pass the argument list after the tag.
+
 ### Invoke Contract (Low-Level)
 
 Invoke a contract method without using SorobanClient.
@@ -1310,7 +1491,7 @@ foreach ($auth as $entry) {
 $transaction->setSorobanAuth($auth);
 ```
 
-> **Tip**: Contract IDs must be C-prefixed strkey format. To convert from hex: `StrKey::encodeContractIdHex($hexContractId)`
+> **Tip**: Contract IDs must be C-prefixed strkey format. To convert from hex, use `StrKey::encodeContractIdHex($hexContractId)`. It takes exactly 64 hexadecimal characters (the 32-byte hash) and throws `InvalidArgumentException` for anything else.
 
 ## Contract Parser
 
@@ -1342,7 +1523,8 @@ $meta = $contractInfo->metaEntries;
 
 ### Parse from Network
 
-Load and parse contract info from a deployed contract.
+Load and parse contract info from a deployed contract. A contract created from a CAP-85
+external reference (Protocol 28) is resolved automatically.
 
 ```php
 <?php
@@ -1352,7 +1534,7 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
 
 // By contract ID
-$contractInfo = $server->loadContractInfoForContractId('CCXYZ...');
+$contractInfo = $server->loadContractInfoForContractId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE');
 
 // By WASM ID
 $contractInfo = $server->loadContractInfoForWasmId($wasmId);

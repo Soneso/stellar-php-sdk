@@ -86,6 +86,58 @@ $client = SorobanClient::deploy(new DeployRequest(
 ));
 ```
 
+### Predicting the Contract Id
+
+`Address::deriveContractId(Address $deployer, string $salt, Network $network): string`
+returns the contract id ("C...") a deployment from that deployer and salt creates. It
+applies to every deployment issued from an address — `deploy()`, `deployFromExternalRef()`
+and the create-operation builders alike — because the id derives from deployer, salt and
+network only; the executable does not enter it. Use it when the address is needed before
+deploying, for example in another contract's constructor arguments. The salt is 32 raw
+bytes, not hex, and anything else throws `InvalidArgumentException`.
+
+### Deploy from an External Reference (Protocol 28)
+
+A CAP-85 external reference names an owner contract and a tag; the owner's persistent
+entry under that tag holds the wasm hash the new instance runs. There is no install
+step. `SorobanClient::deployFromExternalRef` resolves the reference before the
+transaction is built (an unresolvable reference throws naming the owner and the tag),
+loads the spec from the resolved wasm, and returns a ready client:
+
+```php
+<?php
+declare(strict_types=1);
+
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Contract\DeployFromExternalRefRequest;
+use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
+
+$keyPair = KeyPair::random(); // or KeyPair::fromSeed($yourSecret)
+
+$client = SorobanClient::deployFromExternalRef(new DeployFromExternalRefRequest(
+    rpcUrl: 'https://soroban-testnet.stellar.org',
+    network: Network::testnet(),
+    sourceAccountKeyPair: $keyPair,
+    executableOwner: Address::fromContractId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE'),
+    tag: 'token-v1', // matched byte for byte
+    // constructorArgs and salt work as in DeployRequest
+));
+```
+
+`deployFromExternalRef` builds the `CREATE_CONTRACT_V2` host function form (empty
+constructor-argument vector when no args are given), as `deploy()` does.
+
+Without SorobanClient, build the create operation directly with
+`CreateContractFromExternalRefHostFunction(Address $address, Address $executableOwner,
+string $tag, ?string $salt = null)` in an `InvokeHostFunctionOperationBuilder` and
+submit it like any `InvokeHostFunctionOperation`.
+`CreateContractFromExternalRefWithConstructorHostFunction` adds `array $constructorArgs`
+after the tag. Both builders reject an executable owner that is not a contract address
+(constructor, `setExecutableOwner()`, and `toXdr()`). Envelope parsing returns these
+classes for external-ref create operations.
+
 ## Contract Invocation
 
 ### High-Level: SorobanClient
@@ -388,9 +440,9 @@ echo $response->getStatus();     // e.g. "SUCCESS"
 
 ## Protocol 27 Credentials (CAP-71)
 
-`SorobanCredentials` has four arms: source-account, legacy `ADDRESS` (default, valid on all protocols), and the opt-in `ADDRESS_V2` and `ADDRESS_WITH_DELEGATES` (protocol 27+; invalid below 27). All signing APIs handle every arm; `getAddressCredentials()` returns the inner `SorobanAddressCredentials` for any address arm (null only for source-account); `getCredentialType()` / `isSourceAccount()` inspect the arm.
+`SorobanCredentials` has four arms: source-account, legacy `ADDRESS` (valid on all protocols), `ADDRESS_V2` (the default arm), and `ADDRESS_WITH_DELEGATES` (the latter two protocol 27+; invalid below 27). `forAddress()`/`forAddressCredentials()` build `ADDRESS_V2`; `forAddressLegacy()`/`forAddressCredentialsLegacy()` build legacy `ADDRESS`. All signing APIs handle every arm; `getAddressCredentials()` returns the inner `SorobanAddressCredentials` for any address arm (null only for source-account); `getCredentialType()` / `isSourceAccount()` inspect the arm.
 
-Request V2 entries from simulation with the `useUpgradedAuth` flag (`MethodOptions(useUpgradedAuth: true)` or `new SimulateTransactionRequest($tx, useUpgradedAuth: true)`). RPCs without protocol 27 support silently ignore it and return legacy `ADDRESS` entries — detect support by checking the returned credential arm, not by expecting an error.
+Simulation requests V2 entries by default (`useUpgradedAuth` is `true` on `MethodOptions` and `SimulateTransactionRequest`, always sent on the wire); pass `false` for legacy `ADDRESS` entries. RPCs without protocol 27 support silently ignore the flag and return legacy `ADDRESS` entries — detect support by checking the returned credential arm, not by expecting an error.
 
 `ADDRESS_WITH_DELEGATES` lets delegate addresses co-sign one entry. Simulation never returns this arm; build it from an `ADDRESS`/`ADDRESS_V2` entry via `SorobanAuthorizationEntry::withDelegates($source, $expirationLedger, $delegates)`, passing `SorobanDelegateDescriptor` objects. The builder sorts the delegate array and rejects duplicates. All nodes (top-level + delegates at any depth) sign the same payload bound to the top-level address; delegates carry no nonce/expiration. `sign($kp, $network, forAddress: $strkey)` routes a signature to matching nodes depth-first; `null` signs top-level. A void top-level with all delegates signed is valid (delegates-only). After attaching the signed entries, re-simulate in enforcing mode (`new SimulateTransactionRequest($tx, authMode: 'enforce')`) and apply the returned `transactionData` / `minResourceFee` before submitting: the recording simulation does not run `__check_auth`, so for a custom (contract) account it omits the footprint its authorization reads (and understates the delegate fee). For multiple classical signatures on one node, call `sign()` in ascending public-key order (the SDK appends in call order and does not sort).
 
@@ -409,7 +461,7 @@ $delegated = SorobanAuthorizationEntry::withDelegates(
 $delegated->sign($delegateKeyPair, Network::testnet(), forAddress: $delegateKeyPair->getAccountId());
 ```
 
-Source compatibility: the `SorobanCredentials` constructor's first parameter is now `int|SorobanAddressCredentials` and renamed; positional `SorobanAddressCredentials` callers are unaffected, but named-argument `new SorobanCredentials(addressCredentials: ...)` must switch to positional or `forAddressCredentials(...)`. New XDR enum/union cases mean exhaustive `match`/`switch` over them needs a `default` arm.
+The constructor is `new SorobanCredentials(int|SorobanAddressCredentials $credentialType = SOROBAN_CREDENTIALS_SOURCE_ACCOUNT, ?SorobanAddressCredentials $addressCredentials = null, ?SorobanAddressCredentialsWithDelegates $addressWithDelegates = null)`. A `SorobanAddressCredentials` in the first position selects the ADDRESS arm, so passing one positionally works; the named argument for that object is `credentialType`, or use `forAddressCredentialsLegacy(...)`. `XdrSorobanCredentialsType`, `XdrEnvelopeType` and `XdrHashIDPreimage` carry cases for the V2 and delegated arms, so an exhaustive `match`/`switch` over them needs a `default` arm.
 
 ## TTL Extension and Restore
 
@@ -546,12 +598,15 @@ $info = $server->loadContractInfoForWasmId('a1b2c3...');
 $info = $server->loadContractInfoForContractId('CABC123...');
 ```
 
+A contract created from a CAP-85 external reference (Protocol 28) resolves automatically.
+See `rpc.md` > Contract Introspection Helpers for `loadWasmIdForExternalRef()`.
+
 ### Pre-Extracted Arrays
 
 `SorobanContractInfo` provides pre-extracted plain PHP arrays from the raw spec entries.
 Use `count()`, `foreach`, and standard array functions — these are NOT collection objects.
 
-```php
+```text
 // Functions (XdrSCSpecFunctionV0 objects)
 $info->funcs       // plain array — use count($info->funcs), not $info->funcs->count()
 
@@ -590,12 +645,18 @@ foreach ($info->funcs as $func) {
 
 Use this mapping to convert discovered parameter types to the **exact** `XdrSCVal` factory:
 
-<!-- WRONG: overriding discovered type based on convention -->
+```php
+<?php declare(strict_types=1);
+
+use Soneso\StellarSDK\Xdr\XdrSCVal;
+
+// WRONG: overriding the discovered type based on convention.
 // Spec says symbol: String (type 16) but "token symbols are usually Symbol"
-XdrSCVal::forSymbol('TEST') // WRONG — crashes: UnreachableCodeReached
+XdrSCVal::forSymbol('TEST'); // crashes: UnreachableCodeReached
 
 // CORRECT: always use the exact type from introspection
-XdrSCVal::forString('TEST') // CORRECT — spec says String, use forString
+XdrSCVal::forString('TEST'); // spec says String, so use forString
+```
 
 | Constant | Value | Type Name | XdrSCVal Factory |
 |----------|-------|-----------|-----------------|

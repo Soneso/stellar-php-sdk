@@ -71,7 +71,6 @@ $kyc->organizationKYCFields   = new OrganizationKYCFields();    // ?Organization
 ```php
 <?php declare(strict_types=1);
 
-use DateTime;
 use Soneso\StellarSDK\SEP\StandardKYCFields\NaturalPersonKYCFields;
 use Soneso\StellarSDK\SEP\StandardKYCFields\FinancialAccountKYCFields;
 use Soneso\StellarSDK\SEP\StandardKYCFields\CardKYCFields;
@@ -105,8 +104,8 @@ $p->addressCountryCode = 'USA';         // ?string → 'address_country_code' (I
 $p->idType          = 'passport';             // ?string  → 'id_type'
 $p->idNumber        = 'AB123456';             // ?string  → 'id_number'
 $p->idCountryCode   = 'USA';                  // ?string  → 'id_country_code' (ISO 3166-1 alpha-3)
-$p->idIssueDate     = new DateTime('2020-01-15');  // ?DateTime → 'id_issue_date'      (formatted as ATOM)
-$p->idExpirationDate = new DateTime('2030-01-15'); // ?DateTime → 'id_expiration_date' (formatted as ATOM)
+$p->idIssueDate     = new \DateTime('2020-01-15');  // ?DateTime → 'id_issue_date'      (formatted as ATOM)
+$p->idExpirationDate = new \DateTime('2030-01-15'); // ?DateTime → 'id_expiration_date' (formatted as ATOM)
 
 // Tax
 $p->taxId     = '123-45-6789';  // ?string → 'tax_id'
@@ -429,7 +428,6 @@ CardKYCFields::COUNTRY_CODE_KEY;    // 'card.country_code'
 ```php
 <?php declare(strict_types=1);
 
-use DateTime;
 use Soneso\StellarSDK\SEP\StandardKYCFields\StandardKYCFields;
 use Soneso\StellarSDK\SEP\StandardKYCFields\NaturalPersonKYCFields;
 use Soneso\StellarSDK\SEP\StandardKYCFields\FinancialAccountKYCFields;
@@ -462,8 +460,8 @@ $person->taxIdName = 'SSN';
 $person->idType           = 'passport';
 $person->idNumber         = 'AB123456';
 $person->idCountryCode    = 'USA';
-$person->idIssueDate      = new DateTime('2020-01-15');   // DateTime object
-$person->idExpirationDate = new DateTime('2030-01-15');   // DateTime object
+$person->idIssueDate      = new \DateTime('2020-01-15');   // DateTime object
+$person->idExpirationDate = new \DateTime('2030-01-15');   // DateTime object
 
 // Bank account
 $bank = new FinancialAccountKYCFields();

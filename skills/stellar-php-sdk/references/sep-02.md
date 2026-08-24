@@ -61,7 +61,6 @@ Resolves a Stellar address to an account ID and optional memo. Fetches `stellar.
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use Soneso\StellarSDK\SEP\Federation\Federation;
 
 $response = Federation::resolveStellarAddress('bob*soneso.com');
@@ -203,7 +202,6 @@ This complete example resolves a recipient address and builds a transaction with
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Memo;
@@ -252,7 +250,7 @@ try {
     if ($result->isSuccessful()) {
         echo 'Payment sent! Hash: ' . $result->getHash() . PHP_EOL;
     }
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo 'Submission failed: ' . $e->getMessage() . PHP_EOL;
 }
 ```
@@ -390,15 +388,13 @@ $response = Federation::resolveStellarAccountId(
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
-use InvalidArgumentException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\SEP\Federation\Federation;
 
 // 1. Address missing '*' — throws InvalidArgumentException immediately (no network call)
 try {
     Federation::resolveStellarAddress('invalid-no-asterisk');
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo $e->getMessage() . PHP_EOL;
     // "Invalid federation address: invalid-no-asterisk"
 }
@@ -406,7 +402,7 @@ try {
 // 2. Domain has no FEDERATION_SERVER in stellar.toml — throws Exception
 try {
     Federation::resolveStellarAddress('user*domain-without-federation.example');
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo $e->getMessage() . PHP_EOL;
     // "no federation server found for domain: domain-without-federation.example"
 }

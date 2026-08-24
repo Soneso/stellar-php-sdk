@@ -45,7 +45,6 @@ Use `NaturalPersonKYCFields` when collecting KYC data for individual customers. 
 ```php
 <?php
 
-use DateTime;
 use Soneso\StellarSDK\SEP\StandardKYCFields\NaturalPersonKYCFields;
 
 $person = new NaturalPersonKYCFields();
@@ -84,8 +83,8 @@ $person->taxIdName = 'NIF';  // Name of tax ID type (SSN, ITIN, NIF, etc.)
 $person->idType = 'passport';           // 'passport', 'drivers_license', 'id_card', etc.
 $person->idNumber = 'AB1234567';
 $person->idCountryCode = 'ESP';         // ISO 3166-1 alpha-3
-$person->idIssueDate = new DateTime('2020-01-15');
-$person->idExpirationDate = new DateTime('2030-01-14');
+$person->idIssueDate = new \DateTime('2020-01-15');
+$person->idExpirationDate = new \DateTime('2030-01-14');
 
 // Other
 $person->languageCode = 'es';           // ISO 639-1

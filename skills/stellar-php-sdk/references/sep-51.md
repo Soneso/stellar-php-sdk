@@ -3,7 +3,7 @@
 **Purpose:** Convert any Stellar XDR type to and from a SEP-0051-conformant JSON form. Covers every XDR primitive plus the Stellar-specific types (StrKey-encoded addresses, Asset, AssetCode, MuxedAccount, ClaimableBalanceID, SignerKey).
 **Prerequisites:** None. Most callers only need the four methods on the target XDR class.
 **SDK Namespace:** `Soneso\StellarSDK\Xdr`
-**Note:** SEP-51 is currently Draft status (v2.0.1).
+**Note:** Consult the [SEP-51 specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md) for the protocol's current status and version.
 
 ## Table of Contents
 
@@ -22,7 +22,7 @@
 
 Every XDR class under `Soneso\StellarSDK\Xdr\` carries:
 
-```php
+```text
 public function toJsonValue(): mixed;
 public static function fromJsonValue(mixed $value): static;
 public function toJson(): string;
@@ -112,7 +112,7 @@ use Soneso\StellarSDK\Xdr\XdrSignerKey;
 $muxed = XdrMuxedAccount::fromJson('"GDTJSJTEYGG7L23UZSROA5SNR4GJMOUXYNRDCVMEY3FPB22HUYWQBZIA"');
 $muxed->toJsonValue(); // "GDTJSJTEY..."
 
-$signer = XdrSignerKey::fromJson('"TAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB7"');
+$signer = XdrSignerKey::fromJson('"TAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABLVU"');
 $signer->getType()->getValue(); // SIGNER_KEY_TYPE_PRE_AUTH_TX
 ```
 

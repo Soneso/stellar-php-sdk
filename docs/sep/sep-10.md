@@ -25,7 +25,7 @@ use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
 
 // Get JWT token - handles challenge request, signing, and submission
-$userKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
+$userKeyPair = KeyPair::fromSeed("SAP2SSCIWNH2RWIP7Q5TERS26ZORQGZJOGJJF57EKQWZ2NJMJDR233CD");
 $jwtToken = $webAuth->jwtToken($userKeyPair->getAccountId(), [$userKeyPair]);
 
 // Use the token for authenticated requests to SEP-6, SEP-12, SEP-24, etc.
@@ -82,7 +82,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 
 $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
-$userKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
+$userKeyPair = KeyPair::fromSeed("SAP2SSCIWNH2RWIP7Q5TERS26ZORQGZJOGJJF57EKQWZ2NJMJDR233CD");
 
 $jwtToken = $webAuth->jwtToken(
     clientAccountId: $userKeyPair->getAccountId(),
@@ -111,8 +111,8 @@ use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
 
 // Provide all signers needed to meet the account's threshold
-$signer1 = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
-$signer2 = KeyPair::fromSeed("SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2HIF74DBGCZ6V5CSBRROPGKVZ");
+$signer1 = KeyPair::fromSeed("SAP2SSCIWNH2RWIP7Q5TERS26ZORQGZJOGJJF57EKQWZ2NJMJDR233CD");
+$signer2 = KeyPair::fromSeed("SCNQRSRPNF76KA7QXVZBWHBMG4MW25IRMPAOQJKGKIALJYCFZT2JQCNP");
 
 $jwtToken = $webAuth->jwtToken(
     clientAccountId: $signer1->getAccountId(),
@@ -133,7 +133,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 
 $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
-$userKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
+$userKeyPair = KeyPair::fromSeed("SAP2SSCIWNH2RWIP7Q5TERS26ZORQGZJOGJJF57EKQWZ2NJMJDR233CD");
 
 // Create muxed account with user ID embedded in the address
 $muxedAccount = new MuxedAccount($userKeyPair->getAccountId(), 1234567890);
@@ -156,7 +156,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 
 $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
-$userKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
+$userKeyPair = KeyPair::fromSeed("SAP2SSCIWNH2RWIP7Q5TERS26ZORQGZJOGJJF57EKQWZ2NJMJDR233CD");
 
 $jwtToken = $webAuth->jwtToken(
     clientAccountId: $userKeyPair->getAccountId(),
@@ -184,8 +184,8 @@ use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 
 $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
 
-$userKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
-$clientDomainKeyPair = KeyPair::fromSeed("SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2HIF74DBGCZ6V5CSBRROPGKVZ");
+$userKeyPair = KeyPair::fromSeed("SAP2SSCIWNH2RWIP7Q5TERS26ZORQGZJOGJJF57EKQWZ2NJMJDR233CD");
+$clientDomainKeyPair = KeyPair::fromSeed("SCNQRSRPNF76KA7QXVZBWHBMG4MW25IRMPAOQJKGKIALJYCFZT2JQCNP");
 
 $jwtToken = $webAuth->jwtToken(
     clientAccountId: $userKeyPair->getAccountId(),
@@ -202,14 +202,13 @@ When the client domain signing key is stored on a separate server (recommended f
 ```php
 <?php
 
-use Exception;
 use GuzzleHttp\Client;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 
 $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
-$userKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
+$userKeyPair = KeyPair::fromSeed("SAP2SSCIWNH2RWIP7Q5TERS26ZORQGZJOGJJF57EKQWZ2NJMJDR233CD");
 
 // Callback receives base64-encoded transaction XDR and must return signed XDR
 $signingCallback = function(string $transactionXdr): string {
@@ -224,7 +223,7 @@ $signingCallback = function(string $transactionXdr): string {
     
     $data = json_decode($response->getBody()->getContents(), true);
     if (!isset($data['transaction'])) {
-        throw new Exception("Invalid signing server response");
+        throw new \Exception("Invalid signing server response");
     }
     return $data['transaction'];
 };
@@ -249,7 +248,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 
 $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
-$userKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
+$userKeyPair = KeyPair::fromSeed("SAP2SSCIWNH2RWIP7Q5TERS26ZORQGZJOGJJF57EKQWZ2NJMJDR233CD");
 
 $jwtToken = $webAuth->jwtToken(
     clientAccountId: $userKeyPair->getAccountId(),
@@ -283,15 +282,14 @@ use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorMemoAndMuxedAccount;
 use Soneso\StellarSDK\SEP\WebAuth\SubmitCompletedChallengeErrorResponseException;
 use Soneso\StellarSDK\SEP\WebAuth\SubmitCompletedChallengeTimeoutResponseException;
 use Soneso\StellarSDK\SEP\WebAuth\SubmitCompletedChallengeUnknownResponseException;
-use InvalidArgumentException;
 
 try {
     $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
-    $userKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
+    $userKeyPair = KeyPair::fromSeed("SAP2SSCIWNH2RWIP7Q5TERS26ZORQGZJOGJJF57EKQWZ2NJMJDR233CD");
     
     $jwtToken = $webAuth->jwtToken($userKeyPair->getAccountId(), [$userKeyPair]);
     
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     // Invalid parameters (e.g., memo with muxed account, missing client domain keypair)
     echo "Invalid parameters: " . $e->getMessage();
     
@@ -385,7 +383,6 @@ For production applications, implement retry logic with exponential backoff for 
 ```php
 <?php
 
-use Exception;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
@@ -428,12 +425,12 @@ function authenticateWithRetry(
         }
     }
     
-    throw $lastException ?? new Exception("Authentication failed after $maxRetries attempts");
+    throw $lastException ?? new \Exception("Authentication failed after $maxRetries attempts");
 }
 
 // Usage
 $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
-$userKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
+$userKeyPair = KeyPair::fromSeed("SAP2SSCIWNH2RWIP7Q5TERS26ZORQGZJOGJJF57EKQWZ2NJMJDR233CD");
 
 $jwtToken = authenticateWithRetry($webAuth, $userKeyPair->getAccountId(), [$userKeyPair]);
 ```

@@ -361,7 +361,6 @@ This example shows the full approval flow for a regulated asset transfer, includ
 ```php
 <?php
 
-use Exception;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
@@ -385,7 +384,7 @@ $recipientId = "GDESTINATION...";
 
 // Verify asset requires approval (issuer has proper flags)
 if (!$service->authorizationRequired($regulatedAsset)) {
-    throw new Exception("Asset issuer not properly configured for regulation");
+    throw new \Exception("Asset issuer not properly configured for regulation");
 }
 
 // Build transaction
@@ -425,7 +424,7 @@ if ($response instanceof SEP08PostTransactionSuccess) {
     echo "User action needed at: " . $response->actionUrl . PHP_EOL;
     
 } elseif ($response instanceof SEP08PostTransactionRejected) {
-    throw new Exception("Transaction rejected: " . $response->error);
+    throw new \Exception("Transaction rejected: " . $response->error);
 }
 
 // Submit approved transaction to Stellar network
@@ -442,7 +441,6 @@ The SDK throws specific exceptions for different error conditions:
 ```php
 <?php
 
-use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\SEP\RegulatedAssets\RegulatedAssetsService;
@@ -478,7 +476,7 @@ try {
     // Network error (connection timeout, DNS failure, etc.)
     echo "Network request failed: " . $e->getMessage() . PHP_EOL;
     
-} catch (Exception $e) {
+} catch (\Exception $e) {
     // stellar.toml loading failed or other unexpected error
     echo "Error: " . $e->getMessage() . PHP_EOL;
 }

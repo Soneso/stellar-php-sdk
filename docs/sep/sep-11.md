@@ -65,7 +65,7 @@ use Soneso\StellarSDK\TransactionBuilder;
 $sdk = StellarSDK::getTestNetInstance();
 
 // Build a transaction
-$sourceKeyPair = KeyPair::fromSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6CSS');
+$sourceKeyPair = KeyPair::fromSeed('SD77EKZMYX5XBINENYKNELHRL5RKTR2OL37FMYIV2WUU5IHFD5PXLPTN');
 $sourceAccount = $sdk->requestAccount($sourceKeyPair->getAccountId());
 
 $payment = (new PaymentOperationBuilder(
@@ -439,7 +439,6 @@ The SDK throws `InvalidArgumentException` for invalid input. Wrap conversions in
 ```php
 <?php
 
-use InvalidArgumentException;
 use Soneso\StellarSDK\SEP\TxRep\TxRep;
 
 // Handle invalid base64 or XDR
@@ -453,7 +452,7 @@ try {
 try {
     $invalidTxrep = 'this is not valid txrep';
     $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($invalidTxrep);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo "Invalid Txrep format: " . $e->getMessage() . PHP_EOL;
 }
 
@@ -463,7 +462,7 @@ try {
 tx.sourceAccount: GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN';
     // Missing fee, seqNum, memo, operations, etc.
     $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($incompleteTxrep);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo "Missing required field: " . $e->getMessage() . PHP_EOL;
     // Example output: "Missing required field: missing tx.fee"
 }
@@ -480,32 +479,34 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0';
     $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($badAccountTxrep);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo "Invalid account: " . $e->getMessage() . PHP_EOL;
 }
 ```
 
 ## Working with amounts
 
-Txrep displays amounts in stroops (the smallest unit). Use these conversions:
+Txrep displays amounts in stroops (the smallest unit). `StellarAmount` converts between stroops and decimal strings in both directions without going through a float:
 
 ```php
-<?php
+<?php declare(strict_types=1);
+
+use phpseclib3\Math\BigInteger;
+use Soneso\StellarSDK\Util\StellarAmount;
 
 // Stroops to display units (XLM or asset units)
-$stroops = 400004000;
-$displayAmount = $stroops / 10000000;  // 40.0004
+$amount = new StellarAmount(new BigInteger('400004000'));
+echo $amount->getDecimalValueAsString() . PHP_EOL;  // "40.0004000"
 
-// Display units to stroops
-$amount = 25.5;
-$stroops = (int)($amount * 10000000);  // 255000000
+// Display units to stroops. Keep the amount a string end to end: a float cannot hold
+// a decimal amount exactly, so 0.0000021 * 10000000 evaluates to 20.999999999999996
+// and casting that to int yields 20 stroops instead of 21.
+$amount = StellarAmount::fromString('0.0000021');
+echo $amount->getStroopsAsString() . PHP_EOL;  // "21"
 
-// Format for display
-function formatAmount(int $stroops): string {
-    return number_format($stroops / 10000000, 7, '.', '');
-}
-
-echo formatAmount(400004000);  // "40.0004000"
+// getStroops() returns a BigInteger for arithmetic; render it with toString()
+$stroops = $amount->getStroops();
+echo $stroops->toString() . PHP_EOL;  // "21"
 ```
 
 ## Supported operations

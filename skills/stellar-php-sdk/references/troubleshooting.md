@@ -209,6 +209,38 @@ function submitWithSequenceRetry(
 }
 ```
 
+### Sequence Numbers Are BigInteger Objects
+
+`getSequenceNumber()` returns a `phpseclib3\Math\BigInteger`, not an `int`, whether the `Account` came from `requestAccount()` or was built locally. PHP's arithmetic operators raise a `TypeError` on it, so derive a new sequence number with the `BigInteger` methods and pass it to a new `Account`.
+
+```php
+<?php declare(strict_types=1);
+
+use phpseclib3\Math\BigInteger;
+use Soneso\StellarSDK\Account;
+
+// Horizon reports sequence numbers as decimal strings, so build the BigInteger from one
+$account = new Account(
+    'GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX',
+    new BigInteger('4294967296')
+);
+
+// WRONG: arithmetic operators on BigInteger
+try {
+    $seqNum = $account->getSequenceNumber() - 1;
+} catch (\TypeError $e) {
+    echo $e->getMessage() . "\n";
+    // Unsupported operand types: phpseclib3\Math\BigInteger - int
+}
+
+// CORRECT: use BigInteger methods
+$seqNum = $account->getSequenceNumber()->subtract(new BigInteger(1));
+echo $seqNum->toString() . "\n"; // 4294967295
+
+// TransactionBuilder reads the sequence number from the account, so replace the account
+$account = new Account($account->getAccountId(), $seqNum);
+```
+
 ## Soroban RPC Errors
 
 ### Simulation Failures
@@ -268,7 +300,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Crypto\KeyPair;
 
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
-$sourceKeyPair = KeyPair::fromSeed('SCZANGBA5YHTNYVVV3C7CAZMCLXPILHSE7HG3EQOVLU7BFXQMB3AVJY');
+$sourceKeyPair = KeyPair::fromSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
 
 $simResponse = $server->simulateTransaction(
     new SimulateTransactionRequest(transaction: $transaction)

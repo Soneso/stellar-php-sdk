@@ -433,7 +433,6 @@ Full flow including all response type handling and error recovery:
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -458,7 +457,7 @@ try {
     $service = RegulatedAssetsService::fromDomain('regulated-asset-issuer.com');
 } catch (SEP08IncompleteInitData $e) {
     exit('stellar.toml is missing NETWORK_PASSPHRASE: ' . $e->getMessage());
-} catch (Exception $e) {
+} catch (\Exception $e) {
     exit('Failed to load stellar.toml: ' . $e->getMessage());
 }
 
@@ -629,7 +628,6 @@ class SEP08PostActionNextUrl extends SEP08PostActionResponse
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\SEP\RegulatedAssets\RegulatedAssetsService;
@@ -667,7 +665,7 @@ try {
     // Thrown by postTransaction() or postAction() on transport failure
     echo 'Network error: ' . $e->getMessage() . PHP_EOL;
 
-} catch (Exception $e) {
+} catch (\Exception $e) {
     // stellar.toml fetch failed, or other unexpected error
     echo 'Error: ' . $e->getMessage() . PHP_EOL;
 }

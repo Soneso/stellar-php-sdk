@@ -222,7 +222,7 @@ if ($simResponse->error === null) {
 }
 ```
 
-Protocol 27 (CAP-71): pass `useUpgradedAuth: true` to request `ADDRESS_V2` credential entries (`new SimulateTransactionRequest($tx, useUpgradedAuth: true)`). The `useUpgradedAuth` key is omitted from the JSON-RPC params when false (the default). RPCs without protocol 27 support silently ignore it and return legacy `ADDRESS` entries — detect support by inspecting the returned credential arm, not by expecting an error.
+Protocol 27 (CAP-71): simulation requests `ADDRESS_V2` credential entries by default (`useUpgradedAuth` is `true`); pass `false` to request legacy `ADDRESS` entries (`new SimulateTransactionRequest($tx, useUpgradedAuth: false)`). The `useUpgradedAuth` key is always sent in the JSON-RPC params. RPCs without protocol 27 support silently ignore it and return legacy `ADDRESS` entries — detect support by inspecting the returned credential arm, not by expecting an error.
 
 ### sendTransaction
 
@@ -467,6 +467,14 @@ $wasmHash = 'abc123...'; // Hex-encoded WASM hash
 $codeEntry = $server->loadContractCodeForWasmId($wasmHash);
 ```
 
+The `...ForContractId` loaders resolve a CAP-85 external reference executable (Protocol 28)
+automatically: the instance names an owner contract and a tag, and the owner's persistent tag
+entry holds the wasm hash. `loadWasmIdForExternalRef(XdrContractExecutableExternalRef $ref)`
+resolves a reference directly: hex wasm id, `null` when the owner has no tag entry,
+`InvalidArgumentException` when the owner is not a contract address or the entry does not
+hold a 32-byte wasm hash. A Stellar asset contract has no wasm, so the loaders yield `null`
+for it.
+
 ### Introspecting Contract Interface
 
 Load parsed contract info to discover functions, types, and events.
@@ -531,5 +539,6 @@ Helper methods (not direct RPC calls):
 - `loadContractCodeForWasmId(string $wasmId): ?XdrContractCodeEntry`
 - `loadContractInfoForContractId(string $contractId): ?SorobanContractInfo`
 - `loadContractInfoForWasmId(string $wasmId): ?SorobanContractInfo`
+- `loadWasmIdForExternalRef(XdrContractExecutableExternalRef $ref): ?string`
 
 All RPC methods throw `GuzzleException` on network errors. Non-200 HTTP responses throw `\RuntimeException`. JSON parse failures throw `\InvalidArgumentException`. RPC-level errors are captured in the response object's `error` property.

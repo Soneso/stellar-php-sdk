@@ -31,7 +31,7 @@ echo $keyPair->getAccountId();   // G... public key
 echo $keyPair->getSecretSeed();  // S... secret seed
 
 // Create from existing secret seed
-$keyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV");
+$keyPair = KeyPair::fromSeed("SCJBSSSLPU47T6E5GJWP726MFIW5EMLW66BSYE6MJVMMUL7G53M6YBJV");
 
 // Create public-key-only keypair (cannot sign)
 $publicOnly = KeyPair::fromAccountId("GABC123...");
@@ -196,7 +196,7 @@ use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
 
-$senderKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV");
+$senderKeyPair = KeyPair::fromSeed("SCJBSSSLPU47T6E5GJWP726MFIW5EMLW66BSYE6MJVMMUL7G53M6YBJV");
 $sender = $sdk->requestAccount($senderKeyPair->getAccountId());
 
 // Build payment
@@ -914,22 +914,26 @@ Send funds that recipients claim later, with optional time-based conditions. Use
 
 #### Create Claimable Balance
 
-Lock funds that one or more claimants can claim. Each claimant has a predicate that defines when they can claim.
+Lock funds that one or more claimants can claim. Each claimant has a predicate that defines when they can claim. The submission response carries the id of the balance the transaction created.
 
 ```php
 <?php
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Claimant;
 use Soneso\StellarSDK\CreateClaimableBalanceOperationBuilder;
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\StellarSDK;
+use Soneso\StellarSDK\TransactionBuilder;
 
 // Create claimants (who can claim and under what conditions)
 $claimant1 = new Claimant(
-    "GCLAIMER1...",                    // claimant account
-    Claimant::predicateUnconditional() // can claim anytime
+    "GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX", // claimant account
+    Claimant::predicateUnconditional()                          // can claim anytime
 );
 
 $claimant2 = new Claimant(
-    "GCLAIMER2...",
+    "GB6IIEOKMYT4HLJXNC35JPH4DJGKJKCM4SA5XO3SDB6K436T7XGTMAN5",
     Claimant::predicateBeforeAbsoluteTime(strtotime("+30 days")) // must claim within 30 days
 );
 
@@ -939,6 +943,21 @@ $createOp = (new CreateClaimableBalanceOperationBuilder(
     Asset::native(),          // asset
     "100"                     // amount
 ))->build();
+
+$sdk = StellarSDK::getTestNetInstance();
+
+$sourceKeyPair = KeyPair::fromSeed("SCJBSSSLPU47T6E5GJWP726MFIW5EMLW66BSYE6MJVMMUL7G53M6YBJV");
+$sourceAccount = $sdk->requestAccount($sourceKeyPair->getAccountId());
+
+$transaction = (new TransactionBuilder($sourceAccount))
+    ->addOperation($createOp)
+    ->build();
+
+$transaction->sign($sourceKeyPair, Network::testnet());
+$response = $sdk->submitTransaction($transaction);
+
+// Pass the operation index when the transaction holds more than one CreateClaimableBalance
+$balanceId = $response->getCreatedClaimableBalanceId(); // "B..." strkey, null if not created
 ```
 
 #### Predicates
@@ -987,7 +1006,7 @@ $sdk = StellarSDK::getTestNetInstance();
 
 // Find claimable balances you can claim
 $balancesPage = $sdk->claimableBalances()
-    ->forClaimant("GCLAIMER1...")
+    ->forClaimant("GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX")
     ->execute();
 
 foreach ($balancesPage->getClaimableBalances()->toArray() as $balance) {
@@ -1897,7 +1916,7 @@ Find claimable balances you can claim, or look up a specific balance by ID.
 
 #### Get Single Balance
 
-Fetch a specific claimable balance by its ID. Accepts both hex format and strkey format (starts with "B"). See [SEP-23](sep/sep-23.md) for more on strkey encoding.
+Fetch a specific claimable balance by its ID. Accepts the "B..." strkey or hex: the id Horizon reports (72 characters), the bare balance hash (64), or the hash behind the 1-byte strkey discriminant (66). See [SEP-23](sep/sep-23.md) for more on strkey encoding.
 
 ```php
 <?php
@@ -1906,13 +1925,13 @@ use Soneso\StellarSDK\Asset;
 
 $sdk = StellarSDK::getTestNetInstance();
 
-// Using hex format
+// Using the id as Horizon reports it
 $balance = $sdk->requestClaimableBalance("00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072");
 echo "Amount: " . $balance->getAmount() . "\n";
 echo "Asset: " . Asset::canonicalForm($balance->getAsset()) . "\n";
 
-// Strkey format also works (starts with "B")
-$balance = $sdk->requestClaimableBalance("BAEKKL...");
+// The same balance by its strkey
+$balance = $sdk->requestClaimableBalance("BAAJFGZAW4XFREFLKHBE6HGEN6QBYTZRRWGTGNT5ETOWCTH56VERA4SHWU");
 ```
 
 #### Find by Claimant
@@ -1926,7 +1945,7 @@ use Soneso\StellarSDK\StellarSDK;
 $sdk = StellarSDK::getTestNetInstance();
 
 $balancesPage = $sdk->claimableBalances()
-    ->forClaimant("GCLAIMER...")
+    ->forClaimant("GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX")
     ->execute();
 
 foreach ($balancesPage->getClaimableBalances()->toArray() as $balance) {
@@ -2468,7 +2487,7 @@ Create a cryptographic signature for any text using your secret key.
 <?php
 use Soneso\StellarSDK\Crypto\KeyPair;
 
-$keyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV");
+$keyPair = KeyPair::fromSeed("SCJBSSSLPU47T6E5GJWP726MFIW5EMLW66BSYE6MJVMMUL7G53M6YBJV");
 
 // Sign a message
 $message = "Please sign this message to verify your identity";
@@ -2488,7 +2507,7 @@ Confirm a signature matches the message and was created by a specific account.
 use Soneso\StellarSDK\Crypto\KeyPair;
 
 // Verify with the signing keypair
-$keyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV");
+$keyPair = KeyPair::fromSeed("SCJBSSSLPU47T6E5GJWP726MFIW5EMLW66BSYE6MJVMMUL7G53M6YBJV");
 
 $message = "Please sign this message to verify your identity";
 $signature = $keyPair->signMessage($message);
