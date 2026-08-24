@@ -619,7 +619,6 @@ transactions(SEP24TransactionsRequest $request): SEP24TransactionsResponse
 ```php
 <?php declare(strict_types=1);
 
-use DateTime;
 use Soneso\StellarSDK\SEP\Interactive\InteractiveService;
 use Soneso\StellarSDK\SEP\Interactive\SEP24TransactionsRequest;
 
@@ -630,7 +629,7 @@ $request->jwt = $jwtToken;
 $request->assetCode = "USD";
 $request->limit = 10;
 $request->kind = "deposit";                          // omit for all kinds
-$request->noOlderThan = new DateTime("2024-01-01");  // DateTime object
+$request->noOlderThan = new \DateTime("2024-01-01");  // DateTime object
 $request->lang = "en";
 
 $response = $service->transactions($request);
@@ -901,7 +900,6 @@ All three exceptions extend `Exception` from `Soneso\StellarSDK\SEP\Interactive`
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Soneso\StellarSDK\SEP\Interactive\InteractiveService;
 use Soneso\StellarSDK\SEP\Interactive\SEP24DepositRequest;
@@ -932,7 +930,7 @@ try {
     // Network-level error
     echo "Network error: " . $e->getMessage() . PHP_EOL;
 
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo "Unexpected error: " . $e->getMessage() . PHP_EOL;
 }
 

@@ -453,9 +453,7 @@ Error handling for URI validation and transaction submission.
 ```php
 <?php
 
-use Exception;
 use GuzzleHttp\Exception\GuzzleException;
-use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Network;
@@ -469,7 +467,7 @@ try {
     $uri = 'web+stellar:tx?xdr=invalid-base64-data';
     $keyPair = KeyPair::fromSeed('SD77EKZMYX5XBINENYKNELHRL5RKTR2OL37FMYIV2WUU5IHFD5PXLPTN');
     $uriScheme->signAndSubmitTransaction($uri, $keyPair, Network::testnet());
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo "Invalid URI format: " . $e->getMessage() . PHP_EOL;
 }
 
@@ -510,7 +508,7 @@ try {
 } catch (GuzzleException $e) {
     // HTTP error when submitting to callback URL
     echo "HTTP error: " . $e->getMessage() . PHP_EOL;
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo "Unexpected error: " . $e->getMessage() . PHP_EOL;
 }
 ```

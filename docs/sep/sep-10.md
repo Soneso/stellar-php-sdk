@@ -202,7 +202,6 @@ When the client domain signing key is stored on a separate server (recommended f
 ```php
 <?php
 
-use Exception;
 use GuzzleHttp\Client;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
@@ -224,7 +223,7 @@ $signingCallback = function(string $transactionXdr): string {
     
     $data = json_decode($response->getBody()->getContents(), true);
     if (!isset($data['transaction'])) {
-        throw new Exception("Invalid signing server response");
+        throw new \Exception("Invalid signing server response");
     }
     return $data['transaction'];
 };
@@ -283,7 +282,6 @@ use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorMemoAndMuxedAccount;
 use Soneso\StellarSDK\SEP\WebAuth\SubmitCompletedChallengeErrorResponseException;
 use Soneso\StellarSDK\SEP\WebAuth\SubmitCompletedChallengeTimeoutResponseException;
 use Soneso\StellarSDK\SEP\WebAuth\SubmitCompletedChallengeUnknownResponseException;
-use InvalidArgumentException;
 
 try {
     $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
@@ -291,7 +289,7 @@ try {
     
     $jwtToken = $webAuth->jwtToken($userKeyPair->getAccountId(), [$userKeyPair]);
     
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     // Invalid parameters (e.g., memo with muxed account, missing client domain keypair)
     echo "Invalid parameters: " . $e->getMessage();
     
@@ -385,7 +383,6 @@ For production applications, implement retry logic with exponential backoff for 
 ```php
 <?php
 
-use Exception;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
@@ -428,7 +425,7 @@ function authenticateWithRetry(
         }
     }
     
-    throw $lastException ?? new Exception("Authentication failed after $maxRetries attempts");
+    throw $lastException ?? new \Exception("Authentication failed after $maxRetries attempts");
 }
 
 // Usage

@@ -60,12 +60,11 @@ foreach ($prices->buyAssets as $buyAsset) {
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use Soneso\StellarSDK\SEP\Quote\QuoteService;
 
 try {
     $quoteService = QuoteService::fromDomain('anchor.example.com');
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo 'Could not load quote service: ' . $e->getMessage() . PHP_EOL;
     exit(1);
 }
@@ -297,7 +296,6 @@ Authentication is optional.
 ```php
 <?php declare(strict_types=1);
 
-use InvalidArgumentException;
 use Soneso\StellarSDK\SEP\Quote\QuoteService;
 use Soneso\StellarSDK\SEP\Quote\SEP38PriceResponse;
 
@@ -466,15 +464,13 @@ Use `expireAfter` to request a minimum quote validity period. The anchor may gra
 ```php
 <?php declare(strict_types=1);
 
-use DateTime;
-use DateInterval;
 use Soneso\StellarSDK\SEP\Quote\QuoteService;
 use Soneso\StellarSDK\SEP\Quote\SEP38PostQuoteRequest;
 
 $quoteService = QuoteService::fromDomain('anchor.example.com');
 
-$expireAfter = new DateTime();
-$expireAfter->add(new DateInterval('PT1H')); // request at least 1 hour validity
+$expireAfter = new \DateTime();
+$expireAfter->add(new \DateInterval('PT1H')); // request at least 1 hour validity
 
 $request = new SEP38PostQuoteRequest(
     context: 'sep24',
@@ -554,7 +550,6 @@ Retrieves a previously-created firm quote by its ID. Authentication is **require
 ```php
 <?php declare(strict_types=1);
 
-use DateTime;
 use Soneso\StellarSDK\SEP\Quote\QuoteService;
 
 $quoteService = QuoteService::fromDomain('anchor.example.com');
@@ -564,7 +559,7 @@ $quote = $quoteService->getQuote($quoteId, $jwtToken);
 
 echo 'Quote ID:   ' . $quote->id . PHP_EOL;
 echo 'Expires at: ' . $quote->expiresAt->format('Y-m-d H:i:s') . PHP_EOL;
-echo 'Still valid: ' . ($quote->expiresAt > new DateTime() ? 'Yes' : 'No') . PHP_EOL;
+echo 'Still valid: ' . ($quote->expiresAt > new \DateTime() ? 'Yes' : 'No') . PHP_EOL;
 echo 'Sell: ' . $quote->sellAmount . ' ' . $quote->sellAsset . PHP_EOL;
 echo 'Buy:  ' . $quote->buyAmount . ' ' . $quote->buyAsset . PHP_EOL;
 ```
@@ -666,7 +661,6 @@ Always wrap quote service calls in `try-catch` blocks in production. The SDK thr
 ```php
 <?php declare(strict_types=1);
 
-use InvalidArgumentException;
 use Soneso\StellarSDK\SEP\Quote\QuoteService;
 use Soneso\StellarSDK\SEP\Quote\SEP38PostQuoteRequest;
 use Soneso\StellarSDK\SEP\Quote\SEP38BadRequestException;
@@ -686,7 +680,7 @@ try {
     $quote = $quoteService->postQuote($request, $jwtToken);
     echo 'Quote ID: ' . $quote->id . PHP_EOL;
 
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     // Both sellAmount and buyAmount provided, or neither provided
     echo 'Invalid request: ' . $e->getMessage() . PHP_EOL;
 

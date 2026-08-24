@@ -702,7 +702,6 @@ The SDK throws `InvalidArgumentException` for invalid input in both directions. 
 ```php
 <?php declare(strict_types=1);
 
-use InvalidArgumentException;
 use Soneso\StellarSDK\SEP\TxRep\TxRep;
 
 // XDR -> Txrep: invalid base64 or malformed XDR
@@ -717,7 +716,7 @@ try {
     $incompleteTxrep = 'type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN';
     $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($incompleteTxrep);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     // e.g. "missing or invalid tx.fee"
     echo 'Missing field: ' . $e->getMessage() . PHP_EOL;
 }
@@ -734,7 +733,7 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0';
     $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($badTxrep);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     // "invalid tx.sourceAccount"
     echo 'Invalid account: ' . $e->getMessage() . PHP_EOL;
 }

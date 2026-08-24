@@ -55,13 +55,12 @@ echo 'Authenticated! Token: ' . substr($jwtToken, 0, 50) . '...' . PHP_EOL;
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 
 try {
     $webAuth = WebAuthForContracts::fromDomain('anchor.example.com', Network::testnet());
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo 'Could not load WebAuth config: ' . $e->getMessage() . PHP_EOL;
     exit(1);
 }
@@ -433,7 +432,6 @@ All challenge validation exceptions extend `ContractChallengeValidationError` wh
 ```php
 <?php declare(strict_types=1);
 
-use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeRequestErrorResponse;
@@ -462,7 +460,7 @@ $signer     = KeyPair::fromSeed(getenv('CONTRACT_SIGNER_SEED'));
 try {
     $jwtToken = $webAuth->jwtToken($contractId, [$signer]);
 
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     // Bad parameters: non-C... account, clientDomain without signing means,
     // invalid webAuthContractId/serverSigningKey in constructor
     echo 'Invalid arguments: ' . $e->getMessage() . PHP_EOL;

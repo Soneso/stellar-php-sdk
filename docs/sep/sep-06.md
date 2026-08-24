@@ -639,7 +639,6 @@ use Soneso\StellarSDK\SEP\TransferServerService\AuthenticationRequiredException;
 use Soneso\StellarSDK\SEP\TransferServerService\CustomerInformationNeededException;
 use Soneso\StellarSDK\SEP\TransferServerService\CustomerInformationStatusException;
 use GuzzleHttp\Exception\GuzzleException;
-use Exception;
 
 try {
     $transferService = TransferServerService::fromDomain("testanchor.stellar.org");
@@ -683,7 +682,7 @@ try {
     // Network/HTTP errors
     echo "Request failed: " . $e->getMessage() . PHP_EOL;
     
-} catch (Exception $e) {
+} catch (\Exception $e) {
     // Domain not found, transfer server not available, etc.
     echo "Error: " . $e->getMessage() . PHP_EOL;
 }

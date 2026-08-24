@@ -52,13 +52,12 @@ echo 'Authenticated! Token: ' . substr($jwtToken, 0, 50) . '...' . PHP_EOL;
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 
 try {
     $webAuth = WebAuth::fromDomain('testanchor.stellar.org', Network::testnet());
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo 'Could not load WebAuth config: ' . $e->getMessage() . PHP_EOL;
     exit(1);
 }
@@ -288,7 +287,6 @@ When the wallet's signing key is stored on a dedicated signing server, provide a
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use GuzzleHttp\Client;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
@@ -309,7 +307,7 @@ $signingCallback = function (string $transactionXdr): string {
     ]);
     $data = json_decode($response->getBody()->getContents(), true);
     if (!isset($data['transaction'])) {
-        throw new Exception('Invalid signing server response');
+        throw new \Exception('Invalid signing server response');
     }
     return $data['transaction'];
 };
@@ -391,7 +389,6 @@ All exceptions are in the `Soneso\StellarSDK\SEP\WebAuth` namespace unless noted
 ```php
 <?php declare(strict_types=1);
 
-use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeRequestErrorResponse;
@@ -417,7 +414,7 @@ try {
 
     $jwtToken = $webAuth->jwtToken($userKeyPair->getAccountId(), [$userKeyPair]);
 
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     // Bad call parameters — e.g., memo with muxed account, or clientDomain without keypair/callback
     echo 'Invalid arguments: ' . $e->getMessage() . PHP_EOL;
 
@@ -509,7 +506,6 @@ try {
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidTimeBounds;
@@ -535,7 +531,7 @@ function authenticateWithRetry(
             sleep(2 ** $attempt); // 2, 4, 8 seconds
         }
     }
-    throw $lastException ?? new Exception("Authentication failed after $maxAttempts attempts");
+    throw $lastException ?? new \Exception("Authentication failed after $maxAttempts attempts");
 }
 
 $webAuth = WebAuth::fromDomain('testanchor.stellar.org', Network::testnet());
@@ -564,7 +560,6 @@ use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\TransactionBuilder;
 use phpseclib3\Math\BigInteger;
-use DateTime;
 
 // Server keypair (simulates the anchor's signing key)
 $serverKeyPair = KeyPair::random();
@@ -592,8 +587,8 @@ $transaction = (new TransactionBuilder($transactionAccount))
     )
     ->addMemo(Memo::none())
     ->setTimeBounds(new TimeBounds(
-        (new DateTime)->setTimestamp($now - 1),
-        (new DateTime)->setTimestamp($now + 300)
+        (new \DateTime)->setTimestamp($now - 1),
+        (new \DateTime)->setTimestamp($now + 300)
     ))
     ->build();
 $transaction->sign($serverKeyPair, Network::testnet());

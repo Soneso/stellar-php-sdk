@@ -439,7 +439,6 @@ The SDK throws `InvalidArgumentException` for invalid input. Wrap conversions in
 ```php
 <?php
 
-use InvalidArgumentException;
 use Soneso\StellarSDK\SEP\TxRep\TxRep;
 
 // Handle invalid base64 or XDR
@@ -453,7 +452,7 @@ try {
 try {
     $invalidTxrep = 'this is not valid txrep';
     $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($invalidTxrep);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo "Invalid Txrep format: " . $e->getMessage() . PHP_EOL;
 }
 
@@ -463,7 +462,7 @@ try {
 tx.sourceAccount: GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN';
     // Missing fee, seqNum, memo, operations, etc.
     $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($incompleteTxrep);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo "Missing required field: " . $e->getMessage() . PHP_EOL;
     // Example output: "Missing required field: missing tx.fee"
 }
@@ -480,7 +479,7 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0';
     $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($badAccountTxrep);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo "Invalid account: " . $e->getMessage() . PHP_EOL;
 }
 ```

@@ -687,7 +687,6 @@ Query multiple transactions with filtering and pagination:
 
 use Soneso\StellarSDK\SEP\Interactive\InteractiveService;
 use Soneso\StellarSDK\SEP\Interactive\SEP24TransactionsRequest;
-use DateTime;
 
 $service = InteractiveService::fromDomain("testanchor.stellar.org");
 
@@ -698,7 +697,7 @@ $request->limit = 10;
 $request->kind = "deposit"; // or "withdrawal", or omit for both
 
 // Only transactions after this date
-$request->noOlderThan = new DateTime("2024-01-01");
+$request->noOlderThan = new \DateTime("2024-01-01");
 
 // Language for localized responses
 $request->lang = "en";
@@ -906,7 +905,6 @@ use Soneso\StellarSDK\SEP\Interactive\SEP24AuthenticationRequiredException;
 use Soneso\StellarSDK\SEP\Interactive\SEP24TransactionNotFoundException;
 use Soneso\StellarSDK\SEP\Interactive\RequestErrorException;
 use GuzzleHttp\Exception\GuzzleException;
-use Exception;
 
 $service = InteractiveService::fromDomain("testanchor.stellar.org");
 
@@ -933,7 +931,7 @@ try {
     // Network or HTTP connection error
     echo "Network error: " . $e->getMessage() . "\n";
     
-} catch (Exception $e) {
+} catch (\Exception $e) {
     // Other unexpected errors
     echo "Unexpected error: " . $e->getMessage() . "\n";
 }
