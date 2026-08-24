@@ -3,7 +3,7 @@
 **Purpose:** Convert any Stellar XDR type to and from a SEP-0051-conformant JSON form. Covers every XDR primitive plus the Stellar-specific types (StrKey-encoded addresses, Asset, AssetCode, MuxedAccount, ClaimableBalanceID, SignerKey).
 **Prerequisites:** None. Most callers only need the four methods on the target XDR class.
 **SDK Namespace:** `Soneso\StellarSDK\Xdr`
-**Note:** SEP-51 is currently Draft status (v2.0.1).
+**Note:** Consult the [SEP-51 specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md) for the protocol's current status and version.
 
 ## Table of Contents
 
@@ -22,7 +22,7 @@
 
 Every XDR class under `Soneso\StellarSDK\Xdr\` carries:
 
-```php
+```text
 public function toJsonValue(): mixed;
 public static function fromJsonValue(mixed $value): static;
 public function toJson(): string;

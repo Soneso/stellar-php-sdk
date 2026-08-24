@@ -486,25 +486,27 @@ signatures.len: 0';
 
 ## Working with amounts
 
-Txrep displays amounts in stroops (the smallest unit). Use these conversions:
+Txrep displays amounts in stroops (the smallest unit). `StellarAmount` converts between stroops and decimal strings in both directions without going through a float:
 
 ```php
-<?php
+<?php declare(strict_types=1);
+
+use phpseclib3\Math\BigInteger;
+use Soneso\StellarSDK\Util\StellarAmount;
 
 // Stroops to display units (XLM or asset units)
-$stroops = 400004000;
-$displayAmount = $stroops / 10000000;  // 40.0004
+$amount = new StellarAmount(new BigInteger('400004000'));
+echo $amount->getDecimalValueAsString() . PHP_EOL;  // "40.0004000"
 
-// Display units to stroops
-$amount = 25.5;
-$stroops = (int)($amount * 10000000);  // 255000000
+// Display units to stroops. Keep the amount a string end to end: a float cannot hold
+// a decimal amount exactly, so 0.0000021 * 10000000 evaluates to 20.999999999999996
+// and casting that to int yields 20 stroops instead of 21.
+$amount = StellarAmount::fromString('0.0000021');
+echo $amount->getStroopsAsString() . PHP_EOL;  // "21"
 
-// Format for display
-function formatAmount(int $stroops): string {
-    return number_format($stroops / 10000000, 7, '.', '');
-}
-
-echo formatAmount(400004000);  // "40.0004000"
+// getStroops() returns a BigInteger for arithmetic; render it with toString()
+$stroops = $amount->getStroops();
+echo $stroops->toString() . PHP_EOL;  // "21"
 ```
 
 ## Supported operations

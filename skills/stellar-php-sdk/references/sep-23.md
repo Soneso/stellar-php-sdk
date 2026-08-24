@@ -30,7 +30,7 @@
 
 ### Account ID (G...)
 
-```php
+```text
 StrKey::isValidAccountId(string $accountId): bool
 StrKey::encodeAccountId(string $data): string       // raw 32 bytes → G...
 StrKey::decodeAccountId(string $accountId): string  // G... → raw 32 bytes
@@ -38,7 +38,7 @@ StrKey::decodeAccountId(string $accountId): string  // G... → raw 32 bytes
 
 ### Secret seed (S...)
 
-```php
+```text
 StrKey::isValidSeed(string $seed): bool
 StrKey::encodeSeed(string $data): string   // raw 32 bytes → S...
 StrKey::decodeSeed(string $seed): string   // S... → raw 32 bytes
@@ -46,7 +46,7 @@ StrKey::decodeSeed(string $seed): string   // S... → raw 32 bytes
 
 ### Muxed account ID (M...)
 
-```php
+```text
 StrKey::isValidMuxedAccountId(string $muxedAccountId): bool
 StrKey::encodeMuxedAccountId(string $data): string          // raw 40 bytes → M...
 StrKey::decodeMuxedAccountId(string $muxedAccountId): string // M... → raw 40 bytes
@@ -54,7 +54,7 @@ StrKey::decodeMuxedAccountId(string $muxedAccountId): string // M... → raw 40 
 
 ### Pre-auth TX (T...)
 
-```php
+```text
 StrKey::isValidPreAuthTx(string $preAuth): bool
 StrKey::encodePreAuthTx(string $data): string    // raw 32 bytes → T...
 StrKey::decodePreAuthTx(string $preAuth): string // T... → raw 32 bytes
@@ -62,7 +62,7 @@ StrKey::decodePreAuthTx(string $preAuth): string // T... → raw 32 bytes
 
 ### SHA-256 hash (X...)
 
-```php
+```text
 StrKey::isValidSha256Hash(string $hash): bool
 StrKey::encodeSha256Hash(string $data): string  // raw 32 bytes → X...
 StrKey::decodeSha256Hash(string $hash): string  // X... → raw 32 bytes
@@ -70,7 +70,7 @@ StrKey::decodeSha256Hash(string $hash): string  // X... → raw 32 bytes
 
 ### Signed payload (P...)
 
-```php
+```text
 // Higher-level: accepts SignedPayloadSigner or XdrSignedPayload
 StrKey::encodeSignedPayload(SignedPayloadSigner $signer): string
 StrKey::decodeSignedPayload(string $signedPayload): SignedPayloadSigner
@@ -82,7 +82,7 @@ StrKey::decodeXdrSignedPayload(string $signedPayload): XdrSignedPayload
 
 ### Contract ID (C...)
 
-```php
+```text
 StrKey::isValidContractId(string $contractId): bool
 StrKey::encodeContractId(string $data): string         // raw 32 bytes → C...
 StrKey::encodeContractIdHex(string $contractId): string // hex string → C...
@@ -92,7 +92,7 @@ StrKey::decodeContractIdHex(string $contractId): string // C... → hex string
 
 ### Liquidity pool ID (L...)
 
-```php
+```text
 StrKey::isValidLiquidityPoolId(string $liquidityPoolId): bool
 StrKey::encodeLiquidityPoolId(string $data): string              // raw 32 bytes → L...
 StrKey::encodeLiquidityPoolIdHex(string $liquidityPoolId): string // hex string → L...
@@ -102,7 +102,7 @@ StrKey::decodeLiquidityPoolIdHex(string $liquidityPoolId): string // L... → he
 
 ### Claimable balance ID (B...)
 
-```php
+```text
 StrKey::isValidClaimableBalanceId(string $claimableBalanceId): bool
 StrKey::encodeClaimableBalanceId(string $data): string              // raw bytes → B...
 StrKey::encodeClaimableBalanceIdHex(string $claimableBalanceId): string // hex string → B...
@@ -112,7 +112,7 @@ StrKey::decodeClaimableBalanceIdHex(string $claimableBalanceId): string // B... 
 
 ### Key derivation
 
-```php
+```text
 StrKey::accountIdFromSeed(string $seed): string           // S... → G...
 StrKey::accountIdFromPrivateKey(string $privateKey): string // raw 32-byte key → G...
 StrKey::publicKeyFromPrivateKey($privateKey)                // raw 32-byte key → raw 32-byte key (untyped in source)
@@ -415,7 +415,7 @@ var_dump($reencoded === $encoded); // bool(true)
 
 ### SignedPayloadSigner factory methods
 
-```php
+```text
 // From G-address string (most common)
 $signer = SignedPayloadSigner::fromAccountId(string $accountId, string $payload): SignedPayloadSigner
 
@@ -505,7 +505,7 @@ var_dump($encoded === $claimableBalanceId); // bool(true)
 
 ### Constructor
 
-```php
+```text
 // $ed25519AccountId must start with 'G' or throws InvalidArgumentException
 new MuxedAccount(string $ed25519AccountId, ?int $id = null)
 ```
@@ -515,7 +515,7 @@ new MuxedAccount(string $ed25519AccountId, ?int $id = null)
 
 ### Methods
 
-```php
+```text
 $muxed->getAccountId(): string          // M... (if muxed) or G... (if not muxed)
 $muxed->getEd25519AccountId(): string   // always the underlying G... address
 $muxed->getId(): ?int                   // 64-bit ID, or null if not muxed
@@ -525,7 +525,7 @@ $muxed->toXdr(): XdrMuxedAccount        // convert to XDR
 
 ### Static factory methods
 
-```php
+```text
 MuxedAccount::fromAccountId(string $accountId): MuxedAccount
 // Accepts G... or M...; throws InvalidArgumentException for other prefixes
 
@@ -641,12 +641,12 @@ Each type fixes the length of its encoded string and, except for the signed payl
 
 Empty, truncated and over-long input is rejected by this rule, with a message naming the length the type requires and the length given. No PHP warning precedes it:
 
-```php
-StrKey::decodeAccountId('');
-// InvalidArgumentException: G-strkey must be 56 characters long, 0 characters given
+```text
+StrKey::decodeAccountId('')
+  InvalidArgumentException: G-strkey must be 56 characters long, 0 characters given
 
-StrKey::decodeMuxedAccountId('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ');
-// InvalidArgumentException: M-strkey must be 69 characters long, 56 characters given
+StrKey::decodeMuxedAccountId('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ')
+  InvalidArgumentException: M-strkey must be 69 characters long, 56 characters given
 ```
 
 ### Signed payload framing (P...)
@@ -657,10 +657,10 @@ The decoded data of a P-strkey is the 32-byte signer key, a 4-byte payload lengt
 - an exact fit, with nothing after the padding. Surplus bytes mean the length prefix understates the payload.
 - every padding byte zero.
 
-```php
-// InvalidArgumentException: Signed payload padding must be zero, byte 0x01 found at offset 47
-// InvalidArgumentException: Signed payload declares 10 payload bytes, but the decoded data is 52 bytes where 48 are expected
-// InvalidArgumentException: Zero-length signed payload has no SEP-23 strkey representation
+```text
+InvalidArgumentException: Signed payload padding must be zero, byte 0x01 found at offset 47
+InvalidArgumentException: Signed payload declares 10 payload bytes, but the decoded data is 52 bytes where 48 are expected
+InvalidArgumentException: Zero-length signed payload has no SEP-23 strkey representation
 ```
 
 The zero-padding rule keeps one signer to one spelling, so validated P-addresses can be compared as strings (allowlists, deduplication, equality).
@@ -669,9 +669,8 @@ The zero-padding rule keeps one signer to one spelling, so validated P-addresses
 
 The first payload byte of a B-strkey is the `ClaimableBalanceID` union discriminant and must be 0, because `CLAIMABLE_BALANCE_ID_TYPE_V0` (0) is the only case the union defines. `decodeClaimableBalanceId()`, `decodeClaimableBalanceIdHex()` and `isValidClaimableBalanceId()` reject any other value:
 
-```php
-// InvalidArgumentException: Claimable balance discriminant 0x01 is not defined:
-// CLAIMABLE_BALANCE_ID_TYPE_V0 (0) is the only case ClaimableBalanceID has
+```text
+InvalidArgumentException: Claimable balance discriminant 0x01 is not defined: CLAIMABLE_BALANCE_ID_TYPE_V0 (0) is the only case ClaimableBalanceID has
 ```
 
 ### What decode* and isValid* reject
@@ -693,14 +692,12 @@ The first payload byte of a B-strkey is the `ClaimableBalanceID` union discrimin
 - `encodeSignedPayload()` and `encodeXdrSignedPayload()` require a payload of 1 to 64 bytes.
 - `encodeContractIdHex()`, `encodeLiquidityPoolIdHex()` and `encodeClaimableBalanceIdHex()` require hexadecimal input. An empty string, an odd number of characters, or a character outside `[0-9a-fA-F]` throws `InvalidArgumentException` naming the argument and the offending character:
 
-```php
-use Soneso\StellarSDK\Crypto\StrKey;
+```text
+StrKey::encodeContractIdHex('nothex')
+  InvalidArgumentException: $contractId must contain only hexadecimal characters [0-9a-fA-F], "n" found at index 0
 
-StrKey::encodeContractIdHex('nothex');
-// InvalidArgumentException: $contractId must contain only hexadecimal characters [0-9a-fA-F], "n" found at index 0
-
-StrKey::encodeContractIdHex('abc');
-// InvalidArgumentException: $contractId must be a hexadecimal string of even length, 3 characters given
+StrKey::encodeContractIdHex('abc')
+  InvalidArgumentException: $contractId must be a hexadecimal string of even length, 3 characters given
 ```
 
 ---

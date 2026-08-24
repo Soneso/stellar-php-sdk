@@ -24,7 +24,7 @@
 
 The entire SEP-11 implementation lives in one class with two public static methods:
 
-```php
+```text
 use Soneso\StellarSDK\SEP\TxRep\TxRep;
 
 // XDR base64 string  ->  human-readable Txrep string
@@ -875,15 +875,16 @@ echo "=== Review Transaction ===" . PHP_EOL;
 echo $txRep . PHP_EOL;
 echo "=========================" . PHP_EOL;
 
-// Parse individual fields for user-facing display
+// Parse individual fields for user-facing display. Pass '' as the thousands separator:
+// the SDK rejects an amount containing a comma, so a grouped string cannot be fed back in.
 foreach (explode(PHP_EOL, $txRep) as $line) {
     if (str_starts_with($line, 'tx.fee:')) {
         $fee = (int)trim(explode(':', $line, 2)[1]);
-        echo 'Fee: ' . number_format($fee / 10_000_000, 7) . ' XLM' . PHP_EOL;
+        echo 'Fee: ' . number_format($fee / 10_000_000, 7, '.', '') . ' XLM' . PHP_EOL;
     }
     if (str_starts_with($line, 'tx.operations[0].body.paymentOp.amount:')) {
         $amount = (int)trim(explode(':', $line, 2)[1]);
-        echo 'Amount: ' . number_format($amount / 10_000_000, 7) . PHP_EOL;
+        echo 'Amount: ' . number_format($amount / 10_000_000, 7, '.', '') . PHP_EOL;
     }
 }
 

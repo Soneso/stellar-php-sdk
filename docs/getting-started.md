@@ -25,7 +25,7 @@ Install via Composer:
 composer require soneso/stellar-php-sdk
 ```
 
-**Requirements:** PHP 8.0+, ext-bcmath, ext-gmp. **Optional:** ext-pcntl (Unix only, used for process forking in integration tests).
+**Requirements:** PHP 8.0+, ext-bcmath, ext-gmp, ext-mbstring, ext-sodium. **Optional:** ext-pcntl (Unix only, used for process forking in integration tests).
 
 ## Basic Concepts
 

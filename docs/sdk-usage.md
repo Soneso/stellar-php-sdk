@@ -914,22 +914,26 @@ Send funds that recipients claim later, with optional time-based conditions. Use
 
 #### Create Claimable Balance
 
-Lock funds that one or more claimants can claim. Each claimant has a predicate that defines when they can claim.
+Lock funds that one or more claimants can claim. Each claimant has a predicate that defines when they can claim. The submission response carries the id of the balance the transaction created.
 
 ```php
 <?php
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Claimant;
 use Soneso\StellarSDK\CreateClaimableBalanceOperationBuilder;
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\StellarSDK;
+use Soneso\StellarSDK\TransactionBuilder;
 
 // Create claimants (who can claim and under what conditions)
 $claimant1 = new Claimant(
-    "GCLAIMER1...",                    // claimant account
-    Claimant::predicateUnconditional() // can claim anytime
+    "GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX", // claimant account
+    Claimant::predicateUnconditional()                          // can claim anytime
 );
 
 $claimant2 = new Claimant(
-    "GCLAIMER2...",
+    "GB6IIEOKMYT4HLJXNC35JPH4DJGKJKCM4SA5XO3SDB6K436T7XGTMAN5",
     Claimant::predicateBeforeAbsoluteTime(strtotime("+30 days")) // must claim within 30 days
 );
 
@@ -939,16 +943,6 @@ $createOp = (new CreateClaimableBalanceOperationBuilder(
     Asset::native(),          // asset
     "100"                     // amount
 ))->build();
-```
-
-After the transaction is submitted, the response carries the id of the balance it created. Pass the index of the `CreateClaimableBalance` operation when the transaction holds more than one:
-
-```php
-<?php
-use Soneso\StellarSDK\Crypto\KeyPair;
-use Soneso\StellarSDK\Network;
-use Soneso\StellarSDK\StellarSDK;
-use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
 
@@ -956,12 +950,13 @@ $sourceKeyPair = KeyPair::fromSeed("SCJBSSSLPU47T6E5GJWP726MFIW5EMLW66BSYE6MJVMM
 $sourceAccount = $sdk->requestAccount($sourceKeyPair->getAccountId());
 
 $transaction = (new TransactionBuilder($sourceAccount))
-    ->addOperation($createOp) // from the block above
+    ->addOperation($createOp)
     ->build();
 
 $transaction->sign($sourceKeyPair, Network::testnet());
 $response = $sdk->submitTransaction($transaction);
 
+// Pass the operation index when the transaction holds more than one CreateClaimableBalance
 $balanceId = $response->getCreatedClaimableBalanceId(); // "B..." strkey, null if not created
 ```
 
@@ -1011,7 +1006,7 @@ $sdk = StellarSDK::getTestNetInstance();
 
 // Find claimable balances you can claim
 $balancesPage = $sdk->claimableBalances()
-    ->forClaimant("GCLAIMER1...")
+    ->forClaimant("GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX")
     ->execute();
 
 foreach ($balancesPage->getClaimableBalances()->toArray() as $balance) {
@@ -1950,7 +1945,7 @@ use Soneso\StellarSDK\StellarSDK;
 $sdk = StellarSDK::getTestNetInstance();
 
 $balancesPage = $sdk->claimableBalances()
-    ->forClaimant("GCLAIMER...")
+    ->forClaimant("GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX")
     ->execute();
 
 foreach ($balancesPage->getClaimableBalances()->toArray() as $balance) {

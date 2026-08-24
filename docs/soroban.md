@@ -118,8 +118,11 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
 
-$account = $server->getAccount('GABC...');
-echo "Sequence: {$account->getSequenceNumber()}\n";
+// getAccount() returns null when the account does not exist on the network
+$account = $server->getAccount('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX');
+if ($account !== null) {
+    echo "Sequence: {$account->getSequenceNumber()}\n";
+}
 ```
 
 ### Contract Data
@@ -135,7 +138,7 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
 
 $entry = $server->getContractData(
-    contractId: 'CCXYZ...',
+    contractId: 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
     key: XdrSCVal::forSymbol('counter'),
     durability: XdrContractDataDurability::PERSISTENT()
 );
@@ -156,7 +159,7 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
 
 // By contract ID
-$info = $server->loadContractInfoForContractId('CCXYZ...');
+$info = $server->loadContractInfoForContractId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE');
 if ($info !== null) {
     echo "Spec entries: " . count($info->specEntries) . "\n";
 }
@@ -203,7 +206,7 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
 
 // By contract ID
-$contractCodeEntry = $server->loadContractCodeForContractId('CCXYZ...');
+$contractCodeEntry = $server->loadContractCodeForContractId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE');
 if ($contractCodeEntry !== null) {
     $bytecode = $contractCodeEntry->code->value;
     echo "Code size: " . strlen($bytecode) . " bytes\n";
@@ -233,7 +236,7 @@ $server = new SorobanServer('https://soroban-testnet.stellar.org');
 
 // A contract's executable lives on its instance entry, which is always persistent.
 $entry = $server->getContractData(
-    contractId: 'CCXYZ...',
+    contractId: 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
     key: XdrSCVal::forLedgerKeyContractInstance(),
     durability: XdrContractDataDurability::PERSISTENT()
 );
@@ -276,7 +279,7 @@ use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 
 $client = SorobanClient::forClientOptions(new ClientOptions(
     sourceAccountKeyPair: KeyPair::fromSeed('SXXX...'),
-    contractId: 'CCXYZ...',
+    contractId: 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
     network: Network::testnet(),
     rpcUrl: 'https://soroban-testnet.stellar.org'
 ));
@@ -302,20 +305,20 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 $client = SorobanClient::forClientOptions(new ClientOptions(
     sourceAccountKeyPair: KeyPair::fromSeed('SXXX...'),
-    contractId: 'CCXYZ...',
+    contractId: 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
     network: Network::testnet(),
     rpcUrl: 'https://soroban-testnet.stellar.org'
 ));
 
 // Read-only (returns simulation result)
 $balance = $client->invokeMethod('balance', [
-    Address::fromAccountId('GABC...')->toXdrSCVal()
+    Address::fromAccountId('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX')->toXdrSCVal()
 ]);
 
 // Write (auto-signs and submits)
 $result = $client->invokeMethod('transfer', [
-    Address::fromAccountId('GFROM...')->toXdrSCVal(),
-    Address::fromAccountId('GTO...')->toXdrSCVal(),
+    Address::fromAccountId('GAS352EOY437UJGADYGB4BQDMQ6YYMPP6C4XUZA2H5CDDRUSGYIKEQOJ')->toXdrSCVal(), // from
+    Address::fromAccountId('GB342ZKLPOH2VP2N5IUFKJ7E7LBGH5AY2FAI2I7MFPEAGFZCDVPFIHXC')->toXdrSCVal(), // to
     XdrSCVal::forI128BigInt(1000)
 ]);
 
@@ -430,7 +433,7 @@ before the deployment, for example in constructor arguments of another contract.
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
 
-$deployer = Address::fromAccountId('GABC...');
+$deployer = Address::fromAccountId('GBYC2T4GYXFCMZVJQATGL3475PASGITLBLWNLQ63B4U2D4ATO5X67XML');
 $salt = random_bytes(32);
 
 $futureContractId = Address::deriveContractId($deployer, $salt, Network::testnet());
@@ -454,7 +457,7 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 $client = SorobanClient::forClientOptions(new ClientOptions(
     sourceAccountKeyPair: KeyPair::fromSeed('SXXX...'),
-    contractId: 'CCXYZ...',
+    contractId: 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
     network: Network::testnet(),
     rpcUrl: 'https://soroban-testnet.stellar.org'
 ));
@@ -612,10 +615,40 @@ All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry::sign`, SEP-45) 
 
 Simulation requests `ADDRESS_V2` credential arms by default (`useUpgradedAuth` is `true` on `MethodOptions` and `SimulateTransactionRequest`, and the key is always sent in the JSON-RPC params). The flag is honored only on RPC servers that support it and only in recording mode: `authMode` "record" or "record_allow_nonroot", or `authMode` unset on a transaction without attached auth entries — the RPC then defaults to recording, as in the examples below. RPC servers without support silently ignore it and return legacy `ADDRESS` entries — detect support by inspecting the credential arm of the returned entries, never by expecting an error. Set `useUpgradedAuth` to `false` to request legacy `ADDRESS` entries, for example on a network below protocol 27.
 
+**Prerequisites for the example below:** a contract of your own, deployed on the target network, whose spec exposes a `swap(address, i128)` method, and a funded source account that holds its seed. Replace `$contractId` and the seed with your own — the id shown is a placeholder and does not resolve to a deployed contract, and a contract id is not interchangeable between examples, since each example's contract needs its own methods and storage.
+
 ```php
 <?php
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\InvokeContractHostFunction;
+use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Contract\ClientOptions;
+use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
+use Soneso\StellarSDK\Soroban\SorobanServer;
+use Soneso\StellarSDK\TransactionBuilder;
+use Soneso\StellarSDK\Xdr\XdrInt128Parts;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
+
+$rpcUrl = 'https://soroban-testnet.stellar.org';
+$contractId = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
+$keyPair = KeyPair::fromSeed('SXXX...');
+
+// Arguments of the contract's swap(address, i128) method
+$args = [
+    Address::fromAccountId($keyPair->getAccountId())->toXdrSCVal(),
+    XdrSCVal::forI128(new XdrInt128Parts(0, 1000000)),
+];
+
+$client = SorobanClient::forClientOptions(new ClientOptions(
+    sourceAccountKeyPair: $keyPair,
+    contractId: $contractId,
+    network: Network::testnet(),
+    rpcUrl: $rpcUrl,
+));
 
 // Contract client: ADDRESS_V2 entries are requested by default
 $tx = $client->buildInvokeMethodTx(
@@ -634,6 +667,22 @@ foreach ($entries as $entry) {
 }
 
 // Low-level: request legacy ADDRESS entries on the simulate request
+$server = new SorobanServer($rpcUrl);
+
+// getAccount() returns null when the account does not exist on the network
+$account = $server->getAccount($keyPair->getAccountId());
+if ($account === null) {
+    throw new \RuntimeException(
+        'Source account not found. It must exist and be funded on the network before simulating.'
+    );
+}
+
+$invokeOp = (new InvokeHostFunctionOperationBuilder(
+    new InvokeContractHostFunction($contractId, 'swap', $args)
+))->build();
+
+$transaction = (new TransactionBuilder($account))->addOperation($invokeOp)->build();
+
 $request = new SimulateTransactionRequest($transaction, useUpgradedAuth: false);
 $response = $server->simulateTransaction($request);
 ```
@@ -790,10 +839,10 @@ Account and contract addresses for referencing entities on the network.
 use Soneso\StellarSDK\Soroban\Address;
 
 // Account address (G...)
-$account = Address::fromAccountId('GABC...')->toXdrSCVal();
+$account = Address::fromAccountId('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX')->toXdrSCVal();
 
 // Contract address (C...) - use fromAnyId for strkey format
-$contract = Address::fromAnyId('CABC...')->toXdrSCVal();
+$contract = Address::fromAnyId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE')->toXdrSCVal();
 ```
 
 #### Collections
@@ -1065,7 +1114,7 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
 
 // Contract ID must be C-prefixed strkey
-$contractId = 'CCXYZ...';
+$contractId = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
 
 // Filter: any first topic, "transfer" as second topic
 $topicFilter = new TopicFilter([
@@ -1109,7 +1158,7 @@ use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 
 $client = SorobanClient::forClientOptions(new ClientOptions(
     sourceAccountKeyPair: KeyPair::fromSeed('SXXX...'),
-    contractId: 'CCXYZ...',
+    contractId: 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
     network: Network::testnet(),
     rpcUrl: 'https://soroban-testnet.stellar.org',
     // logger: $yourPsr3Logger  // Optional: PSR-3 logger for debug output
@@ -1215,16 +1264,18 @@ use MyApp\Contracts\TokenClient;
 
 $client = TokenClient::forClientOptions(new ClientOptions(
     sourceAccountKeyPair: KeyPair::fromSeed('SXXX...'),
-    contractId: 'CTOKEN...',
+    contractId: 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
     network: Network::testnet(),
     rpcUrl: 'https://soroban-testnet.stellar.org'
 ));
 
 // Type-safe calls with native PHP types
-$balance = $client->balance(Address::fromAccountId('GABC...'));  // i128 as decimal string
+$balance = $client->balance(
+    Address::fromAccountId('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX')
+);  // i128 as decimal string
 $client->transfer(
-    Address::fromAccountId('GFROM...'),
-    Address::fromAccountId('GTO...'),
+    Address::fromAccountId('GAS352EOY437UJGADYGB4BQDMQ6YYMPP6C4XUZA2H5CDDRUSGYIKEQOJ'), // from
+    Address::fromAccountId('GB342ZKLPOH2VP2N5IUFKJ7E7LBGH5AY2FAI2I7MFPEAGFZCDVPFIHXC'), // to
     '1000',  // i128 amount as decimal string
 );
 ```
@@ -1339,8 +1390,11 @@ and Deploying.
 ```php
 <?php
 use Soneso\StellarSDK\CreateContractFromExternalRefHostFunction;
+use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Soroban\Address;
+
+$keyPair = KeyPair::fromSeed('SXXX...');
 
 $createOp = (new InvokeHostFunctionOperationBuilder(
     new CreateContractFromExternalRefHostFunction(
@@ -1349,9 +1403,10 @@ $createOp = (new InvokeHostFunctionOperationBuilder(
         'token-v1'  // Tag of the executable entry on the owner; matched byte for byte
     )
 ))->build();
-
-// Build, simulate, set auth, sign, and send (same pattern)
 ```
+
+Build, simulate, set auth, sign and send `$createOp` exactly as in
+[Create Contract Instance](#create-contract-instance) above.
 
 For constructor arguments, use `CreateContractFromExternalRefWithConstructorHostFunction`
 and pass the argument list after the tag.
@@ -1479,7 +1534,7 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
 
 // By contract ID
-$contractInfo = $server->loadContractInfoForContractId('CCXYZ...');
+$contractInfo = $server->loadContractInfoForContractId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE');
 
 // By WASM ID
 $contractInfo = $server->loadContractInfoForWasmId($wasmId);

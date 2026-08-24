@@ -149,11 +149,18 @@ $operation = (new PathPaymentStrictSendOperationBuilder(
 
 ### Manage Sell Offer
 
-Creates, updates, or deletes a sell offer on the DEX. Set amount to `'0'` to delete.
+Creates, updates, or deletes a sell offer on the DEX. Set amount to `'0'` to delete. The update and delete halves of the example need an `$accountId` that already holds at least one offer.
 
 ```php
-use Soneso\StellarSDK\ManageSellOfferOperationBuilder;
+<?php declare(strict_types=1);
+
 use Soneso\StellarSDK\Asset;
+use Soneso\StellarSDK\ManageSellOfferOperationBuilder;
+use Soneso\StellarSDK\StellarSDK;
+
+$sdk = StellarSDK::getTestNetInstance();
+$accountId = 'GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX';
+$issuerAccountId = 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN';
 
 $selling = Asset::native();
 $buying = Asset::createNonNativeAsset('USD', $issuerAccountId);
@@ -166,14 +173,26 @@ $createOffer = (new ManageSellOfferOperationBuilder(
     '2.5'      // price: 1 selling = 2.5 buying
 ))->build();
 
+// Updating or deleting needs the id of an existing offer. Offer id 0 means "create a
+// new offer", so it is never a valid fallback for either operation.
+$offers = $sdk->offers()->forAccount($accountId)->execute()->getOffers()->toArray();
+if ($offers === []) {
+    throw new \RuntimeException(
+        'Account holds no offer to update or delete; create one first.'
+    );
+}
+
+// WRONG: getId() — CORRECT: getOfferId(), which returns a string while setOfferId() takes an int.
+$offerId = (int) $offers[0]->getOfferId();
+
 // Update existing offer
 $updateOffer = (new ManageSellOfferOperationBuilder($selling, $buying, '150.0', '2.8'))
-    ->setOfferId(12345)
+    ->setOfferId($offerId)
     ->build();
 
 // Delete offer (amount = 0)
 $deleteOffer = (new ManageSellOfferOperationBuilder($selling, $buying, '0', '1'))
-    ->setOfferId(12345)
+    ->setOfferId($offerId)
     ->build();
 ```
 

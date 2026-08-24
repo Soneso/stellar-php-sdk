@@ -3,7 +3,7 @@
 **Purpose:** Compute and decode the operation IDs (TOIDs) Horizon uses for historical ledger data — operations, transactions, and paging cursors.
 **Prerequisites:** None
 **SDK Namespace:** `Soneso\StellarSDK\SEP\TOID`
-**Note:** SEP-35 is currently Draft status.
+**Note:** Consult the [SEP-35 specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0035.md) for the protocol's current status.
 
 ## Table of Contents
 
@@ -59,7 +59,7 @@ echo $decoded->getLedgerSequence() . "\n"; // 100
 
 `TOID` is in `Soneso\StellarSDK\SEP\TOID\TOID`; `TOIDRange` is in `Soneso\StellarSDK\SEP\TOID\TOIDRange`.
 
-```php
+```text
 class TOID
 {
     // Field bounds
@@ -283,6 +283,8 @@ try {
 **WRONG/CORRECT — operation index is not zero-based on the network:**
 
 ```php
+<?php declare(strict_types=1);
+
 use Soneso\StellarSDK\SEP\TOID\TOID;
 
 $ledgerSeq = 100;
@@ -299,6 +301,8 @@ $firstOpId = (new TOID($ledgerSeq, $txOrder, 1))->toInt64();
 **WRONG/CORRECT — comparing against `afterLedger()` and `ledgerRangeInclusive()` with the same operator:**
 
 ```php
+<?php declare(strict_types=1);
+
 use Soneso\StellarSDK\SEP\TOID\TOID;
 
 $upperBound = TOID::afterLedger(100)->toInt64();
@@ -317,10 +321,17 @@ $hit = $inLedger >= $range->getStart() && $inLedger < $range->getEnd();
 **WRONG/CORRECT — `ledgerRangeInclusive()` requires `$from >= 1`:**
 
 ```php
+<?php declare(strict_types=1);
+
 use Soneso\StellarSDK\SEP\TOID\TOID;
 
 // WRONG: 0 is not a valid ledger sequence to start a range from
-TOID::ledgerRangeInclusive(0, 100); // throws InvalidArgumentException
+try {
+    TOID::ledgerRangeInclusive(0, 100);
+} catch (\InvalidArgumentException $e) {
+    echo $e->getMessage() . "\n";
+    // Invalid range start, it must be at least 1.
+}
 
 // CORRECT: the network's first ledger is 1; use afterLedger() or the TOID
 // constructor directly if you need an encoded ID with ledger field 0

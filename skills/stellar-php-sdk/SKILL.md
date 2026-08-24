@@ -1,8 +1,8 @@
 ---
 name: stellar-php-sdk
-description: Build Stellar blockchain applications in PHP using soneso/stellar-php-sdk. Use when generating PHP code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, XDR encoding/decoding, and SEP protocol integration. Covers all 26 operations, 50 Horizon endpoints, 12 RPC methods, and 20 SEP implementations with synchronous Guzzle HTTP patterns.
+description: Guides Stellar blockchain development in PHP with the soneso/stellar-php-sdk package. Use when generating or reviewing PHP code for keypairs and accounts, assets and trustlines, transaction building, signing and submission, operation builders, Horizon API queries and streaming, Soroban RPC, smart contract deployment and invocation, XDR encoding and decoding, and SEP protocol integration (stellar.toml, federation, mnemonic key derivation, web authentication, KYC, deposit and withdrawal flows, muxed accounts, anchor quotes). HTTP calls are synchronous and built on Guzzle.
 license: Apache 2.0
-compatibility: Requires PHP 8.0+, ext-bcmath, ext-gmp, and Composer
+compatibility: Requires PHP 8.0+, ext-bcmath, ext-gmp, ext-mbstring, ext-sodium, and Composer
 metadata:
   version: "1.4.0"
   sdk_version: "1.12.0"
@@ -235,41 +235,7 @@ if ($response->isSuccessful()) {
 // For HorizonRequestException handling, see Error Handling section
 ```
 
-### Common Operations
-
-**Change Trust (Establish Trustline):**
-
-```php
-use Soneso\StellarSDK\ChangeTrustOperationBuilder;
-
-$asset = Asset::createNonNativeAsset('USDC', 'GISSUER...');
-$trustOp = (new ChangeTrustOperationBuilder($asset))->build();
-// Optional: set limit with ChangeTrustOperationBuilder($asset, '1000.00')
-```
-
-**Manage Sell Offer (DEX):**
-
-```php
-use Soneso\StellarSDK\ManageSellOfferOperationBuilder;
-
-$selling = Asset::createNonNativeAsset('USDC', 'GISSUER...');
-$buying  = Asset::native();
-
-// Create new offer (offerId defaults to 0)
-$offerOp = (new ManageSellOfferOperationBuilder(
-    $selling, $buying, '100.00', '0.50' // amount selling, price
-))->build();
-
-// Query offers to get offer ID
-$offers = $sdk->offers()->forAccount($accountId)->execute()->getOffers();
-$offerId = $offers->toArray()[0]->getOfferId(); // WRONG: getId() — CORRECT: getOfferId()
-
-// Update existing offer (amount '0' deletes it)
-$updateOp = (new ManageSellOfferOperationBuilder($selling, $buying, '200.00', '0.55'))
-    ->setOfferId($offerId)->build();
-```
-
-For all 26 operations with parameters and examples:
+Each operation has its own builder (`PaymentOperationBuilder`, `ChangeTrustOperationBuilder`, `ManageSellOfferOperationBuilder`, ...) that takes the operation's parameters and returns the operation from `build()`. For all 26 operations with parameters and examples:
 [Operations Reference](./references/operations.md)
 
 ## 5. Soroban RPC API
@@ -427,16 +393,22 @@ Transaction submission error handling (non-exception path) is shown in the [Tran
 ### Soroban RPC Errors
 
 ```php
-$txResponse = $server->getTransaction('abc123...');
+use Soneso\StellarSDK\Soroban\SorobanServer;
+
+$server = new SorobanServer('https://soroban-testnet.stellar.org');
+$hash = 'd55e3b0490b0a0992ee842dbe0cd17b7ca5f36c83dea1f5d996aaaae52238a83'; // from sendTransaction()
+
+$txResponse = $server->getTransaction($hash);
 if ($txResponse->error !== null) {
     echo 'RPC error: ' . $txResponse->error->getMessage() . PHP_EOL;
+} else {
+    // status is null on an error response, so read it only on this branch
+    echo match ($txResponse->status) {
+        'SUCCESS'   => 'transaction succeeded',
+        'FAILED'    => 'transaction failed',
+        'NOT_FOUND' => 'pending or invalid hash',
+    } . PHP_EOL;
 }
-// Check status: 'SUCCESS', 'FAILED', or 'NOT_FOUND' (pending/invalid)
-match ($txResponse->status) {
-    'SUCCESS'   => /* transaction succeeded */,
-    'FAILED'    => /* transaction failed */,
-    'NOT_FOUND' => /* pending or invalid hash */,
-};
 ```
 
 For the full error catalog, result codes, and retry patterns:
@@ -505,41 +477,26 @@ $account->incrementSequenceNumber(); // now N+1
 $tx = (new TransactionBuilder($account))->addOperation($op)->build(); // seq N+2 — tx_bad_seq
 ```
 
-**Sequence numbers are BigInteger objects:**
+**Sequence numbers are `BigInteger` objects:** PHP's arithmetic operators raise a `TypeError` on them. Use the `BigInteger` methods (`add()`, `subtract()`) — see [Troubleshooting Guide](./references/troubleshooting.md).
+
+**Collections are not `Countable`:** PHP's `count()` on an SDK collection response raises a `TypeError`. Use the collection's own `->count()` method — see [Horizon API Reference](./references/horizon_api.md).
+
+**Insufficient signatures return `op_bad_auth`, not `tx_bad_auth`:** When a multi-sig transaction lacks enough signature weight, the transaction-level code is `tx_failed` and the auth failure is in the operation codes. Both codes come off the `HorizonRequestException` extras (`$e->getHorizonErrorResponse()->getExtras()`).
 
 ```php
-use phpseclib3\Math\BigInteger;
+use Soneso\StellarSDK\Responses\Errors\HorizonErrorResponseExtras;
 
-// WRONG: arithmetic operators on BigInteger
-$seqNum = $account->getSequenceNumber() - 1; // TypeError
+// $extras is $e->getHorizonErrorResponse()->getExtras() in a HorizonRequestException catch
+function isAuthFailure(HorizonErrorResponseExtras $extras): bool
+{
+    // WRONG: the transaction-level code is 'tx_failed', so this never fires
+    if ($extras->getResultCodesTransaction() === 'tx_bad_auth') {
+        return true;
+    }
 
-// CORRECT: use BigInteger methods
-$seqNum = $account->getSequenceNumber()->subtract(new BigInteger(1));
-$account = new Account($account->getAccountId(), $seqNum); // account with modified seq num
-```
-
-**Collection count — use method, not function:**
-
-```php
-// WRONG: PHP count() — SDK collections do NOT implement Countable
-count($account->getSigners()); // TypeError or returns 1 (misleading)
-
-// CORRECT: use the ->count() method on all SDK collection objects
-$account->getSigners()->count();
-// Same for: TransactionsResponse, OperationsResponse, OffersResponse,
-// PaymentsResponse, TradesResponse, EffectsResponse, etc.
-```
-
-
-**Insufficient signatures return `op_bad_auth`, not `tx_bad_auth`:** When a multi-sig transaction lacks enough signature weight, the transaction-level code is `tx_failed` and the auth failure is in the operation codes.
-
-```php
-// WRONG: checking transaction code for auth failure
-$txCode = $extras->getResultCodesTransaction(); // returns 'tx_failed'
-if ($txCode === 'tx_bad_auth') { ... } // never matches
-
-// CORRECT: check operation codes for op_bad_auth
-$opCodes = $extras->getResultCodesOperation(); // returns ['op_bad_auth']
+    // CORRECT: the auth failure is in the operation codes
+    return in_array('op_bad_auth', $extras->getResultCodesOperation() ?? [], true);
+}
 ```
 
 **Fee calculation:** The fee is per operation. For a transaction with N operations at `setMaxOperationFee(200)`, the total fee is N * 200 stroops. The minimum base fee is 100 stroops per operation (`StellarConstants::MIN_BASE_FEE_STROOPS`).

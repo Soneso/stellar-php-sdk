@@ -606,7 +606,7 @@ See `rpc.md` > Contract Introspection Helpers for `loadWasmIdForExternalRef()`.
 `SorobanContractInfo` provides pre-extracted plain PHP arrays from the raw spec entries.
 Use `count()`, `foreach`, and standard array functions — these are NOT collection objects.
 
-```php
+```text
 // Functions (XdrSCSpecFunctionV0 objects)
 $info->funcs       // plain array — use count($info->funcs), not $info->funcs->count()
 
@@ -646,6 +646,8 @@ foreach ($info->funcs as $func) {
 Use this mapping to convert discovered parameter types to the **exact** `XdrSCVal` factory:
 
 ```php
+<?php declare(strict_types=1);
+
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 // WRONG: overriding the discovered type based on convention.
