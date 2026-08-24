@@ -1,8 +1,8 @@
 # SEP-35: Operation IDs
 
 **Status:** ✅ Supported  
-**SDK Version:** 1.12.0  
-**Generated:** 2026-08-17 04:13 UTC  
+**SDK Version:** 1.13.0  
+**Generated:** 2026-08-24 13:14 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0035.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0035.md)
 
 ## Overall Coverage

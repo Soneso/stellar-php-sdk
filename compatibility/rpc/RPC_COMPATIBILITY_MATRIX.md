@@ -1,9 +1,9 @@
 # Soroban RPC vs PHP SDK Compatibility Matrix
 
-**RPC Version:** v27.1.1 (released 2026-07-07)  
-**RPC Source:** [v27.1.1](https://github.com/stellar/stellar-rpc/releases/tag/v27.1.1)  
-**SDK Version:** 1.12.0  
-**Generated:** 2026-08-10 18:45 UTC
+**RPC Version:** v28.0.0 (released 2026-08-17)  
+**RPC Source:** [v28.0.0](https://github.com/stellar/stellar-rpc/releases/tag/v28.0.0)  
+**SDK Version:** 1.13.0  
+**Generated:** 2026-08-24 13:13 UTC
 
 ## Overall Coverage
 

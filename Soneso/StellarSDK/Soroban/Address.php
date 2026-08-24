@@ -119,32 +119,54 @@ class Address
 
     /**
      * Creates a new instance of Address from the given contract id.
-     * @param string $contractId hex representation. If you have a str key contract id,
-     * you can decode it to hex with StrKey::decodeContractIdHex($contractId)
+     *
+     * @param string $contractId the contract id as a "C..." strkey or as the contract
+     * hash in hexadecimal. The created Address reports it as canonical lower case
+     * hexadecimal for either spelling.
      * @return Address the created Address object.
+     * @throws InvalidArgumentException if the id is neither a valid "C..." strkey nor
+     * the contract hash as 64 hexadecimal characters
      */
     public static function fromContractId(string $contractId) : Address {
-        return new Address(Address::TYPE_CONTRACT, contractId: $contractId);
+        return new Address(
+            Address::TYPE_CONTRACT,
+            contractId: XdrSCAddress::forContractId($contractId)->getCanonicalContractIdHex(),
+        );
     }
 
     /**
      * Creates a new instance of Address from the given liquidity pool id.
-     * @param string $liquidityPoolId hex representation. If you have a str key liquidity pool id,
-     * you can decode it to hex with StrKey::decodeLiquidityPoolIdHex($liquidityPoolId)
+     *
+     * @param string $liquidityPoolId the pool id as an "L..." strkey or as the pool hash
+     * in hexadecimal. The created Address reports it as canonical lower case hexadecimal
+     * for either spelling.
      * @return Address the created Address object.
+     * @throws InvalidArgumentException if the id is neither a valid "L..." strkey nor
+     * the pool hash as 64 hexadecimal characters
      */
     public static function fromLiquidityPoolId(string $liquidityPoolId) : Address {
-        return new Address(Address::TYPE_LIQUIDITY_POOL, liquidityPoolId: $liquidityPoolId);
+        return new Address(
+            Address::TYPE_LIQUIDITY_POOL,
+            liquidityPoolId: XdrSCAddress::forLiquidityPoolId($liquidityPoolId)
+                ->getCanonicalLiquidityPoolIdHex(),
+        );
     }
 
     /**
      * Creates a new instance of Address from the given claimable balance id.
-     * @param string $claimableBalanceId hex representation. If you have a str key claimable balance id,
-     * you can decode it to hex with StrKey::decodeClaimableBalanceIdHex($claimableBalanceId)
+     *
+     * @param string $claimableBalanceId the balance id as a "B..." strkey, as the bare
+     * balance hash in hexadecimal, or as the hash behind its type discriminant (66 or 72
+     * hexadecimal characters). The created Address reports it in the 72-character form
+     * Horizon serves, for every spelling.
      * @return Address the created Address object.
+     * @throws InvalidArgumentException if the id is in none of the accepted spellings
      */
     public static function fromClaimableBalanceId(string $claimableBalanceId) : Address {
-        return new Address(Address::TYPE_CLAIMABLE_BALANCE, claimableBalanceId: $claimableBalanceId);
+        return new Address(
+            Address::TYPE_CLAIMABLE_BALANCE,
+            claimableBalanceId: XdrClaimableBalanceID::paddedBalanceIdHexFor($claimableBalanceId),
+        );
     }
 
     /**
