@@ -42,7 +42,7 @@ use Soneso\StellarSDK\Network;
 $contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ";
 
 // Signer registered in your contract's __check_auth implementation
-$signer = KeyPair::fromSeed("SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+$signer = KeyPair::fromSeed("SXXX...");
 
 // Create instance from domain and authenticate in one step
 $webAuth = WebAuthForContracts::fromDomain("anchor.example.com", Network::testnet());
@@ -134,7 +134,7 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 
 $contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ";
-$signer = KeyPair::fromSeed("SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+$signer = KeyPair::fromSeed("SXXX...");
 
 $webAuth = WebAuthForContracts::fromDomain("anchor.example.com", Network::testnet());
 $jwtToken = $webAuth->jwtToken($contractId, [$signer]);
@@ -154,6 +154,9 @@ When you don't specify an expiration ledger, the SDK automatically fetches the c
 use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
+
+$contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ";
+$signer = KeyPair::fromSeed("SXXX...");
 
 $webAuth = WebAuthForContracts::fromDomain("anchor.example.com", Network::testnet());
 
@@ -175,6 +178,9 @@ You can also set a custom expiration ledger when you need more control over the 
 use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
+
+$contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ";
+$signer = KeyPair::fromSeed("SXXX...");
 
 $webAuth = WebAuthForContracts::fromDomain("anchor.example.com", Network::testnet());
 
@@ -198,6 +204,8 @@ Some contracts implement `__check_auth` without requiring signature verification
 
 use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 use Soneso\StellarSDK\Network;
+
+$contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ";
 
 $webAuth = WebAuthForContracts::fromDomain("anchor.example.com", Network::testnet());
 
@@ -223,10 +231,10 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 
 $contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ";
-$signer = KeyPair::fromSeed("SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+$signer = KeyPair::fromSeed("SXXX...");
 
 // Your wallet's SIGNING_KEY from stellar.toml
-$clientDomainKeyPair = KeyPair::fromSeed("SYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+$clientDomainKeyPair = KeyPair::fromSeed("SYYY...");
 
 $webAuth = WebAuthForContracts::fromDomain("anchor.example.com", Network::testnet());
 
@@ -253,7 +261,7 @@ use Soneso\StellarSDK\Network;
 use GuzzleHttp\Client;
 
 $contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ";
-$signer = KeyPair::fromSeed("SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+$signer = KeyPair::fromSeed("SXXX...");
 
 $clientDomainSigningCallback = function(SorobanAuthorizationEntry $entry): SorobanAuthorizationEntry {
     // Send the entry to your remote signing service
@@ -295,7 +303,7 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
 
 $contractAccountId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ";
-$signerKeyPair = KeyPair::fromSeed("SXXXXX...");
+$signerKeyPair = KeyPair::fromSeed("SXXX...");
 $homeDomain = "anchor.example.com";
 
 $webAuth = WebAuthForContracts::fromDomain($homeDomain, Network::testnet());
@@ -343,7 +351,11 @@ The SDK supports both `application/x-www-form-urlencoded` and `application/json`
 <?php
 
 use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
+use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
+
+$contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ";
+$signer = KeyPair::fromSeed("SXXX...");
 
 $webAuth = WebAuthForContracts::fromDomain("anchor.example.com", Network::testnet());
 
@@ -374,6 +386,9 @@ use Soneso\StellarSDK\SEP\WebAuthForContracts\SubmitContractChallengeTimeoutResp
 use Soneso\StellarSDK\SEP\WebAuthForContracts\SubmitContractChallengeUnknownResponseException;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
+
+$contractId = "CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ";
+$signer = KeyPair::fromSeed("SXXX...");
 
 $webAuth = WebAuthForContracts::fromDomain("anchor.example.com", Network::testnet());
 

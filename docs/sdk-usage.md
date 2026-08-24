@@ -31,7 +31,7 @@ echo $keyPair->getAccountId();   // G... public key
 echo $keyPair->getSecretSeed();  // S... secret seed
 
 // Create from existing secret seed
-$keyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV");
+$keyPair = KeyPair::fromSeed("SCJBSSSLPU47T6E5GJWP726MFIW5EMLW66BSYE6MJVMMUL7G53M6YBJV");
 
 // Create public-key-only keypair (cannot sign)
 $publicOnly = KeyPair::fromAccountId("GABC123...");
@@ -196,7 +196,7 @@ use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
 
-$senderKeyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV");
+$senderKeyPair = KeyPair::fromSeed("SCJBSSSLPU47T6E5GJWP726MFIW5EMLW66BSYE6MJVMMUL7G53M6YBJV");
 $sender = $sdk->requestAccount($senderKeyPair->getAccountId());
 
 // Build payment
@@ -941,10 +941,27 @@ $createOp = (new CreateClaimableBalanceOperationBuilder(
 ))->build();
 ```
 
-After the transaction is submitted, the response carries the id of the balance it created:
+After the transaction is submitted, the response carries the id of the balance it created. Pass the index of the `CreateClaimableBalance` operation when the transaction holds more than one:
 
 ```php
+<?php
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\StellarSDK;
+use Soneso\StellarSDK\TransactionBuilder;
+
+$sdk = StellarSDK::getTestNetInstance();
+
+$sourceKeyPair = KeyPair::fromSeed("SCJBSSSLPU47T6E5GJWP726MFIW5EMLW66BSYE6MJVMMUL7G53M6YBJV");
+$sourceAccount = $sdk->requestAccount($sourceKeyPair->getAccountId());
+
+$transaction = (new TransactionBuilder($sourceAccount))
+    ->addOperation($createOp) // from the block above
+    ->build();
+
+$transaction->sign($sourceKeyPair, Network::testnet());
 $response = $sdk->submitTransaction($transaction);
+
 $balanceId = $response->getCreatedClaimableBalanceId(); // "B..." strkey, null if not created
 ```
 
@@ -2475,7 +2492,7 @@ Create a cryptographic signature for any text using your secret key.
 <?php
 use Soneso\StellarSDK\Crypto\KeyPair;
 
-$keyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV");
+$keyPair = KeyPair::fromSeed("SCJBSSSLPU47T6E5GJWP726MFIW5EMLW66BSYE6MJVMMUL7G53M6YBJV");
 
 // Sign a message
 $message = "Please sign this message to verify your identity";
@@ -2495,7 +2512,7 @@ Confirm a signature matches the message and was created by a specific account.
 use Soneso\StellarSDK\Crypto\KeyPair;
 
 // Verify with the signing keypair
-$keyPair = KeyPair::fromSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV");
+$keyPair = KeyPair::fromSeed("SCJBSSSLPU47T6E5GJWP726MFIW5EMLW66BSYE6MJVMMUL7G53M6YBJV");
 
 $message = "Please sign this message to verify your identity";
 $signature = $keyPair->signMessage($message);

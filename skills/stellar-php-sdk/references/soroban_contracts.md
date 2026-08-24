@@ -86,6 +86,16 @@ $client = SorobanClient::deploy(new DeployRequest(
 ));
 ```
 
+### Predicting the Contract Id
+
+`Address::deriveContractId(Address $deployer, string $salt, Network $network): string`
+returns the contract id ("C...") a deployment from that deployer and salt creates. It
+applies to every deployment issued from an address — `deploy()`, `deployFromExternalRef()`
+and the create-operation builders alike — because the id derives from deployer, salt and
+network only; the executable does not enter it. Use it when the address is needed before
+deploying, for example in another contract's constructor arguments. The salt is 32 raw
+bytes, not hex, and anything else throws `InvalidArgumentException`.
+
 ### Deploy from an External Reference (Protocol 28)
 
 A CAP-85 external reference names an owner contract and a tag; the owner's persistent
@@ -99,7 +109,6 @@ loads the spec from the resolved wasm, and returns a ready client:
 declare(strict_types=1);
 
 use Soneso\StellarSDK\Crypto\KeyPair;
-use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Contract\DeployFromExternalRefRequest;
@@ -107,14 +116,11 @@ use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 
 $keyPair = KeyPair::random(); // or KeyPair::fromSeed($yourSecret)
 
-// Address::fromContractId() takes the hex form of the owner contract id
-$ownerIdHex = StrKey::decodeContractIdHex('CCXYZ...');
-
 $client = SorobanClient::deployFromExternalRef(new DeployFromExternalRefRequest(
     rpcUrl: 'https://soroban-testnet.stellar.org',
     network: Network::testnet(),
     sourceAccountKeyPair: $keyPair,
-    executableOwner: Address::fromContractId($ownerIdHex),
+    executableOwner: Address::fromContractId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE'),
     tag: 'token-v1', // matched byte for byte
     // constructorArgs and salt work as in DeployRequest
 ));
@@ -131,11 +137,6 @@ submit it like any `InvokeHostFunctionOperation`.
 after the tag. Both builders reject an executable owner that is not a contract address
 (constructor, `setExecutableOwner()`, and `toXdr()`). Envelope parsing returns these
 classes for external-ref create operations.
-
-`Address::deriveContractId(Address $deployer, string $salt, Network $network)` returns
-the contract id ("C...") a deployment creates. The id derives from deployer, salt and
-network only (the executable does not enter it), so the address is known before
-deploying. The salt is 32 raw bytes, not hex.
 
 ## Contract Invocation
 
@@ -460,7 +461,7 @@ $delegated = SorobanAuthorizationEntry::withDelegates(
 $delegated->sign($delegateKeyPair, Network::testnet(), forAddress: $delegateKeyPair->getAccountId());
 ```
 
-Source compatibility: the `SorobanCredentials` constructor's first parameter is now `int|SorobanAddressCredentials` and renamed; positional `SorobanAddressCredentials` callers are unaffected, but named-argument `new SorobanCredentials(addressCredentials: ...)` must switch to positional or `forAddressCredentialsLegacy(...)`. New XDR enum/union cases mean exhaustive `match`/`switch` over them needs a `default` arm.
+The constructor is `new SorobanCredentials(int|SorobanAddressCredentials $credentialType = SOROBAN_CREDENTIALS_SOURCE_ACCOUNT, ?SorobanAddressCredentials $addressCredentials = null, ?SorobanAddressCredentialsWithDelegates $addressWithDelegates = null)`. A `SorobanAddressCredentials` in the first position selects the ADDRESS arm, so passing one positionally works; the named argument for that object is `credentialType`, or use `forAddressCredentialsLegacy(...)`. `XdrSorobanCredentialsType`, `XdrEnvelopeType` and `XdrHashIDPreimage` carry cases for the V2 and delegated arms, so an exhaustive `match`/`switch` over them needs a `default` arm.
 
 ## TTL Extension and Restore
 
@@ -644,12 +645,16 @@ foreach ($info->funcs as $func) {
 
 Use this mapping to convert discovered parameter types to the **exact** `XdrSCVal` factory:
 
-<!-- WRONG: overriding discovered type based on convention -->
+```php
+use Soneso\StellarSDK\Xdr\XdrSCVal;
+
+// WRONG: overriding the discovered type based on convention.
 // Spec says symbol: String (type 16) but "token symbols are usually Symbol"
-XdrSCVal::forSymbol('TEST') // WRONG — crashes: UnreachableCodeReached
+XdrSCVal::forSymbol('TEST'); // crashes: UnreachableCodeReached
 
 // CORRECT: always use the exact type from introspection
-XdrSCVal::forString('TEST') // CORRECT — spec says String, use forString
+XdrSCVal::forString('TEST'); // spec says String, so use forString
+```
 
 | Constant | Value | Type Name | XdrSCVal Factory |
 |----------|-------|-----------|-----------------|

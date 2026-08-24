@@ -10,8 +10,6 @@
 - [How It Works](#how-it-works)
 - [Quick Example](#quick-example)
 - [Method Signatures](#method-signatures)
-- [Constructing a TOID](#constructing-a-toid)
-- [Encoding and Decoding](#encoding-and-decoding)
 - [Cursor Iteration](#cursor-iteration)
 - [Bounding a Query by Ledger](#bounding-a-query-by-ledger)
 - [Test Vectors](#test-vectors)
@@ -36,6 +34,8 @@ The sign bit of the encoded value is never set for valid field values, so IDs ar
 
 ## Quick Example
 
+The constructor takes the three fields directly. `toInt64()` packs them into the signed 64-bit integer Horizon uses as an operation ID or paging cursor, and `TOID::fromInt64()` reverses that.
+
 ```php
 <?php declare(strict_types=1);
 
@@ -44,13 +44,15 @@ use Soneso\StellarSDK\SEP\TOID\TOID;
 // ledger 100, transaction order 3, operation index 2
 $toid = new TOID(100, 3, 2);
 
+echo $toid->getLedgerSequence() . "\n";   // 100
+echo $toid->getTransactionOrder() . "\n"; // 3
+echo $toid->getOperationIndex() . "\n";   // 2
+
 $operationId = $toid->toInt64();
 echo $operationId . "\n"; // 429496741890
 
 $decoded = TOID::fromInt64($operationId);
-echo $decoded->getLedgerSequence() . "\n";   // 100
-echo $decoded->getTransactionOrder() . "\n"; // 3
-echo $decoded->getOperationIndex() . "\n";   // 2
+echo $decoded->getLedgerSequence() . "\n"; // 100
 ```
 
 ## Method Signatures
@@ -86,9 +88,11 @@ class TOID
 
     // Returns the TOID ($ledgerSequence, 1048575, 4095) — the largest encodable ID
     // within the given ledger. Use with <= as an inclusive upper bound.
+    // Throws InvalidArgumentException if $ledgerSequence is outside 0..2147483647.
     public static function afterLedger(int $ledgerSequence): TOID
 
-    // Returns a TOIDRange covering ledgers $from through $to, inclusive.
+    // Returns a TOIDRange covering ledgers $from through $to, inclusive. When $from
+    // is 1 the range start is pulled down to 0 rather than (1, 0, 0).
     // Throws InvalidArgumentException if $from > $to, $from < 1, or $to >= 2147483647.
     public static function ledgerRangeInclusive(int $from, int $to): TOIDRange
 }
@@ -101,43 +105,6 @@ class TOIDRange
     public function getEnd(): int   // exclusive
 }
 ```
-
-## Constructing a TOID
-
-The constructor takes the three fields directly. On the network, transaction order and operation index are assigned starting at 1, but the constructor also accepts 0 for both, since 0 is a valid encoded value needed to express range boundaries.
-
-```php
-<?php declare(strict_types=1);
-
-use Soneso\StellarSDK\SEP\TOID\TOID;
-
-$toid = new TOID(12345, 2, 0);
-
-echo $toid->getLedgerSequence() . "\n";   // 12345
-echo $toid->getTransactionOrder() . "\n"; // 2
-echo $toid->getOperationIndex() . "\n";   // 0
-```
-
-## Encoding and Decoding
-
-`toInt64()` packs the three fields into the signed 64-bit integer Horizon uses as an operation ID or paging cursor. `TOID::fromInt64()` reverses that.
-
-```php
-<?php declare(strict_types=1);
-
-use Soneso\StellarSDK\SEP\TOID\TOID;
-
-$toid = new TOID(1, 1, 1);
-$encoded = $toid->toInt64();
-echo $encoded . "\n"; // 4294971393
-
-$decoded = TOID::fromInt64($encoded);
-echo $decoded->getLedgerSequence() . "\n";   // 1
-echo $decoded->getTransactionOrder() . "\n"; // 1
-echo $decoded->getOperationIndex() . "\n";   // 1
-```
-
-`fromInt64()` requires a non-negative value — a negative value has its sign bit set, which is never valid for an encoded ID.
 
 ## Cursor Iteration
 
@@ -169,19 +136,18 @@ echo $cursor->getTransactionOrder() . "\n"; // 5 (unchanged)
 echo $cursor->getOperationIndex() . "\n";   // 0
 ```
 
-At the very top of the encodable range, `incrementOperationIndex()` throws `OverflowException` instead of silently wrapping:
+At the very top of the encodable range, `incrementOperationIndex()` throws `OverflowException`:
 
 ```php
 <?php declare(strict_types=1);
 
 use Soneso\StellarSDK\SEP\TOID\TOID;
-use OverflowException;
 
 $cursor = TOID::afterLedger(2147483647); // (2147483647, 1048575, 4095)
 
 try {
     $cursor->incrementOperationIndex();
-} catch (OverflowException $e) {
+} catch (\OverflowException $e) {
     echo $e->getMessage() . "\n";
     // Cannot increment operation index, the largest encodable ID has already been reached.
 }
@@ -189,7 +155,7 @@ try {
 
 ## Bounding a Query by Ledger
 
-`TOID::afterLedger()` returns the largest encodable ID within a given ledger, for use as an inclusive upper bound — compare candidate IDs against it with `<=`.
+`TOID::afterLedger()` returns the largest encodable ID within a given ledger, for use as an inclusive upper bound — compare candidate IDs against it with `<=`. It throws `InvalidArgumentException` for a ledger sequence outside 0 to 2147483647.
 
 ```php
 <?php declare(strict_types=1);
@@ -206,7 +172,7 @@ $nextLedger = (new TOID(101, 0, 0))->toInt64();
 var_dump($nextLedger <= $upperBound); // bool(false)
 ```
 
-`TOID::ledgerRangeInclusive()` covers a span of ledgers at once and returns a `TOIDRange`. Its convention is the opposite of `afterLedger()`: the start is inclusive, the end is exclusive, so compare with `<`.
+`TOID::ledgerRangeInclusive()` covers a span of ledgers at once and returns a `TOIDRange`. Its convention is the opposite of `afterLedger()`: the start is inclusive, the end is exclusive, so compare with `<`. One case does not follow the general formula: a range starting at ledger 1 gets a start of 0 rather than the encoding of `(1, 0, 0)`, so that IDs encoded with ledger field 0 fall inside the lowest range.
 
 ```php
 <?php declare(strict_types=1);
@@ -214,7 +180,7 @@ var_dump($nextLedger <= $upperBound); // bool(false)
 use Soneso\StellarSDK\SEP\TOID\TOID;
 
 $range = TOID::ledgerRangeInclusive(1, 2);
-echo $range->getStart() . "\n"; // 0
+echo $range->getStart() . "\n"; // 0 — pulled down from (1, 0, 0), which encodes to 4294967296
 echo $range->getEnd() . "\n";   // 12884901888
 
 $inRange = (new TOID(2, 1, 0))->toInt64();
@@ -223,8 +189,6 @@ var_dump($inRange >= $range->getStart() && $inRange < $range->getEnd()); // bool
 $pastRange = (new TOID(3, 0, 0))->toInt64();
 var_dump($pastRange >= $range->getStart() && $pastRange < $range->getEnd()); // bool(false)
 ```
-
-`TOIDRange` also has a public constructor — build one directly with `new TOIDRange($start, $end)` when the bounds come from encoded IDs computed elsewhere rather than from `ledgerRangeInclusive()`.
 
 ## Test Vectors
 
@@ -239,17 +203,6 @@ These value pairs are verified against the class's constructor, `toInt64()`, `af
 | 1 | 1 | 1 | 4294971393 |
 | 1234567 | 89 | 2000 | 5302424890087376 |
 | 2147483647 | 1048575 | 4095 | 9223372036854775807 (`PHP_INT_MAX`) |
-
-```php
-<?php declare(strict_types=1);
-
-use Soneso\StellarSDK\SEP\TOID\TOID;
-
-assert((new TOID(0, 0, 0))->toInt64() === 0);
-assert((new TOID(1, 1, 1))->toInt64() === 4294971393);
-assert((new TOID(1234567, 89, 2000))->toInt64() === 5302424890087376);
-assert((new TOID(2147483647, 1048575, 4095))->toInt64() === PHP_INT_MAX);
-```
 
 **`afterLedger()`:**
 
@@ -267,15 +220,7 @@ assert((new TOID(2147483647, 1048575, 4095))->toInt64() === PHP_INT_MAX);
 | 1 | 2 | 0 | 12884901888 |
 | 2 | 3 | 8589934592 | 17179869184 |
 
-```php
-<?php declare(strict_types=1);
-
-use Soneso\StellarSDK\SEP\TOID\TOID;
-
-$range = TOID::ledgerRangeInclusive(2, 3);
-assert($range->getStart() === 8589934592);
-assert($range->getEnd() === 17179869184);
-```
+The two `from = 1` rows show the special case: the start is 0, not the 4294967296 that `(1, 0, 0)` encodes to.
 
 ## Error Handling
 
@@ -285,18 +230,17 @@ The constructor throws `InvalidArgumentException` for a field outside its encoda
 <?php declare(strict_types=1);
 
 use Soneso\StellarSDK\SEP\TOID\TOID;
-use InvalidArgumentException;
 
 try {
     new TOID(-1, 0, 0);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo $e->getMessage() . "\n";
     // Invalid ledger sequence, it must be between 0 and 2147483647.
 }
 
 try {
     new TOID(0, 0, 4096);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo $e->getMessage() . "\n";
     // Invalid operation index, it must be between 0 and 4095.
 }
@@ -308,11 +252,10 @@ try {
 <?php declare(strict_types=1);
 
 use Soneso\StellarSDK\SEP\TOID\TOID;
-use InvalidArgumentException;
 
 try {
     TOID::fromInt64(-1);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo $e->getMessage() . "\n";
     // Invalid encoded ID, it must not be negative.
 }
@@ -324,11 +267,10 @@ try {
 <?php declare(strict_types=1);
 
 use Soneso\StellarSDK\SEP\TOID\TOID;
-use InvalidArgumentException;
 
 try {
     TOID::ledgerRangeInclusive(200, 100);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo $e->getMessage() . "\n";
     // Invalid range, from must not be greater than to.
 }
@@ -341,6 +283,11 @@ try {
 **WRONG/CORRECT — operation index is not zero-based on the network:**
 
 ```php
+use Soneso\StellarSDK\SEP\TOID\TOID;
+
+$ledgerSeq = 100;
+$txOrder = 3;
+
 // WRONG: assuming the first operation of a transaction has index 0
 $firstOpId = (new TOID($ledgerSeq, $txOrder, 0))->toInt64();
 
@@ -352,21 +299,26 @@ $firstOpId = (new TOID($ledgerSeq, $txOrder, 1))->toInt64();
 **WRONG/CORRECT — comparing against `afterLedger()` and `ledgerRangeInclusive()` with the same operator:**
 
 ```php
+use Soneso\StellarSDK\SEP\TOID\TOID;
+
 $upperBound = TOID::afterLedger(100)->toInt64();
 $range = TOID::ledgerRangeInclusive(1, 100);
+$inLedger = (new TOID(100, 3, 2))->toInt64();
 
 // WRONG: afterLedger() is an inclusive bound, ledgerRangeInclusive()->getEnd() is exclusive
-$inLedger <= $range->getEnd();  // off by one — includes IDs from ledger 101
-$inLedger < $upperBound;        // off by one — excludes the last ID of ledger 100
+$hit = $inLedger <= $range->getEnd();  // off by one — includes IDs from ledger 101
+$hit = $inLedger < $upperBound;        // off by one — excludes the last ID of ledger 100
 
 // CORRECT: afterLedger() compares with <=, ledgerRangeInclusive()->getEnd() compares with <
-$inLedger <= $upperBound;
-$inLedger >= $range->getStart() && $inLedger < $range->getEnd();
+$hit = $inLedger <= $upperBound;
+$hit = $inLedger >= $range->getStart() && $inLedger < $range->getEnd();
 ```
 
 **WRONG/CORRECT — `ledgerRangeInclusive()` requires `$from >= 1`:**
 
 ```php
+use Soneso\StellarSDK\SEP\TOID\TOID;
+
 // WRONG: 0 is not a valid ledger sequence to start a range from
 TOID::ledgerRangeInclusive(0, 100); // throws InvalidArgumentException
 
@@ -374,8 +326,6 @@ TOID::ledgerRangeInclusive(0, 100); // throws InvalidArgumentException
 // constructor directly if you need an encoded ID with ledger field 0
 TOID::ledgerRangeInclusive(1, 100);
 ```
-
-**Requires a 64-bit PHP build.** `toInt64()` and `fromInt64()` rely on PHP's native `int` type holding values up to `PHP_INT_MAX` (9223372036854775807). On a 32-bit PHP build, `int` cannot represent encoded IDs and results are undefined.
 
 ## Related SEPs
 

@@ -102,19 +102,18 @@ echo $cursor->getTransactionOrder() . "\n"; // 5 (unchanged)
 echo $cursor->getOperationIndex() . "\n";   // 0
 ```
 
-At the very top of the encodable range — ledger sequence and operation index both at their maximum — there is no next slot left to advance to, so `incrementOperationIndex()` throws instead of silently wrapping:
+At the very top of the encodable range — ledger sequence and operation index both at their maximum — there is no next slot left to advance to, so `incrementOperationIndex()` throws `OverflowException`:
 
 ```php
 <?php declare(strict_types=1);
 
 use Soneso\StellarSDK\SEP\TOID\TOID;
-use OverflowException;
 
 $cursor = TOID::afterLedger(2147483647);
 
 try {
     $cursor->incrementOperationIndex();
-} catch (OverflowException $e) {
+} catch (\OverflowException $e) {
     echo $e->getMessage() . "\n";
     // Cannot increment operation index, the largest encodable ID has already been reached.
 }
@@ -122,7 +121,7 @@ try {
 
 ### Bounding a query by ledger
 
-`TOID::afterLedger()` returns the largest encodable ID within a given ledger, for use as an inclusive upper bound: compare candidate IDs against it with `<=`.
+`TOID::afterLedger()` returns a `TOID` holding the largest encodable ID within a given ledger; `toInt64()` turns it into the integer bound. That bound is inclusive, so compare candidate IDs against it with `<=`. It throws `InvalidArgumentException` for a ledger sequence outside 0 to 2147483647.
 
 ```php
 <?php declare(strict_types=1);
@@ -139,12 +138,13 @@ $nextLedger = (new TOID(101, 0, 0))->toInt64();
 var_dump($nextLedger <= $upperBound); // false
 ```
 
-`TOID::ledgerRangeInclusive()` covers a span of ledgers at once and returns a `TOIDRange`. Its convention is the opposite of `afterLedger()`: the start is inclusive, but the end is exclusive, so compare with `<`. `TOIDRange` also has a public constructor, so you can build one directly with `new TOIDRange($start, $end)` when the bounds come from encoded IDs computed elsewhere rather than from `ledgerRangeInclusive()`.
+`TOID::ledgerRangeInclusive()` covers a span of ledgers at once and returns a `TOIDRange`. Its convention is the opposite of `afterLedger()`: the start is inclusive, but the end is exclusive, so compare with `<`. One case does not follow the general formula: a range starting at ledger 1 gets a start of 0 rather than the encoding of `(1, 0, 0)`, so that IDs encoded with ledger field 0 fall inside the lowest range. `TOIDRange` also has a public constructor, so you can build one directly with `new TOIDRange($start, $end)` when the bounds come from encoded IDs computed elsewhere rather than from `ledgerRangeInclusive()`.
 
 ```php
 <?php declare(strict_types=1);
 
 use Soneso\StellarSDK\SEP\TOID\TOID;
+use Soneso\StellarSDK\SEP\TOID\TOIDRange;
 
 // Every operation ID for ledgers 100 through 200, inclusive
 $range = TOID::ledgerRangeInclusive(100, 200);
@@ -154,6 +154,10 @@ var_dump($inRange >= $range->getStart() && $inRange < $range->getEnd()); // true
 
 $pastRange = (new TOID(201, 0, 0))->toInt64();
 var_dump($pastRange >= $range->getStart() && $pastRange < $range->getEnd()); // false
+
+// Same bounds, built directly from encoded IDs computed elsewhere
+$manual = new TOIDRange((new TOID(100, 0, 0))->toInt64(), (new TOID(201, 0, 0))->toInt64());
+var_dump($manual->getStart() === $range->getStart()); // true
 ```
 
 ## Error handling
@@ -164,22 +168,25 @@ The constructor rejects field values that fall outside their encodable ranges (l
 <?php declare(strict_types=1);
 
 use Soneso\StellarSDK\SEP\TOID\TOID;
-use InvalidArgumentException;
 
 try {
     new TOID(-1, 0, 0);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo $e->getMessage() . "\n";
     // Invalid ledger sequence, it must be between 0 and 2147483647.
 }
 
 try {
     TOID::ledgerRangeInclusive(200, 100);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo $e->getMessage() . "\n";
     // Invalid range, from must not be greater than to.
 }
 ```
+
+## Related SEPs
+
+SEP-35 stands on its own and does not build on any other SEP. The IDs it defines are what Horizon returns as operation IDs and paging tokens, so it pairs with [Pagination](../sdk-usage.md#pagination) in the SDK usage guide.
 
 ## Reference
 

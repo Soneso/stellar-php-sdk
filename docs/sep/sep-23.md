@@ -269,7 +269,7 @@ $horizonBalanceId = '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd6
 $balanceId = StrKey::encodeClaimableBalanceIdHex($horizonBalanceId);
 StrKey::isValidClaimableBalanceId($balanceId); // true
 
-// Decoding gives back the 33-byte payload: discriminant byte, then the hash
+// Decoding gives back the 33-byte payload (66 hex characters): discriminant byte, then the hash
 $decodedBalanceHex = StrKey::decodeClaimableBalanceIdHex($balanceId);
 ```
 
@@ -291,9 +291,7 @@ Each strkey type has a unique version byte that determines its prefix character:
 
 ## Validation rules
 
-`decode*` and `isValid*` apply the same rule to the same string. Every rejection on the decode path raises `InvalidArgumentException`, and `isValid*` returns `false` for exactly those inputs.
-
-Every malformed input — wrong length, non-canonical base32, wrong version byte, bad checksum, wrong payload size — raises `InvalidArgumentException`, and no PHP warning precedes the exception, even for empty input.
+`decode*` and `isValid*` apply the same rule to the same string: every malformed input — wrong length, non-canonical base32, wrong version byte, bad checksum, wrong payload size — raises `InvalidArgumentException` on the decode path, and `isValid*` returns `false` for exactly those inputs.
 
 | Prefix | Encoded characters | Payload bytes |
 |--------|--------------------|---------------|
@@ -328,7 +326,7 @@ A P-strkey holds the 32-byte signer key, a 4-byte payload length prefix, and the
 - an exact fit, with no bytes after the padded payload
 - every padding byte zero, the fill RFC 4506 requires XDR to write
 
-The zero-padding rule leaves a signer with exactly one spelling, so validated P-addresses can be compared as strings (allowlists, deduplication, equality).
+The zero-padding rule leaves a signer with exactly one spelling, so validated P-addresses can be compared as strings.
 
 ### Claimable balance discriminant
 
@@ -336,7 +334,9 @@ The first payload byte of a B-strkey is the `ClaimableBalanceID` union discrimin
 
 ### Encoding
 
-`encode*` rejects a payload whose length is wrong for the type. `encodeAccountId()`, `encodeSeed()`, `encodePreAuthTx()`, `encodeSha256Hash()`, `encodeContractId()` and `encodeLiquidityPoolId()` take 32 bytes; `encodeMuxedAccountId()` takes 40; `encodeClaimableBalanceId()` takes 33 bytes led by the zero discriminant, the bare 32-byte hash, which it prefixes with that discriminant itself, or the 36-byte XDR form, whose 4-byte discriminant it narrows to one byte.
+`encode*` rejects a payload whose length is wrong for the type. `encodeAccountId()`, `encodeSeed()`, `encodePreAuthTx()`, `encodeSha256Hash()`, `encodeContractId()` and `encodeLiquidityPoolId()` take 32 bytes, and `encodeMuxedAccountId()` takes 40.
+
+`encodeClaimableBalanceId()` takes any of three forms: the 33-byte payload led by the zero discriminant, the bare 32-byte hash, which it prefixes with that discriminant itself, or the 36-byte XDR form, whose 4-byte discriminant it narrows to one byte.
 
 `encodeContractIdHex()`, `encodeLiquidityPoolIdHex()` and `encodeClaimableBalanceIdHex()` reject input that is not valid hexadecimal with `InvalidArgumentException`, before any decoding happens.
 
@@ -363,7 +363,7 @@ try {
 
 ## Error handling
 
-Invalid addresses throw `InvalidArgumentException`. Use validation methods to check addresses before decoding to avoid exceptions in user-facing code.
+Check addresses with the `isValid*` methods before decoding, so user-facing code does not have to catch.
 
 ```php
 <?php
@@ -407,9 +407,6 @@ The SEP-23 spec defines several invalid strkey cases that implementations must r
 - **Wrong version byte**: The first character must match the expected type
 - **Invalid base32 characters**: Only A-Z and 2-7 are valid
 - **Invalid padding**: Strkeys must not contain `=` padding characters
-- **Wrong payload length**: The decoded payload must be the size the type requires
-- **Non-zero signed payload padding**: The bytes filling a P-strkey payload up to a 4-byte boundary must all be zero
-- **Unknown claimable balance type**: The first payload byte of a B-strkey must be 0
 
 ## Related specifications
 

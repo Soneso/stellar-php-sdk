@@ -353,7 +353,9 @@ $result = $client->invokeMethod('expensive_operation', [XdrSCVal::forSymbol('dat
 
 Protocol 27 (CAP-71) adds `ADDRESS_V2` and `ADDRESS_WITH_DELEGATES` credential arms; `ADDRESS_V2` is the default — simulation requests it (set `useUpgradedAuth: false` for legacy `ADDRESS`) and `SorobanCredentials::forAddress()`/`forAddressCredentials()` build it (legacy via `forAddressLegacy()`/`forAddressCredentialsLegacy()`). Build delegate trees with `SorobanAuthorizationEntry::withDelegates(...)`.
 
-For contract authorization, multi-auth workflows, delegated auth, and remote signing:
+Protocol 28 (CAP-85) lets a contract instance name an owner contract and a tag instead of carrying its own wasm hash; `SorobanClient::deployFromExternalRef()` deploys from such a reference and `SorobanServer::loadWasmIdForExternalRef()` resolves one to its wasm.
+
+For external-reference deploy and resolution, contract authorization, multi-auth workflows, delegated auth, and remote signing:
 [Smart Contracts Guide](./references/soroban_contracts.md)
 
 ## 7. XDR Encoding & Decoding
@@ -437,7 +439,7 @@ match ($txResponse->status) {
 };
 ```
 
-For comprehensive error catalog, result codes, and retry patterns:
+For the full error catalog, result codes, and retry patterns:
 [Troubleshooting Guide](./references/troubleshooting.md)
 
 ## 9. Security Best Practices
@@ -449,7 +451,7 @@ For complete security patterns including input validation, transaction verificat
 
 ## 10. SEP Implementations
 
-The PHP SDK implements 20 Stellar Ecosystem Proposals (SEPs). Most commonly used: SEP-01 (Stellar TOML discovery), SEP-02 (Federation address resolution), SEP-05 (BIP-39 mnemonic key derivation), SEP-10 (Web Authentication for account ownership proof), SEP-24 (Interactive deposit/withdrawal flows), SEP-51 (XDR-JSON encoding for human-readable interchange of Stellar XDR types). All SEP classes are under the `Soneso\StellarSDK\SEP\` namespace; SEP-51 lives under `Soneso\StellarSDK\Xdr\` because it operates on XDR types directly.
+The PHP SDK implements 20 Stellar Ecosystem Proposals (SEPs). Most commonly used: SEP-01 (Stellar TOML discovery), SEP-02 (Federation address resolution), SEP-05 (BIP-39 mnemonic key derivation), SEP-10 (Web Authentication for account ownership proof), SEP-24 (Interactive deposit/withdrawal flows), SEP-51 (XDR-JSON encoding for human-readable interchange of Stellar XDR types). Most SEP classes are under the `Soneso\StellarSDK\SEP\` namespace. SEP-23 (StrKey) and SEP-53 (KeyPair message signing) live under `Soneso\StellarSDK\Crypto\`, and SEP-51 lives under `Soneso\StellarSDK\Xdr\` because it operates on XDR types directly.
 
 For all SEP examples and the complete implementation table:
 [SEP Reference](./references/sep.md)
@@ -465,7 +467,7 @@ For all SEP examples and the complete implementation table:
 
 ## Reference Documentation
 
-Links to comprehensive reference guides:
+Links to the reference guides:
 
 - [Operations Reference](./references/operations.md) - All 26 Stellar operations with examples
 - [Horizon API Reference](./references/horizon_api.md) - Complete Horizon endpoint coverage (50/50)

@@ -25,7 +25,7 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$senderKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
+$senderKeyPair = KeyPair::fromSeed('SCT2SAMWPIMPCEPAXIAX2YBK7N3RECO5WC6AW27WA64ILQ3SNGKR7SC3');
 $destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY";
 
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
@@ -122,7 +122,7 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$senderKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
+$senderKeyPair = KeyPair::fromSeed('SCT2SAMWPIMPCEPAXIAX2YBK7N3RECO5WC6AW27WA64ILQ3SNGKR7SC3');
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 
 // Batch payment to multiple recipients
@@ -157,7 +157,7 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$sourceKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
+$sourceKeyPair = KeyPair::fromSeed('SCT2SAMWPIMPCEPAXIAX2YBK7N3RECO5WC6AW27WA64ILQ3SNGKR7SC3');
 $destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY";
 
 $sourceAccount = $sdk->requestAccount($sourceKeyPair->getAccountId());
@@ -198,7 +198,7 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$senderKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
+$senderKeyPair = KeyPair::fromSeed('SCT2SAMWPIMPCEPAXIAX2YBK7N3RECO5WC6AW27WA64ILQ3SNGKR7SC3');
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 
 // Create a muxed destination with user ID embedded
@@ -305,7 +305,7 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$senderKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
+$senderKeyPair = KeyPair::fromSeed('SCT2SAMWPIMPCEPAXIAX2YBK7N3RECO5WC6AW27WA64ILQ3SNGKR7SC3');
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 
 $paymentOp = (new PaymentOperationBuilder(

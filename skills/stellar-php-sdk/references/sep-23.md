@@ -115,7 +115,7 @@ StrKey::decodeClaimableBalanceIdHex(string $claimableBalanceId): string // B... 
 ```php
 StrKey::accountIdFromSeed(string $seed): string           // S... → G...
 StrKey::accountIdFromPrivateKey(string $privateKey): string // raw 32-byte key → G...
-StrKey::publicKeyFromPrivateKey(string $privateKey): string // raw 32-byte key → raw 32-byte key
+StrKey::publicKeyFromPrivateKey($privateKey)                // raw 32-byte key → raw 32-byte key (untyped in source)
 ```
 
 ---
@@ -256,7 +256,14 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Util\FriendBot;
 
-$senderKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));
+// getenv() answers false when the variable is unset, which fromSeed() would reject
+// with a TypeError rather than a message naming the missing configuration.
+$senderSeed = getenv('STELLAR_SECRET_SEED');
+if ($senderSeed === false) {
+    throw new \RuntimeException('STELLAR_SECRET_SEED is not set');
+}
+
+$senderKeyPair = KeyPair::fromSeed($senderSeed);
 $senderG       = $senderKeyPair->getAccountId(); // G...
 
 // Muxed source (sender, user ID 100) and destination (user ID 200)
@@ -573,7 +580,6 @@ All `isValid*` methods return `bool` and never throw. All `decode*` and `encode*
 ```php
 <?php declare(strict_types=1);
 
-use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\MuxedAccount;
 
@@ -596,28 +602,28 @@ if (StrKey::isValidAccountId($input)) {
 try {
     // Wrong version byte (G prefix passed to decodeSeed)
     StrKey::decodeSeed('GBPXXOA5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL');
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo 'Wrong version byte: ' . $e->getMessage() . PHP_EOL;
 }
 
 try {
     // Invalid base32 characters (contains '0')
     StrKey::decodeAccountId('GBPXX0A5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL');
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo 'Invalid base32: ' . $e->getMessage() . PHP_EOL;
 }
 
 try {
     // Bad checksum (last character changed)
     StrKey::decodeAccountId('GBPXXOA5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVT');
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo 'Bad checksum: ' . $e->getMessage() . PHP_EOL;
 }
 
 try {
     // MuxedAccount constructor requires G prefix
     $muxed = new MuxedAccount('INVALID', 123);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo 'Bad muxed account: ' . $e->getMessage() . PHP_EOL;
 }
 ```
@@ -685,9 +691,11 @@ The first payload byte of a B-strkey is the `ClaimableBalanceID` union discrimin
 - A payload whose length is wrong for the type: `encodeAccountId(random_bytes(20))` throws `G-strkey requires a payload of 32 bytes, 20 bytes given`. Encoding cannot produce a string that decoding would refuse.
 - `encodeClaimableBalanceId()` takes 33 bytes whose first byte is 0, the bare 32-byte balance hash, to which it prepends the zero discriminant, or the 36-byte XDR form (72 hex characters via `encodeClaimableBalanceIdHex()`, the id Horizon reports), whose 4-byte discriminant it narrows to one byte. A non-zero discriminant in any spelling is rejected.
 - `encodeSignedPayload()` and `encodeXdrSignedPayload()` require a payload of 1 to 64 bytes.
-- `encodeContractIdHex()`, `encodeLiquidityPoolIdHex()` and `encodeClaimableBalanceIdHex()` require hexadecimal input. An empty string, an odd number of characters, or a character outside `[0-9a-fA-F]` throws `InvalidArgumentException` naming the argument and the offending character, without a PHP warning or a `TypeError`:
+- `encodeContractIdHex()`, `encodeLiquidityPoolIdHex()` and `encodeClaimableBalanceIdHex()` require hexadecimal input. An empty string, an odd number of characters, or a character outside `[0-9a-fA-F]` throws `InvalidArgumentException` naming the argument and the offending character:
 
 ```php
+use Soneso\StellarSDK\Crypto\StrKey;
+
 StrKey::encodeContractIdHex('nothex');
 // InvalidArgumentException: $contractId must contain only hexadecimal characters [0-9a-fA-F], "n" found at index 0
 
@@ -720,6 +728,8 @@ Each strkey type has a version byte that determines its prefix character:
 **Passing M-address to functions expecting G-address:**
 
 ```php
+use Soneso\StellarSDK\MuxedAccount;
+
 // WRONG: MuxedAccount constructor requires G... not M...
 $muxed = new MuxedAccount('MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAETFQC2K6JE', 42);
 // throws InvalidArgumentException: ed25519AccountId must start with G
@@ -733,6 +743,8 @@ $muxed = new MuxedAccount('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJV
 **Decoding with the wrong type method:**
 
 ```php
+use Soneso\StellarSDK\Crypto\StrKey;
+
 // WRONG: using decodeAccountId on a seed, or decodeSeed on an account ID
 StrKey::decodeSeed('GBPXXOA5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL'); // throws
 StrKey::decodeAccountId('SBGWKM3CD4IL47QN6X54N6Y33T3JDNVI6AIJ6CD5IM47HG3IG4O36XCU'); // throws
@@ -745,6 +757,12 @@ $raw = StrKey::decodeSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCR
 **Requesting account with M-address instead of G-address:**
 
 ```php
+use Soneso\StellarSDK\MuxedAccount;
+use Soneso\StellarSDK\StellarSDK;
+
+$sdk = StellarSDK::getTestNetInstance();
+$muxed = MuxedAccount::fromAccountId('MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAETFQC2K6JE');
+
 // WRONG: Horizon requestAccount requires a G-address, not M...
 $sdk->requestAccount($muxed->getAccountId()); // passes M-address, will fail
 
@@ -789,6 +807,10 @@ $xdr = new XdrSignedPayload($keyPair->getPublicKey(), $payload);
 **SignedPayload payload size limits:**
 
 ```php
+use Soneso\StellarSDK\SignedPayloadSigner;
+
+$accountId = 'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ';
+
 // WRONG: empty payload or longer than 64 bytes
 $signer = SignedPayloadSigner::fromAccountId($accountId, "");               // throws InvalidArgumentException
 $signer = SignedPayloadSigner::fromAccountId($accountId, random_bytes(65)); // throws InvalidArgumentException
@@ -796,16 +818,3 @@ $signer = SignedPayloadSigner::fromAccountId($accountId, random_bytes(65)); // t
 // CORRECT: payload must be 1–64 bytes
 $signer = SignedPayloadSigner::fromAccountId($accountId, random_bytes(32));
 ```
-
-<!-- DISCREPANCIES AND NOTES:
-
-1. The SDK docs sep-23.md example for signed payload uses `$signer = SignedPayloadSigner::fromAccountId($keyPair->getAccountId(), $payload)` and states payload is "1-64 bytes". The SDK source (SignedPayloadSigner.php) enforces 1 to 64 bytes in the constructor, and StrKey enforces the same bounds when encoding and decoding P-strkeys.
-
-2. The claimable balance ID auto-discriminant behavior: `encodeClaimableBalanceId()` checks if input length equals ED25519_PUBLIC_KEY_LENGTH_BYTES (32) and if so, prepends a zero byte. This means passing raw 32 bytes or the full 33 bytes (with discriminant already present) both work; 33 bytes whose first byte is not 0 are rejected, matching the decode side. This is a subtle auto-prepend behavior documented in the pitfalls section.
-
-3. `MuxedAccount::toXdr()` is called twice per `getXdr()` call (see source: `getXdr()` assigns to $this->xdr but returns `$this->toXdr()` again — likely a minor source bug, but doesn't affect API usage). Not documented as it's an internal implementation detail.
-
-4. `SignedPayloadSigner::getSignerAccountId()` returns `XdrAccountID`, not a string. Callers must chain `->getAccountId()` to get the G... string. This is documented in the examples.
-
-5. The raw payload carries 1 to 64 bytes; SEP-23 pads it with zero bytes to a 4-byte multiple, so the padded region spans 4 to 64 bytes and the decoded data spans 40 to 100 bytes (32-byte key + 4-byte length prefix + padded payload). `StrKey::isValidSignedPayload()` performs a full decode-based check, including rejection of data beyond the padded payload.
--->

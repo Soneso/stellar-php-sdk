@@ -142,26 +142,7 @@ validateStellarAddress($destinationId);
 
 `isValid*` returns `bool` and never throws. `decode*` throws `InvalidArgumentException`. Both families enforce the same rules, so a string that passes `isValidAccountId()` decodes, and one that fails it throws. The rules (encoded length checked before base32 decoding, decoded payload length, signed payload framing, claimable balance discriminant) are specified in [sep-23.md](sep-23.md). No PHP warning precedes any rejection, so an application that promotes warnings to exceptions still sees a plain rejection.
 
-The zero-padding rule on P-strkeys is the one with direct security consequences: because non-zero padding is rejected, a validated P-address has exactly one spelling per signer, which makes comparing validated P-addresses as strings (allowlists, deduplication, equality) sound.
-
-Encoding is held to the same rules, so a value your code encodes always decodes back. `encodeContractIdHex()`, `encodeLiquidityPoolIdHex()` and `encodeClaimableBalanceIdHex()` reject non-hexadecimal input with `InvalidArgumentException` naming the argument and the offending character, not with a PHP warning followed by a `TypeError`, so hex taken from a request body can be passed straight in and the rejection handled like any other validation failure:
-
-```php
-<?php declare(strict_types=1);
-
-use Soneso\StellarSDK\Crypto\StrKey;
-
-$contractIdHex = $_POST['contract_id'] ?? '';
-
-try {
-    $contractId = StrKey::encodeContractIdHex($contractIdHex);
-} catch (\InvalidArgumentException $e) {
-    // Reports the argument and the offending character, e.g.
-    // $contractId must contain only hexadecimal characters [0-9a-fA-F], "z" found at index 3
-    http_response_code(400);
-    exit('Invalid contract id');
-}
-```
+Two of those rules carry direct security weight: P-strkey padding must be zero, which leaves one signer exactly one spelling and makes string comparison of validated P-addresses sound, and the hex encoders reject non-hexadecimal input with `InvalidArgumentException`, so hex taken straight from a request body can be passed in and the rejection handled like any other validation failure. Both are covered in full in [sep-23.md](sep-23.md).
 
 ### Validate Asset Codes
 
@@ -736,7 +717,7 @@ if (!verifyWebhookSignature($body, $signature, $signerAccountId)) {
 - [ ] Stack traces logged to files only, not displayed to users
 - [ ] JWT tokens stored in encrypted sessions, not plain cookies
 - [ ] CSRF protection on all payment forms
-- [ ] HTTPS enforced for all Stellar API communication (SDK enforces this automatically)
+- [ ] HTTPS enforced for all Stellar API communication -- the `StellarSDK`, `SorobanServer` and SEP service constructors reject plain HTTP with `Service URL must use HTTPS. HTTP is only allowed for localhost.`, accepting it only for `localhost`, `127.0.0.1` and `[::1]`
 - [ ] Rate limiting applied to payment submission endpoints
 - [ ] Webhook signatures verified before processing callbacks
 - [ ] `display_errors` disabled in production PHP configuration

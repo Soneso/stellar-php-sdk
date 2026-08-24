@@ -231,7 +231,7 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 $server = new SorobanServer('https://soroban-testnet.stellar.org');
 
-// Read the contract instance to inspect its executable.
+// A contract's executable lives on its instance entry, which is always persistent.
 $entry = $server->getContractData(
     contractId: 'CCXYZ...',
     key: XdrSCVal::forLedgerKeyContractInstance(),
@@ -391,27 +391,22 @@ Create a contract instance that runs the wasm named by a CAP-85 external referen
 the owner contract holds a persistent entry under a tag, and its value is the hash of
 the wasm the instance runs. There is no install step; the owner already holds the tag
 entry. The reference is resolved before the transaction is built, so an unresolvable
-reference fails with a message naming the owner and the tag rather than failing
-on-chain.
+reference fails with a message naming the owner and the tag.
 
 ```php
 <?php
 
 use Soneso\StellarSDK\Crypto\KeyPair;
-use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Contract\DeployFromExternalRefRequest;
 use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 
-// Address::fromContractId() takes the hex form of the owner contract id
-$ownerIdHex = StrKey::decodeContractIdHex('CCXYZ...');
-
 $client = SorobanClient::deployFromExternalRef(new DeployFromExternalRefRequest(
     rpcUrl: 'https://soroban-testnet.stellar.org',
     network: Network::testnet(),
     sourceAccountKeyPair: KeyPair::fromSeed('SXXX...'),
-    executableOwner: Address::fromContractId($ownerIdHex),
+    executableOwner: Address::fromContractId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE'),
     tag: 'token-v1'  // Tag of the executable entry on the owner; matched byte for byte
 ));
 ```
@@ -439,8 +434,6 @@ $deployer = Address::fromAccountId('GABC...');
 $salt = random_bytes(32);
 
 $futureContractId = Address::deriveContractId($deployer, $salt, Network::testnet());
-
-// Deploying with the same deployer and salt creates exactly this contract id
 ```
 
 ## AssembledTransaction
@@ -729,9 +722,9 @@ After attaching the signed entries with `$transaction->setSorobanAuth(...)`, re-
 
 When converting a simulated `ADDRESS` entry to `ADDRESS_V2` in place, reuse its nonce — `SorobanCredentials::forAddressCredentialsV2($credentials->getAddressCredentials())` carries the nonce over; a fresh nonce will not match the recorded footprint and then relies on the enforcing re-simulation above.
 
-#### Source Compatibility
+#### Constructing Credentials Directly
 
-The `SorobanCredentials` constructor's first parameter was generalized to `int|SorobanAddressCredentials` and renamed. Positional callers passing a `SorobanAddressCredentials` are unaffected, but a caller using the named argument `new SorobanCredentials(addressCredentials: ...)` must switch to positional or use the `SorobanCredentials::forAddressCredentialsLegacy(...)` factory. The XDR types (`XdrSorobanCredentialsType`, `XdrEnvelopeType`, `XdrHashIDPreimage`) gain new cases for the V2 and delegated arms; any exhaustive `match`/`switch` over them needs a `default` arm.
+The `SorobanCredentials` constructor takes `int|SorobanAddressCredentials $credentialType` first, then the optional `$addressCredentials` and `$addressWithDelegates`. An `int` selects the arm from the `XdrSorobanCredentialsType` constants; a `SorobanAddressCredentials` passed in that first position selects the ADDRESS arm directly, which is what `SorobanCredentials::forAddressCredentialsLegacy(...)` does by name. `XdrSorobanCredentialsType`, `XdrEnvelopeType` and `XdrHashIDPreimage` each carry cases for the V2 and delegated arms, so an exhaustive `match`/`switch` over them needs a `default` arm.
 
 ## Type Conversions
 
@@ -1346,17 +1339,13 @@ and Deploying.
 ```php
 <?php
 use Soneso\StellarSDK\CreateContractFromExternalRefHostFunction;
-use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Soroban\Address;
-
-// Address::fromContractId() takes the hex form of the owner contract id
-$ownerIdHex = StrKey::decodeContractIdHex('CCXYZ...');
 
 $createOp = (new InvokeHostFunctionOperationBuilder(
     new CreateContractFromExternalRefHostFunction(
         Address::fromAccountId($keyPair->getAccountId()),
-        Address::fromContractId($ownerIdHex),
+        Address::fromContractId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE'),
         'token-v1'  // Tag of the executable entry on the owner; matched byte for byte
     )
 ))->build();
