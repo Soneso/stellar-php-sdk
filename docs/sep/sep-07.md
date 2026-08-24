@@ -47,7 +47,7 @@ use Soneso\StellarSDK\TransactionBuilder;
 $sdk = StellarSDK::getTestNetInstance();
 
 // Source account keypair (the account that will sign)
-$sourceKeyPair = KeyPair::fromSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6CSS');
+$sourceKeyPair = KeyPair::fromSeed('SD77EKZMYX5XBINENYKNELHRL5RKTR2OL37FMYIV2WUU5IHFD5PXLPTN');
 $accountId = $sourceKeyPair->getAccountId();
 $sourceAccount = $sdk->requestAccount($accountId);
 
@@ -273,7 +273,7 @@ use Soneso\StellarSDK\SEP\URIScheme\URIScheme;
 $uriScheme = new URIScheme();
 
 // Your signing keypair - the public key must match URI_REQUEST_SIGNING_KEY in your stellar.toml
-$signerKeyPair = KeyPair::fromSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6CSS');
+$signerKeyPair = KeyPair::fromSeed('SD77EKZMYX5XBINENYKNELHRL5RKTR2OL37FMYIV2WUU5IHFD5PXLPTN');
 
 // First generate the URI with origin_domain (signature will be added by signURI)
 $uri = $uriScheme->generateSignTransactionURI(
@@ -358,7 +358,7 @@ $uriScheme = new URIScheme();
 $uri = 'web+stellar:tx?xdr=AAAAAgAAAAD...';
 
 // User's signing keypair
-$signerKeyPair = KeyPair::fromSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6CSS');
+$signerKeyPair = KeyPair::fromSeed('SD77EKZMYX5XBINENYKNELHRL5RKTR2OL37FMYIV2WUU5IHFD5PXLPTN');
 
 // Sign and submit the transaction
 $response = $uriScheme->signAndSubmitTransaction(
@@ -467,7 +467,7 @@ $uriScheme = new URIScheme();
 // 1. Handle invalid XDR in URI
 try {
     $uri = 'web+stellar:tx?xdr=invalid-base64-data';
-    $keyPair = KeyPair::fromSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6CSS');
+    $keyPair = KeyPair::fromSeed('SD77EKZMYX5XBINENYKNELHRL5RKTR2OL37FMYIV2WUU5IHFD5PXLPTN');
     $uriScheme->signAndSubmitTransaction($uri, $keyPair, Network::testnet());
 } catch (InvalidArgumentException $e) {
     echo "Invalid URI format: " . $e->getMessage() . PHP_EOL;
@@ -487,7 +487,7 @@ try {
 // 3. Handle transaction submission errors
 try {
     $uri = 'web+stellar:tx?xdr=AAAAAgAAAAD...';
-    $keyPair = KeyPair::fromSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6CSS');
+    $keyPair = KeyPair::fromSeed('SD77EKZMYX5XBINENYKNELHRL5RKTR2OL37FMYIV2WUU5IHFD5PXLPTN');
     $response = $uriScheme->signAndSubmitTransaction($uri, $keyPair, Network::testnet());
     
     if ($response->getSubmitTransactionResponse() !== null) {

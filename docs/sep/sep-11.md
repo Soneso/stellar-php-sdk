@@ -65,7 +65,7 @@ use Soneso\StellarSDK\TransactionBuilder;
 $sdk = StellarSDK::getTestNetInstance();
 
 // Build a transaction
-$sourceKeyPair = KeyPair::fromSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6CSS');
+$sourceKeyPair = KeyPair::fromSeed('SD77EKZMYX5XBINENYKNELHRL5RKTR2OL37FMYIV2WUU5IHFD5PXLPTN');
 $sourceAccount = $sdk->requestAccount($sourceKeyPair->getAccountId());
 
 $payment = (new PaymentOperationBuilder(

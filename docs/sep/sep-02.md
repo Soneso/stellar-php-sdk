@@ -161,7 +161,7 @@ use Soneso\StellarSDK\TransactionBuilder;
 $sdk = StellarSDK::getTestNetInstance();
 
 // Sender's keypair
-$senderKeyPair = KeyPair::fromSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6CSS');
+$senderKeyPair = KeyPair::fromSeed('SD77EKZMYX5XBINENYKNELHRL5RKTR2OL37FMYIV2WUU5IHFD5PXLPTN');
 $senderAccountId = $senderKeyPair->getAccountId();
 
 // Resolve recipient's Stellar address
