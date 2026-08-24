@@ -714,7 +714,6 @@ new AnchorTransactionsRequest(
 ```php
 <?php declare(strict_types=1);
 
-use DateTime;
 use Soneso\StellarSDK\SEP\TransferServerService\AnchorTransactionsRequest;
 use Soneso\StellarSDK\SEP\TransferServerService\TransferServerService;
 
@@ -723,7 +722,7 @@ $transferService = TransferServerService::fromDomain('testanchor.stellar.org');
 $request = new AnchorTransactionsRequest(
     assetCode: 'USD',
     account: 'GCQTGZQTVZ...',
-    noOlderThan: new DateTime('-30 days'),
+    noOlderThan: new \DateTime('-30 days'),
     limit: 10,
     kind: 'deposit',               // filter by kind
     jwt: $jwtToken,
@@ -977,7 +976,6 @@ use Soneso\StellarSDK\SEP\TransferServerService\AuthenticationRequiredException;
 use Soneso\StellarSDK\SEP\TransferServerService\CustomerInformationNeededException;
 use Soneso\StellarSDK\SEP\TransferServerService\CustomerInformationStatusException;
 use GuzzleHttp\Exception\GuzzleException;
-use Exception;
 
 $transferService = TransferServerService::fromDomain('testanchor.stellar.org');
 
@@ -1022,7 +1020,7 @@ try {
     // Network/HTTP error (timeout, server error, etc.)
     echo 'HTTP error: ' . $e->getMessage() . PHP_EOL;
 
-} catch (Exception $e) {
+} catch (\Exception $e) {
     // Domain not found, TRANSFER_SERVER missing from stellar.toml, JSON parse errors, etc.
     echo 'Error: ' . $e->getMessage() . PHP_EOL;
 }

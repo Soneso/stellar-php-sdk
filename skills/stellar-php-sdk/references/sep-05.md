@@ -237,7 +237,6 @@ Mnemonic::mnemonicFromWords(
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\SEP\Derivation\Mnemonic;
 use Soneso\StellarSDK\SEP\Derivation\WordList;
@@ -249,7 +248,7 @@ try {
     );
     $kp = KeyPair::fromMnemonic($mnemonic, 0);
     echo $kp->getAccountId() . PHP_EOL;
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo 'Invalid mnemonic: ' . $e->getMessage() . PHP_EOL;
 }
 
@@ -458,7 +457,6 @@ $kp0Direct = KeyPair::fromPrivateKey($account0Direct->getPrivateKeyBytes());
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use Soneso\StellarSDK\SEP\Derivation\BIP39;
 use Soneso\StellarSDK\SEP\Derivation\Mnemonic;
 use Soneso\StellarSDK\SEP\Derivation\WordList;
@@ -467,14 +465,14 @@ use Soneso\StellarSDK\SEP\Derivation\WordList;
 // Throws: "Mnemonic words count must be between 12-24"
 try {
     Mnemonic::generate(8);
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo $e->getMessage() . PHP_EOL;
 }
 
 // Throws: "Words count must be generated in multiples of 3"
 try {
     Mnemonic::generate(13);
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo $e->getMessage() . PHP_EOL;
 }
 
@@ -482,7 +480,7 @@ try {
 // Throws: "Mnemonic words count must be between 12-24"
 try {
     Mnemonic::mnemonicFromWords('one two three');
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo $e->getMessage() . PHP_EOL;
 }
 
@@ -490,7 +488,7 @@ try {
 // Throws: "Invalid/unknown word at position N"
 try {
     Mnemonic::mnemonicFromWords('illness spike NOTAWORD truth genius clock brain pass fit cave bargain toe');
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo $e->getMessage() . PHP_EOL; // Invalid/unknown word at position 3
 }
 
@@ -502,7 +500,7 @@ try {
         WordList::LANGUAGE_ENGLISH,
         true // verifyChecksum = true (default)
     );
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo $e->getMessage() . PHP_EOL; // Entropy checksum match failed
 }
 
@@ -517,14 +515,14 @@ $mnemonic = Mnemonic::mnemonicFromWords(
 // Throws: "Invalid entropy length" (must be 128/160/192/224/256 bits = 32/40/48/56/64 hex chars)
 try {
     BIP39::Entropy('deadbeef'); // 32 bits — too short
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo $e->getMessage() . PHP_EOL; // Invalid entropy length
 }
 
 // Throws: "Invalid entropy (requires hexadecimal)"
 try {
     BIP39::Entropy('zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'); // not valid hex
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo $e->getMessage() . PHP_EOL;
 }
 
@@ -532,7 +530,7 @@ try {
 // Throws: 'BIP39 wordlist for "Klingon" not found or is not readable'
 try {
     Mnemonic::generate12WordsMnemonic('klingon');
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo $e->getMessage() . PHP_EOL;
 }
 ```

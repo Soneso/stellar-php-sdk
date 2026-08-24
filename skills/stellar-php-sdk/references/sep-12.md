@@ -35,13 +35,12 @@
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use GuzzleHttp\Client;
 use Soneso\StellarSDK\SEP\KYCService\KYCService;
 
 try {
     $kycService = KYCService::fromDomain('testanchor.stellar.org');
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo 'No KYC service found in stellar.toml: ' . $e->getMessage() . PHP_EOL;
     exit(1);
 }
@@ -148,7 +147,6 @@ Submit or update customer data. Returns a `PutCustomerInfoResponse` with `getId(
 ```php
 <?php declare(strict_types=1);
 
-use DateTime;
 use Soneso\StellarSDK\SEP\KYCService\KYCService;
 use Soneso\StellarSDK\SEP\KYCService\PutCustomerInfoRequest;
 use Soneso\StellarSDK\SEP\StandardKYCFields\StandardKYCFields;
@@ -194,8 +192,8 @@ $personFields->employerAddress = '456 Business Ave, New York, NY';
 $personFields->idType = 'passport';             // passport, drivers_license, id_card
 $personFields->idNumber = 'AB123456';
 $personFields->idCountryCode = 'USA';
-$personFields->idIssueDate = new DateTime('2020-01-15');      // DateTime object
-$personFields->idExpirationDate = new DateTime('2030-01-15'); // DateTime object
+$personFields->idIssueDate = new \DateTime('2020-01-15');      // DateTime object
+$personFields->idExpirationDate = new \DateTime('2030-01-15'); // DateTime object
 
 // Other
 $personFields->sex = 'female';                  // male, female, other
@@ -328,7 +326,6 @@ Binary fields (photos, documents) are stored as PHP strings of raw bytes and sen
 ```php
 <?php declare(strict_types=1);
 
-use DateTime;
 use Soneso\StellarSDK\SEP\KYCService\KYCService;
 use Soneso\StellarSDK\SEP\KYCService\PutCustomerInfoRequest;
 use Soneso\StellarSDK\SEP\StandardKYCFields\StandardKYCFields;
@@ -340,8 +337,8 @@ $personFields = new NaturalPersonKYCFields();
 $personFields->idType = 'passport';
 $personFields->idNumber = 'AB123456';
 $personFields->idCountryCode = 'USA';
-$personFields->idIssueDate = new DateTime('2020-01-15');
-$personFields->idExpirationDate = new DateTime('2030-01-15');
+$personFields->idIssueDate = new \DateTime('2020-01-15');
+$personFields->idExpirationDate = new \DateTime('2030-01-15');
 
 // Assign binary content directly from file_get_contents()
 $personFields->photoIdFront = file_get_contents('/path/to/id_front.jpg');

@@ -1,8 +1,8 @@
 # SEP-11: Txrep: human-readable low-level representation of Stellar transactions
 
 **Status:** ✅ Supported  
-**SDK Version:** 1.12.0  
-**Generated:** 2026-08-10 18:43 UTC  
+**SDK Version:** 1.13.0  
+**Generated:** 2026-08-24 13:13 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md)
 
 ## Overall Coverage

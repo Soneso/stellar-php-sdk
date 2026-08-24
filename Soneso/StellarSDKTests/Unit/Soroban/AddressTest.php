@@ -118,6 +118,181 @@ class AddressTest extends TestCase
     }
 
     /**
+     * A contract id reaches the factory as a "C..." strkey or as the contract hash in
+     * hexadecimal; both name one contract, so the created Address reports one spelling.
+     */
+    public function testFromContractIdReportsCanonicalHexForEitherSpelling(): void
+    {
+        $this->assertEquals(
+            $this->testContractIdHex,
+            Address::fromContractId($this->testContractIdStrKey)->getContractId()
+        );
+        $this->assertEquals(
+            $this->testContractIdHex,
+            Address::fromContractId($this->testContractIdHex)->getContractId()
+        );
+        $this->assertEquals(
+            $this->testContractIdHex,
+            Address::fromContractId(strtoupper($this->testContractIdHex))->getContractId()
+        );
+    }
+
+    public function testFromContractIdEncodesEitherSpellingIdentically(): void
+    {
+        $fromHex = Address::fromContractId($this->testContractIdHex)->toXdr()->encode();
+
+        $this->assertEquals(
+            $fromHex,
+            Address::fromContractId($this->testContractIdStrKey)->toXdr()->encode()
+        );
+        $this->assertEquals(
+            $fromHex,
+            Address::fromContractId(strtoupper($this->testContractIdHex))->toXdr()->encode()
+        );
+    }
+
+    public function testFromContractIdRejectsAnIdInNeitherSpelling(): void
+    {
+        // Not hexadecimal at all; a "C..." strkey that fails its checksum; and
+        // hexadecimal of a width no contract hash has.
+        $cases = [
+            'not a contract id',
+            'C' . str_repeat('Z', 55),
+            str_repeat('ab', 31),
+        ];
+
+        foreach ($cases as $case) {
+            $threw = false;
+            try {
+                Address::fromContractId($case);
+            } catch (InvalidArgumentException $e) {
+                $threw = true;
+            }
+            $this->assertTrue($threw, "expected an exception for contract id \"$case\"");
+        }
+    }
+
+    /**
+     * A pool id reaches the factory as an "L..." strkey or as the pool hash in
+     * hexadecimal; both name one pool, so the created Address reports one spelling.
+     */
+    public function testFromLiquidityPoolIdReportsCanonicalHexForEitherSpelling(): void
+    {
+        $strKey = StrKey::encodeLiquidityPoolIdHex($this->testLiquidityPoolIdHex);
+
+        $this->assertEquals(
+            $this->testLiquidityPoolIdHex,
+            Address::fromLiquidityPoolId($strKey)->getLiquidityPoolId()
+        );
+        $this->assertEquals(
+            $this->testLiquidityPoolIdHex,
+            Address::fromLiquidityPoolId($this->testLiquidityPoolIdHex)->getLiquidityPoolId()
+        );
+        $this->assertEquals(
+            $this->testLiquidityPoolIdHex,
+            Address::fromLiquidityPoolId(strtoupper($this->testLiquidityPoolIdHex))->getLiquidityPoolId()
+        );
+    }
+
+    public function testFromLiquidityPoolIdEncodesEitherSpellingIdentically(): void
+    {
+        $strKey = StrKey::encodeLiquidityPoolIdHex($this->testLiquidityPoolIdHex);
+        $fromHex = Address::fromLiquidityPoolId($this->testLiquidityPoolIdHex)->toXdr()->encode();
+
+        $this->assertEquals($fromHex, Address::fromLiquidityPoolId($strKey)->toXdr()->encode());
+        $this->assertEquals(
+            $fromHex,
+            Address::fromLiquidityPoolId(strtoupper($this->testLiquidityPoolIdHex))->toXdr()->encode()
+        );
+    }
+
+    public function testFromLiquidityPoolIdRejectsAnIdInNeitherSpelling(): void
+    {
+        $cases = [
+            'not a pool id',
+            'L' . str_repeat('Z', 55),
+            str_repeat('ab', 31),
+        ];
+
+        foreach ($cases as $case) {
+            $threw = false;
+            try {
+                Address::fromLiquidityPoolId($case);
+            } catch (InvalidArgumentException $e) {
+                $threw = true;
+            }
+            $this->assertTrue($threw, "expected an exception for liquidity pool id \"$case\"");
+        }
+    }
+
+    /**
+     * A balance id reaches the factory as a "B..." strkey, as the bare hash, or as the
+     * hash behind either type discriminant. All name one balance, so the created Address
+     * reports the 72-character form Horizon serves, which is what fromXdr reports too.
+     */
+    public function testFromClaimableBalanceIdReportsTheHorizonFormForEverySpelling(): void
+    {
+        $bareHash = substr($this->testClaimableBalanceIdHex, 8);
+
+        foreach ([
+            StrKey::encodeClaimableBalanceIdHex($bareHash),
+            $bareHash,
+            '00' . $bareHash,
+            $this->testClaimableBalanceIdHex,
+            strtoupper($this->testClaimableBalanceIdHex),
+        ] as $spelling) {
+            $this->assertEquals(
+                $this->testClaimableBalanceIdHex,
+                Address::fromClaimableBalanceId($spelling)->getClaimableBalanceId(),
+                "spelling \"$spelling\""
+            );
+        }
+    }
+
+    public function testFromClaimableBalanceIdEncodesEverySpellingIdentically(): void
+    {
+        $bareHash = substr($this->testClaimableBalanceIdHex, 8);
+        $fromHorizonForm = Address::fromClaimableBalanceId($this->testClaimableBalanceIdHex)
+            ->toXdr()->encode();
+
+        foreach ([
+            StrKey::encodeClaimableBalanceIdHex($bareHash),
+            $bareHash,
+            '00' . $bareHash,
+            strtoupper($this->testClaimableBalanceIdHex),
+        ] as $spelling) {
+            $this->assertEquals(
+                $fromHorizonForm,
+                Address::fromClaimableBalanceId($spelling)->toXdr()->encode(),
+                "spelling \"$spelling\""
+            );
+        }
+    }
+
+    public function testFromClaimableBalanceIdRejectsAnIdInNoAcceptedSpelling(): void
+    {
+        // Not hexadecimal at all; a "B..." strkey that fails its checksum; hexadecimal of
+        // a width no balance id has; and a discriminant naming a type ClaimableBalanceID
+        // does not have.
+        $cases = [
+            'not a balance id',
+            'B' . str_repeat('Z', 57),
+            str_repeat('ab', 31),
+            '00000001' . substr($this->testClaimableBalanceIdHex, 8),
+        ];
+
+        foreach ($cases as $case) {
+            $threw = false;
+            try {
+                Address::fromClaimableBalanceId($case);
+            } catch (InvalidArgumentException $e) {
+                $threw = true;
+            }
+            $this->assertTrue($threw, "expected an exception for claimable balance id \"$case\"");
+        }
+    }
+
+    /**
      * Test Address XDR encoding and decoding for account type
      */
     public function testAccountXdrRoundtrip(): void

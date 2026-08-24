@@ -24,7 +24,7 @@
 
 The entire SEP-11 implementation lives in one class with two public static methods:
 
-```php
+```text
 use Soneso\StellarSDK\SEP\TxRep\TxRep;
 
 // XDR base64 string  ->  human-readable Txrep string
@@ -656,6 +656,18 @@ tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.executabl
 tx.operations[0].body.invokeHostFunctionOp.auth.len: 0
 ```
 
+An external-ref executable (Protocol 28, CAP-85) replaces the two `executable.*` lines:
+
+```
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.executable.type: CONTRACT_EXECUTABLE_EXTERNAL_REF
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.executable.external_ref.executable_owner.type: SC_ADDRESS_TYPE_CONTRACT
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.executable.external_ref.executable_owner.contractId: <64 hex>
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.executable.external_ref.tag: "token-v1"
+```
+
+The same executable fields appear under `createContractV2` for
+`HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2`, followed by its `constructorArgs` list.
+
 ### SCVal types in Txrep
 
 | SCVal type | Txrep type string | Field name(s) |
@@ -690,7 +702,6 @@ The SDK throws `InvalidArgumentException` for invalid input in both directions. 
 ```php
 <?php declare(strict_types=1);
 
-use InvalidArgumentException;
 use Soneso\StellarSDK\SEP\TxRep\TxRep;
 
 // XDR -> Txrep: invalid base64 or malformed XDR
@@ -705,7 +716,7 @@ try {
     $incompleteTxrep = 'type: ENVELOPE_TYPE_TX
 tx.sourceAccount: GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN';
     $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($incompleteTxrep);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     // e.g. "missing or invalid tx.fee"
     echo 'Missing field: ' . $e->getMessage() . PHP_EOL;
 }
@@ -722,7 +733,7 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0';
     $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($badTxrep);
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     // "invalid tx.sourceAccount"
     echo 'Invalid account: ' . $e->getMessage() . PHP_EOL;
 }
@@ -864,15 +875,16 @@ echo "=== Review Transaction ===" . PHP_EOL;
 echo $txRep . PHP_EOL;
 echo "=========================" . PHP_EOL;
 
-// Parse individual fields for user-facing display
+// Parse individual fields for user-facing display. Pass '' as the thousands separator:
+// the SDK rejects an amount containing a comma, so a grouped string cannot be fed back in.
 foreach (explode(PHP_EOL, $txRep) as $line) {
     if (str_starts_with($line, 'tx.fee:')) {
         $fee = (int)trim(explode(':', $line, 2)[1]);
-        echo 'Fee: ' . number_format($fee / 10_000_000, 7) . ' XLM' . PHP_EOL;
+        echo 'Fee: ' . number_format($fee / 10_000_000, 7, '.', '') . ' XLM' . PHP_EOL;
     }
     if (str_starts_with($line, 'tx.operations[0].body.paymentOp.amount:')) {
         $amount = (int)trim(explode(':', $line, 2)[1]);
-        echo 'Amount: ' . number_format($amount / 10_000_000, 7) . PHP_EOL;
+        echo 'Amount: ' . number_format($amount / 10_000_000, 7, '.', '') . PHP_EOL;
     }
 }
 

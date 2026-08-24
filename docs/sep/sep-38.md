@@ -346,16 +346,14 @@ You can request a minimum expiration time using the `expireAfter` parameter. The
 ```php
 <?php
 
-use DateTime;
-use DateInterval;
 use Soneso\StellarSDK\SEP\Quote\QuoteService;
 use Soneso\StellarSDK\SEP\Quote\SEP38PostQuoteRequest;
 
 $quoteService = QuoteService::fromDomain("anchor.example.com");
 
 // Request quote valid for at least 1 hour
-$expireAfter = new DateTime();
-$expireAfter->add(new DateInterval('PT1H'));
+$expireAfter = new \DateTime();
+$expireAfter->add(new \DateInterval('PT1H'));
 
 $request = new SEP38PostQuoteRequest(
     context: "sep24",
@@ -448,7 +446,6 @@ The SDK provides specific exception classes for different error scenarios. Alway
 ```php
 <?php
 
-use InvalidArgumentException;
 use Soneso\StellarSDK\SEP\Quote\QuoteService;
 use Soneso\StellarSDK\SEP\Quote\SEP38PostQuoteRequest;
 use Soneso\StellarSDK\SEP\Quote\SEP38BadRequestException;
@@ -469,7 +466,7 @@ try {
     $quote = $quoteService->postQuote($request, $jwtToken);
     echo "Quote created: " . $quote->id . "\n";
     
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     // Invalid parameters (e.g., both sellAmount and buyAmount provided)
     echo "Invalid request: " . $e->getMessage() . "\n";
     

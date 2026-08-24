@@ -215,7 +215,6 @@ The SDK supports all SEP-9 standard fields for natural persons. Here's a complet
 ```php
 <?php
 
-use DateTime;
 use Soneso\StellarSDK\SEP\KYCService\KYCService;
 use Soneso\StellarSDK\SEP\KYCService\PutCustomerInfoRequest;
 use Soneso\StellarSDK\SEP\StandardKYCFields\StandardKYCFields;
@@ -261,8 +260,8 @@ $personFields->employerAddress = "456 Business Ave, New York, NY 10001";
 $personFields->idType = "passport"; // or "drivers_license", "id_card"
 $personFields->idNumber = "AB123456";
 $personFields->idCountryCode = "USA"; // ISO 3166-1 alpha-3
-$personFields->idIssueDate = new DateTime("2020-01-15");
-$personFields->idExpirationDate = new DateTime("2030-01-15");
+$personFields->idIssueDate = new \DateTime("2020-01-15");
+$personFields->idExpirationDate = new \DateTime("2030-01-15");
 
 // Other fields
 $personFields->sex = "female"; // or "male", "other"
@@ -345,7 +344,6 @@ Binary fields like photos and documents are uploaded directly within the request
 ```php
 <?php
 
-use DateTime;
 use Soneso\StellarSDK\SEP\KYCService\KYCService;
 use Soneso\StellarSDK\SEP\KYCService\PutCustomerInfoRequest;
 use Soneso\StellarSDK\SEP\StandardKYCFields\StandardKYCFields;
@@ -366,8 +364,8 @@ $personFields = new NaturalPersonKYCFields();
 $personFields->idType = "passport";
 $personFields->idNumber = "AB123456";
 $personFields->idCountryCode = "USA";
-$personFields->idIssueDate = new DateTime("2020-01-15");
-$personFields->idExpirationDate = new DateTime("2030-01-15");
+$personFields->idIssueDate = new \DateTime("2020-01-15");
+$personFields->idExpirationDate = new \DateTime("2030-01-15");
 
 // Document images (binary)
 $personFields->photoIdFront = $idFrontBytes;
@@ -877,11 +875,10 @@ use Soneso\StellarSDK\SEP\StandardKYCFields\NaturalPersonKYCFields;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Exception\ConnectException;
-use Exception;
 
 try {
     $kycService = KYCService::fromDomain("testanchor.stellar.org");
-} catch (Exception $e) {
+} catch (\Exception $e) {
     // No KYC_SERVER or TRANSFER_SERVER in stellar.toml
     echo "Failed to discover KYC service: " . $e->getMessage() . "\n";
     exit(1);

@@ -44,13 +44,12 @@ Loads `DIRECT_PAYMENT_SERVER` from the anchor's `stellar.toml` automatically:
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use Soneso\StellarSDK\SEP\CrossBorderPayments\CrossBorderPaymentsService;
 
 // Reads DIRECT_PAYMENT_SERVER from https://receivinganchor.com/.well-known/stellar.toml
 try {
     $service = CrossBorderPaymentsService::fromDomain('receivinganchor.com');
-} catch (Exception $e) {
+} catch (\Exception $e) {
     // Thrown if stellar.toml is unreachable or DIRECT_PAYMENT_SERVER is absent
     echo 'Cannot reach anchor: ' . $e->getMessage() . PHP_EOL;
     exit(1);

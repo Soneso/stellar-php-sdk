@@ -26,12 +26,11 @@
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 
 try {
     $stellarToml = StellarToml::fromDomain('testanchor.stellar.org');
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo 'Failed to load stellar.toml: ' . $e->getMessage() . PHP_EOL;
     exit(1);
 }
@@ -222,7 +221,6 @@ When `$currency->toml` is set, the entry contains only that URL; all other field
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 
 $stellarToml = StellarToml::fromDomain('example.com');
@@ -235,7 +233,7 @@ if ($currencies !== null) {
             try {
                 $linked = StellarToml::currencyFromUrl($currency->toml);
                 echo $linked->code . ':' . $linked->issuer . PHP_EOL;
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 echo 'Failed to fetch linked currency: ' . $e->getMessage() . PHP_EOL;
             }
         } else {
@@ -325,12 +323,11 @@ All exceptions can be caught with a single `catch (Exception $e)`. Use the messa
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 
 try {
     $stellarToml = StellarToml::fromDomain('anchor.example.com');
-} catch (Exception $e) {
+} catch (\Exception $e) {
     $msg = $e->getMessage();
     if (str_contains($msg, 'Response status code')) {
         echo 'HTTP error fetching stellar.toml' . PHP_EOL;
@@ -380,14 +377,13 @@ Most SEP integrations start with SEP-01 discovery, then SEP-10 authentication:
 ```php
 <?php declare(strict_types=1);
 
-use Exception;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 
 $domain = 'testanchor.stellar.org';
 
 try {
     $stellarToml = StellarToml::fromDomain($domain);
-} catch (Exception $e) {
+} catch (\Exception $e) {
     exit('Cannot reach anchor: ' . $e->getMessage());
 }
 

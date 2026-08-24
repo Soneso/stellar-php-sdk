@@ -148,7 +148,6 @@ This complete example shows how to send a payment using a Stellar address. It re
 ```php
 <?php
 
-use Exception;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Memo;
@@ -161,7 +160,7 @@ use Soneso\StellarSDK\TransactionBuilder;
 $sdk = StellarSDK::getTestNetInstance();
 
 // Sender's keypair
-$senderKeyPair = KeyPair::fromSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6CSS');
+$senderKeyPair = KeyPair::fromSeed('SD77EKZMYX5XBINENYKNELHRL5RKTR2OL37FMYIV2WUU5IHFD5PXLPTN');
 $senderAccountId = $senderKeyPair->getAccountId();
 
 // Resolve recipient's Stellar address
@@ -200,7 +199,7 @@ $transaction->sign($senderKeyPair, Network::testnet());
 try {
     $sdk->submitTransaction($transaction);
     echo "Payment sent to {$recipient}" . PHP_EOL;
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo "Payment failed: " . $e->getMessage() . PHP_EOL;
 }
 ```
@@ -212,8 +211,6 @@ Federation lookups can fail for various reasons. This example demonstrates how t
 ```php
 <?php
 
-use Exception;
-use InvalidArgumentException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\SEP\Federation\Federation;
 
@@ -221,7 +218,7 @@ use Soneso\StellarSDK\SEP\Federation\Federation;
 // Throws InvalidArgumentException immediately without making network requests
 try {
     Federation::resolveStellarAddress('invalid-no-asterisk');
-} catch (InvalidArgumentException $e) {
+} catch (\InvalidArgumentException $e) {
     echo "Invalid format: " . $e->getMessage() . PHP_EOL;
     // Output: Invalid format: Invalid federation address: invalid-no-asterisk
 }
@@ -230,7 +227,7 @@ try {
 // Throws Exception when stellar.toml doesn't contain FEDERATION_SERVER
 try {
     Federation::resolveStellarAddress('user*domain-without-federation.com');
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo "No federation server: " . $e->getMessage() . PHP_EOL;
 }
 

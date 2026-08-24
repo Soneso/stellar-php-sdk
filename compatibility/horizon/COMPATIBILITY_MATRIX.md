@@ -1,9 +1,9 @@
 # Horizon API vs PHP SDK Compatibility Matrix
 
-**Horizon Version:** v27.0.0 (released 2026-06-11)  
-**Horizon Source:** [v27.0.0](https://github.com/stellar/stellar-horizon/releases/tag/v27.0.0)  
-**SDK Version:** 1.12.0  
-**Generated:** 2026-08-10 18:43:34 UTC
+**Horizon Version:** v28.0.0 (released 2026-08-20)  
+**Horizon Source:** [v28.0.0](https://github.com/stellar/stellar-horizon/releases/tag/v28.0.0)  
+**SDK Version:** 1.13.0  
+**Generated:** 2026-08-24 13:13:48 UTC
 
 **Horizon Endpoints Discovered:** 52  
 **Public API Endpoints (in matrix):** 50

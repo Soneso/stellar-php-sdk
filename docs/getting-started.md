@@ -25,7 +25,7 @@ Install via Composer:
 composer require soneso/stellar-php-sdk
 ```
 
-**Requirements:** PHP 8.0+, ext-bcmath, ext-gmp. **Optional:** ext-pcntl (Unix only, used for process forking in integration tests).
+**Requirements:** PHP 8.0+, ext-bcmath, ext-gmp, ext-mbstring, ext-sodium. **Optional:** ext-pcntl (Unix only, used for process forking in integration tests).
 
 ## Basic Concepts
 
@@ -109,6 +109,8 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 // Restore keypair from seed (can sign transactions)
 $keyPair = KeyPair::fromSeed("SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE");
 ```
+
+`fromSeed()` and `fromAccountId()` verify their input and throw `InvalidArgumentException` for anything malformed. The examples in these guides call the API directly when the input is a fixed, known-good value — a failure there is a programming error. Wrap the call in `try`/`catch` where the value arrives at runtime, such as user input, or check it first with `StrKey::isValidSeed()` for a seed and `StrKey::isValidAccountId()` for a G-address. `fromAccountId()` also accepts an `M...` muxed address, which `isValidAccountId()` rejects, so a pre-check that must let muxed input through needs `StrKey::isValidMuxedAccountId()` as well.
 
 ### Import from Account ID
 

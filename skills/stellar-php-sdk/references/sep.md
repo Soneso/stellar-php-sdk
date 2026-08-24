@@ -21,6 +21,7 @@ The PHP SDK implements 20 Stellar Ecosystem Proposals (SEPs) that cover authenti
 | SEP-29 | Account Memo Requirements | Validate memo requirements on destination accounts | [Details](sep-29.md) |
 | SEP-30 | Account Recovery | Recover access to accounts via identity verification | [Details](sep-30.md) |
 | SEP-31 | Cross-Border Payments | Send payments via off-chain intermediaries | [Details](sep-31.md) |
+| SEP-35 | Operation IDs | Compute and decode Horizon's operation IDs (TOIDs) | [Details](sep-35.md) |
 | SEP-38 | Anchor RFQ API | Get exchange quotes for asset conversions | [Details](sep-38.md) |
 | SEP-45 | Web Auth for Contracts | Authenticate Soroban contract accounts | [Details](sep-45.md) |
 | SEP-51 | XDR-JSON Encoding | Convert Stellar XDR types to and from a canonical JSON form | [Details](sep-51.md) |
@@ -71,4 +72,4 @@ The following SEPs depend on other SEPs:
 - **SEP-38 (Anchor RFQ API)** → Requires SEP-10 for authentication; used with SEP-06, SEP-24, or SEP-31
 - **SEP-45 (Web Auth for Contracts)** → Requires SEP-01 to discover web auth endpoint for contract accounts
 
-No dependencies: SEP-02, SEP-05, SEP-07, SEP-08, SEP-09, SEP-11, SEP-23, SEP-29, SEP-51, SEP-53
+No dependencies: SEP-02, SEP-05, SEP-07, SEP-08, SEP-09, SEP-11, SEP-23, SEP-29, SEP-35, SEP-51, SEP-53

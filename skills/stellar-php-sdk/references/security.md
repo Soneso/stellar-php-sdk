@@ -9,7 +9,7 @@
 
 // WRONG -- secret key exposed in source code
 $keyPair = \Soneso\StellarSDK\Crypto\KeyPair::fromSeed(
-    'SCZANGBA5YHTNYVVV3C7CAZMCLXPILHSE7HG3EQOVLU7BFXQMB3AVJY'
+    'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE'
 );
 
 // CORRECT -- load from environment variable
@@ -124,10 +124,25 @@ function validateSecretSeed(string $seed): void
     }
 }
 
+function validateSignedPayloadSigner(string $signer): void
+{
+    if (!StrKey::isValidSignedPayload($signer)) {
+        throw new \InvalidArgumentException(
+            'Invalid signed payload signer. Must be a valid P-address.'
+        );
+    }
+}
+
 // Usage
 $destinationId = $_POST['destination'] ?? '';
 validateStellarAddress($destinationId);
 ```
+
+### What StrKey Validation Guarantees
+
+`isValid*` returns `bool` and never throws. `decode*` throws `InvalidArgumentException`. Both families enforce the same rules, so a string that passes `isValidAccountId()` decodes, and one that fails it throws. The rules (encoded length checked before base32 decoding, decoded payload length, signed payload framing, claimable balance discriminant) are specified in [sep-23.md](sep-23.md). No PHP warning precedes any rejection, so an application that promotes warnings to exceptions still sees a plain rejection.
+
+Two of those rules carry direct security weight: P-strkey padding must be zero, which leaves one signer exactly one spelling and makes string comparison of validated P-addresses sound, and the hex encoders reject non-hexadecimal input with `InvalidArgumentException`, so hex taken straight from a request body can be passed in and the rejection handled like any other validation failure. Both are covered in full in [sep-23.md](sep-23.md).
 
 ### Validate Asset Codes
 
@@ -694,6 +709,7 @@ if (!verifyWebhookSignature($body, $signature, $signerAccountId)) {
 - [ ] Secret keys loaded from environment variables or secure vault, never hardcoded
 - [ ] Secret keys cleared from memory after KeyPair creation
 - [ ] All user-supplied Stellar addresses validated with `StrKey::isValidAccountId()`
+- [ ] P-address signers validated with `StrKey::isValidSignedPayload()` before being stored or compared
 - [ ] Amounts validated as positive decimals with at most 7 decimal places
 - [ ] Transactions inspected before signing (source account, operations, fee, memo)
 - [ ] Network passphrase verified to match Horizon/RPC endpoint
@@ -701,7 +717,7 @@ if (!verifyWebhookSignature($body, $signature, $signerAccountId)) {
 - [ ] Stack traces logged to files only, not displayed to users
 - [ ] JWT tokens stored in encrypted sessions, not plain cookies
 - [ ] CSRF protection on all payment forms
-- [ ] HTTPS enforced for all Stellar API communication (SDK enforces this automatically)
+- [ ] HTTPS enforced for all Stellar API communication -- the `StellarSDK`, `SorobanServer` and SEP service constructors reject plain HTTP with `Service URL must use HTTPS. HTTP is only allowed for localhost.`, accepting it only for `localhost`, `127.0.0.1` and `[::1]`
 - [ ] Rate limiting applied to payment submission endpoints
 - [ ] Webhook signatures verified before processing callbacks
 - [ ] `display_errors` disabled in production PHP configuration

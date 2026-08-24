@@ -263,7 +263,6 @@ Some stellar.toml files link to separate TOML files for detailed currency inform
 ```php
 <?php
 
-use Exception;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 
 $stellarToml = StellarToml::fromDomain('example.com');
@@ -278,7 +277,7 @@ if ($currencies !== null) {
                 echo "Code: " . $linkedCurrency->code . PHP_EOL;
                 echo "Issuer: " . $linkedCurrency->issuer . PHP_EOL;
                 echo "Name: " . $linkedCurrency->name . PHP_EOL;
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 echo "Failed to load linked currency: " . $e->getMessage() . PHP_EOL;
             }
         } else {
@@ -320,13 +319,12 @@ The SDK throws exceptions when the stellar.toml file cannot be fetched or parsed
 ```php
 <?php
 
-use Exception;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 
 // Handle network failures
 try {
     $stellarToml = StellarToml::fromDomain('nonexistent-domain.invalid');
-} catch (Exception $e) {
+} catch (\Exception $e) {
     // Domain unreachable, DNS failure, or stellar.toml not found (404)
     echo "Failed to load stellar.toml: " . $e->getMessage() . PHP_EOL;
 }
@@ -335,7 +333,7 @@ try {
 try {
     $badToml = "this is not valid TOML [[[";
     $stellarToml = new StellarToml($badToml);
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo "Failed to parse stellar.toml: " . $e->getMessage() . PHP_EOL;
 }
 ```
