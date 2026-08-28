@@ -220,6 +220,66 @@ class TransferServerServiceTest extends TestCase
         $this->assertEquals(0.013, $response->fee);
     }
 
+    public function testFeeAmountIsSentAsPlainDecimal(): void
+    {
+        $transferService = new TransferServerService($this->serviceAddress);
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestFee()),
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestFee()),
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestFee()),
+        ]);
+
+        $capturedAmount = null;
+        $stack = new HandlerStack();
+        $stack->setHandler($mock);
+        $stack->push(Middleware::mapRequest(function (RequestInterface $request) use (&$capturedAmount) {
+            parse_str($request->getUri()->getQuery(), $query_array);
+            $capturedAmount = $query_array["amount"] ?? null;
+            return $request;
+        }));
+
+        $transferService->setMockHandlerStack($stack);
+
+        // 123 stroops. Casting the float spells it "1.23E-5".
+        $transferService->fee(new FeeRequest(
+            operation: "deposit", assetCode: "ETH", amount: 0.0000123, jwt: $this->jwtToken));
+        $this->assertSame("0.0000123", $capturedAmount);
+
+        // Casting this float spells it "100000000", a different amount.
+        $transferService->fee(new FeeRequest(
+            operation: "deposit", assetCode: "ETH", amount: 99999999.9999999, jwt: $this->jwtToken));
+        $this->assertSame("99999999.9999999", $capturedAmount);
+
+        // The stored float is 100000000000.100006103515625; the query must carry the
+        // shortest representation, not the binary expansion behind it.
+        $transferService->fee(new FeeRequest(
+            operation: "deposit", assetCode: "ETH", amount: 100000000000.1, jwt: $this->jwtToken));
+        $this->assertSame("100000000000.1", $capturedAmount);
+    }
+
+    public function testFeeTypeZeroIsSent(): void
+    {
+        $transferService = new TransferServerService($this->serviceAddress);
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->requestFee())
+        ]);
+
+        $capturedType = null;
+        $stack = new HandlerStack();
+        $stack->setHandler($mock);
+        $stack->push(Middleware::mapRequest(function (RequestInterface $request) use (&$capturedType) {
+            parse_str($request->getUri()->getQuery(), $query_array);
+            $capturedType = $query_array["type"] ?? null;
+            return $request;
+        }));
+
+        $transferService->setMockHandlerStack($stack);
+
+        $transferService->fee(new FeeRequest(
+            operation: "deposit", assetCode: "ETH", amount: 1.0, type: "0", jwt: $this->jwtToken));
+        $this->assertSame("0", $capturedType);
+    }
+
     public function testDepositBankPayment(): void
     {
         $transferService = new TransferServerService($this->serviceAddress);

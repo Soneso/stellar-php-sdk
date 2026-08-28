@@ -6,10 +6,13 @@
 
 namespace Soneso\StellarSDKTests\Unit\Soroban;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
@@ -115,6 +118,181 @@ class AddressTest extends TestCase
     }
 
     /**
+     * A contract id reaches the factory as a "C..." strkey or as the contract hash in
+     * hexadecimal; both name one contract, so the created Address reports one spelling.
+     */
+    public function testFromContractIdReportsCanonicalHexForEitherSpelling(): void
+    {
+        $this->assertEquals(
+            $this->testContractIdHex,
+            Address::fromContractId($this->testContractIdStrKey)->getContractId()
+        );
+        $this->assertEquals(
+            $this->testContractIdHex,
+            Address::fromContractId($this->testContractIdHex)->getContractId()
+        );
+        $this->assertEquals(
+            $this->testContractIdHex,
+            Address::fromContractId(strtoupper($this->testContractIdHex))->getContractId()
+        );
+    }
+
+    public function testFromContractIdEncodesEitherSpellingIdentically(): void
+    {
+        $fromHex = Address::fromContractId($this->testContractIdHex)->toXdr()->encode();
+
+        $this->assertEquals(
+            $fromHex,
+            Address::fromContractId($this->testContractIdStrKey)->toXdr()->encode()
+        );
+        $this->assertEquals(
+            $fromHex,
+            Address::fromContractId(strtoupper($this->testContractIdHex))->toXdr()->encode()
+        );
+    }
+
+    public function testFromContractIdRejectsAnIdInNeitherSpelling(): void
+    {
+        // Not hexadecimal at all; a "C..." strkey that fails its checksum; and
+        // hexadecimal of a width no contract hash has.
+        $cases = [
+            'not a contract id',
+            'C' . str_repeat('Z', 55),
+            str_repeat('ab', 31),
+        ];
+
+        foreach ($cases as $case) {
+            $threw = false;
+            try {
+                Address::fromContractId($case);
+            } catch (InvalidArgumentException $e) {
+                $threw = true;
+            }
+            $this->assertTrue($threw, "expected an exception for contract id \"$case\"");
+        }
+    }
+
+    /**
+     * A pool id reaches the factory as an "L..." strkey or as the pool hash in
+     * hexadecimal; both name one pool, so the created Address reports one spelling.
+     */
+    public function testFromLiquidityPoolIdReportsCanonicalHexForEitherSpelling(): void
+    {
+        $strKey = StrKey::encodeLiquidityPoolIdHex($this->testLiquidityPoolIdHex);
+
+        $this->assertEquals(
+            $this->testLiquidityPoolIdHex,
+            Address::fromLiquidityPoolId($strKey)->getLiquidityPoolId()
+        );
+        $this->assertEquals(
+            $this->testLiquidityPoolIdHex,
+            Address::fromLiquidityPoolId($this->testLiquidityPoolIdHex)->getLiquidityPoolId()
+        );
+        $this->assertEquals(
+            $this->testLiquidityPoolIdHex,
+            Address::fromLiquidityPoolId(strtoupper($this->testLiquidityPoolIdHex))->getLiquidityPoolId()
+        );
+    }
+
+    public function testFromLiquidityPoolIdEncodesEitherSpellingIdentically(): void
+    {
+        $strKey = StrKey::encodeLiquidityPoolIdHex($this->testLiquidityPoolIdHex);
+        $fromHex = Address::fromLiquidityPoolId($this->testLiquidityPoolIdHex)->toXdr()->encode();
+
+        $this->assertEquals($fromHex, Address::fromLiquidityPoolId($strKey)->toXdr()->encode());
+        $this->assertEquals(
+            $fromHex,
+            Address::fromLiquidityPoolId(strtoupper($this->testLiquidityPoolIdHex))->toXdr()->encode()
+        );
+    }
+
+    public function testFromLiquidityPoolIdRejectsAnIdInNeitherSpelling(): void
+    {
+        $cases = [
+            'not a pool id',
+            'L' . str_repeat('Z', 55),
+            str_repeat('ab', 31),
+        ];
+
+        foreach ($cases as $case) {
+            $threw = false;
+            try {
+                Address::fromLiquidityPoolId($case);
+            } catch (InvalidArgumentException $e) {
+                $threw = true;
+            }
+            $this->assertTrue($threw, "expected an exception for liquidity pool id \"$case\"");
+        }
+    }
+
+    /**
+     * A balance id reaches the factory as a "B..." strkey, as the bare hash, or as the
+     * hash behind either type discriminant. All name one balance, so the created Address
+     * reports the 72-character form Horizon serves, which is what fromXdr reports too.
+     */
+    public function testFromClaimableBalanceIdReportsTheHorizonFormForEverySpelling(): void
+    {
+        $bareHash = substr($this->testClaimableBalanceIdHex, 8);
+
+        foreach ([
+            StrKey::encodeClaimableBalanceIdHex($bareHash),
+            $bareHash,
+            '00' . $bareHash,
+            $this->testClaimableBalanceIdHex,
+            strtoupper($this->testClaimableBalanceIdHex),
+        ] as $spelling) {
+            $this->assertEquals(
+                $this->testClaimableBalanceIdHex,
+                Address::fromClaimableBalanceId($spelling)->getClaimableBalanceId(),
+                "spelling \"$spelling\""
+            );
+        }
+    }
+
+    public function testFromClaimableBalanceIdEncodesEverySpellingIdentically(): void
+    {
+        $bareHash = substr($this->testClaimableBalanceIdHex, 8);
+        $fromHorizonForm = Address::fromClaimableBalanceId($this->testClaimableBalanceIdHex)
+            ->toXdr()->encode();
+
+        foreach ([
+            StrKey::encodeClaimableBalanceIdHex($bareHash),
+            $bareHash,
+            '00' . $bareHash,
+            strtoupper($this->testClaimableBalanceIdHex),
+        ] as $spelling) {
+            $this->assertEquals(
+                $fromHorizonForm,
+                Address::fromClaimableBalanceId($spelling)->toXdr()->encode(),
+                "spelling \"$spelling\""
+            );
+        }
+    }
+
+    public function testFromClaimableBalanceIdRejectsAnIdInNoAcceptedSpelling(): void
+    {
+        // Not hexadecimal at all; a "B..." strkey that fails its checksum; hexadecimal of
+        // a width no balance id has; and a discriminant naming a type ClaimableBalanceID
+        // does not have.
+        $cases = [
+            'not a balance id',
+            'B' . str_repeat('Z', 57),
+            str_repeat('ab', 31),
+            '00000001' . substr($this->testClaimableBalanceIdHex, 8),
+        ];
+
+        foreach ($cases as $case) {
+            $threw = false;
+            try {
+                Address::fromClaimableBalanceId($case);
+            } catch (InvalidArgumentException $e) {
+                $threw = true;
+            }
+            $this->assertTrue($threw, "expected an exception for claimable balance id \"$case\"");
+        }
+    }
+
+    /**
      * Test Address XDR encoding and decoding for account type
      */
     public function testAccountXdrRoundtrip(): void
@@ -179,6 +357,7 @@ class AddressTest extends TestCase
         $decoded = Address::fromXdr($xdr);
 
         $this->assertEquals(Address::TYPE_CLAIMABLE_BALANCE, $decoded->getType());
+        // fromXdr reports the 72-character Horizon form whatever spelling built the XDR.
         $this->assertEquals($this->testClaimableBalanceIdHex, $decoded->getClaimableBalanceId());
     }
 
@@ -312,25 +491,46 @@ class AddressTest extends TestCase
     }
 
     /**
-     * Test fromAnyId with liquidity pool ID (hex format)
-     * Note: fromAnyId tries multiple ID types and returns the first valid match
+     * A bare 32-byte hash in hexadecimal is not self-describing, so fromAnyId resolves
+     * 64 hex characters as a contract id; a pool named by hex alone cannot be told apart
+     * from a contract. The strkey spelling resolves as the pool (see the strkey test below).
      */
     public function testFromAnyIdWithLiquidityPoolIdHex(): void
     {
         $address = Address::fromAnyId($this->testLiquidityPoolIdHex);
 
         $this->assertNotNull($address);
-        // The hex ID may be interpreted as contract or liquidity pool depending on validation order
-        $this->assertTrue(
-            $address->getType() === Address::TYPE_LIQUIDITY_POOL ||
-            $address->getType() === Address::TYPE_CONTRACT,
-            'Address type should be either LIQUIDITY_POOL or CONTRACT'
-        );
-        $this->assertEquals($this->testLiquidityPoolIdHex,
-            $address->getType() === Address::TYPE_LIQUIDITY_POOL
-                ? $address->getLiquidityPoolId()
-                : $address->getContractId()
-        );
+        $this->assertEquals(Address::TYPE_CONTRACT, $address->getType());
+        $this->assertEquals($this->testLiquidityPoolIdHex, $address->getContractId());
+    }
+
+    public function testFromAnyIdReadsALiquidityPoolStrkey(): void
+    {
+        $strKey = StrKey::encodeLiquidityPoolIdHex($this->testLiquidityPoolIdHex);
+        $address = Address::fromAnyId($strKey);
+
+        $this->assertNotNull($address);
+        $this->assertEquals(Address::TYPE_LIQUIDITY_POOL, $address->getType());
+        $this->assertEquals($this->testLiquidityPoolIdHex, $address->getLiquidityPoolId());
+    }
+
+    public function testFromAnyIdReadsAStrkeyPrefixedClaimableBalanceHex(): void
+    {
+        $bareHash = substr($this->testClaimableBalanceIdHex, 8);
+        $address = Address::fromAnyId('00' . $bareHash);
+
+        $this->assertNotNull($address);
+        $this->assertEquals(Address::TYPE_CLAIMABLE_BALANCE, $address->getType());
+        $this->assertEquals($this->testClaimableBalanceIdHex, $address->getClaimableBalanceId());
+    }
+
+    public function testFromAnyIdReadsAnXdrPrefixedClaimableBalanceHex(): void
+    {
+        $address = Address::fromAnyId($this->testClaimableBalanceIdHex);
+
+        $this->assertNotNull($address);
+        $this->assertEquals(Address::TYPE_CLAIMABLE_BALANCE, $address->getType());
+        $this->assertEquals($this->testClaimableBalanceIdHex, $address->getClaimableBalanceId());
     }
 
     /**
@@ -504,5 +704,103 @@ class AddressTest extends TestCase
         $this->assertEquals(Address::TYPE_CONTRACT, $address2->getType());
         $this->assertEquals($this->testAccountId, $address1->getAccountId());
         $this->assertEquals($this->testContractIdHex, $address2->getContractId());
+    }
+
+    public function testFromXdrReportsOneIdForEitherConstructionOfTheXdr(): void
+    {
+        // An XdrSCAddress built from a strkey holds that spelling, while one decoded
+        // from bytes holds the raw id. Both name one entity, so fromXdr must report
+        // one spelling for both constructions of every id-carrying arm: the Horizon
+        // 72-character form for a claimable balance, canonical hex for the rest.
+        $hashHex = str_repeat('cd', 32);
+
+        $inMemory = XdrSCAddress::forClaimableBalanceId(StrKey::encodeClaimableBalanceIdHex($hashHex));
+        $decoded = XdrSCAddress::decode(new XdrBuffer($inMemory->encode()));
+        $this->assertEquals('00000000' . $hashHex, Address::fromXdr($inMemory)->getClaimableBalanceId());
+        $this->assertEquals('00000000' . $hashHex, Address::fromXdr($decoded)->getClaimableBalanceId());
+
+        $inMemory = XdrSCAddress::forContractId(StrKey::encodeContractIdHex($hashHex));
+        $decoded = XdrSCAddress::decode(new XdrBuffer($inMemory->encode()));
+        $this->assertEquals($hashHex, Address::fromXdr($inMemory)->getContractId());
+        $this->assertEquals($hashHex, Address::fromXdr($decoded)->getContractId());
+
+        $inMemory = XdrSCAddress::forLiquidityPoolId(StrKey::encodeLiquidityPoolIdHex($hashHex));
+        $decoded = XdrSCAddress::decode(new XdrBuffer($inMemory->encode()));
+        $this->assertEquals($hashHex, Address::fromXdr($inMemory)->getLiquidityPoolId());
+        $this->assertEquals($hashHex, Address::fromXdr($decoded)->getLiquidityPoolId());
+    }
+
+    public function testFromAnyIdReadsAStrkeyOfHexDigitsAsAStrkey(): void
+    {
+        // Every character of this valid B-strkey is a hexadecimal digit. A hex-first
+        // reading would see a hex string of a width no id has and answer null; a
+        // strkey names its own type, so it must resolve as one, reporting the
+        // 72-character Horizon form.
+        $strKey = 'BAAB5E6FEA37BFA5EFDD75E4D7ED75A74FBBF5FA5EBBE733DE5ECE34D4';
+        $this->assertTrue(ctype_xdigit($strKey));
+
+        $address = Address::fromAnyId($strKey);
+
+        $this->assertNotNull($address);
+        $this->assertEquals(Address::TYPE_CLAIMABLE_BALANCE, $address->getType());
+        $this->assertEquals(
+            '000000001e93c52037f0941d21463ff49c1fc83ff41fe14212f4a0e902127f7b193a4113',
+            $address->getClaimableBalanceId()
+        );
+    }
+
+    // deriveContractId
+
+    public function testDeriveContractIdMatchesTheSharedCrossSdkVector(): void
+    {
+        // Shared vector pinned across all four Soneso SDKs; independently computed
+        // (js-stellar-base and a hand-encoded preimage), never from this implementation.
+        $deployer = Address::fromAccountId('GABAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEJXA');
+        $salt = str_repeat("\x11", 32);
+
+        $this->assertSame(
+            'CADHEGA2PTPG6IJXYA62AY6JUQLQWOHRYX7A6FAZ4GL747OLBDQU7QXR',
+            Address::deriveContractId($deployer, $salt, Network::testnet())
+        );
+        $this->assertSame(
+            'CC22JLXJCLGHDQDBHJXTOEAFRM7GIS3D7CBQXR7M22HMWYNPUUPH6GKV',
+            Address::deriveContractId($deployer, $salt, Network::public())
+        );
+    }
+
+    public function testDeriveContractIdAcceptsAContractDeployer(): void
+    {
+        // Contracts deploy contracts too; the preimage takes any SC address. The
+        // expected id was computed independently with js-stellar-base, covering the
+        // contract arm of the address encoding that the account vector does not reach.
+        $deployer = Address::fromContractId($this->testContractIdHex);
+        $salt = str_repeat("\x11", 32);
+
+        $this->assertSame(
+            'CBU52TQFSCXOGX5OOE6QQKBRD3XNXAS2MRLI2XFKLGEODECDADE32QYU',
+            Address::deriveContractId($deployer, $salt, Network::testnet())
+        );
+        $this->assertSame(
+            'CAXJ2CGFFIGYDFF55V64NWWUASL7IMAZTVVECYOKOVQWF4KQGXP2HH3U',
+            Address::deriveContractId($deployer, $salt, Network::public())
+        );
+    }
+
+    public function testDeriveContractIdRejectsWrongSaltLength(): void
+    {
+        $deployer = Address::fromAccountId('GABAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEJXA');
+
+        // 31 for the off-by-one, 64 for the likeliest real mistake: a hex string
+        // where raw bytes are expected.
+        foreach ([31, 64] as $length) {
+            $threw = false;
+            try {
+                Address::deriveContractId($deployer, str_repeat("\x11", $length), Network::testnet());
+            } catch (InvalidArgumentException $e) {
+                $threw = true;
+                $this->assertStringContainsString("must be exactly 32 bytes, got $length", $e->getMessage());
+            }
+            $this->assertTrue($threw, "expected an exception for salt length $length");
+        }
     }
 }

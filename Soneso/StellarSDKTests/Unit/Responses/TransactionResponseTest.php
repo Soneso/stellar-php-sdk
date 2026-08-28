@@ -8,6 +8,7 @@ namespace Soneso\StellarSDKTests\Unit\Responses;
 
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Memo;
+use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionsPageResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionPreconditionsResponse;
@@ -354,6 +355,82 @@ class TransactionResponseTest extends TestCase
         // Test fee-bump transaction fields are null for regular transaction
         $this->assertNull($response->getFeeBumpTransactionResponse());
         $this->assertNull($response->getInnerTransactionResponse());
+    }
+
+    public function testGetCreatedClaimableBalanceIdReturnsTheStrkeyAtThePosition(): void
+    {
+        $json = $this->getCompleteTransactionJson();
+        // TransactionResult with two CreateClaimableBalance operations carrying
+        // different balance hashes, so each position must answer with its own id.
+        $json['result_xdr'] = 'AAAAAAAAAMgAAAAAAAAAAgAAAAAAAAAOAAAAAAAAAAA/DDS/k60NmXHQTMyQ9wVRHIOKrZc0pKL7DXoD/H/omgAAAAAAAAAOAAAAAAAAAAD16n+z3hja6fEq+WzwdQdJAW+8umvwnpAqaeVFaHcdggAAAAA=';
+        $response = SubmitTransactionResponse::fromJson($json);
+
+        $this->assertEquals(
+            'BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU',
+            $response->getCreatedClaimableBalanceId()
+        );
+        $this->assertEquals(
+            'BAAPL2T7WPPBRWXJ6EVPS3HQOUDUSALPXS5GX4E6SAVGTZKFNB3R3ATZWM',
+            $response->getCreatedClaimableBalanceId(1)
+        );
+        $this->assertNull($response->getCreatedClaimableBalanceId(2));
+    }
+
+    public function testGetCreatedClaimableBalanceIdAnswersNullForAnotherOperationType(): void
+    {
+        $json = $this->getCompleteTransactionJson();
+        // A payment at position 0 and a CreateClaimableBalance at position 1.
+        $json['result_xdr'] = 'AAAAAAAAAMgAAAAAAAAAAgAAAAAAAAABAAAAAAAAAAAAAAAOAAAAAAAAAAD16n+z3hja6fEq+WzwdQdJAW+8umvwnpAqaeVFaHcdggAAAAA=';
+        $response = SubmitTransactionResponse::fromJson($json);
+
+        $this->assertNull($response->getCreatedClaimableBalanceId());
+        $this->assertEquals(
+            'BAAPL2T7WPPBRWXJ6EVPS3HQOUDUSALPXS5GX4E6SAVGTZKFNB3R3ATZWM',
+            $response->getCreatedClaimableBalanceId(1)
+        );
+    }
+
+    public function testGetCreatedClaimableBalanceIdAnswersNullForAFailedTransaction(): void
+    {
+        $json = $this->getCompleteTransactionJson();
+        // txFAILED carrying two decodable CreateClaimableBalance SUCCESS results.
+        // Core never emits this exact shape (a failed transaction carries a failing
+        // operation), which is what makes it the strongest control: nothing but the
+        // transaction result code can produce the null.
+        $json['result_xdr'] = 'AAAAAAAAAMj/////AAAAAgAAAAAAAAAOAAAAAAAAAAA/DDS/k60NmXHQTMyQ9wVRHIOKrZc0pKL7DXoD/H/omgAAAAAAAAAOAAAAAAAAAAD16n+z3hja6fEq+WzwdQdJAW+8umvwnpAqaeVFaHcdggAAAAA=';
+        $response = SubmitTransactionResponse::fromJson($json);
+
+        $this->assertNull($response->getCreatedClaimableBalanceId());
+        $this->assertNull($response->getCreatedClaimableBalanceId(1));
+    }
+
+    public function testGetCreatedClaimableBalanceIdReadsAFeeBumpsInnerOperations(): void
+    {
+        $json = $this->getCompleteTransactionJson();
+        // txFEE_BUMP_INNER_SUCCESS wrapping an inner txSUCCESS with two
+        // CreateClaimableBalance operations: the outer result carries no operation
+        // results of its own, so the ids are only reachable through the inner pair.
+        $json['result_xdr'] = 'AAAAAAAAASwAAAABq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6sAAAAAAAAAyAAAAAAAAAACAAAAAAAAAA4AAAAAAAAAAD8MNL+TrQ2ZcdBMzJD3BVEcg4qtlzSkovsNegP8f+iaAAAAAAAAAA4AAAAAAAAAAPXqf7PeGNrp8Sr5bPB1B0kBb7y6a/CekCpp5UVodx2CAAAAAAAAAAA=';
+        $response = SubmitTransactionResponse::fromJson($json);
+
+        $this->assertEquals(
+            'BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU',
+            $response->getCreatedClaimableBalanceId()
+        );
+        $this->assertEquals(
+            'BAAPL2T7WPPBRWXJ6EVPS3HQOUDUSALPXS5GX4E6SAVGTZKFNB3R3ATZWM',
+            $response->getCreatedClaimableBalanceId(1)
+        );
+        $this->assertNull($response->getCreatedClaimableBalanceId(2));
+    }
+
+    public function testGetCreatedClaimableBalanceIdAnswersNullWithoutResultXdr(): void
+    {
+        $json = $this->getCompleteTransactionJson();
+        unset($json['result_xdr']);
+        $response = SubmitTransactionResponse::fromJson($json);
+
+        $this->assertNull($response->getCreatedClaimableBalanceId());
     }
 
     /**

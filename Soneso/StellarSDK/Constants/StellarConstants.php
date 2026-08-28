@@ -260,6 +260,18 @@ final class StellarConstants
      */
     public const CLAIMABLE_BALANCE_DECODED_LENGTH = 33;
 
+    /**
+     * Length in bytes of a claimable balance id in its XDR form: the 4-byte
+     * big-endian union discriminant followed by the 32-byte balance hash.
+     * Horizon reports balance ids as the hexadecimal of this form.
+     *
+     * Unit: bytes
+     *
+     * Reference: CAP-0023 (Claimable Balances)
+     * @see https://github.com/stellar/stellar-protocol/blob/master/core/cap-0023.md
+     */
+    public const CLAIMABLE_BALANCE_XDR_DECODED_LENGTH = 36;
+
     // ============================================================================
     // STROOP AND AMOUNT CONVERSIONS
     // ============================================================================

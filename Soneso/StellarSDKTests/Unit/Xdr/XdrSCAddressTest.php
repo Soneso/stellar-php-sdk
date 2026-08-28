@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
@@ -28,6 +29,13 @@ class XdrSCAddressTest extends TestCase
     private const TEST_CLAIMABLE_BALANCE_ID = 'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
     private const TEST_LIQUIDITY_POOL_ID = 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
 
+    // The strkey and XDR spellings of the two ids above, as the stellar-xdr tool
+    // renders them.
+    private const TEST_CONTRACT_ID_STRKEY = 'CDS4ERHXP6HGXAXRVDJ6TMGFU3L7R2NAWHBNHZHVU234RWPA6GRLHZ4R';
+    private const TEST_CONTRACT_ID_XDR = 'AAAAAeXCRPd/jmuC8ajT6bDFptf46aCxwtPk9aa3yNng8aKz';
+    private const TEST_LIQUIDITY_POOL_ID_STRKEY = 'LDOXWGVYGHBHGMIN3PWG7F4HBKUDYL55PDHCFLPNG7WL6TZTQD5MP4GN';
+    private const TEST_LIQUIDITY_POOL_ID_XDR = 'AAAABN17GrgxwnMxDdvsb5eHCqg8L714ziKt7Tfsv08zgPrH';
+
     // Account Address Tests
 
     public function testForAccountIdWithGAddress(): void
@@ -43,8 +51,8 @@ class XdrSCAddressTest extends TestCase
     {
         // Generate a valid muxed account ID
         $keyPair = KeyPair::random();
-        $accountId = $keyPair->getAccountId();
-        $muxedAccountId = StrKey::encodeMuxedAccountId($accountId, 12345);
+        $muxedAccountId = (new MuxedAccount($keyPair->getAccountId(), 12345))->getAccountId();
+        $this->assertTrue(StrKey::isValidMuxedAccountId($muxedAccountId));
 
         $address = XdrSCAddress::forAccountId($muxedAccountId);
 
@@ -111,18 +119,75 @@ class XdrSCAddressTest extends TestCase
         $this->assertEquals($contractStrKey, $strKey);
     }
 
+    public function testContractAddressEncodeRejectsANonHexId(): void
+    {
+        $address = XdrSCAddress::forContractId('not a contract id');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Contract id must be a "C..." strkey or a hexadecimal string,'
+            . ' "not a contract id" given'
+        );
+        $address->encode();
+    }
+
+    public function testContractAddressRejectsAHexIdOfStrkeyLength(): void
+    {
+        // 56 hexadecimal characters is also the length of a "C..." strkey, a plausible
+        // truncation of the contract hash. The rejection has to name the hexadecimal
+        // rule rather than report a strkey that failed to decode.
+        $address = XdrSCAddress::forContractId(str_repeat('ab', 28));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Contract id must be 56 characters as a "C..." strkey, or the contract hash'
+            . ' as 64 hexadecimal characters; 56 characters given'
+        );
+        $address->toStrKey();
+    }
+
+    public function testContractAddressRejectsAnUppercaseHexIdOfStrkeyLength(): void
+    {
+        // "C" is a hexadecimal digit, so 56 hexadecimal characters can also carry the
+        // leading letter of a strkey. The rejection has to name the hexadecimal rule
+        // rather than report a strkey that failed to decode.
+        $address = XdrSCAddress::forContractId('C' . str_repeat('a', 55));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Contract id must be 56 characters as a "C..." strkey, or the contract hash'
+            . ' as 64 hexadecimal characters; 56 characters given'
+        );
+        $address->toStrKey();
+    }
+
+    public function testContractAddressReadersAgreeOnEitherCaseOfTheId(): void
+    {
+        // Hexadecimal is case insensitive, so the two spellings denote one contract
+        // and both readers of the field have to report it the same way.
+        $upper = XdrSCAddress::forContractId(strtoupper(self::TEST_CONTRACT_ID_HEX));
+        $lower = XdrSCAddress::forContractId(self::TEST_CONTRACT_ID_HEX);
+
+        $this->assertEquals($lower->encode(), $upper->encode());
+        $this->assertEquals($lower->toStrKey(), $upper->toStrKey());
+        $this->assertEquals(
+            self::TEST_CONTRACT_ID_HEX,
+            StrKey::decodeContractIdHex($upper->toStrKey())
+        );
+    }
+
     // Muxed Account Address Tests
 
     public function testMuxedAccountAddressToStrKey(): void
     {
         $keyPair = KeyPair::random();
-        $accountId = $keyPair->getAccountId();
-        $muxedAccountId = StrKey::encodeMuxedAccountId($accountId, 12345);
+        $muxedAccountId = (new MuxedAccount($keyPair->getAccountId(), 12345))->getAccountId();
 
         $address = XdrSCAddress::forAccountId($muxedAccountId);
         $strKey = $address->toStrKey();
 
-        $this->assertStringStartsWith('M', $strKey);
+        $this->assertEquals($muxedAccountId, $strKey);
+        $this->assertTrue(StrKey::isValidMuxedAccountId($strKey));
     }
 
     // Claimable Balance Address Tests
@@ -137,16 +202,101 @@ class XdrSCAddressTest extends TestCase
 
     public function testClaimableBalanceAddressToStrKey(): void
     {
-        // Note: Claimable balance IDs include a 4-byte type prefix (00000000 for V0)
-        $fullClaimableBalanceId = '00000000' . self::TEST_CLAIMABLE_BALANCE_ID;
-        $address = XdrSCAddress::forClaimableBalanceId($fullClaimableBalanceId);
+        $address = XdrSCAddress::forClaimableBalanceId(self::TEST_CLAIMABLE_BALANCE_ID);
 
         $strKey = $address->toStrKey();
 
         $this->assertStringStartsWith('B', $strKey);
-        // Should be able to decode back
+        $this->assertTrue(StrKey::isValidClaimableBalanceId($strKey));
+        // A B-strkey carries the 1-byte claimable balance type (0 for V0)
+        // followed by the 32-byte balance hash.
         $decodedHex = StrKey::decodeClaimableBalanceIdHex($strKey);
-        $this->assertEquals($fullClaimableBalanceId, $decodedHex);
+        $this->assertEquals('00' . self::TEST_CLAIMABLE_BALANCE_ID, $decodedHex);
+    }
+
+    public function testClaimableBalanceAddressToStrKeyAcceptsThePaddedHexForm(): void
+    {
+        // A balance id arrives from Horizon, and leaves getPaddedBalanceIdHex(), with
+        // the 4-byte XDR type discriminant ahead of the hash. encode() takes that
+        // form, so toStrKey() answers for it as well.
+        $bare = XdrSCAddress::forClaimableBalanceId(self::TEST_CLAIMABLE_BALANCE_ID);
+        $padded = XdrSCAddress::forClaimableBalanceId('00000000' . self::TEST_CLAIMABLE_BALANCE_ID);
+
+        $strKey = $padded->toStrKey();
+
+        $this->assertEquals($bare->toStrKey(), $strKey);
+        $this->assertTrue(StrKey::isValidClaimableBalanceId($strKey));
+        $this->assertEquals('00' . self::TEST_CLAIMABLE_BALANCE_ID, StrKey::decodeClaimableBalanceIdHex($strKey));
+        // Both spellings encode to the same XDR, so both must report the same strkey.
+        $this->assertEquals($bare->encode(), $padded->encode());
+    }
+
+    public function testClaimableBalanceAddressRejectsAnUnknownHexForm(): void
+    {
+        $address = XdrSCAddress::forClaimableBalanceId('00' . self::TEST_CLAIMABLE_BALANCE_ID . 'ff');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Claimable balance id must be 58 characters as a "B..." strkey, or the balance'
+            . ' hash as 64 hexadecimal characters, which a type discriminant may prefix to'
+            . ' 66 or 72 characters; 68 characters given'
+        );
+        $address->toStrKey();
+    }
+
+    public function testClaimableBalanceAddressRejectsAHexIdOfStrkeyLength(): void
+    {
+        // 58 hexadecimal characters is also the length of a "B..." strkey, a plausible
+        // truncation of the padded form. The rejection has to name the hexadecimal rule
+        // rather than report a strkey that failed to decode.
+        $address = XdrSCAddress::forClaimableBalanceId(str_repeat('ab', 29));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Claimable balance id must be 58 characters as a "B..." strkey, or the balance'
+            . ' hash as 64 hexadecimal characters, which a type discriminant may prefix to'
+            . ' 66 or 72 characters; 58 characters given'
+        );
+        $address->toStrKey();
+    }
+
+    public function testClaimableBalanceAddressRejectsAnUppercaseHexIdOfStrkeyLength(): void
+    {
+        // "B" is a hexadecimal digit, so 58 hexadecimal characters can also carry the
+        // leading letter of a strkey. The rejection has to name the hexadecimal rule
+        // rather than report a strkey that failed to decode.
+        $address = XdrSCAddress::forClaimableBalanceId('B' . str_repeat('a', 57));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Claimable balance id must be 58 characters as a "B..." strkey, or the balance'
+            . ' hash as 64 hexadecimal characters, which a type discriminant may prefix to'
+            . ' 66 or 72 characters; 58 characters given'
+        );
+        $address->toStrKey();
+    }
+
+    public function testClaimableBalanceAddressReadsAStrkeyOfHexDigitsAsAStrkey(): void
+    {
+        // The base32 and hexadecimal alphabets share A-F and 2-7, so a "B..." strkey
+        // can consist entirely of hexadecimal digits. It is still a strkey: 58
+        // characters is not a length any of the hexadecimal spellings has.
+        $strKey = 'BAAB5E6FEA37BFA5EFDD75E4D7ED75A74FBBF5FA5EBBE733DE5ECE34D4';
+        $hashHex = '1e93c52037f0941d21463ff49c1fc83ff41fe14212f4a0e902127f7b193a4113';
+        $this->assertTrue(ctype_xdigit($strKey));
+        $this->assertTrue(StrKey::isValidClaimableBalanceId($strKey));
+
+        $address = XdrSCAddress::forClaimableBalanceId($strKey);
+
+        $this->assertEquals($strKey, $address->toStrKey());
+        $this->assertEquals(
+            '00000000' . $hashHex,
+            $address->getClaimableBalanceId()->getPaddedBalanceIdHex()
+        );
+        $this->assertEquals(
+            XdrSCAddress::forClaimableBalanceId($hashHex)->encode(),
+            $address->encode()
+        );
     }
 
     public function testClaimableBalanceAddressToStrKeyAlreadyEncoded(): void
@@ -191,6 +341,36 @@ class XdrSCAddressTest extends TestCase
         $this->assertEquals($encodedId, $strKey);
     }
 
+    public function testLiquidityPoolAddressRejectsAHexIdOfStrkeyLength(): void
+    {
+        // 56 hexadecimal characters is also the length of an "L..." strkey, a plausible
+        // truncation of the pool hash. The rejection has to name the hexadecimal rule
+        // rather than report a strkey that failed to decode.
+        $address = XdrSCAddress::forLiquidityPoolId(str_repeat('ab', 28));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Liquidity pool id must be 56 characters as an "L..." strkey, or the pool hash'
+            . ' as 64 hexadecimal characters; 56 characters given'
+        );
+        $address->toStrKey();
+    }
+
+    public function testLiquidityPoolAddressReadersAgreeOnEitherCaseOfTheId(): void
+    {
+        // Hexadecimal is case insensitive, so the two spellings denote one pool and
+        // both readers of the field have to report it the same way.
+        $upper = XdrSCAddress::forLiquidityPoolId(strtoupper(self::TEST_LIQUIDITY_POOL_ID));
+        $lower = XdrSCAddress::forLiquidityPoolId(self::TEST_LIQUIDITY_POOL_ID);
+
+        $this->assertEquals($lower->encode(), $upper->encode());
+        $this->assertEquals($lower->toStrKey(), $upper->toStrKey());
+        $this->assertEquals(
+            self::TEST_LIQUIDITY_POOL_ID,
+            StrKey::decodeLiquidityPoolIdHex($upper->toStrKey())
+        );
+    }
+
     public function testLiquidityPoolAddressEncodeWithStrKeyFormat(): void
     {
         $encodedId = StrKey::encodeLiquidityPoolIdHex(self::TEST_LIQUIDITY_POOL_ID);
@@ -202,6 +382,242 @@ class XdrSCAddressTest extends TestCase
         $this->assertEquals($original->getType()->getValue(), $decoded->getType()->getValue());
         // After decode, it's hex format
         $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID, $decoded->getLiquidityPoolId());
+    }
+
+    // SEP-51 JSON and SEP-0011 TxRep rendering
+    //
+    // Both renderings resolve the contract id and the liquidity pool id through their
+    // canonical resolver, so either accepted spelling of an id renders identically:
+    // SEP-51 gives an SCAddress its strkey, SEP-0011 gives an opaque[32] field the bare
+    // 32-byte hash in lower case hexadecimal.
+
+    /**
+     * @return array<string, array{string}> the accepted spellings of the contract id
+     */
+    public static function contractIdSpellingProvider(): array
+    {
+        return [
+            'hex' => [self::TEST_CONTRACT_ID_HEX],
+            'strkey' => [self::TEST_CONTRACT_ID_STRKEY],
+        ];
+    }
+
+    /**
+     * @return array<string, array{string}> the accepted spellings of the pool id
+     */
+    public static function liquidityPoolIdSpellingProvider(): array
+    {
+        return [
+            'hex' => [self::TEST_LIQUIDITY_POOL_ID],
+            'strkey' => [self::TEST_LIQUIDITY_POOL_ID_STRKEY],
+        ];
+    }
+
+    /**
+     * @dataProvider contractIdSpellingProvider
+     */
+    public function testContractAddressToJsonValueIsTheContractStrKey(string $id): void
+    {
+        $address = XdrSCAddress::forContractId($id);
+
+        $this->assertEquals(self::TEST_CONTRACT_ID_STRKEY, $address->toJsonValue());
+    }
+
+    /**
+     * @dataProvider liquidityPoolIdSpellingProvider
+     */
+    public function testLiquidityPoolAddressToJsonValueIsThePoolStrKey(string $id): void
+    {
+        $address = XdrSCAddress::forLiquidityPoolId($id);
+
+        $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID_STRKEY, $address->toJsonValue());
+    }
+
+    /**
+     * @dataProvider contractIdSpellingProvider
+     */
+    public function testContractAddressToTxRepEmitsTheBareHashInHex(string $id): void
+    {
+        $lines = [];
+        XdrSCAddress::forContractId($id)->toTxRep('addr', $lines);
+
+        $this->assertEquals('SC_ADDRESS_TYPE_CONTRACT', $lines['addr.type']);
+        $this->assertEquals(self::TEST_CONTRACT_ID_HEX, $lines['addr.contractId']);
+    }
+
+    /**
+     * @dataProvider liquidityPoolIdSpellingProvider
+     */
+    public function testLiquidityPoolAddressToTxRepEmitsTheBareHashInHex(string $id): void
+    {
+        $lines = [];
+        XdrSCAddress::forLiquidityPoolId($id)->toTxRep('addr', $lines);
+
+        $this->assertEquals('SC_ADDRESS_TYPE_LIQUIDITY_POOL', $lines['addr.type']);
+        $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID, $lines['addr.liquidityPoolId']);
+    }
+
+    /**
+     * @dataProvider contractIdSpellingProvider
+     */
+    public function testContractAddressJsonRoundTrip(string $id): void
+    {
+        $original = XdrSCAddress::forContractId($id);
+
+        $restored = XdrSCAddress::fromJsonValue($original->toJsonValue());
+
+        $this->assertEquals(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT, $restored->getType()->getValue());
+        $this->assertEquals(self::TEST_CONTRACT_ID_XDR, $restored->toBase64Xdr());
+        $this->assertEquals(self::TEST_CONTRACT_ID_STRKEY, $restored->toJsonValue());
+    }
+
+    /**
+     * @dataProvider liquidityPoolIdSpellingProvider
+     */
+    public function testLiquidityPoolAddressJsonRoundTrip(string $id): void
+    {
+        $original = XdrSCAddress::forLiquidityPoolId($id);
+
+        $restored = XdrSCAddress::fromJsonValue($original->toJsonValue());
+
+        $this->assertEquals(XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL, $restored->getType()->getValue());
+        $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID_XDR, $restored->toBase64Xdr());
+        $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID_STRKEY, $restored->toJsonValue());
+    }
+
+    /**
+     * @dataProvider contractIdSpellingProvider
+     */
+    public function testContractAddressTxRepRoundTrip(string $id): void
+    {
+        $lines = [];
+        XdrSCAddress::forContractId($id)->toTxRep('addr', $lines);
+
+        $restored = XdrSCAddress::fromTxRep($lines, 'addr');
+
+        $this->assertEquals(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT, $restored->getType()->getValue());
+        $this->assertEquals(self::TEST_CONTRACT_ID_XDR, $restored->toBase64Xdr());
+
+        $reEmitted = [];
+        $restored->toTxRep('addr', $reEmitted);
+        $this->assertEquals($lines, $reEmitted);
+    }
+
+    /**
+     * @dataProvider liquidityPoolIdSpellingProvider
+     */
+    public function testLiquidityPoolAddressTxRepRoundTrip(string $id): void
+    {
+        $lines = [];
+        XdrSCAddress::forLiquidityPoolId($id)->toTxRep('addr', $lines);
+
+        $restored = XdrSCAddress::fromTxRep($lines, 'addr');
+
+        $this->assertEquals(XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL, $restored->getType()->getValue());
+        $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID_XDR, $restored->toBase64Xdr());
+
+        $reEmitted = [];
+        $restored->toTxRep('addr', $reEmitted);
+        $this->assertEquals($lines, $reEmitted);
+    }
+
+    /**
+     * A TxRep line written by another SDK carries the bare hash, so reading one back
+     * has to land on the same address the SDK's own rendering does.
+     */
+    public function testContractAddressFromTxRepTakesTheBareHashInHex(): void
+    {
+        $restored = XdrSCAddress::fromTxRep([
+            'addr.type' => 'SC_ADDRESS_TYPE_CONTRACT',
+            'addr.contractId' => self::TEST_CONTRACT_ID_HEX,
+        ], 'addr');
+
+        $this->assertEquals(self::TEST_CONTRACT_ID_XDR, $restored->toBase64Xdr());
+        $this->assertEquals(self::TEST_CONTRACT_ID_STRKEY, $restored->toStrKey());
+    }
+
+    /**
+     * A TxRep line written by another SDK carries the bare hash, so reading one back
+     * has to land on the same address the SDK's own rendering does.
+     */
+    public function testLiquidityPoolAddressFromTxRepTakesTheBareHashInHex(): void
+    {
+        $restored = XdrSCAddress::fromTxRep([
+            'addr.type' => 'SC_ADDRESS_TYPE_LIQUIDITY_POOL',
+            'addr.liquidityPoolId' => self::TEST_LIQUIDITY_POOL_ID,
+        ], 'addr');
+
+        $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID_XDR, $restored->toBase64Xdr());
+        $this->assertEquals(self::TEST_LIQUIDITY_POOL_ID_STRKEY, $restored->toStrKey());
+    }
+
+    public function testAccountAddressJsonAndTxRepRoundTrip(): void
+    {
+        $original = XdrSCAddress::forAccountId(self::TEST_ACCOUNT_ID);
+
+        $this->assertEquals(self::TEST_ACCOUNT_ID, $original->toJsonValue());
+        $this->assertEquals(
+            $original->toBase64Xdr(),
+            XdrSCAddress::fromJsonValue($original->toJsonValue())->toBase64Xdr()
+        );
+
+        $lines = [];
+        $original->toTxRep('addr', $lines);
+        $this->assertEquals('SC_ADDRESS_TYPE_ACCOUNT', $lines['addr.type']);
+        $this->assertEquals(self::TEST_ACCOUNT_ID, $lines['addr.accountId']);
+        $this->assertEquals(
+            $original->toBase64Xdr(),
+            XdrSCAddress::fromTxRep($lines, 'addr')->toBase64Xdr()
+        );
+    }
+
+    public function testMuxedAccountAddressJsonAndTxRepRoundTrip(): void
+    {
+        $muxedAccountId = 'MBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OAAAAAAAAABQHGPDC';
+        $original = XdrSCAddress::forAccountId($muxedAccountId);
+
+        $this->assertEquals($muxedAccountId, $original->toJsonValue());
+        $this->assertEquals(
+            $original->toBase64Xdr(),
+            XdrSCAddress::fromJsonValue($original->toJsonValue())->toBase64Xdr()
+        );
+
+        $lines = [];
+        $original->toTxRep('addr', $lines);
+        $this->assertEquals('SC_ADDRESS_TYPE_MUXED_ACCOUNT', $lines['addr.type']);
+        $this->assertEquals('12345', $lines['addr.muxedAccount.id']);
+        $this->assertEquals(
+            $original->toBase64Xdr(),
+            XdrSCAddress::fromTxRep($lines, 'addr')->toBase64Xdr()
+        );
+    }
+
+    public function testClaimableBalanceAddressJsonAndTxRepRoundTrip(): void
+    {
+        $balanceStrKey = 'BAANUDKX3J6UQUHH7QINFKOQ5PDTD55PWQCXJQBTSWYX2SIUTOI7LPQEI4';
+        $original = XdrSCAddress::forClaimableBalanceId(self::TEST_CLAIMABLE_BALANCE_ID);
+
+        $this->assertEquals($balanceStrKey, $original->toJsonValue());
+        $this->assertEquals(
+            $original->toBase64Xdr(),
+            XdrSCAddress::fromJsonValue($original->toJsonValue())->toBase64Xdr()
+        );
+
+        $lines = [];
+        $original->toTxRep('addr', $lines);
+        $this->assertEquals('SC_ADDRESS_TYPE_CLAIMABLE_BALANCE', $lines['addr.type']);
+        $this->assertEquals(
+            'CLAIMABLE_BALANCE_ID_TYPE_V0',
+            $lines['addr.claimableBalanceId.type']
+        );
+        $this->assertEquals(
+            self::TEST_CLAIMABLE_BALANCE_ID,
+            $lines['addr.claimableBalanceId.v0']
+        );
+        $this->assertEquals(
+            $original->toBase64Xdr(),
+            XdrSCAddress::fromTxRep($lines, 'addr')->toBase64Xdr()
+        );
     }
 
     // Getter/Setter Tests
@@ -252,7 +668,7 @@ class XdrSCAddressTest extends TestCase
     public function testGetSetMuxedAccount(): void
     {
         $keyPair = KeyPair::random();
-        $muxedAccountId = StrKey::encodeMuxedAccountId($keyPair->getAccountId(), 12345);
+        $muxedAccountId = (new MuxedAccount($keyPair->getAccountId(), 12345))->getAccountId();
         $address = XdrSCAddress::forAccountId($muxedAccountId);
 
         $this->assertNotNull($address->getMuxedAccount());
@@ -269,5 +685,37 @@ class XdrSCAddressTest extends TestCase
 
         $address->setAccountId(null);
         $this->assertNull($address->getAccountId());
+    }
+
+    public function testGetCanonicalContractIdHexRejectsAnUnsetId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Contract id is not set');
+        XdrSCAddress::forContractId('')->getCanonicalContractIdHex();
+    }
+
+    /**
+     * A 56-character value is read as a strkey, so a non-hex one is refused with the
+     * strkey rejection rather than the spelling list.
+     */
+    public function testGetCanonicalContractIdHexReportsTheStrkeyRejectionForAStrkeyShapedNonHexId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('version byte in encoded data does not match');
+        XdrSCAddress::forContractId('C' . str_repeat('Z', 55))->getCanonicalContractIdHex();
+    }
+
+    public function testGetCanonicalLiquidityPoolIdHexRejectsAnUnsetId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Liquidity pool id is not set');
+        XdrSCAddress::forLiquidityPoolId('')->getCanonicalLiquidityPoolIdHex();
+    }
+
+    public function testGetCanonicalLiquidityPoolIdHexRejectsANonHexId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('must be an "L..." strkey or a hexadecimal string');
+        XdrSCAddress::forLiquidityPoolId('not a pool id')->getCanonicalLiquidityPoolIdHex();
     }
 }

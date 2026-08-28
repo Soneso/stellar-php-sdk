@@ -40,6 +40,7 @@ class PutCustomerCallbackRequest
 
     /**
      * @var string|null $memo the client-generated memo that uniquely identifies the customer. If a memo is present in the decoded SEP-10 JWT's sub value, it must match this parameter value. If a muxed account is used as the JWT's sub value, memos sent in requests must match the 64-bit integer subaccount ID of the muxed account.
+     * Null and the empty string mean no memo; every other value, including "0", is sent as given.
      * see: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#shared-omnibus-or-pooled-accounts
      */
     public ?string $memo = null;

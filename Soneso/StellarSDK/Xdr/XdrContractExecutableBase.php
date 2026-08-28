@@ -24,7 +24,7 @@ class XdrContractExecutableBase {
         $bytes = $this->type->encode();
         switch ($this->type->getValue()) {
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM:
-                $bytes .= XdrEncoder::opaqueFixed($this->wasmIdHex, 32);
+                $bytes .= XdrEncoder::opaqueFixed(pack('H*', $this->getCanonicalWasmIdHex()), 32);
                 break;
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
                 break;
@@ -41,7 +41,7 @@ class XdrContractExecutableBase {
         $result = new static(XdrContractExecutableType::decode($xdr));
         switch ($result->type->getValue()) {
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM:
-                $result->wasmIdHex = $xdr->readOpaqueFixed(32);
+                $result->wasmIdHex = bin2hex($xdr->readOpaqueFixed(32));
                 break;
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
                 break;
@@ -61,6 +61,64 @@ class XdrContractExecutableBase {
     public function getExternalRef(): ?XdrContractExecutableExternalRef { return $this->externalRef; }
     public function setExternalRef(?XdrContractExecutableExternalRef $externalRef): void { $this->externalRef = $externalRef; }
 
+    /**
+     * Length of a 32-byte wasm hash in hexadecimal characters.
+     */
+    private const WASM_HASH_HEX_LENGTH = 64;
+
+    /**
+     * Returns the 32-byte wasm hash the field holds as 64 lower case hexadecimal
+     * characters.
+     *
+     * Every reader of the field resolves it through here, so none takes what another
+     * refuses.
+     *
+     * @return string the wasm hash as 64 lower case hexadecimal characters
+     * @throws InvalidArgumentException when the field is unset, or holds a string that
+     * is not 64 hexadecimal characters
+     */
+    public function getCanonicalWasmIdHex(): string {
+        return self::canonicalWasmIdHex($this->wasmIdHex);
+    }
+
+    /**
+     * Returns $value as 64 lower case hexadecimal characters, refusing anything else.
+     *
+     * A wasm hash has the one spelling: the bare 32-byte hash in hexadecimal. Unlike a
+     * contract id it has no strkey form, so there is no second spelling to resolve;
+     * the rule is the shape of the hexadecimal, and the canonical form its lower case.
+     *
+     * Reading a TxRep line goes through here rather than through the accessor above, so
+     * a malformed line is named where it is read.
+     *
+     * @param string|null $value the wasm hash as it was given
+     * @return string the wasm hash as 64 lower case hexadecimal characters
+     * @throws InvalidArgumentException when $value is unset, or is not 64 hexadecimal
+     * characters
+     */
+    private static function canonicalWasmIdHex(?string $value): string {
+        if ($value === null || $value === '') {
+            throw new InvalidArgumentException('Wasm hash is not set');
+        }
+        if (!ctype_xdigit($value)) {
+            throw new InvalidArgumentException(
+                'Wasm hash must be a hexadecimal string,'
+                . ' "' . XdrJsonHelper::safePreview($value) . '" given'
+            );
+        }
+        if (strlen($value) !== self::WASM_HASH_HEX_LENGTH) {
+            throw new InvalidArgumentException(sprintf(
+                'Wasm hash must be the 32-byte hash as %d hexadecimal characters;'
+                    . ' %d characters given',
+                self::WASM_HASH_HEX_LENGTH,
+                strlen($value)
+            ));
+        }
+        // Hexadecimal is case insensitive, so the canonical spelling is lower case and
+        // every reader of the wasm hash reports the same string for either spelling.
+        return strtolower($value);
+    }
+
     public function toBase64Xdr(): string {
         return base64_encode($this->encode());
     }
@@ -75,7 +133,7 @@ class XdrContractExecutableBase {
 
     public function toJsonValue(): mixed {
         return match ($this->type->getValue()) {
-            XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM => ['wasm' => (static function ($v) { if (!is_string($v) || strlen($v) !== 64 || !ctype_xdigit($v)) { throw new InvalidArgumentException('Expected 64-character hex wasm hash, got ' . (is_string($v) ? strlen($v) . '-character string' : get_debug_type($v))); } return strtolower($v); })($this->wasmIdHex)],
+            XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM => ['wasm' => $this->getCanonicalWasmIdHex()],
             XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET => 'stellar_asset',
             XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF => ['external_ref' => $this->externalRef->toJsonValue()],
             // @codeCoverageIgnoreStart
@@ -117,7 +175,7 @@ class XdrContractExecutableBase {
         }
         $arm = $value[$key];
         return match ($key) {
-            'wasm' => (static function () use ($arm) { $r = new static(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM)); $r->wasmIdHex = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } if (strlen($v) !== 64 || !ctype_xdigit($v)) { throw new InvalidArgumentException('Expected 64-character hex wasm hash, got ' . strlen($v) . '-character string'); } return strtolower($v); })($arm); return $r; })(),
+            'wasm' => (static function () use ($arm) { $r = new static(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM)); $r->wasmIdHex = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } return self::canonicalWasmIdHex($v); })($arm); return $r; })(),
             'external_ref' => (static function () use ($arm) { $r = new static(new XdrContractExecutableType(XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF)); $r->externalRef = XdrContractExecutableExternalRef::fromJsonValue($arm); return $r; })(),
             default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrContractExecutableBase: ' . XdrJsonHelper::safePreview($key)
@@ -148,7 +206,7 @@ class XdrContractExecutableBase {
         $this->type->toTxRep($prefix . '.type', $lines);
         switch ($this->type->getValue()) {
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM:
-                $lines[$prefix . '.wasm_hash'] = TxRepHelper::bytesToHex($this->wasmIdHex);
+                $lines[$prefix . '.wasm_hash'] = $this->getCanonicalWasmIdHex();
                 break;
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
                 break;
@@ -165,7 +223,7 @@ class XdrContractExecutableBase {
         $result = new static($disc);
         switch ($result->type->getValue()) {
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM:
-                $result->wasmIdHex = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.wasm_hash') ?? '');
+                $result->wasmIdHex = self::canonicalWasmIdHex(TxRepHelper::getValue($map, $prefix . '.wasm_hash'));
                 break;
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
                 break;

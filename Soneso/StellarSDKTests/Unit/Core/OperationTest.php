@@ -45,6 +45,7 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Price;
 use Soneso\StellarSDK\Claimant;
+use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use function PHPUnit\Framework\assertCount;
@@ -466,6 +467,21 @@ class OperationTest extends TestCase
         assertEquals($balanceId, $parsed->getBalanceId());
     }
 
+    public function testClaimClaimableBalanceDecodedFromBytesReportsPaddedBalanceId()
+    {
+        // The wire carries the 4-byte union discriminant and the bare hash, so a decode
+        // leaves the hash field holding 64 hexadecimal characters. The operation reports
+        // the 72-character form Horizon serves, whatever spelling built the XDR.
+        $hashHex = "da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be";
+        $encoded = (new ClaimClaimableBalanceOperation($hashHex))->toXdr()->encode();
+
+        $parsed = AbstractOperation::fromXdr(XdrOperation::decode(new XdrBuffer($encoded)));
+
+        assertEquals(ClaimClaimableBalanceOperation::class, get_class($parsed));
+        assertEquals("00000000" . $hashHex, $parsed->getBalanceId());
+        assertEquals($encoded, $parsed->toXdr()->encode());
+    }
+
     public function testBeginSponsoringFutureReservesFromXdr()
     {
         $sponsoredId = "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO";
@@ -535,6 +551,18 @@ class OperationTest extends TestCase
 
         assertEquals(ClawbackClaimableBalanceOperation::class, get_class($parsed));
         assertEquals($balanceId, $parsed->getBalanceId());
+    }
+
+    public function testClawbackClaimableBalanceDecodedFromBytesReportsPaddedBalanceId()
+    {
+        $hashHex = "da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be";
+        $encoded = (new ClawbackClaimableBalanceOperation($hashHex))->toXdr()->encode();
+
+        $parsed = AbstractOperation::fromXdr(XdrOperation::decode(new XdrBuffer($encoded)));
+
+        assertEquals(ClawbackClaimableBalanceOperation::class, get_class($parsed));
+        assertEquals("00000000" . $hashHex, $parsed->getBalanceId());
+        assertEquals($encoded, $parsed->toXdr()->encode());
     }
 
     public function testSetTrustLineFlagsFromXdr()

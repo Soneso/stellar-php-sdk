@@ -37,12 +37,18 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrContractCodeEntry;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableExternalRef;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyAccount;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractCode;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractData;
+use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
+use Soneso\StellarSDK\Xdr\XdrSCValType;
+use Exception;
+use InvalidArgumentException;
 use UnexpectedValueException;
 
 /**
@@ -409,11 +415,16 @@ class SorobanServer
     /**
      * Loads the contract source code for a given contract id
      *
-     * First retrieves the contract instance data to determine the wasm id, then loads
-     * the contract code entry containing the compiled WASM bytecode.
+     * Reads the contract instance from the ledger and loads the code entry for its
+     * executable. A wasm executable is loaded by its wasm id directly; a CAP-85 external
+     * reference is first resolved to its wasm id via loadWasmIdForExternalRef(). A Stellar
+     * asset contract has no wasm code, so it yields null.
      *
      * @param string $contractId The contract id (C-prefixed address) of the deployed contract
      * @return XdrContractCodeEntry|null The contract code entry if found, null if not found
+     * @throws InvalidArgumentException If the instance carries an external reference whose
+     * owner is not a contract address or whose tag entry does not hold a 32-byte wasm hash
+     * @throws Exception If an external reference owner carries an unknown address type
      * @throws GuzzleException If the RPC request fails
      */
     public function loadContractCodeForContractId(string $contractId) : ?XdrContractCodeEntry {
@@ -426,9 +437,23 @@ class SorobanServer
         $ledgerEntries = $this->getLedgerEntries([$ledgerKey->toBase64Xdr()]);
         if ($ledgerEntries->entries !== null && count($ledgerEntries->entries) > 0) {
             $ledgerEntryData = $ledgerEntries->entries[0]->getLedgerEntryDataXdr();
-            if ($ledgerEntryData->contractData !== null && $ledgerEntryData->contractData->val->instance?->executable->wasmIdHex !== null) {
-                $wasmId = $ledgerEntryData->contractData->val->instance->executable->wasmIdHex;
-                return $this->loadContractCodeForWasmId($wasmId);
+            $executable = $ledgerEntryData->contractData?->val->instance?->executable;
+            if ($executable !== null) {
+                switch ($executable->type->value) {
+                    case XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM:
+                        if ($executable->wasmIdHex !== null) {
+                            return $this->loadContractCodeForWasmId($executable->wasmIdHex);
+                        }
+                        break;
+                    case XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF:
+                        if ($executable->externalRef !== null) {
+                            $wasmId = $this->loadWasmIdForExternalRef($executable->externalRef);
+                            if ($wasmId !== null) {
+                                return $this->loadContractCodeForWasmId($wasmId);
+                            }
+                        }
+                        break;
+                }
             }
         }
         return null;
@@ -444,6 +469,9 @@ class SorobanServer
      * @param string $contractId The contract id (C-prefixed address) of the deployed contract
      * @return SorobanContractInfo|null The parsed contract information or null if contract not found
      * @throws SorobanContractParserException If parsing the WASM bytecode fails
+     * @throws InvalidArgumentException If the instance carries an external reference whose
+     * owner is not a contract address or whose tag entry does not hold a 32-byte wasm hash
+     * @throws Exception If an external reference owner carries an unknown address type
      * @throws GuzzleException If the RPC request fails
      */
     public function loadContractInfoForContractId(string $contractId) :?SorobanContractInfo {
@@ -474,6 +502,54 @@ class SorobanServer
         }
         $byteCode = $contractCodeEntry->code->value;
         return SorobanContractParser::parseContractByteCode($byteCode);
+    }
+
+    /**
+     * Resolves a CAP-85 external reference to the wasm id of the code it names
+     *
+     * An external reference identifies executable code indirectly: it names an owner
+     * contract and a tag, and the owner holds a persistent contract data entry keyed by
+     * that tag whose value is the 32-byte hash of an already uploaded wasm. A contract
+     * instance created from such a reference runs that code. This method reads the tag
+     * entry off the ledger; the owner contract is not invoked.
+     *
+     * The tag is matched byte for byte, so it is passed through exactly as the reference
+     * carries it.
+     *
+     * @param XdrContractExecutableExternalRef $ref The external reference naming the owner contract and the tag
+     * @return string|null The hex-encoded wasm id the tag entry holds, or null if no tag entry exists on the owner
+     * @throws InvalidArgumentException If the owner is not a contract address, or the tag
+     * entry exists but does not hold a 32-byte wasm hash
+     * @throws Exception If the owner address carries an unknown address type
+     * @throws GuzzleException If the RPC request fails
+     */
+    public function loadWasmIdForExternalRef(XdrContractExecutableExternalRef $ref): ?string {
+        if ($ref->executableOwner->type->value !== XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT) {
+            throw new InvalidArgumentException(
+                "External reference owner " . $ref->executableOwner->toStrKey()
+                . " is not a contract address; only a contract can hold the executable tag entry");
+        }
+        $entry = $this->getContractData(
+            $ref->executableOwner->getCanonicalContractIdHex(),
+            XdrSCVal::forExecutableTag($ref->tag),
+            XdrContractDataDurability::PERSISTENT());
+        if ($entry === null) {
+            return null;
+        }
+        $contractData = $entry->getLedgerEntryDataXdr()->contractData;
+        if ($contractData === null) {
+            throw new InvalidArgumentException(
+                "The executable tag entry on contract " . $ref->executableOwner->toStrKey()
+                . " is not a contract data ledger entry");
+        }
+        $val = $contractData->val;
+        $bytes = $val->type->value === XdrSCValType::SCV_BYTES ? $val->bytes?->getValue() : null;
+        if ($bytes === null || strlen($bytes) !== 32) {
+            throw new InvalidArgumentException(
+                "The executable tag entry on contract " . $ref->executableOwner->toStrKey()
+                . " does not hold a 32-byte wasm hash");
+        }
+        return bin2hex($bytes);
     }
 
     /**

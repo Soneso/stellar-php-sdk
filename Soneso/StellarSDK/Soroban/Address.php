@@ -7,8 +7,16 @@
 namespace Soneso\StellarSDK\Soroban;
 
 use Exception;
+use InvalidArgumentException;
 use RuntimeException;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimage;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
+use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
+use Soneso\StellarSDK\Xdr\XdrHashIDPreimage;
+use Soneso\StellarSDK\Xdr\XdrHashIDPreimageContractID;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
@@ -111,32 +119,54 @@ class Address
 
     /**
      * Creates a new instance of Address from the given contract id.
-     * @param string $contractId hex representation. If you have a str key contract id,
-     * you can decode it to hex with StrKey::decodeContractIdHex($contractId)
+     *
+     * @param string $contractId the contract id as a "C..." strkey or as the contract
+     * hash in hexadecimal. The created Address reports it as canonical lower case
+     * hexadecimal for either spelling.
      * @return Address the created Address object.
+     * @throws InvalidArgumentException if the id is neither a valid "C..." strkey nor
+     * the contract hash as 64 hexadecimal characters
      */
     public static function fromContractId(string $contractId) : Address {
-        return new Address(Address::TYPE_CONTRACT, contractId: $contractId);
+        return new Address(
+            Address::TYPE_CONTRACT,
+            contractId: XdrSCAddress::forContractId($contractId)->getCanonicalContractIdHex(),
+        );
     }
 
     /**
      * Creates a new instance of Address from the given liquidity pool id.
-     * @param string $liquidityPoolId hex representation. If you have a str key liquidity pool id,
-     * you can decode it to hex with StrKey::decodeLiquidityPoolIdHex($liquidityPoolId)
+     *
+     * @param string $liquidityPoolId the pool id as an "L..." strkey or as the pool hash
+     * in hexadecimal. The created Address reports it as canonical lower case hexadecimal
+     * for either spelling.
      * @return Address the created Address object.
+     * @throws InvalidArgumentException if the id is neither a valid "L..." strkey nor
+     * the pool hash as 64 hexadecimal characters
      */
     public static function fromLiquidityPoolId(string $liquidityPoolId) : Address {
-        return new Address(Address::TYPE_LIQUIDITY_POOL, liquidityPoolId: $liquidityPoolId);
+        return new Address(
+            Address::TYPE_LIQUIDITY_POOL,
+            liquidityPoolId: XdrSCAddress::forLiquidityPoolId($liquidityPoolId)
+                ->getCanonicalLiquidityPoolIdHex(),
+        );
     }
 
     /**
      * Creates a new instance of Address from the given claimable balance id.
-     * @param string $claimableBalanceId hex representation. If you have a str key claimable balance id,
-     * you can decode it to hex with StrKey::decodeClaimableBalanceIdHex($claimableBalanceId)
+     *
+     * @param string $claimableBalanceId the balance id as a "B..." strkey, as the bare
+     * balance hash in hexadecimal, or as the hash behind its type discriminant (66 or 72
+     * hexadecimal characters). The created Address reports it in the 72-character form
+     * Horizon serves, for every spelling.
      * @return Address the created Address object.
+     * @throws InvalidArgumentException if the id is in none of the accepted spellings
      */
     public static function fromClaimableBalanceId(string $claimableBalanceId) : Address {
-        return new Address(Address::TYPE_CLAIMABLE_BALANCE, claimableBalanceId: $claimableBalanceId);
+        return new Address(
+            Address::TYPE_CLAIMABLE_BALANCE,
+            claimableBalanceId: XdrClaimableBalanceID::paddedBalanceIdHexFor($claimableBalanceId),
+        );
     }
 
     /**
@@ -150,22 +180,29 @@ class Address
 
     /**
      * Creates an Address object from the given XdrSCAddress object.
+     *
+     * Contract and liquidity pool ids are reported in their canonical hex form, a
+     * claimable balance id in the 72-character form Horizon serves - whichever
+     * spelling the XDR object was built from.
+     *
      * @param XdrSCAddress $xdrAddress the xdr object to create the Address object from.
      * @return Address the created Address object.
      * @throws RuntimeException if the XDR address type is unknown or unsupported
+     * @throws InvalidArgumentException if the XDR object holds an id in none of the
+     * accepted spellings
      */
     public static function fromXdr(XdrSCAddress $xdrAddress) : Address
     {
         if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT) {
             return new Address(Address::TYPE_ACCOUNT, accountId: $xdrAddress->accountId->getAccountId());
         } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT) {
-            return new Address(Address::TYPE_CONTRACT, contractId: $xdrAddress->contractId);
+            return new Address(Address::TYPE_CONTRACT, contractId: $xdrAddress->getCanonicalContractIdHex());
         } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT) {
             return new Address(Address::TYPE_MUXED_ACCOUNT, muxedAccountId: $xdrAddress->muxedAccount->getAccountId());
         } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE) {
-            return new Address(Address::TYPE_CLAIMABLE_BALANCE, claimableBalanceId: $xdrAddress->getClaimableBalanceId()?->getHash());
+            return new Address(Address::TYPE_CLAIMABLE_BALANCE, claimableBalanceId: $xdrAddress->getClaimableBalanceId()?->getPaddedBalanceIdHex());
         } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL) {
-            return new Address(Address::TYPE_LIQUIDITY_POOL, liquidityPoolId: $xdrAddress->getLiquidityPoolId());
+            return new Address(Address::TYPE_LIQUIDITY_POOL, liquidityPoolId: $xdrAddress->getCanonicalLiquidityPoolIdHex());
         }else {
             throw new RuntimeException("unknown XdrSCAddress type " . $xdrAddress->type->value);
         }
@@ -189,10 +226,36 @@ class Address
      * Tries to convert a given id to an Address. The given id can be a contract id,
      * an account id, a muxed account id, a claimable balance id, or a liquidity pool id.
      * If not, returns null.
+     *
+     * A bare 32-byte hash in hexadecimal is not self-describing, so 64 hex characters
+     * resolve as a contract id. For a claimable balance, pass the "B..." strkey or the
+     * hexadecimal that carries its type discriminant (66 or 72 characters).
+     *
      * @param string $id a contract id, an account id, a muxed account id, a claimable balance id, or a liquidity pool id.
      * @return Address|null The address if could be converted.
      */
     public static function fromAnyId(string $id) : ?Address {
+        // A strkey names its own type, so the strkey readings run first: a valid
+        // "B..." or "C..." strkey can be spelled entirely in hexadecimal digits, and
+        // no strkey length matches an accepted hexadecimal width, so nothing a
+        // strkey reading claims could have meant a hexadecimal id.
+        if (StrKey::isValidAccountId($id)) {
+            return Address::fromAccountId($id);
+        }
+        if (StrKey::isValidMuxedAccountId($id)) {
+            return Address::fromMuxedAccountId($id);
+        }
+        if (StrKey::isValidContractId($id)) {
+            return Address::fromContractId(StrKey::decodeContractIdHex($id));
+        }
+        if (StrKey::isValidClaimableBalanceId($id)) {
+            return Address::fromClaimableBalanceId(
+                XdrClaimableBalanceID::forClaimableBalanceId($id)->getPaddedBalanceIdHex()
+            );
+        }
+        if (StrKey::isValidLiquidityPoolId($id)) {
+            return Address::fromLiquidityPoolId(StrKey::decodeLiquidityPoolIdHex($id));
+        }
         if (ctype_xdigit($id)) { // is hex string
             try {
                 $strKeyContractId = StrKey::encodeContractIdHex($id);
@@ -210,25 +273,11 @@ class Address
             try {
                 $strKeyClaimableBalanceId = StrKey::encodeClaimableBalanceIdHex($id);
                 if (StrKey::isValidClaimableBalanceId($strKeyClaimableBalanceId)) {
-                    return Address::fromClaimableBalanceId($id);
+                    return Address::fromClaimableBalanceId(
+                        XdrClaimableBalanceID::forClaimableBalanceId($id)->getPaddedBalanceIdHex()
+                    );
                 }
             } catch (Exception $e) {}
-        } else {
-            if (StrKey::isValidAccountId($id)) {
-                return Address::fromAccountId($id);
-            }
-            if (StrKey::isValidMuxedAccountId($id)) {
-                return Address::fromMuxedAccountId($id);
-            }
-            if (StrKey::isValidContractId($id)) {
-                return Address::fromContractId(StrKey::decodeContractIdHex($id));
-            }
-            if (StrKey::isValidClaimableBalanceId($id)) {
-                return Address::fromClaimableBalanceId(StrKey::decodeClaimableBalanceIdHex($id));
-            }
-            if (StrKey::isValidLiquidityPoolId($id)) {
-                return Address::fromLiquidityPoolId(StrKey::decodeLiquidityPoolIdHex($id));
-            }
         }
         return null;
     }
@@ -399,5 +448,38 @@ class Address
     public function setLiquidityPoolId(?string $liquidityPoolId): void
     {
         $this->liquidityPoolId = $liquidityPoolId;
+    }
+
+    /**
+     * Derives the contract id a deployment by the given deployer with the given salt
+     * creates on the given network.
+     *
+     * The id depends only on the deployer address, the salt and the network; the
+     * executable the contract is created with (wasm hash, CAP-85 external reference or
+     * Stellar asset) does not enter the derivation. Use it to know a contract's address
+     * before deploying, for example when the address is needed in constructor arguments
+     * of another contract.
+     *
+     * @param Address $deployer the address the deployment is issued from (account or contract)
+     * @param string $salt the 32 byte salt the deployment uses
+     * @param Network $network the network the contract is deployed to
+     * @return string the derived contract id ("C...")
+     * @throws InvalidArgumentException if the salt is not exactly 32 bytes
+     */
+    public static function deriveContractId(Address $deployer, string $salt, Network $network) : string {
+        if (strlen($salt) !== 32) {
+            throw new InvalidArgumentException("salt must be exactly 32 bytes, got " . strlen($salt));
+        }
+        $contractIdPreimage = new XdrContractIDPreimage(
+            XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS());
+        $contractIdPreimage->address = $deployer->toXdr();
+        $contractIdPreimage->salt = $salt;
+
+        $networkId = hash('sha256', $network->getNetworkPassphrase(), true);
+        $preimage = new XdrHashIDPreimage(XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID());
+        $preimage->contractID = new XdrHashIDPreimageContractID($networkId, $contractIdPreimage);
+
+        $contractIdHex = bin2hex(hash('sha256', $preimage->encode(), true));
+        return StrKey::encodeContractIdHex($contractIdHex);
     }
 }

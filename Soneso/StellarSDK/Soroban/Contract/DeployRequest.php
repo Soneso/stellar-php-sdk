@@ -59,8 +59,8 @@ class DeployRequest
     public ?array $constructorArgs;
 
     /**
-     * @var string|null $salt Salt used to generate the contract's ID. A 32-byte hex string that
-     * influences the deterministic contract address. Using the same WASM hash and salt will produce
+     * @var string|null $salt Salt used to generate the contract's ID. 32 bytes that
+     * influence the deterministic contract address. Using the same WASM hash and salt will produce
      * the same contract ID. Default: random (generates a unique contract ID for each deployment).
      */
     public ?string $salt;

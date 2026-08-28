@@ -10,9 +10,18 @@ use Exception;
 use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\StrKey;
 
+/**
+ * SCAddress union, with the factory methods that take an id in the spelling the
+ * SDK's callers use and the strkey rendering that gives one back.
+ *
+ * The generated base holds the contract id and the liquidity pool id as
+ * hexadecimal and accepts their strkey spelling as well; every reader resolves
+ * those two fields through XdrSCAddressBase::getCanonicalContractIdHex() and
+ * XdrSCAddressBase::getCanonicalLiquidityPoolIdHex(), so no reader takes what
+ * another refuses.
+ */
 class XdrSCAddress extends XdrSCAddressBase
 {
-
     /**
      * Accepts ed25519 "G..." and muxed ("M...") account ids.
      * @param string $accountId "G..." or "M..."
@@ -46,8 +55,10 @@ class XdrSCAddress extends XdrSCAddressBase
     }
 
     /**
-     * Accepts hex values
-     * @param string $claimableBalanceId hex string
+     * Accepts strkey ("B...") and hex values. The hexadecimal form is the balance hash
+     * on its own, or the hash behind its type discriminant, as the SDK's
+     * getPaddedBalanceIdHex() and Horizon spell it.
+     * @param string $claimableBalanceId "B..." or hex string
      * @return XdrSCAddress
      */
     public static function forClaimableBalanceId(string $claimableBalanceId) : XdrSCAddress {
@@ -56,90 +67,38 @@ class XdrSCAddress extends XdrSCAddressBase
         return $res;
     }
 
+    /**
+     * Accepts strkey ("L...") and hex values.
+     * @param string $liquidityPoolId "L..." or the pool hash as 64 hex characters
+     * @return XdrSCAddress
+     */
     public static function forLiquidityPoolId(string $liquidityPoolId) : XdrSCAddress {
         $res = new XdrSCAddress(XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL());
         $res->liquidityPoolId = $liquidityPoolId;
         return $res;
     }
 
-    public function encode(): string {
-        switch ($this->type->value) {
-            case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
-                $bytes = $this->type->encode();
-                $contractIdHex = $this->contractId;
-                if (substr($contractIdHex, 0, 1 ) === 'C') {
-                    $contractIdHex = StrKey::decodeContractIdHex($contractIdHex);
-                }
-                $bytes .= XdrEncoder::opaqueFixed(hex2bin($contractIdHex),32);
-                return $bytes;
-            case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
-                $bytes = $this->type->encode();
-                $idHex = $this->liquidityPoolId;
-                if (str_starts_with($idHex, "L")) {
-                    $idHex = StrKey::decodeLiquidityPoolIdHex($idHex);
-                }
-                $poolIdBytes = pack("H*", $idHex);
-                if (strlen($poolIdBytes) > 32) {
-                    $poolIdBytes = substr($poolIdBytes, -32);
-                }
-                $bytes .= XdrEncoder::opaqueFixed($poolIdBytes, 32);
-                return $bytes;
-            default:
-                // ACCOUNT, MUXED_ACCOUNT, CLAIMABLE_BALANCE: base handles correctly
-                return parent::encode();
-        }
-    }
-
-    public static function decode(XdrBuffer $xdr): static {
-        $result = new static(XdrSCAddressType::decode($xdr));
-        switch ($result->type->getValue()) {
-            case XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT:
-                $result->accountId = XdrAccountID::decode($xdr);
-                break;
-            case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT:
-                $result->muxedAccount = XdrMuxedAccountMed25519::decode($xdr);
-                break;
-            case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
-                $result->contractId = bin2hex($xdr->readOpaqueFixed(32));
-                break;
-            case XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
-                $result->claimableBalanceId = XdrClaimableBalanceID::decode($xdr);
-                break;
-            case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
-                $result->liquidityPoolId = bin2hex($xdr->readOpaqueFixed(32));
-                break;
-        }
-        return $result;
-    }
-
     /**
      * Returns the StrKey representation of the address.
-     * @throws Exception
+     * @throws InvalidArgumentException when the address holds an id that has no strkey
+     * representation
+     * @throws Exception when the address type is unknown
      */
     public function toStrKey() : string {
         switch ($this->type->value) {
             case XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT:
                 return $this->accountId->getAccountId();
             case XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT:
-                if (str_starts_with($this->contractId, "C")) {
-                    return $this->contractId;
-                }
-                return StrKey::encodeContractIdHex($this->contractId);
+                return StrKey::encodeContractIdHex($this->getCanonicalContractIdHex());
             case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT:
                 return $this->muxedAccount->getAccountId();
             case XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
-                $hash = $this->claimableBalanceId->getHash();
-                if (str_starts_with($hash, "B")) {
-                    return $hash;
-                }
-                return StrKey::encodeClaimableBalanceIdHex($hash);
+                return StrKey::encodeClaimableBalanceIdHex(
+                    $this->claimableBalanceId->getCanonicalHashHex()
+                );
             case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
-                if (str_starts_with($this->liquidityPoolId, "L")) {
-                    return $this->liquidityPoolId;
-                }
-                return StrKey::encodeLiquidityPoolIdHex($this->liquidityPoolId);
+                return StrKey::encodeLiquidityPoolIdHex($this->getCanonicalLiquidityPoolIdHex());
         }
         throw new Exception("unknown address type: " . $this->type->value);
     }
-
 }

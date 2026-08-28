@@ -682,10 +682,15 @@ module StellarJsonOverrides
     },
 
     # XdrSCAddress — five-arm strkey dispatch. account -> G-strkey via
-    # delegation to XdrAccountID; contract -> C-strkey (hex storage);
-    # muxed_account -> M-strkey over a 40-byte ed25519 || id pack;
-    # claimable_balance -> delegation to XdrClaimableBalanceID (B-strkey);
-    # liquidity_pool -> L-strkey (hex storage).
+    # delegation to XdrAccountID; contract -> C-strkey; muxed_account ->
+    # M-strkey over a 40-byte ed25519 || id pack; claimable_balance ->
+    # delegation to XdrClaimableBalanceID (B-strkey); liquidity_pool ->
+    # L-strkey.
+    #
+    # The contract id and the liquidity pool id fields hold the hash in
+    # hexadecimal or its strkey spelling, so both arms resolve the field
+    # through the canonical resolver ARM_STORAGE_HELPERS emits, the same
+    # one encode() and TxRep read it through.
     'XdrSCAddress' => {
       to_value_signature: 'public function toJsonValue(): string',
       to_body: lambda do |_ctx|
@@ -704,7 +709,7 @@ module StellarJsonOverrides
                                   'XdrSCAddress contractId field is null'
                               );
                           }
-                          return StrKey::encodeContractIdHex($this->contractId);
+                          return StrKey::encodeContractIdHex($this->getCanonicalContractIdHex());
                       case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT:
                           if ($this->muxedAccount === null) {
                               throw new InvalidArgumentException(
@@ -727,7 +732,7 @@ module StellarJsonOverrides
                                   'XdrSCAddress liquidityPoolId field is null'
                               );
                           }
-                          return StrKey::encodeLiquidityPoolIdHex($this->liquidityPoolId);
+                          return StrKey::encodeLiquidityPoolIdHex($this->getCanonicalLiquidityPoolIdHex());
                       default:
                           throw new InvalidArgumentException(
                               'Unknown XdrSCAddress discriminant: ' . $this->type->getValue()

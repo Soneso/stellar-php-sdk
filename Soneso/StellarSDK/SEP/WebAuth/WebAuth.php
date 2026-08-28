@@ -169,7 +169,10 @@ class WebAuth
      *                                For accounts that don't exist, must include the master key. For existing accounts,
      *                                must provide signers that meet the required threshold (typically medium threshold).
      *                                Minimum: 1 signer. The combined weight must satisfy server authentication requirements.
-     * @param int|null $memo optional, ID memo of the client account if muxed and accountId starts with G
+     * @param int|null $memo optional, ID memo identifying the user of a shared (omnibus/pooled) client account.
+     *                       Only permitted if the client account id is a Stellar account (G...), never with a muxed
+     *                       account (M...). Null means no memo; every other value, including 0, is a valid memo id
+     *                       and is sent to the server and verified against the returned challenge.
      * @param string|null $homeDomain optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
      * @param string|null $clientDomain optional, domain of the client hosting it's stellar.toml. If clientDomain is provided,
      * you also need to provide the clientDomainKeyPair or a clientDomainSigningCallback for client domain transaction signing.
@@ -321,7 +324,8 @@ class WebAuth
      * Get challenge transaction from the web auth server. Returns base64 xdr transaction envelope received from the web auth server.
      *
      * @param string $clientAccountId The account id of the client/user that requests the challenge.
-     * @param int|null $memo optional, ID memo of the client account if muxed and accountId starts with G
+     * @param int|null $memo optional, ID memo identifying the user of a shared client account. Null means no memo;
+     *                       every other value, including 0, is a valid memo id and is sent to the server.
      * @param string|null $homeDomain optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
      * @param string|null $clientDomain optional, domain of the client hosting it's stellar.toml
      * @return string Base64-encoded XDR transaction envelope.
@@ -348,7 +352,9 @@ class WebAuth
      * @param string $userAccountId The client account ID that should be authenticated.
      * @param string|null $clientDomainAccountId Optional client domain account for domain verification.
      * @param int|null $timeBoundsGracePeriod Optional grace period in seconds for time bounds validation.
-     * @param int|null $memo Optional memo that should match the challenge transaction memo.
+     * @param int|null $memo The memo requested from the server. Every value, including 0, must be present in the
+     *                       challenge as an ID memo holding exactly that value. Null means no memo was requested;
+     *                       a challenge that carries one anyway is accepted, provided its type is ID.
      * @throws ChallengeValidationError
      * @throws ChallengeValidationErrorInvalidHomeDomain
      * @throws ChallengeValidationErrorInvalidMemoType
@@ -384,10 +390,10 @@ class WebAuth
                 throw new ChallengeValidationErrorMemoAndMuxedAccount("Memo and muxed account (M...) found");
             } else if ($transaction->getMemo()->getType()->getValue() != XdrMemoType::MEMO_ID) {
                 throw new ChallengeValidationErrorInvalidMemoType("invalid memo type");
-            } else if ($memo && $transaction->getMemo()->getId() != $memo) {
+            } else if ($memo !== null && $transaction->getMemo()->getId() !== $memo) {
                 throw new ChallengeValidationErrorInvalidMemoValue("invalid memo value");
             }
-        } else if ($memo) {
+        } else if ($memo !== null) {
             throw new ChallengeValidationErrorInvalidMemoValue("missing memo");
         }
 
@@ -496,18 +502,19 @@ class WebAuth
 
     /**
      * @param string $accountId
-     * @param int|null $memo
+     * @param int|null $memo Null means no memo; every other value, including 0, is sent as the memo request parameter
+     *                       and is rejected if the account id is a muxed account (M...).
      * @param string|null $homeDomain
      * @param string|null $clientDomain
      * @return ChallengeResponse
      * @throws ChallengeRequestErrorResponse
      */
     private function getChallengeResponse(string $accountId, ?int $memo = null, ?string $homeDomain = null, ?string $clientDomain = null) : ChallengeResponse {
-        if ($memo && str_starts_with($accountId, "M")) {
+        if ($memo !== null && str_starts_with($accountId, "M")) {
             throw new InvalidArgumentException("memo cannot be used if accountId is a muxed account");
         }
         $requestBuilder = (new ChallengeRequestBuilder($this->authEndpoint, $this->httpClient))->forAccountId($accountId);
-        if ($memo) {
+        if ($memo !== null) {
             $requestBuilder = $requestBuilder->forMemo($memo);
         }
         if ($homeDomain) {

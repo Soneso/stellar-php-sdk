@@ -127,22 +127,22 @@ class KYCService
     public function getCustomerInfo(GetCustomerInfoRequest $request) : GetCustomerInfoResponse {
         $requestBuilder = new GetCustomerInfoRequestBuilder($this->httpClient, $this->serviceAddress, $request->jwt);
         $queryParameters = array();
-        if ($request->id) {
+        if ($request->id !== null && $request->id !== '') {
             $queryParameters += ["id" => $request->id];
         }
         if ($request->account) {
             $queryParameters += ["account" => $request->account];
         }
-        if ($request->memo) {
+        if ($request->memo !== null && $request->memo !== '') {
             $queryParameters += ["memo" => $request->memo];
         }
         if ($request->memoType) {
             $queryParameters += ["memo_type" => $request->memoType];
         }
-        if ($request->type) {
+        if ($request->type !== null && $request->type !== '') {
             $queryParameters += ["type" => $request->type];
         }
-        if ($request->transactionId) {
+        if ($request->transactionId !== null && $request->transactionId !== '') {
             $queryParameters += ["transaction_id" => $request->transactionId];
         }
         if ($request->lang) {
@@ -161,22 +161,22 @@ class KYCService
     public function putCustomerInfo(PutCustomerInfoRequest $request) : PutCustomerInfoResponse {
 
         $fields = array();
-        if ($request->id) {
+        if ($request->id !== null && $request->id !== '') {
             $fields += ["id" => $request->id];
         }
         if ($request->account) {
             $fields += ["account" => $request->account];
         }
-        if ($request->memo) {
+        if ($request->memo !== null && $request->memo !== '') {
             $fields += ["memo" => $request->memo];
         }
         if ($request->memoType) {
             $fields += ["memo_type" => $request->memoType];
         }
-        if ($request->type) {
+        if ($request->type !== null && $request->type !== '') {
             $fields += ["type" => $request->type];
         }
-        if ($request->transactionId) {
+        if ($request->transactionId !== null && $request->transactionId !== '') {
             $fields += ["transaction_id" => $request->transactionId];
         }
         if ($request->KYCFields?->naturalPersonKYCFields) {
@@ -219,7 +219,7 @@ class KYCService
     public function putCustomerVerification(PutCustomerVerificationRequest $request) : GetCustomerInfoResponse {
 
         $fields = array();
-        if ($request->id) {
+        if ($request->id !== null && $request->id !== '') {
             $fields += ["id" => $request->id];
         }
         if ($request->verificationFields) {
@@ -237,7 +237,7 @@ class KYCService
      * This request must be authenticated (via SEP-10) as coming from the owner of the account that will be deleted - [jwt].
      * @param string $account is the Stellar account ID (G...) of the customer to delete.
      * @param string $jwt jwt token from authentication (SEP-10)
-     * @param string|null $memo (optional) the client-generated memo that uniquely identifies the customer. If a memo is present in the decoded SEP-10 JWT's sub value, it must match this parameter value. If a muxed account is used as the JWT's sub value, memos sent in requests must match the 64-bit integer subaccount ID of the muxed account.
+     * @param string|null $memo (optional) the client-generated memo that uniquely identifies the customer. If a memo is present in the decoded SEP-10 JWT's sub value, it must match this parameter value. If a muxed account is used as the JWT's sub value, memos sent in requests must match the 64-bit integer subaccount ID of the muxed account. Null and the empty string mean no memo; every other value, including "0", is sent as given.
      * @param string|null $memoType (deprecated, optional) type of memo. One of text, id or hash. Deprecated because memos should always be of type id, although anchors should continue to support this parameter for outdated clients. If hash, memo should be base64-encoded. If a memo is present in the decoded SEP-10 JWT's sub value, this parameter can be ignored.
      * @return ResponseInterface response
      * @throws GuzzleException if a request error occurs
@@ -250,7 +250,7 @@ class KYCService
         }
 
         $multipartFields = array();
-        if ($memo) {
+        if ($memo !== null && $memo !== '') {
             $multipartFields += ["memo" => $memo];
         }
         if ($memoType) {
@@ -294,13 +294,13 @@ class KYCService
             UrlValidator::validateHttpsRequired($request->url);
             $multipartFields += ["url" => $request->url];
         }
-        if ($request->id) {
+        if ($request->id !== null && $request->id !== '') {
             $multipartFields += ["id" => $request->id];
         }
         if ($request->account) {
             $multipartFields += ["account" => $request->account];
         }
-        if ($request->memo) {
+        if ($request->memo !== null && $request->memo !== '') {
             $multipartFields += ["memo" => $request->memo];
         }
         if ($request->memoType) {

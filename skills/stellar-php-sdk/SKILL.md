@@ -5,8 +5,8 @@ license: Apache 2.0
 compatibility: Requires PHP 8.0+, ext-bcmath, ext-gmp, ext-mbstring, ext-sodium, and Composer
 metadata:
   version: "1.4.0"
-  sdk_version: "1.12.0"
-  last_updated: "2026-08-18"
+  sdk_version: "1.13.0"
+  last_updated: "2026-08-24"
 ---
 
 # Stellar SDK for PHP

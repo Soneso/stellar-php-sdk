@@ -21,9 +21,20 @@ class PayloadSignerTest extends TestCase
 {
     private string $seed = "1123740522f11bfef6b3671f51e159ccf589ccf8965262dd5f97d1721d383dd4";
 
+    private const ACCOUNT_ID = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
+
+    /** The 32-byte ed25519 public key behind ACCOUNT_ID and behind both muxed ids below. */
+    private const ED25519_HEX = "3f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a";
+
+    /** ACCOUNT_ID muxed with multiplexing id 1 and 2: same key, two different addresses. */
+    private const MUXED_ID_1 = "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAGZFQ";
+    private const MUXED_ID_2 = "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAALIWQ";
+
+    private const MUXED_MESSAGE = "a signed payload signer takes an ed25519 account id (G...), not a muxed account id (M...)";
+
     public function testConstructorEnforcesPayloadBounds(): void
     {
-        $accountId = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
+        $accountId = self::ACCOUNT_ID;
 
         try {
             SignedPayloadSigner::fromAccountId($accountId, "");
@@ -94,21 +105,118 @@ class PayloadSignerTest extends TestCase
     }
 
     public function testItCreatesSignedPayloadSigner(): void {
-        $accountStrKey = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
+        $accountStrKey = self::ACCOUNT_ID;
         $p16 = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20";
         $payload = hex2bin($p16);
         $xdrAccountID = new XdrAccountID($accountStrKey);
         $signedPayloadSigner = new SignedPayloadSigner($xdrAccountID, $payload);
         $signerKey = Signer::signedPayload($signedPayloadSigner);
         $this->assertEquals($signerKey->getSignedPayload()->getPayload(), $signedPayloadSigner->getPayload());
-        $pkEd25519 = KeyPair::fromAccountId($signedPayloadSigner->getSignerAccountId()->getAccountId())->getPublicKey();
-        $this->assertEquals($signerKey->getSignedPayload()->getEd25519(), $pkEd25519);
+        $this->assertEquals(self::ED25519_HEX, bin2hex($signerKey->getSignedPayload()->getEd25519()));
+    }
+
+    /**
+     * CAP-40 gives the signer a bare ed25519 public key, so a muxed account id has
+     * to be refused: its multiplexing id has nowhere to go, and two customers on
+     * one underlying key would otherwise share a single signer.
+     */
+    public function testMuxedAccountIdIsRejectedOnEveryConstructionRoute(): void {
+        $payload = hex2bin("0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20");
+
+        foreach ([self::MUXED_ID_1, self::MUXED_ID_2] as $muxedAccountId) {
+            try {
+                SignedPayloadSigner::fromAccountId($muxedAccountId, $payload);
+                $this->fail("fromAccountId accepted the muxed account id $muxedAccountId");
+            } catch (\InvalidArgumentException $e) {
+                $this->assertSame(self::MUXED_MESSAGE, $e->getMessage());
+            }
+
+            try {
+                new SignedPayloadSigner(new XdrAccountID($muxedAccountId), $payload);
+                $this->fail("The constructor accepted the muxed account id $muxedAccountId");
+            } catch (\InvalidArgumentException $e) {
+                $this->assertSame(self::MUXED_MESSAGE, $e->getMessage());
+            }
+        }
+
+        // The ed25519 account id the two muxed addresses share is accepted, and
+        // yields that key.
+        $signer = SignedPayloadSigner::fromAccountId(self::ACCOUNT_ID, $payload);
+        $this->assertSame(self::ACCOUNT_ID, $signer->getSignerAccountId()->getAccountId());
+        $this->assertSame(
+            self::ED25519_HEX,
+            bin2hex(Signer::signedPayload($signer)->getSignedPayload()->getEd25519())
+        );
+
+        // The remaining two routes take raw key bytes, so they reach the same
+        // ed25519 account id and cannot express a muxed one.
+        $fromBytes = SignedPayloadSigner::fromPublicKey(hex2bin(self::ED25519_HEX), $payload);
+        $this->assertSame(self::ACCOUNT_ID, $fromBytes->getSignerAccountId()->getAccountId());
+        $decoded = StrKey::decodeSignedPayload(StrKey::encodeSignedPayload($signer));
+        $this->assertSame(self::ACCOUNT_ID, $decoded->getSignerAccountId()->getAccountId());
+    }
+
+    /**
+     * The two consumers of a signer decode its account id strictly: each refuses a
+     * muxed account id rather than reading the key it multiplexes. The constructor
+     * is what normally keeps an M address out of a signer, so reflection stands in
+     * for a caller that reaches the field directly.
+     */
+    public function testSignerConsumersDecodeTheAccountIdStrictly(): void {
+        $payload = hex2bin("0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20");
+        $signer = SignedPayloadSigner::fromAccountId(self::ACCOUNT_ID, $payload);
+
+        $accountIdField = new \ReflectionProperty(XdrAccountID::class, 'accountId');
+        $accountIdField->setAccessible(true);
+        $accountIdField->setValue($signer->getSignerAccountId(), self::MUXED_ID_1);
+
+        try {
+            StrKey::encodeSignedPayload($signer);
+            $this->fail("StrKey::encodeSignedPayload demuxed a muxed account id");
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame("G-strkey must be 56 characters long, 69 characters given", $e->getMessage());
+        }
+
+        try {
+            Signer::signedPayload($signer);
+            $this->fail("Signer::signedPayload demuxed a muxed account id");
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame("G-strkey must be 56 characters long, 69 characters given", $e->getMessage());
+        }
+    }
+
+    public function testSignedPayloadSignerRejectsANonEd25519AccountId(): void {
+        $payload = hex2bin("0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20");
+        $contractId = "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE";
+
+        foreach (["", "not-a-strkey", $contractId] as $accountId) {
+            try {
+                SignedPayloadSigner::fromAccountId($accountId, $payload);
+                $this->fail("fromAccountId accepted the non-ed25519 account id \"$accountId\"");
+            } catch (\InvalidArgumentException $e) {
+                $this->assertSame("invalid ed25519 account id: $accountId", $e->getMessage());
+            }
+        }
+
+        // A seed passed where an account id belongs must not reach the message,
+        // which travels to logs.
+        $seed = "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE";
+        try {
+            SignedPayloadSigner::fromAccountId($seed, $payload);
+            $this->fail("fromAccountId accepted a secret seed");
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame(
+                "a signed payload signer takes an ed25519 account id (G...), not a secret seed (S...)",
+                $e->getMessage()
+            );
+            $this->assertStringNotContainsString($seed, $e->getMessage());
+        }
     }
 
     public function testValidSignedPayloadEncode(): void {
 
         // Valid signed payload with an ed25519 public key and a 32-byte payload.
-        $accountStrKey = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
+        $accountStrKey = self::ACCOUNT_ID;
         $p16 = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20";
         $payload = hex2bin($p16);
         $xdrAccountID = new XdrAccountID($accountStrKey);
@@ -134,7 +242,7 @@ class PayloadSignerTest extends TestCase
         $cond->setLedgerBounds($lb);
         $tb = new TimeBounds((new DateTime)->setTimestamp(1651767858), (new DateTime)->setTimestamp(1651967858));
         $cond->setTimeBounds($tb);
-        $accountStrKey = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ";
+        $accountStrKey = self::ACCOUNT_ID;
         $payloadStr = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20";
         $payload = hex2bin($payloadStr);
         $signedPayloadSigner = new SignedPayloadSigner(new XdrAccountID($accountStrKey), $payload);

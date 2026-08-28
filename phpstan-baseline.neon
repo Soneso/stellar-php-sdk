@@ -45,7 +45,7 @@ parameters:
 		-
 			message: '#^Unsafe call to private method Soneso\\StellarSDK\\Crypto\\StrKey\:\:encodeCheck\(\) through static\:\:\.$#'
 			identifier: staticClassAccess.privateMethod
-			count: 13
+			count: 14
 			path: Soneso/StellarSDK/Crypto/StrKey.php
 
 		-

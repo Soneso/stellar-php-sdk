@@ -13,6 +13,7 @@ require_relative 'member_overrides'
 require_relative 'field_overrides'
 require_relative 'type_overrides'
 require_relative 'txrep_types'
+require_relative 'arm_storage_overrides'
 require_relative 'cat_a_inline_targets'
 require_relative 'json_helpers'
 require_relative 'sep51_field_overrides'
@@ -539,7 +540,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
 
     # encode()
-    render_union_encode(out, class_name, disc_info, arms)
+    render_union_encode(out, union_name, class_name, disc_info, arms)
     out.puts ""
 
     # decode()
@@ -548,6 +549,9 @@ class Generator < Xdrgen::Generators::Base
 
     # Getters and setters for backward compatibility
     render_union_accessors(out, disc_info, arms)
+
+    # Members the type's ARM_STORAGE_OVERRIDES entries call
+    render_arm_storage_helpers(out, union_name)
 
     render_base64_methods(out)
     if emits_sep51?(union_name, is_base)
@@ -564,7 +568,24 @@ class Generator < Xdrgen::Generators::Base
     out.close
   end
 
-  def render_union_encode(out, class_name, disc_info, arms)
+  # Write a PHP snippet at the given indentation, leaving blank lines empty.
+  def write_php_block(out, source, indent)
+    source.each_line do |line|
+      body = line.chomp
+      out.puts(body.empty? ? "" : "#{indent}#{body}")
+    end
+  end
+
+  # Emit the class members the type's ARM_STORAGE_OVERRIDES entries call.
+  def render_arm_storage_helpers(out, union_name)
+    helpers = arm_storage_helpers(union_name)
+    return unless helpers
+
+    write_php_block(out, helpers, "    ")
+    out.puts ""
+  end
+
+  def render_union_encode(out, union_name, class_name, disc_info, arms)
     out.puts "    public function encode(): string {"
     if disc_info[:kind] == :int
       out.puts "        $bytes = XdrEncoder::integer32($this->#{disc_info[:field_name]});"
@@ -592,7 +613,7 @@ class Generator < Xdrgen::Generators::Base
       if arm[:void]
         out.puts "                break;"
       else
-        render_encode_arm_value(out, "$this->#{arm[:field_name]}", arm)
+        render_encode_arm_value(out, "$this->#{arm[:field_name]}", arm, union_name)
         out.puts "                break;"
       end
     end
@@ -640,7 +661,7 @@ class Generator < Xdrgen::Generators::Base
       if arm[:void]
         out.puts "                break;"
       else
-        render_decode_arm_value(out, "$result", arm)
+        render_decode_arm_value(out, "$result", arm, union_name)
         out.puts "                break;"
       end
     end
@@ -1126,7 +1147,13 @@ class Generator < Xdrgen::Generators::Base
   # Union arm encode/decode
   # ---------------------------------------------------------------------------
 
-  def render_encode_arm_value(out, accessor, arm)
+  def render_encode_arm_value(out, accessor, arm, union_name)
+    override = arm_storage_override(union_name, arm[:field_name], :encode)
+    if override
+      write_php_block(out, override, "                ")
+      return
+    end
+
     case arm[:encode_style]
     when :string
       out.puts "                $bytes .= XdrEncoder::string(#{accessor});"
@@ -1172,8 +1199,14 @@ class Generator < Xdrgen::Generators::Base
     end
   end
 
-  def render_decode_arm_value(out, target, arm)
+  def render_decode_arm_value(out, target, arm, union_name)
     field = arm[:field_name]
+    override = arm_storage_override(union_name, field, :decode)
+    if override
+      write_php_block(out, override, "                ")
+      return
+    end
+
     case arm[:decode_style]
     when :string
       out.puts "                #{target}->#{field} = $xdr->readString();"
@@ -2195,6 +2228,12 @@ class Generator < Xdrgen::Generators::Base
     accessor = "$this->#{field}"
     indent = "                "
 
+    override = arm_storage_override(union_name, field, :to_txrep)
+    if override
+      write_php_block(out, override, indent)
+      return
+    end
+
     case style
     when :string
       out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::escapeString(#{accessor});"
@@ -2296,6 +2335,12 @@ class Generator < Xdrgen::Generators::Base
     style = arm[:decode_style]
     target = "$result->#{field}"
     indent = "                "
+
+    override = arm_storage_override(union_name, field, :from_txrep)
+    if override
+      write_php_block(out, override, indent)
+      return
+    end
 
     case style
     when :string

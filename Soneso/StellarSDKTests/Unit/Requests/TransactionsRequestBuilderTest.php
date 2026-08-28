@@ -276,7 +276,30 @@ class TransactionsRequestBuilderTest extends TestCase
         $builder->forClaimableBalance(self::TEST_CLAIMABLE_BALANCE_ID);
         $url = $builder->buildUrl();
 
-        $this->assertStringContainsString('claimable_balances/' . self::TEST_CLAIMABLE_BALANCE_ID . '/transactions', $url);
+        // The bare hash is normalized to the XDR form Horizon takes: the discriminant
+        // as 4 bytes ahead of the hash.
+        $this->assertStringContainsString(
+            'claimable_balances/00000000' . self::TEST_CLAIMABLE_BALANCE_ID . '/transactions',
+            $url
+        );
+    }
+
+    /**
+     * Test forClaimableBalance filter with a B-address
+     */
+    public function testForClaimableBalanceBAddress(): void
+    {
+        $client = $this->createMockedClient([]);
+        $builder = new TransactionsRequestBuilder($client);
+
+        $builder->forClaimableBalance('BAAPL2T7WPPBRWXJ6EVPS3HQOUDUSALPXS5GX4E6SAVGTZKFNB3R3ATZWM');
+        $url = $builder->buildUrl();
+
+        // Horizon takes the XDR spelling: the discriminant as 4 bytes ahead of the hash.
+        $this->assertStringContainsString(
+            'claimable_balances/00000000f5ea7fb3de18dae9f12af96cf0750749016fbcba6bf09e902a69e54568771d82/transactions',
+            $url
+        );
     }
 
     /**

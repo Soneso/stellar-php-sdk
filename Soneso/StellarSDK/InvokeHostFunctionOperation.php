@@ -76,6 +76,8 @@ class InvokeHostFunctionOperation extends AbstractOperation
                 if ($contractIdPreimageTypeVal == XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS) {
                     if ($executableTypeValue == XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM) {
                         return new InvokeHostFunctionOperation(CreateContractHostFunction::fromXdr($xdrFunction), $auth);
+                    } else if ($executableTypeValue == XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF) {
+                        return new InvokeHostFunctionOperation(CreateContractFromExternalRefHostFunction::fromXdr($xdrFunction), $auth);
                     }
                 } else if ($contractIdPreimageTypeVal == XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET) {
                     return new InvokeHostFunctionOperation(DeploySACWithAssetHostFunction::fromXdr($xdrFunction), $auth);
@@ -91,6 +93,8 @@ class InvokeHostFunctionOperation extends AbstractOperation
                 if ($contractIdPreimageTypeVal == XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS) {
                     if ($executableTypeValue == XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM) {
                         return new InvokeHostFunctionOperation(CreateContractWithConstructorHostFunction::fromXdr($xdrFunction), $auth);
+                    } else if ($executableTypeValue == XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF) {
+                        return new InvokeHostFunctionOperation(CreateContractFromExternalRefWithConstructorHostFunction::fromXdr($xdrFunction), $auth);
                     }
                 } else if ($contractIdPreimageTypeVal == XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET) {
                     return new InvokeHostFunctionOperation(DeploySACWithAssetHostFunction::fromXdr($xdrFunction), $auth);

@@ -960,13 +960,37 @@ class OperationResponseTest extends TestCase
                 'from' => 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
                 'to' => 'GBVKI23OQZCANDUZ2YYHMJJH2PPJZZWHE4PCOQJ7UFGMYPBPZVXCYPW6',
                 'amount' => '10.0000000'
+            ],
+            // Horizon omits "from" on a mint and "to" on a burn; both entries
+            // must still parse.
+            [
+                'asset_type' => 'credit_alphanum4',
+                'asset_code' => 'USDC',
+                'asset_issuer' => 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+                'type' => 'mint',
+                'to' => 'GBVKI23OQZCANDUZ2YYHMJJH2PPJZZWHE4PCOQJ7UFGMYPBPZVXCYPW6',
+                'amount' => '50.0000000'
+            ],
+            [
+                'asset_type' => 'credit_alphanum4',
+                'asset_code' => 'USDC',
+                'asset_issuer' => 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+                'type' => 'burn',
+                'from' => 'GBVKI23OQZCANDUZ2YYHMJJH2PPJZZWHE4PCOQJ7UFGMYPBPZVXCYPW6',
+                'amount' => '25.0000000'
             ]
         ];
 
         $response = OperationResponse::fromJson($json);
 
         $this->assertInstanceOf(InvokeHostFunctionOperationResponse::class, $response);
-        $this->assertCount(1, $response->getAssetBalanceChanges()->toArray());
+        $changes = $response->getAssetBalanceChanges()->toArray();
+        $this->assertCount(3, $changes);
+        $this->assertSame('GBVKI23OQZCANDUZ2YYHMJJH2PPJZZWHE4PCOQJ7UFGMYPBPZVXCYPW6', $changes[0]->getTo());
+        $this->assertNull($changes[1]->getFrom());
+        $this->assertSame('GBVKI23OQZCANDUZ2YYHMJJH2PPJZZWHE4PCOQJ7UFGMYPBPZVXCYPW6', $changes[1]->getTo());
+        $this->assertNull($changes[2]->getTo());
+        $this->assertSame('GBVKI23OQZCANDUZ2YYHMJJH2PPJZZWHE4PCOQJ7UFGMYPBPZVXCYPW6', $changes[2]->getFrom());
     }
 
     public function testExtendFootprintTTLOperationFromJson(): void

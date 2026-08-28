@@ -7,6 +7,7 @@
 
 namespace Soneso\StellarSDK\Responses\Transaction;
 
+use Soneso\StellarSDK\Xdr\XdrOperationResult;
 use Soneso\StellarSDK\Xdr\XdrTransactionResultCode;
 
 /**
@@ -69,11 +70,15 @@ class SubmitTransactionResponse extends TransactionResponse
      * Returns true if the transaction was successfully included in the ledger and all
      * operations executed successfully. For regular transactions, checks for SUCCESS result code.
      * For fee-bump transactions, verifies both the outer transaction (FEE_BUMP_INNER_SUCCESS)
-     * and inner transaction (SUCCESS) succeeded.
+     * and inner transaction (SUCCESS) succeeded. A response carrying no result XDR
+     * cannot confirm success and answers false.
      *
      * @return bool True if transaction succeeded, false otherwise
      */
     public function isSuccessful() : bool {
+        if (!$this->hasResultXdr()) {
+            return false;
+        }
         $result = $this->getResultXdr();
         if ($result->result->resultCode->getValue() == XdrTransactionResultCode::SUCCESS) {
             return true;
@@ -110,5 +115,36 @@ class SubmitTransactionResponse extends TransactionResponse
     public function setExtras(?SubmitTransactionResponseExtras $extras): void
     {
         $this->extras = $extras;
+    }
+
+    /**
+     * Returns the id of the claimable balance created by the operation at
+     * $operationIndex, as a "B..." strkey.
+     *
+     * Answers null when the response carries no result XDR, when the transaction did
+     * not succeed, when no operation sits at the index, or when the operation there
+     * is not a CreateClaimableBalance. For a fee-bump transaction the inner
+     * transaction's operations are read.
+     *
+     * @param int $operationIndex index of the CreateClaimableBalance operation
+     * within the transaction, 0 for the first
+     * @return string|null the created balance id as a "B..." strkey, or null
+     */
+    public function getCreatedClaimableBalanceId(int $operationIndex = 0): ?string
+    {
+        if (!$this->isSuccessful()) {
+            return null;
+        }
+        $result = $this->getResultXdr()->getResult();
+        $operationResults = $result->getResults()
+            ?? $result->getInnerResultPair()?->getResult()->getResult()->getResults();
+        $operationResult = $operationResults[$operationIndex] ?? null;
+        if (!$operationResult instanceof XdrOperationResult) {
+            return null;
+        }
+        return $operationResult->getResultTr()
+            ?->getCreateClaimableBalanceResult()
+            ?->getBalanceID()
+            ?->toJsonValue();
     }
 }

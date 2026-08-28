@@ -8,10 +8,12 @@ namespace Soneso\StellarSDK\Requests;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Operations\OperationResponse;
 use Soneso\StellarSDK\Responses\Operations\OperationsPageResponse;
+use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
 
 /**
  * Builds requests for the operations endpoint in Horizon
@@ -112,15 +114,15 @@ class OperationsRequestBuilder extends RequestBuilder
      *
      * Builds request to GET /claimable_balances/{claimable_balance_id}/operations
      *
-     * @param string $claimableBalanceId ID of the claimable balance (B-address or hex format)
+     * @param string $claimableBalanceId ID of the claimable balance: "B..." strkey,
+     * or hex as the bare hash, the strkey payload, or the XDR form Horizon reports
      * @return OperationsRequestBuilder This instance for method chaining
+     * @throws InvalidArgumentException when $claimableBalanceId holds none of the
+     * accepted spellings
      * @see https://developers.stellar.org Stellar developer docs Operations for ClaimableBalance
      */
     public function forClaimableBalance(string $claimableBalanceId) : OperationsRequestBuilder {
-        $idHex = $claimableBalanceId;
-        if (str_starts_with($idHex, "B")) {
-            $idHex = StrKey::decodeClaimableBalanceIdHex($idHex);
-        }
+        $idHex = XdrClaimableBalanceID::paddedBalanceIdHexFor($claimableBalanceId);
         $this->setSegments("claimable_balances", $idHex, "operations");
         return $this;
     }

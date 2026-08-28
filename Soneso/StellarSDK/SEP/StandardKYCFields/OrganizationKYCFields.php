@@ -82,7 +82,8 @@ class OrganizationKYCFields
     public ?string $registeredAddress = null;
 
     /**
-     * @var int|null Number of shareholders in the organization
+     * @var int|null Number of shareholders in the organization. Null means not supplied;
+     * every count is sent as given, including 0.
      */
     public ?int $numberOfShareholders = null;
 
@@ -182,7 +183,7 @@ class OrganizationKYCFields
         if ($this->registeredAddress) {
             $fields += [self::REGISTRATION_ADDRESS_KEY => $this->registeredAddress];
         }
-        if ($this->numberOfShareholders) {
+        if ($this->numberOfShareholders !== null) {
             $fields += [self::NUMBER_OF_SHAREHOLDERS_KEY => $this->numberOfShareholders];
         }
         if ($this->shareholderName) {

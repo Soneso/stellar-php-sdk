@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use phpseclib3\Math\BigInteger;
+use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\CreateAccountOperation;
 use Soneso\StellarSDK\FeeBumpTransaction;
@@ -26,8 +27,8 @@ use Soneso\StellarSDK\TransactionBuilder;
 class FeeBumpTransactionBuilderTest extends TestCase
 {
     private const TEST_ACCOUNT_ID = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
-    private const TEST_DESTINATION = 'GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3DANUBER3WPR';
-    private const TEST_FEE_PAYER = 'GBB4JST32UWKOLBER5LPGFDSQ5CSYDKXZWCOKIIF4BXSPMCRGQFU6WBA';
+    private const TEST_DESTINATION = 'GDYCWRUFMGW35GMXVUEPGZGQ6J2KXBREN2UWUCCMTIBMYYDQFHFOAYJO';
+    private const TEST_FEE_PAYER = 'GCTIJ5XTJIGZSZI2H5K2XXMPDHDL4TSZ7TPHGTOVGNHWXZKAGHNBC7JH';
 
     private function createInnerTransaction(int $baseFee = 100): \Soneso\StellarSDK\Transaction
     {
@@ -93,6 +94,14 @@ class FeeBumpTransactionBuilderTest extends TestCase
             ->build();
 
         $this->assertInstanceOf(FeeBumpTransaction::class, $feeBumpTx);
+
+        // Round trip through XDR so the account fixtures are actually encoded and decoded.
+        $parsed = AbstractTransaction::fromEnvelopeBase64XdrString($feeBumpTx->toEnvelopeXdrBase64());
+        $this->assertInstanceOf(FeeBumpTransaction::class, $parsed);
+        $this->assertSame(self::TEST_FEE_PAYER, $parsed->getFeeAccount()->getAccountId());
+        $this->assertSame(self::TEST_ACCOUNT_ID, $parsed->getInnerTx()->getSourceAccount()->getAccountId());
+        // Base fee 200 for the single inner operation plus the fee bump itself.
+        $this->assertSame(400, $parsed->getFee());
     }
 
     public function testBuildWithMuxedFeeAccount(): void
