@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK\Xdr;
 
 use GMP;
 use InvalidArgumentException;
+use Soneso\StellarSDK\Soroban\Address;
 
 
 class XdrSCVal extends XdrSCValBase
@@ -294,6 +295,164 @@ class XdrSCVal extends XdrSCValBase
                 break;
         }
         return null;
+    }
+
+    /**
+     * Converts this value to a native PHP representation on a best-effort basis.
+     * Most arms map to their obvious PHP type; notable cases: SCV_U64/SCV_TIMEPOINT/
+     * SCV_DURATION return int when the stored value is non-negative, or an unsigned
+     * decimal string when negative, since the stored value is a two's-complement wrap
+     * of a uint64 that can exceed PHP_INT_MAX; SCV_U128/SCV_I128/SCV_U256/SCV_I256
+     * return a GMP object via toBigInt(); SCV_ADDRESS returns an Address object as a
+     * value but, as a map key, the StrKey string instead, since objects cannot be PHP
+     * array keys. Map assembly relies on PHP's own coercion of a canonical
+     * integer-decimal string key into an int key (for example "123" becomes 123).
+     *
+     * This method never throws. An arm it does not convert, or a map that is not
+     * representable as a PHP array, is returned as the XdrSCVal itself (the same
+     * instance), so callers can detect a fallback with `instanceof XdrSCVal`.
+     *
+     * @return mixed the native PHP value, or this XdrSCVal itself when no faithful
+     * native representation exists
+     */
+    public function toNative() : mixed {
+        switch ($this->type->value) {
+            case XdrSCValType::SCV_BOOL:
+                return $this->b !== null ? $this->b : $this;
+            case XdrSCValType::SCV_VOID:
+                return null;
+            case XdrSCValType::SCV_U32:
+                return $this->u32 !== null ? $this->u32 : $this;
+            case XdrSCValType::SCV_I32:
+                return $this->i32 !== null ? $this->i32 : $this;
+            case XdrSCValType::SCV_U64:
+                return $this->u64 !== null ? self::unsignedInt64ToNative($this->u64) : $this;
+            case XdrSCValType::SCV_I64:
+                return $this->i64 !== null ? $this->i64 : $this;
+            case XdrSCValType::SCV_TIMEPOINT:
+                return $this->timepoint !== null ? self::unsignedInt64ToNative($this->timepoint) : $this;
+            case XdrSCValType::SCV_DURATION:
+                return $this->duration !== null ? self::unsignedInt64ToNative($this->duration) : $this;
+            case XdrSCValType::SCV_U128:
+            case XdrSCValType::SCV_I128:
+            case XdrSCValType::SCV_U256:
+            case XdrSCValType::SCV_I256:
+                $bigInt = $this->toBigInt();
+                return $bigInt !== null ? $bigInt : $this;
+            case XdrSCValType::SCV_BYTES:
+                return $this->bytes !== null ? $this->bytes->value : $this;
+            case XdrSCValType::SCV_STRING:
+                return $this->str !== null ? $this->str : $this;
+            case XdrSCValType::SCV_SYMBOL:
+                return $this->sym !== null ? $this->sym : $this;
+            case XdrSCValType::SCV_VEC:
+                if ($this->vec === null) {
+                    return [];
+                }
+                return array_map(static function (XdrSCVal $item) {
+                    return $item->toNative();
+                }, $this->vec);
+            case XdrSCValType::SCV_MAP:
+                return $this->mapToNative();
+            case XdrSCValType::SCV_ADDRESS:
+                if ($this->address === null) {
+                    return $this;
+                }
+                try {
+                    return Address::fromXdr($this->address);
+                } catch (\Throwable) {
+                    return $this;
+                }
+            default:
+                return $this;
+        }
+    }
+
+    /**
+     * Converts a SCV_MAP payload to a keyed native array, or returns this XdrSCVal
+     * itself when the map is not representable as a PHP array (an unrepresentable key,
+     * or two entries colliding on the same PHP key).
+     *
+     * @return array<int|string, mixed>|XdrSCVal
+     */
+    private function mapToNative() : array|XdrSCVal {
+        if ($this->map === null) {
+            return [];
+        }
+        $result = [];
+        foreach ($this->map as $entry) {
+            $key = self::mapKeyToNative($entry->key);
+            if ($key === null) {
+                return $this;
+            }
+            $result[$key] = $entry->val->toNative();
+        }
+        if (count($result) !== count($this->map)) {
+            return $this;
+        }
+        return $result;
+    }
+
+    /**
+     * Converts a map entry's key to the PHP array key it maps to per the map key
+     * conversion table, or null when the key is not representable (any arm not in the
+     * table, a required key payload that is null, or an address whose toStrKey() call
+     * throws).
+     *
+     * @param XdrSCVal $key
+     * @return int|string|null
+     */
+    private static function mapKeyToNative(XdrSCVal $key) : int|string|null {
+        switch ($key->type->value) {
+            case XdrSCValType::SCV_SYMBOL:
+                return $key->sym;
+            case XdrSCValType::SCV_STRING:
+                return $key->str;
+            case XdrSCValType::SCV_U32:
+                return $key->u32;
+            case XdrSCValType::SCV_I32:
+                return $key->i32;
+            case XdrSCValType::SCV_I64:
+                return $key->i64;
+            case XdrSCValType::SCV_U64:
+                return $key->u64 !== null ? self::unsignedInt64ToNative($key->u64) : null;
+            case XdrSCValType::SCV_TIMEPOINT:
+                return $key->timepoint !== null ? self::unsignedInt64ToNative($key->timepoint) : null;
+            case XdrSCValType::SCV_DURATION:
+                return $key->duration !== null ? self::unsignedInt64ToNative($key->duration) : null;
+            case XdrSCValType::SCV_U128:
+            case XdrSCValType::SCV_I128:
+            case XdrSCValType::SCV_U256:
+            case XdrSCValType::SCV_I256:
+                $bigInt = $key->toBigInt();
+                return $bigInt !== null ? gmp_strval($bigInt) : null;
+            case XdrSCValType::SCV_BYTES:
+                return $key->bytes !== null ? $key->bytes->value : null;
+            case XdrSCValType::SCV_ADDRESS:
+                if ($key->address === null) {
+                    return null;
+                }
+                try {
+                    return $key->address->toStrKey();
+                } catch (\Throwable) {
+                    return null;
+                }
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Reinterprets a stored uint64 (SCV_U64, SCV_TIMEPOINT, SCV_DURATION), which the
+     * XDR layer keeps as a signed-wrapped PHP int, as its full-range unsigned value.
+     * Non-negative values fit PHP_INT_MAX and are returned as int; negative values wrap
+     * a true value above PHP_INT_MAX and are returned as the unsigned decimal string.
+     *
+     * @param int $value the stored (possibly two's-complement-wrapped) 64-bit value
+     * @return int|string the value as int, or as an unsigned decimal string above PHP_INT_MAX
+     */
+    private static function unsignedInt64ToNative(int $value) : int|string {
+        return $value >= 0 ? $value : sprintf('%u', $value);
     }
 
     /**
