@@ -131,7 +131,10 @@ class XdrSCSpecEventV0 {
                 'Missing required field name for XdrSCSpecEventV0'
             );
         }
-        $name = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($value['name']);
+        if (!is_string($value['name'])) {
+            throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['name']));
+        }
+        $name = XdrJsonHelper::unescapeString($value['name']);
         if (!array_key_exists('prefix_topics', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field prefix_topics for XdrSCSpecEventV0'
