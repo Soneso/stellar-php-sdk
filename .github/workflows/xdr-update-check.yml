@@ -179,9 +179,10 @@ jobs:
           printf '%s\n' \
             '1. Update `XDR_COMMIT` in the repo-root `Makefile` to the upstream commit shown above' \
             '2. Run `make xdr-update` to re-download `.x` files and regenerate the PHP XDR types' \
-            '3. Run `composer test` and fix any test failures' \
-            '4. If the XDR changes introduce new types or extend existing ones (e.g. new operations, transaction fields, or protocol features), evaluate whether the SDK needs new or updated high-level APIs to support them (e.g. operation builders, TxRep, SEP implementations)' \
-            '5. Update the changelog and release notes with any breaking changes or new features' >> /tmp/issue_body.md
+            '3. Run `make xdr-generator-test` and `make xdr-validate`; if the snapshot diffs show only the intended upstream change, run `make xdr-generator-update-snapshots` and re-run the test' \
+            '4. Run `composer test` and fix any test failures' \
+            '5. If the XDR changes introduce new types or extend existing ones (e.g. new operations, transaction fields, or protocol features), evaluate whether the SDK needs new or updated high-level APIs to support them (e.g. operation builders, TxRep, SEP implementations)' \
+            '6. Update the changelog and release notes with any breaking changes or new features' >> /tmp/issue_body.md
           printf '\nSee the [XDR generator README](tools/xdr-generator/README.md) for detailed instructions.\n' >> /tmp/issue_body.md
           printf '\n---\n*This issue was created automatically by the [XDR update check workflow](.github/workflows/xdr-update-check.yml).*\n' >> /tmp/issue_body.md
 
