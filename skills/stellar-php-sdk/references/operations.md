@@ -392,17 +392,19 @@ $operation = (new CreateClaimableBalanceOperationBuilder(
 
 ### Claim Claimable Balance
 
-Claims an existing claimable balance by its ID.
+Claims an existing claimable balance by its ID. The ID may be the "B..." strkey or hex: the id Horizon reports (72 characters), the bare balance hash (64), or the hash behind the 1-byte strkey discriminant (66).
 
 ```php
 use Soneso\StellarSDK\ClaimClaimableBalanceOperationBuilder;
 
 $operation = (new ClaimClaimableBalanceOperationBuilder(
-    $balanceId // e.g., '00000000...' hex string
+    $balanceId // "B..." strkey or hex, e.g. the 72-character id Horizon reports
 ))->build();
 ```
 
 **Parameters:** `string $balanceId`
+
+An operation parsed from XDR reports the 72-character Horizon form through `getBalanceId()`. `XdrClaimableBalanceID::paddedBalanceIdHexFor($balanceId)` produces that form from any accepted spelling; `getPaddedBalanceIdHex()` does the same on an `XdrClaimableBalanceID` instance.
 
 ---
 
@@ -505,7 +507,7 @@ $operation = (new ClawbackOperationBuilder(
 
 ### Clawback Claimable Balance
 
-Claws back a claimable balance. Source must be the issuer of the asset in the balance.
+Claws back a claimable balance. Source must be the issuer of the asset in the balance. The ID accepts the same spellings as Claim Claimable Balance, and an operation parsed from XDR reports the 72-character Horizon form.
 
 ```php
 use Soneso\StellarSDK\ClawbackClaimableBalanceOperationBuilder;
