@@ -281,6 +281,137 @@ if ($txResponse->getStatus() === GetTransactionResponse::STATUS_SUCCESS) {
 }
 ```
 
+### Converting results to native PHP values
+
+`public function toNative(): mixed` on `XdrSCVal` recursively converts a value tree to
+native PHP values on a best-effort basis. It never throws: an arm with no faithful
+native representation returns that `XdrSCVal` (sub)value unchanged, same instance, not a
+copy.
+
+| XDR type | Native result |
+|---|---|
+| Bool | `bool` |
+| Void | `null` |
+| U32, I32, I64 | `int` |
+| U64, Timepoint, Duration | `int`, or an unsigned decimal `string` when the value exceeds `PHP_INT_MAX` |
+| U128, I128, U256, I256 | `GMP` (same as `toBigInt()`) |
+| Bytes | `string` (raw binary) |
+| String, Symbol | `string` |
+| Vec | list `array`, elements converted recursively, order preserved |
+| Map | keyed `array` (rules below), or the `XdrSCVal` itself when the map can't convert |
+| Address | `Address` |
+| Error, Contract Instance, Ledger Key Contract Instance, Ledger Key Nonce, Executable Tag, any other/future type | the `XdrSCVal` itself |
+
+Map key rules (PHP array keys can only be `int` or `string`):
+
+| Key arm | PHP array key |
+|---|---|
+| Symbol, String | `string` |
+| U32, I32, I64 | `int` |
+| U64, Timepoint, Duration | `int`, or unsigned decimal `string` per the uint64 rule |
+| U128, I128, U256, I256 | decimal `string` |
+| Bytes | the raw binary `string` |
+| Address | StrKey `string` (`G...`/`C...`/...) — not an `Address` object, unlike the value conversion |
+| any other arm, or a required key payload that is `null` | unrepresentable |
+
+The whole map falls back to the `XdrSCVal` itself (values left unconverted) when a key
+is unrepresentable, or when two entries collide on the same PHP key after coercion. A
+fallback of a nested map is contained: the enclosing vec/map still converts, with the
+problematic map left as an `XdrSCVal` element.
+
+```php
+<?php declare(strict_types=1);
+
+use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
+
+XdrSCVal::forU32(4294967295)->toNative(); // int(4294967295)
+
+// uint64 above PHP_INT_MAX: the stored bit pattern wraps, so -1 means 2^64-1
+XdrSCVal::forU64(-1)->toNative(); // string(20) "18446744073709551615"
+
+// Map with symbol keys, insertion order preserved
+$val = XdrSCVal::forMap([
+    new XdrSCMapEntry(XdrSCVal::forSymbol('name'), XdrSCVal::forString('Alice')),
+    new XdrSCMapEntry(XdrSCVal::forSymbol('age'), XdrSCVal::forU32(30)),
+]);
+$val->toNative(); // ['name' => 'Alice', 'age' => 30]
+```
+
+**Trap: uint64 values above `PHP_INT_MAX` arrive as strings, not int.**
+
+```php
+<?php declare(strict_types=1);
+
+use Soneso\StellarSDK\Xdr\XdrSCVal;
+
+// WRONG: assumes toNative() always returns int for U64/Timepoint/Duration
+$seconds = XdrSCVal::forU64(-1)->toNative();
+$next = $seconds + 1; // silently loses precision: becomes a float, not an error
+
+// CORRECT: a uint64 whose true value exceeds PHP_INT_MAX comes back as a string
+$seconds = XdrSCVal::forU64(-1)->toNative();
+$next = is_int($seconds) ? $seconds + 1 : gmp_add($seconds, 1);
+```
+
+**Trap: detecting a map fallback with `instanceof XdrSCVal`.**
+
+```php
+<?php declare(strict_types=1);
+
+use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
+
+$mapWithBoolKey = XdrSCVal::forMap([
+    new XdrSCMapEntry(XdrSCVal::forBool(true), XdrSCVal::forU32(1)),
+]);
+
+// WRONG: assumes toNative() on a map always returns an array
+$native = $mapWithBoolKey->toNative();
+foreach ($native as $key => $value) { // no exception: silently iterates the object's public properties (type, b, u32, ...) instead of map entries — wrong data, not a crash
+    // ...
+}
+
+// CORRECT: check for the fallback before treating the result as an array
+$native = $mapWithBoolKey->toNative();
+if ($native instanceof XdrSCVal) {
+    // Same instance as $mapWithBoolKey; inspect $native->map manually.
+    foreach ($native->map ?? [] as $entry) {
+        // $entry->key and $entry->val are XdrSCVal
+    }
+} else {
+    // $native is a keyed array
+}
+```
+
+**Trap: address value/key asymmetry — a map key never becomes an `Address` object.**
+
+```php
+<?php declare(strict_types=1);
+
+use Soneso\StellarSDK\Xdr\XdrSCAddress;
+use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
+
+$accountId = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
+$mapVal = XdrSCVal::forMap([
+    new XdrSCMapEntry(XdrSCVal::forAddress(XdrSCAddress::forAccountId($accountId)), XdrSCVal::forU32(1)),
+]);
+
+// WRONG: expects an Address object as the map key, like an address VALUE converts to
+$native = $mapVal->toNative();
+$key = array_key_first($native);
+$key->toStrKey(); // Error: $key is a string ('G...'), not an Address
+
+// CORRECT: an address used as a map key converts to its StrKey string directly
+$native = $mapVal->toNative();
+$key = array_key_first($native); // already 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'
+
+// An address VALUE (not a key) still converts to an Address object:
+$addressValue = XdrSCVal::forAddress(XdrSCAddress::forAccountId($accountId))->toNative();
+$addressValue->toStrKey(); // works: $addressValue is an Address
+```
+
 ## Argument Encoding
 
 Build contract arguments using `XdrSCVal` factory methods.
