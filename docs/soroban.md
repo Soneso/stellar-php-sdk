@@ -1071,6 +1071,81 @@ foreach ($result->map as $entry) {
 }
 ```
 
+#### Converting to Native PHP Values
+
+`toNative()` recursively converts an `XdrSCVal` tree into native PHP values, so you don't have to walk `vec`/`map` entries or branch on `$result->type` by hand. It's opt-in — nothing in the SDK calls it for you, `invokeMethod()` and simulation responses still return `XdrSCVal` — and it never throws. When a value has no faithful native representation, `toNative()` returns that `XdrSCVal` (sub)value unchanged instead of raising an exception, so you can always check the result type before using it.
+
+Conversion outcomes by XDR type:
+
+| XDR type | Native result |
+|---|---|
+| Bool | `bool` |
+| Void | `null` |
+| U32, I32, I64 | `int` |
+| U64, Timepoint, Duration | `int`, or an unsigned decimal `string` when the value exceeds `PHP_INT_MAX` |
+| U128, I128, U256, I256 | `GMP` (same as `toBigInt()`) |
+| Bytes | `string` (raw binary) |
+| String, Symbol | `string` |
+| Vec | list `array`, elements converted recursively, order preserved |
+| Map | keyed `array` (rules below), or the `XdrSCVal` itself when the map can't convert |
+| Address | `Address` |
+| Error, Contract Instance, Ledger Key Contract Instance, Ledger Key Nonce, Executable Tag, and any other/future type | the `XdrSCVal` itself |
+
+Map keys follow narrower rules than values, since a PHP array key can only be `int` or `string`:
+
+- Symbol and String keys become `string`; U32, I32, I64 keys become `int`; U64/Timepoint/Duration follow the same int-or-decimal-string rule as values; U128/I128/U256/I256 keys become decimal `string`; Bytes keys become the raw binary `string`.
+- An address *key* converts to its StrKey string (`G...`/`C...`/...), not to an `Address` object — the opposite of an address *value*, which converts to `Address`. Objects can't be PHP array keys, so the key has to be the string form.
+- Any other key type (bool, vec, map, and so on) is unrepresentable, and PHP coerces canonical integer-decimal string keys to `int` (a symbol key `"123"` becomes the int key `123`).
+- The whole map falls back to the `XdrSCVal` itself, values left unconverted, when either a key is unrepresentable or two entries collide on the same PHP key after coercion (for example a symbol key `"1"` and a `U32` key `1`).
+
+```php
+<?php
+
+use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
+
+// Build a value tree the way a contract result would arrive on the wire.
+$result = XdrSCVal::forMap([
+    new XdrSCMapEntry(XdrSCVal::forSymbol('name'), XdrSCVal::forString('Alice')),
+    new XdrSCMapEntry(XdrSCVal::forSymbol('balance'), XdrSCVal::forI128BigInt('1000000000000000000')),
+    new XdrSCMapEntry(XdrSCVal::forSymbol('tags'), XdrSCVal::forVec([
+        XdrSCVal::forSymbol('vip'),
+        XdrSCVal::forSymbol('verified'),
+    ])),
+]);
+
+$native = $result->toNative();
+
+echo $native['name'] . "\n";                // Alice
+echo gmp_strval($native['balance']) . "\n"; // 1000000000000000000
+echo implode(', ', $native['tags']) . "\n"; // vip, verified
+```
+
+Since a fallback returns the same `XdrSCVal` instance, check for it with `instanceof` before treating the result as a converted value:
+
+```php
+<?php
+
+use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
+
+// A map with a bool key has no PHP array key equivalent, so the whole map
+// falls back to the XdrSCVal itself instead of a partially converted array.
+$mapWithBoolKey = XdrSCVal::forMap([
+    new XdrSCMapEntry(XdrSCVal::forBool(true), XdrSCVal::forU32(1)),
+]);
+
+$native = $mapWithBoolKey->toNative();
+
+if ($native instanceof XdrSCVal) {
+    // Fall back to manual inspection when toNative() can't represent the value.
+    foreach ($native->map ?? [] as $entry) {
+        echo $entry->key->b ? 'true' : 'false';
+        echo ' => ' . $entry->val->u32 . "\n";
+    }
+}
+```
+
 ## Events
 
 Query contract events emitted during execution. Useful for tracking transfers, state changes, and other contract activity.
