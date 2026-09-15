@@ -1010,24 +1010,25 @@ $balancesPage = $sdk->claimableBalances()
     ->execute();
 
 foreach ($balancesPage->getClaimableBalances()->toArray() as $balance) {
-    echo "Balance ID: " . $balance->getBalanceId() . "\n"; // hex string
+    echo "Balance ID: " . $balance->getBalanceId() . "\n"; // 72-character hex, as Horizon reports it
     echo "Amount: " . $balance->getAmount() . "\n";
     echo "Asset: " . $balance->getAsset() . "\n";
 }
 ```
 
-Then claim it:
+Then claim it. The builder accepts the "B..." strkey or hex: the id Horizon reports (72 characters), the bare balance hash (64), or the hash behind the 1-byte strkey discriminant (66). `ClawbackClaimableBalanceOperationBuilder` accepts the same spellings. See [SEP-23](sep/sep-23.md) for more on strkey encoding.
 
 ```php
 <?php
 use Soneso\StellarSDK\ClaimClaimableBalanceOperationBuilder;
 
-// Claim the balance
-// Accepts both hex format and strkey format (starts with "B")
-// See sep/sep-23.md for more on strkey encoding
+// The id as Horizon reports it: the leading zeros are the 4-byte XDR union
+// discriminant ahead of the 32-byte balance hash
 $balanceId = "00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072";
 $claimOp = (new ClaimClaimableBalanceOperationBuilder($balanceId))->build();
 ```
+
+A claim or clawback operation parsed from XDR reports the 72-character Horizon form through `getBalanceId()`. To produce that form from any accepted spelling, use `XdrClaimableBalanceID::paddedBalanceIdHexFor($balanceId)`, or `getPaddedBalanceIdHex()` on an `XdrClaimableBalanceID` instance.
 
 ### Liquidity Pool Operations
 
