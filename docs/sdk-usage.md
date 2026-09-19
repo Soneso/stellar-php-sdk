@@ -288,6 +288,8 @@ $sdk->submitTransaction($transaction);
 
 Memos attach data to transactions (payment references, user IDs). Time bounds limit when a transaction is valid, preventing old signed transactions from being submitted later. Fees are paid in stroops (1 XLM = 10,000,000 stroops).
 
+Some destinations, typically exchanges and custodial services, require a memo on incoming payments (SEP-29). Check a transaction before submitting it with `checkMemoRequired()`, described under [Check Memo Requirements (SEP-29)](#check-memo-requirements-sep-29); the [SEP-29 guide](sep/sep-29.md) has the details.
+
 ```php
 <?php
 use Soneso\StellarSDK\Memo;
@@ -2330,7 +2332,7 @@ if ($response->txStatus === SubmitAsyncTransactionResponse::TX_STATUS_PENDING) {
 
 #### Check Memo Requirements (SEP-29)
 
-Before submitting, check if any destination accounts require a memo. Some exchanges and services reject transactions without memos.
+Before submitting, check if any destination accounts require a memo. Some exchanges and services reject transactions without memos. See the [SEP-29 guide](sep/sep-29.md) for the full details.
 
 ```php
 <?php
