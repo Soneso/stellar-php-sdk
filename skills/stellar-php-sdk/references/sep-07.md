@@ -287,6 +287,8 @@ try {
 - If `callback` parameter is present and starts with `url:`, POSTs the signed XDR to that URL.
 - Otherwise, submits directly to the Stellar network.
 
+When the method submits directly to the network, it runs the SEP-29 memo requirement check and throws `AccountRequiresMemoException` if a destination of the transaction requires a memo the transaction does not carry (see the [SEP-29 guide](sep-29.md)).
+
 ```php
 <?php declare(strict_types=1);
 
