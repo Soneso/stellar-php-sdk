@@ -45,6 +45,10 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Price;
 use Soneso\StellarSDK\Claimant;
+use Soneso\StellarSDK\Xdr\XdrAccountID;
+use Soneso\StellarSDK\Xdr\XdrAllowTrustOperation;
+use Soneso\StellarSDK\Xdr\XdrAllowTrustOperationAsset;
+use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
@@ -425,6 +429,41 @@ class OperationTest extends TestCase
         assertEquals($assetCode, $parsed->getAssetCode());
         assertEquals(false, $parsed->isAuthorize());
         assertEquals(true, $parsed->isAuthorizeToMaintainLiabilities());
+    }
+
+    public function testAllowTrustFromXdrWithAssetCodeZero()
+    {
+        $trustorId = "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO";
+        $operation = new AllowTrustOperation($trustorId, "0", true, false);
+
+        $parsed = AbstractOperation::fromXdr($operation->toXdr());
+
+        assertEquals(AllowTrustOperation::class, get_class($parsed));
+        assertEquals($trustorId, $parsed->getTrustor());
+        assertEquals("0", $parsed->getAssetCode());
+        assertEquals(true, $parsed->isAuthorize());
+    }
+
+    public function testAllowTrustFromXdrRejectsNonAlphanumericAssetType()
+    {
+        $trustor = new XdrAccountID("GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO");
+        $asset = new XdrAllowTrustOperationAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("unknown allow trust asset type: " . XdrAssetType::ASSET_TYPE_NATIVE);
+
+        AllowTrustOperation::fromXdrOperation(new XdrAllowTrustOperation($trustor, $asset, 1));
+    }
+
+    public function testAllowTrustFromXdrRejectsAlphanumericAssetWithoutCode()
+    {
+        $trustor = new XdrAccountID("GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO");
+        $asset = new XdrAllowTrustOperationAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("allow trust asset of type " . XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4 . " carries no asset code");
+
+        AllowTrustOperation::fromXdrOperation(new XdrAllowTrustOperation($trustor, $asset, 1));
     }
 
     public function testCreateClaimableBalanceFromXdr()

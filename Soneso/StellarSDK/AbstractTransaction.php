@@ -138,7 +138,7 @@ abstract class AbstractTransaction
      *
      * @param XdrTransactionEnvelope $envelope The XDR transaction envelope
      * @return AbstractTransaction The decoded transaction (Transaction or FeeBumpTransaction)
-     * @throws \InvalidArgumentException If the envelope type is unknown
+     * @throws \InvalidArgumentException If the envelope cannot be converted to a transaction, e.g. an unknown envelope type
      */
     public static function fromEnvelopeXdr(XdrTransactionEnvelope $envelope) : AbstractTransaction {
 
@@ -155,7 +155,7 @@ abstract class AbstractTransaction
      *
      * @param string $envelope Base64-encoded XDR transaction envelope
      * @return AbstractTransaction The decoded transaction (Transaction or FeeBumpTransaction)
-     * @throws \InvalidArgumentException If the envelope type is unknown or XDR is invalid
+     * @throws \InvalidArgumentException If the XDR is invalid or the envelope cannot be converted to a transaction
      */
     public static function fromEnvelopeBase64XdrString(string $envelope) : AbstractTransaction {
         $xdr = base64_decode($envelope, true);

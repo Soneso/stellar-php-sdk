@@ -6,9 +6,11 @@
 
 namespace Soneso\StellarSDK;
 
+use InvalidArgumentException;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrAllowTrustOperation;
 use Soneso\StellarSDK\Xdr\XdrAllowTrustOperationAsset;
+use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrTrustLineFlags;
@@ -85,14 +87,24 @@ class AllowTrustOperation extends AbstractOperation
     /**
      * Creates an AllowTrustOperation from its XDR representation.
      *
+     * The asset type selects the asset code: ASSET_TYPE_CREDIT_ALPHANUM4 carries a code of up to
+     * 4 characters, ASSET_TYPE_CREDIT_ALPHANUM12 one of up to 12 characters.
+     *
      * @param XdrAllowTrustOperation $xdrOp The XDR allow trust operation to convert
      * @return AllowTrustOperation The resulting AllowTrustOperation instance
+     * @throws InvalidArgumentException If the asset type is not an alphanumeric credit asset type or the asset carries no code
      */
     public static function fromXdrOperation(XdrAllowTrustOperation $xdrOp): AllowTrustOperation {
         $trustor = $xdrOp->getTrustor()->getAccountId();
-        $assetCode = $xdrOp->getAsset()->getAssetCode4();
-        if (!$assetCode) {
-            $assetCode = $xdrOp->getAsset()->getAssetCode12();
+        $asset = $xdrOp->getAsset();
+        $assetType = $asset->getType()->getValue();
+        $assetCode = match ($assetType) {
+            XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4 => $asset->getAssetCode4(),
+            XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12 => $asset->getAssetCode12(),
+            default => throw new InvalidArgumentException("unknown allow trust asset type: " . $assetType),
+        };
+        if ($assetCode === null) {
+            throw new InvalidArgumentException("allow trust asset of type " . $assetType . " carries no asset code");
         }
         $flag = $xdrOp->getAuthorized();
         $authorize = $flag == XdrTrustLineFlags::AUTHORIZED_FLAG;
