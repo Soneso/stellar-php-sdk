@@ -15,6 +15,7 @@ use GuzzleHttp\HandlerStack;
 use RuntimeException;
 use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Exceptions\AccountRequiresMemoException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Requests\RequestBuilder;
@@ -283,6 +284,7 @@ class URIScheme
      * @param Network|null $network Stellar network (defaults to public network if omitted)
      * @return SubmitUriSchemeTransactionResponse Response containing either submitTransactionResponse or callBackResponse
      *
+     * @throws AccountRequiresMemoException If the transaction is submitted directly to the network and a destination account requires a memo that the transaction does not carry
      * @throws HorizonRequestException If submission to Stellar network fails
      * @throws GuzzleException If HTTP request to callback URL fails
      * @throws InvalidArgumentException If URL does not contain valid XDR parameter
