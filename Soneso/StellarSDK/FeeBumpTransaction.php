@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK;
 
 use Exception;
+use InvalidArgumentException;
 use Soneso\StellarSDK\Util\Hash;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
@@ -151,8 +152,20 @@ class FeeBumpTransaction extends AbstractTransaction
         return $xdr;
     }
 
+    /**
+     * Creates a fee bump transaction from its XDR envelope
+     *
+     * @param XdrFeeBumpTransactionEnvelope $envelope The fee bump envelope to convert
+     * @return FeeBumpTransaction The fee bump transaction with its inner transaction and signatures
+     * @throws InvalidArgumentException If the envelope carries no ENVELOPE_TYPE_TX inner transaction
+     */
     public static function fromFeeBumpTransactionEnvelope(XdrFeeBumpTransactionEnvelope $envelope) : FeeBumpTransaction {
-        $inner = Transaction::fromV1EnvelopeXdr($envelope->getTx()->getInnerTx()->getV1());
+        $innerTx = $envelope->getTx()->getInnerTx();
+        $innerV1 = $innerTx->getV1();
+        if ($innerV1 === null) {
+            throw new InvalidArgumentException("fee bump envelope carries no ENVELOPE_TYPE_TX inner transaction, inner type: " . $innerTx->getType()->getValue());
+        }
+        $inner = Transaction::fromV1EnvelopeXdr($innerV1);
         $feeSourceAccount = MuxedAccount::fromXdr($envelope->getTx()->getFeeSource());
         $fee = $envelope->getTx()->getFee();
         $transaction = new FeeBumpTransaction($feeSourceAccount, $fee, $inner);
