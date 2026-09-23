@@ -16,9 +16,11 @@ use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Exceptions\AccountRequiresMemoException;
 use Soneso\StellarSDK\LedgerBounds;
 use Soneso\StellarSDK\ManageDataOperationBuilder;
 use Soneso\StellarSDK\ManageSellOfferOperationBuilder;
+use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PathPaymentStrictReceiveOperationBuilder;
@@ -888,6 +890,34 @@ class PaymentsTest extends TestCase
         $destination = $this->sdk->checkMemoRequired($transaction);
 
         $this->assertTrue($destination == $accountBId);
+
+        try {
+            $this->sdk->submitTransaction($transaction);
+            $this->fail('AccountRequiresMemoException was not thrown');
+        } catch (AccountRequiresMemoException $e) {
+            $this->assertSame($accountBId, $e->getAccountId());
+            $this->assertSame(0, $e->getOperationIndex());
+        }
+
+        // build() advanced the sequence number held by the local account object, so reload it.
+        $accountA = $this->sdk->requestAccount($accountAId);
+        $paymentOperation = (new PaymentOperationBuilder($accountBId, Asset::native(), "100"))->build();
+        $transaction = (new TransactionBuilder($accountA))
+            ->addOperation($paymentOperation)
+            ->addMemo(Memo::text("sep-29"))
+            ->build();
+        $transaction->sign($keyPairA, $this->network);
+        $response = $this->sdk->submitTransaction($transaction);
+        $this->assertTrue($response->isSuccessful());
+
+        // The network itself does not enforce SEP-0029, so the memo-less payment goes
+        // through once the check is skipped.
+        $accountA = $this->sdk->requestAccount($accountAId);
+        $paymentOperation = (new PaymentOperationBuilder($accountBId, Asset::native(), "100"))->build();
+        $transaction = (new TransactionBuilder($accountA))->addOperation($paymentOperation)->build();
+        $transaction->sign($keyPairA, $this->network);
+        $response = $this->sdk->submitTransaction($transaction, skipMemoRequiredCheck: true);
+        $this->assertTrue($response->isSuccessful());
     }
 
     public function testIssue8(): void

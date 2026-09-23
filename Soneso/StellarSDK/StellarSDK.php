@@ -11,6 +11,7 @@ namespace Soneso\StellarSDK;
 use GuzzleHttp\Client;
 use Soneso\StellarSDK\Util\UrlValidator;
 use Soneso\StellarSDK\Constants\NetworkConstants;
+use Soneso\StellarSDK\Exceptions\AccountRequiresMemoException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Requests\AccountsRequestBuilder;
 use Soneso\StellarSDK\Requests\AssetsRequestBuilder;
@@ -473,11 +474,20 @@ class StellarSDK
      * which relays the response from core directly back to the user, this endpoint blocks and waits for the transaction
      * to be ingested in Horizon.
      *
+     * Before submitting, the SEP-0029 memo requirements of the destination accounts are checked.
+     * This costs one account lookup per distinct non-muxed destination when the transaction carries no memo.
+     *
      * @param AbstractTransaction $transaction the transaction to be submitted.
+     * @param bool $skipMemoRequiredCheck set to true to submit without the SEP-0029 memo required check.
      * @return SubmitTransactionResponse the response received from Horizon.
+     * @throws AccountRequiresMemoException if a destination account requires a memo that the transaction does not carry.
      * @throws HorizonRequestException if there was a problem, such as an error response from Horizon. The details of the problem can be found within the exception object.
+     * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md
      */
-    public function submitTransaction(AbstractTransaction $transaction) : SubmitTransactionResponse {
+    public function submitTransaction(AbstractTransaction $transaction, bool $skipMemoRequiredCheck = false) : SubmitTransactionResponse {
+        if (!$skipMemoRequiredCheck) {
+            $this->throwIfMemoRequired($transaction);
+        }
         $builder = new SubmitTransactionRequestBuilder($this->httpClient);
         $builder->setTransaction($transaction);
         return $builder->execute();
@@ -488,11 +498,23 @@ class StellarSDK
      * Unlike the asynchronous version 'submitAsyncTransactionEnvelopeXdrBase64',
      * which relays the response from core directly back to the user, this endpoint blocks and waits for the transaction
      * to be ingested in Horizon.
+     *
+     * Before submitting, the envelope is decoded and the SEP-0029 memo requirements of the destination
+     * accounts are checked. This costs one account lookup per distinct non-muxed destination when the
+     * transaction carries no memo. An envelope string the SDK cannot decode is submitted unchecked, so
+     * that Horizon reports it.
+     *
      * @param string $transactionEnvelopeXdrBase64 transaction envelope xdr base 64 string to be submitted to the network.
+     * @param bool $skipMemoRequiredCheck set to true to submit without the SEP-0029 memo required check.
      * @return SubmitTransactionResponse the response received from Horizon.
+     * @throws AccountRequiresMemoException if a destination account requires a memo that the transaction does not carry.
      * @throws HorizonRequestException if there was a problem, such as an error response from Horizon. The details of the problem can be found within the exception object.
+     * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md
      */
-    public function submitTransactionEnvelopeXdrBase64(string $transactionEnvelopeXdrBase64) : SubmitTransactionResponse {
+    public function submitTransactionEnvelopeXdrBase64(string $transactionEnvelopeXdrBase64, bool $skipMemoRequiredCheck = false) : SubmitTransactionResponse {
+        if (!$skipMemoRequiredCheck) {
+            $this->checkMemoRequiredForEnvelope($transactionEnvelopeXdrBase64);
+        }
         $builder = new SubmitTransactionRequestBuilder($this->httpClient);
         $builder->setTransactionEnvelopeXdrBase64($transactionEnvelopeXdrBase64);
         return $builder->execute();
@@ -503,11 +525,20 @@ class StellarSDK
      * which blocks and waits for the transaction to be ingested in Horizon, this endpoint relays the response from
      * core directly back to the user.
      *
+     * Before submitting, the SEP-0029 memo requirements of the destination accounts are checked.
+     * This costs one account lookup per distinct non-muxed destination when the transaction carries no memo.
+     *
      * @param AbstractTransaction $transaction the transaction to be submitted.
+     * @param bool $skipMemoRequiredCheck set to true to submit without the SEP-0029 memo required check.
      * @return SubmitAsyncTransactionResponse the response received from Horizon.
+     * @throws AccountRequiresMemoException if a destination account requires a memo that the transaction does not carry.
      * @throws HorizonRequestException if there was a problem, such as an error response from Horizon. The details of the problem can be found within the exception object.
+     * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md
      */
-    public function submitAsyncTransaction(AbstractTransaction $transaction) : SubmitAsyncTransactionResponse {
+    public function submitAsyncTransaction(AbstractTransaction $transaction, bool $skipMemoRequiredCheck = false) : SubmitAsyncTransactionResponse {
+        if (!$skipMemoRequiredCheck) {
+            $this->throwIfMemoRequired($transaction);
+        }
         $builder = new SubmitAsyncTransactionRequestBuilder($this->httpClient);
         $builder->setTransaction($transaction);
         return $builder->execute();
@@ -519,11 +550,22 @@ class StellarSDK
      * which blocks and waits for the transaction to be ingested in Horizon, this endpoint relays the response from
      * core directly back to the user.
      *
+     * Before submitting, the envelope is decoded and the SEP-0029 memo requirements of the destination
+     * accounts are checked. This costs one account lookup per distinct non-muxed destination when the
+     * transaction carries no memo. An envelope string the SDK cannot decode is submitted unchecked, so
+     * that Horizon reports it.
+     *
      * @param string $transactionEnvelopeXdrBase64 transaction envelope xdr base 64 string to be submitted to the network.
+     * @param bool $skipMemoRequiredCheck set to true to submit without the SEP-0029 memo required check.
      * @return SubmitAsyncTransactionResponse the response received from Horizon.
+     * @throws AccountRequiresMemoException if a destination account requires a memo that the transaction does not carry.
      * @throws HorizonRequestException if there was a problem, such as an error response from Horizon. The details of the problem can be found within the exception object.
+     * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md
      */
-    public function submitAsyncTransactionEnvelopeXdrBase64(string $transactionEnvelopeXdrBase64) : SubmitAsyncTransactionResponse {
+    public function submitAsyncTransactionEnvelopeXdrBase64(string $transactionEnvelopeXdrBase64, bool $skipMemoRequiredCheck = false) : SubmitAsyncTransactionResponse {
+        if (!$skipMemoRequiredCheck) {
+            $this->checkMemoRequiredForEnvelope($transactionEnvelopeXdrBase64);
+        }
         $builder = new SubmitAsyncTransactionRequestBuilder($this->httpClient);
         $builder->setTransactionEnvelopeXdrBase64($transactionEnvelopeXdrBase64);
         return $builder->execute();
@@ -534,51 +576,121 @@ class StellarSDK
      * Validates memo requirements according to SEP-0029 specification
      *
      * SEP-0029 allows account owners to require that incoming payments include a memo.
-     * This method checks if any destination accounts in the transaction require a memo
-     * and returns the first account ID that requires one if the transaction lacks a memo.
+     * This method reports the first destination account of the transaction that requires
+     * a memo while the transaction carries none. A fee bump transaction is checked through
+     * its inner transaction. A destination that Horizon does not know is skipped, so that
+     * the network itself reports the missing account when the transaction is submitted.
+     *
+     * The submit methods run this check on their own, so an explicit call is only needed
+     * to learn about a memo requirement before building or signing a transaction.
      *
      * @param AbstractTransaction $transaction The transaction to validate
      * @return string|false The account ID of the first destination requiring a memo, or false if none found
-     * @throws HorizonRequestException If the request to check account data fails
+     * @throws HorizonRequestException If a destination lookup fails for a reason other than the account being unknown
      * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md
      */
     public function checkMemoRequired(AbstractTransaction $transaction) : string | false {
+        $violation = $this->findMemoRequiredViolation($transaction);
+        return $violation === null ? false : $violation->getAccountId();
+    }
+
+    /**
+     * Finds the first destination account of a transaction that requires a memo it does not carry
+     *
+     * This is the single implementation of the SEP-0029 check. Destinations are collected in
+     * operation order and looked up one by one, stopping at the first account that requires a
+     * memo. A transaction that carries a memo, or that names no qualifying destination, causes
+     * no request at all.
+     *
+     * @param AbstractTransaction $transaction The transaction to inspect
+     * @return AccountRequiresMemoException|null The violation found, or null if the transaction satisfies SEP-0029
+     * @throws HorizonRequestException If a destination lookup fails for a reason other than the account being unknown
+     * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md
+     */
+    private function findMemoRequiredViolation(AbstractTransaction $transaction) : ?AccountRequiresMemoException {
         if ($transaction instanceof FeeBumpTransaction) {
-            return false;
+            // A fee bump envelope carries neither memo nor operations; its inner transaction does.
+            $transaction = $transaction->getInnerTx();
         }
+        if (!($transaction instanceof Transaction)) {
+            return null;
+        }
+        if ($transaction->getMemo()->getType() !== Memo::MEMO_TYPE_NONE) {
+            return null;
+        }
+
+        // Destination account id => index of the first operation that sends to it.
         $destinations = array();
-        if ($transaction instanceof Transaction) {
-            if ($transaction->getMemo()->getType() != Memo::MEMO_TYPE_NONE) {
-                return false;
-            }
-            foreach ($transaction->getOperations() as $operation) {
-                if ($operation instanceof PaymentOperation
-                    || $operation instanceof PathPaymentStrictSendOperation
-                    || $operation instanceof PathPaymentStrictReceiveOperation
-                    || $operation instanceof AccountMergeOperation) {
-                    $destination = $operation->getDestination();
-                    // Muxed destinations carry their own multiplexing id, so SEP-0029
-                    // does not apply to them. Only a null id means "not multiplexed";
-                    // 0 is a valid multiplexing id.
-                    if ($destination->getId() === null) {
-                        array_push($destinations, $destination->getAccountId());
+        $index = 0;
+        foreach ($transaction->getOperations() as $operation) {
+            if ($operation instanceof PaymentOperation
+                || $operation instanceof PathPaymentStrictSendOperation
+                || $operation instanceof PathPaymentStrictReceiveOperation
+                || $operation instanceof AccountMergeOperation) {
+                $destination = $operation->getDestination();
+                // Muxed destinations carry their own multiplexing id, so SEP-0029
+                // does not apply to them. Only a null id means "not multiplexed";
+                // 0 is a valid multiplexing id.
+                if ($destination->getId() === null) {
+                    $accountId = $destination->getAccountId();
+                    if (!array_key_exists($accountId, $destinations)) {
+                        $destinations[$accountId] = $index;
                     }
                 }
             }
-        }
-        // Collapse duplicate destinations so each account is queried at most once.
-        $destinations = array_unique($destinations);
-        if (count($destinations) == 0) {
-            return false;
+            // Operations without a destination still advance the reported index.
+            $index++;
         }
 
-        $key = "config.memo_required";
-        foreach ($destinations as $destination) {
-            $account = $this->requestAccount($destination);
-            if ($account->getData()->get($key) == "1") {
-                return $destination;
+        foreach ($destinations as $accountId => $operationIndex) {
+            try {
+                $account = $this->requestAccount($accountId);
+            } catch (HorizonRequestException $e) {
+                if ($e->getStatusCode() === NetworkConstants::HTTP_NOT_FOUND) {
+                    // The network reports a destination it does not know when the transaction is submitted.
+                    continue;
+                }
+                throw $e;
+            }
+            if ($account->getData()->get("config.memo_required") === "1") {
+                return new AccountRequiresMemoException($accountId, $operationIndex);
             }
         }
-        return false;
+        return null;
+    }
+
+    /**
+     * Throws when a destination account of the transaction requires a memo it does not carry
+     *
+     * @param AbstractTransaction $transaction The transaction to check before submitting it
+     * @return void
+     * @throws AccountRequiresMemoException If a destination account requires a memo that the transaction does not carry
+     * @throws HorizonRequestException If a destination lookup fails for a reason other than the account being unknown
+     */
+    private function throwIfMemoRequired(AbstractTransaction $transaction) : void {
+        $violation = $this->findMemoRequiredViolation($transaction);
+        if ($violation !== null) {
+            throw $violation;
+        }
+    }
+
+    /**
+     * Runs the memo requirement check on a transaction envelope xdr base 64 string
+     *
+     * An envelope the SDK cannot decode is left to Horizon: the check is skipped and the
+     * string is submitted unchanged, so that the network reports the malformed envelope.
+     *
+     * @param string $envelope The transaction envelope xdr base 64 string about to be submitted
+     * @return void
+     * @throws AccountRequiresMemoException If a destination account requires a memo that the transaction does not carry
+     * @throws HorizonRequestException If a destination lookup fails for a reason other than the account being unknown
+     */
+    private function checkMemoRequiredForEnvelope(string $envelope) : void {
+        try {
+            $transaction = AbstractTransaction::fromEnvelopeBase64XdrString($envelope);
+        } catch (\Exception $e) {
+            return;
+        }
+        $this->throwIfMemoRequired($transaction);
     }
 }
