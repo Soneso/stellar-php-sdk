@@ -49,8 +49,8 @@ Destination account GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY of 
 ```
 
 **`checkMemoRequired()` returns:**
-- `string` — the account ID (G-address) of the first destination requiring a memo
-- `false` — no destination requires a memo the transaction does not carry
+- `string`: the account ID (G-address) of the first destination requiring a memo
+- `false`: no destination requires a memo the transaction does not carry
 
 **No lookup is made when:**
 - The transaction (or the inner transaction of a fee bump) carries a memo of any type other than `MEMO_TYPE_NONE`
@@ -405,8 +405,9 @@ $sdk->submitTransaction($transaction, skipMemoRequiredCheck: true);
 // destination, and only for transactions that carry no memo at all
 $sdk->submitTransaction($transaction);
 
-// CORRECT: skip it for a destination you control or have already verified
-$sdk->submitTransaction($transaction, skipMemoRequiredCheck: true);
+// CORRECT: skip it for a destination whose data entries you control, or one
+// checkMemoRequired() already cleared in the same flow
+$sdk->submitTransaction($paymentToOwnHotWallet, skipMemoRequiredCheck: true);
 ```
 
 **Wrong: checking the return value of `checkMemoRequired()` with `==` against the string `"false"`, or with a truthy check:**
@@ -469,7 +470,7 @@ $sdk->checkMemoRequired($transaction); // returns false - memo already present
 
 ## Error Handling
 
-Destination lookups use `requestAccount()`. A destination Horizon answers 404 for is skipped by the check, and the submitted transaction then fails with the network's own `op_no_destination` result. Every other lookup failure, and every submission failure, surfaces as `HorizonRequestException`:
+Destination lookups use `requestAccount()`. A destination Horizon answers 404 for is skipped by the check, and the network decides the outcome. A missing destination usually fails the operation (`op_no_destination` for a payment or path payment, `op_no_account` for an account merge), but an earlier operation of the same transaction can create the account, and a payment that returns an asset to its issuer succeeds even after the issuer account was merged away. Every other lookup failure, and every submission failure, surfaces as `HorizonRequestException`:
 
 ```php
 <?php declare(strict_types=1);

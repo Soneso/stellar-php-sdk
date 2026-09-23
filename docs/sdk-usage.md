@@ -288,7 +288,7 @@ $sdk->submitTransaction($transaction);
 
 Memos attach data to transactions (payment references, user IDs). Time bounds limit when a transaction is valid, preventing old signed transactions from being submitted later. Fees are paid in stroops (1 XLM = 10,000,000 stroops).
 
-Some destinations, typically exchanges and custodial services, require a memo on incoming payments (SEP-29). The submit methods run that check and throw `AccountRequiresMemoException` when a destination requires a memo the transaction does not carry, described under [Check Memo Requirements (SEP-29)](#check-memo-requirements-sep-29); the [SEP-29 guide](sep/sep-29.md) has the details.
+Some destinations, typically exchanges and custodial services, require a memo on incoming payments (SEP-29). The submit methods check for that requirement and throw `AccountRequiresMemoException` when a destination requires a memo the transaction does not carry, described under [Check Memo Requirements (SEP-29)](#check-memo-requirements-sep-29); the [SEP-29 guide](sep/sep-29.md) has the details.
 
 ```php
 <?php

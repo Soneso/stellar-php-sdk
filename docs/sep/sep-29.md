@@ -302,7 +302,7 @@ $sdk = StellarSDK::getTestNetInstance();
 $senderKeyPair = KeyPair::fromSeed('SCT2SAMWPIMPCEPAXIAX2YBK7N3RECO5WC6AW27WA64ILQ3SNGKR7SC3');
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 
-// Own hot wallet, no memo requirement possible
+// Own hot wallet: we control its data entries and set no memo requirement
 $ownWalletId = "GCKUD4BHIYSBER7DI6TPMYQ4KNDEUKVMN44VKSUQGEFXWLNTHIIQF22Z";
 
 $transaction = (new TransactionBuilder($senderAccount))
@@ -423,7 +423,7 @@ try {
 ```
 
 **Important notes:**
-- A destination account Horizon does not know is skipped by the check. The submission then fails with the network's own `op_no_destination` result
+- A destination account Horizon does not know is skipped by the check, and the network decides the outcome. A missing destination usually fails the operation (`op_no_destination` for a payment or path payment, `op_no_account` for an account merge), but an earlier operation of the same transaction can create the account, and a payment that returns an asset to its issuer succeeds even after the issuer account was merged away
 - The check looks at memo *presence*, not memo *type* (SEP-29 intentionally omits type validation)
 
 ## Related SEPs
