@@ -288,7 +288,7 @@ $sdk->submitTransaction($transaction);
 
 Memos attach data to transactions (payment references, user IDs). Time bounds limit when a transaction is valid, preventing old signed transactions from being submitted later. Fees are paid in stroops (1 XLM = 10,000,000 stroops).
 
-Some destinations, typically exchanges and custodial services, require a memo on incoming payments (SEP-29). Check a transaction before submitting it with `checkMemoRequired()`, described under [Check Memo Requirements (SEP-29)](#check-memo-requirements-sep-29); the [SEP-29 guide](sep/sep-29.md) has the details.
+Some destinations, typically exchanges and custodial services, require a memo on incoming payments (SEP-29). The submit methods run that check and throw `AccountRequiresMemoException` when a destination requires a memo the transaction does not carry, described under [Check Memo Requirements (SEP-29)](#check-memo-requirements-sep-29); the [SEP-29 guide](sep/sep-29.md) has the details.
 
 ```php
 <?php
@@ -2332,18 +2332,49 @@ if ($response->txStatus === SubmitAsyncTransactionResponse::TX_STATUS_PENDING) {
 
 #### Check Memo Requirements (SEP-29)
 
-Before submitting, check if any destination accounts require a memo. Some exchanges and services reject transactions without memos. See the [SEP-29 guide](sep/sep-29.md) for the full details.
+Some exchanges and custodial services require a memo on incoming payments and declare that with the SEP-29 data entry `config.memo_required`. `submitTransaction()`, `submitAsyncTransaction()` and the two envelope variants check the destinations of a transaction before they send it to Horizon. The check costs one account lookup per distinct non-muxed destination, and only for a transaction that carries no memo.
+
+A destination that requires a memo makes the submit call throw `AccountRequiresMemoException`. The exception names the account (`getAccountId()`) and the zero-based index of the first payment, path payment or account merge operation that names it as a non-multiplexed destination (`getOperationIndex()`), counted over all operations of the checked transaction. Pass `skipMemoRequiredCheck: true` to submit without the check. `checkMemoRequired()` runs the same check without submitting and returns the first account id requiring a memo, or `false`. See the [SEP-29 guide](sep/sep-29.md) for the full details.
 
 ```php
 <?php
+use Soneso\StellarSDK\Asset;
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Exceptions\AccountRequiresMemoException;
+use Soneso\StellarSDK\Memo;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\StellarSDK;
+use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
+$senderKeyPair = KeyPair::fromSeed("SCT2SAMWPIMPCEPAXIAX2YBK7N3RECO5WC6AW27WA64ILQ3SNGKR7SC3");
+$destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY";
 
-$memoRequired = $sdk->checkMemoRequired($transaction);
-if ($memoRequired !== false) {
-    echo "Account $memoRequired requires a memo\n";
-    // Add a memo before submitting
+$senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
+
+$paymentOp = (new PaymentOperationBuilder($destinationId, Asset::native(), "100.0"))->build();
+
+$transaction = (new TransactionBuilder($senderAccount))
+    ->addOperation($paymentOp)
+    ->build();
+$transaction->sign($senderKeyPair, Network::testnet());
+
+try {
+    $sdk->submitTransaction($transaction);
+} catch (AccountRequiresMemoException $e) {
+    echo "Account " . $e->getAccountId() . " requires a memo, operation "
+        . $e->getOperationIndex() . "\n";
+
+    // build() advanced the sequence number held in $senderAccount
+    $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
+
+    $transaction = (new TransactionBuilder($senderAccount))
+        ->addOperation($paymentOp)
+        ->addMemo(Memo::text("user-123"))
+        ->build();
+    $transaction->sign($senderKeyPair, Network::testnet());
+    $sdk->submitTransaction($transaction);
 }
 ```
 
