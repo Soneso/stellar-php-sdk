@@ -9,12 +9,14 @@ namespace Soneso\StellarSDKTests\Unit\Core;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\AccountMergeOperationBuilder;
+use Soneso\StellarSDK\AllowTrustOperationBuilder;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\CreateAccountOperationBuilder;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -34,6 +36,8 @@ use Soneso\StellarSDK\Responses\Transaction\SubmitTransactionResponse;
 use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
+use Soneso\StellarSDK\Xdr\XdrAssetType;
+use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 
 /**
@@ -43,13 +47,21 @@ use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
  * AccountRequiresMemoException they raise, and the public checkMemoRequired() pre-check.
  * Horizon is replaced by a Guzzle mock queue that is consumed in order: a queue holding
  * fewer responses than the code requests fails the test, which is how these tests assert
- * that no account lookup happens.
+ * that no account lookup happens. The requests the SDK sends are recorded, so tests can
+ * also assert which requests were made and which envelope was posted.
  *
  * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md
  */
 class StellarSDKMemoRequiredTest extends TestCase
 {
     private const TEST_TRANSACTION_HASH = 'a12b3c4d5e6f7890abcdef1234567890abcdef1234567890abcdef1234567890';
+
+    /**
+     * Requests sent since the latest createMockedSdk() call, by any SDK this test created, in order.
+     *
+     * @var array<int, array<string, mixed>>
+     */
+    private array $requestHistory = [];
 
     /**
      * Creates an SDK whose http client answers from the given queue of responses.
@@ -60,6 +72,8 @@ class StellarSDKMemoRequiredTest extends TestCase
     {
         $mock = new MockHandler($responses);
         $handlerStack = HandlerStack::create($mock);
+        $this->requestHistory = [];
+        $handlerStack->push(Middleware::history($this->requestHistory));
         $client = new Client(['handler' => $handlerStack]);
 
         $sdk = new StellarSDK('https://horizon-testnet.stellar.org');
@@ -231,6 +245,77 @@ class StellarSDKMemoRequiredTest extends TestCase
     {
         return 'Destination account ' . $accountId . ' of operation ' . $operationIndex
             . ' requires a memo in the transaction.';
+    }
+
+    /**
+     * Asserts that the only request sent was one lookup of the given account.
+     */
+    private function assertOnlyAccountLookup(string $accountId): void
+    {
+        $this->assertCount(1, $this->requestHistory);
+        $request = $this->requestHistory[0]['request'];
+        $this->assertSame('GET', $request->getMethod());
+        $this->assertSame('accounts/' . $accountId, $request->getUri()->getPath());
+    }
+
+    /**
+     * Asserts that the only request sent was the submission of the given envelope to the given path.
+     *
+     * @param string $path the request path relative to the Horizon base url, e.g. "transactions".
+     */
+    private function assertOnlySubmission(string $path, string $envelope): void
+    {
+        $this->assertCount(1, $this->requestHistory);
+        $request = $this->requestHistory[0]['request'];
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertSame($path, $request->getUri()->getPath());
+        parse_str($request->getUri()->getQuery(), $query);
+        $this->assertSame(['tx' => $envelope], $query);
+    }
+
+    /**
+     * Builds a fee bump envelope whose inner transaction type is ENVELOPE_TYPE_TX_V0 instead of
+     * ENVELOPE_TYPE_TX. The XDR layer reads every byte of it, but no fee bump transaction can be
+     * built from it.
+     */
+    private function feeBumpEnvelopeWithUnknownInnerType(): string
+    {
+        $inner = $this->paymentTransaction(KeyPair::random()->getAccountId(), KeyPair::random()->getAccountId());
+        $bytes = base64_decode($this->feeBump($inner)->toEnvelopeXdrBase64());
+        // Envelope type (4 bytes), non-muxed fee account (4 + 32) and fee (8) precede the inner transaction type.
+        $innerTypeOffset = 48;
+        $this->assertSame(pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX), substr($bytes, $innerTypeOffset, 4));
+        // The unknown inner type carries no body; the fee bump extension (v0) and an empty signature list follow.
+        return base64_encode(substr($bytes, 0, $innerTypeOffset)
+            . pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX_V0)
+            . pack('N', 0)
+            . pack('N', 0));
+    }
+
+    /**
+     * Builds a memo-less transaction holding one allow trust operation for the given asset code.
+     */
+    private function allowTrustTransaction(string $assetCode): Transaction
+    {
+        return (new TransactionBuilder(new Account(KeyPair::random()->getAccountId(), new BigInteger('123'))))
+            ->addOperation((new AllowTrustOperationBuilder(KeyPair::random()->getAccountId(), $assetCode, true, false))->build())
+            ->build();
+    }
+
+    /**
+     * Builds an envelope whose allow trust operation names ASSET_TYPE_NATIVE instead of an
+     * alphanumeric credit asset. The XDR layer reads every byte of it, but no allow trust
+     * operation can be built from it.
+     */
+    private function allowTrustEnvelopeWithNativeAsset(): string
+    {
+        $bytes = base64_decode($this->allowTrustTransaction('ABC')->toEnvelopeXdrBase64());
+        // Envelope type, source account (4 + 32), fee, sequence number (8), preconditions, memo,
+        // operation count, operation source flag, operation type and trustor (4 + 32) precede the asset.
+        $assetTypeOffset = 108;
+        $this->assertSame(pack('N', XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4) . "ABC\x00", substr($bytes, $assetTypeOffset, 8));
+        // The native asset carries no code, so its type replaces the type and the 4-byte code.
+        return base64_encode(substr_replace($bytes, pack('N', XdrAssetType::ASSET_TYPE_NATIVE), $assetTypeOffset, 8));
     }
 
     /**
@@ -622,6 +707,7 @@ class StellarSDKMemoRequiredTest extends TestCase
             $destination,
             0
         );
+        $this->assertOnlyAccountLookup($destination);
     }
 
     public function testSubmitTransactionEnvelopeXdrBase64SkipsCheckWhenAsked(): void
@@ -634,6 +720,7 @@ class StellarSDKMemoRequiredTest extends TestCase
         $response = $sdk->submitTransactionEnvelopeXdrBase64($envelope, skipMemoRequiredCheck: true);
 
         $this->assertSame(self::TEST_TRANSACTION_HASH, $response->getHash());
+        $this->assertOnlySubmission('transactions', $envelope);
     }
 
     public function testSubmitTransactionEnvelopeXdrBase64ChecksInnerTransactionOfFeeBumpEnvelope(): void
@@ -652,6 +739,7 @@ class StellarSDKMemoRequiredTest extends TestCase
             $destination,
             0
         );
+        $this->assertOnlyAccountLookup($destination);
     }
 
     public function testSubmitAsyncTransactionEnvelopeXdrBase64ThrowsWhenDestinationRequiresMemo(): void
@@ -670,6 +758,7 @@ class StellarSDKMemoRequiredTest extends TestCase
             $destination,
             0
         );
+        $this->assertOnlyAccountLookup($destination);
     }
 
     public function testSubmitAsyncTransactionEnvelopeXdrBase64SkipsCheckWhenAsked(): void
@@ -682,17 +771,20 @@ class StellarSDKMemoRequiredTest extends TestCase
         $response = $sdk->submitAsyncTransactionEnvelopeXdrBase64($envelope, skipMemoRequiredCheck: true);
 
         $this->assertSame(self::TEST_TRANSACTION_HASH, $response->hash);
+        $this->assertOnlySubmission('transactions_async', $envelope);
+    }
+
+    public function testFeeBumpEnvelopeWithUnknownInnerTypeIsUndecodable(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('fee bump envelope carries no ENVELOPE_TYPE_TX inner transaction, inner type: ' . XdrEnvelopeType::ENVELOPE_TYPE_TX_V0);
+
+        AbstractTransaction::fromEnvelopeBase64XdrString($this->feeBumpEnvelopeWithUnknownInnerType());
     }
 
     public function testSubmitTransactionEnvelopeXdrBase64SubmitsUndecodableEnvelopeUnchecked(): void
     {
-        $undecodable = [
-            'not*base64',
-            base64_encode('garbage'),
-            base64_encode("\x00\x00\x00"),
-        ];
-
-        foreach ($undecodable as $envelope) {
+        foreach ($this->undecodableEnvelopes() as $envelope) {
             $sdk = $this->createMockedSdk([$this->transactionMalformedResponse()]);
 
             try {
@@ -701,7 +793,52 @@ class StellarSDKMemoRequiredTest extends TestCase
             } catch (HorizonRequestException $e) {
                 $this->assertSame(400, $e->getStatusCode());
             }
+            $this->assertOnlySubmission('transactions', $envelope);
         }
+    }
+
+    public function testSubmitAsyncTransactionEnvelopeXdrBase64SubmitsUndecodableEnvelopeUnchecked(): void
+    {
+        foreach ($this->undecodableEnvelopes() as $envelope) {
+            $sdk = $this->createMockedSdk([$this->transactionMalformedResponse()]);
+
+            try {
+                $sdk->submitAsyncTransactionEnvelopeXdrBase64($envelope);
+                $this->fail('HorizonRequestException was not thrown');
+            } catch (HorizonRequestException $e) {
+                $this->assertSame(400, $e->getStatusCode());
+            }
+            $this->assertOnlySubmission('transactions_async', $envelope);
+        }
+    }
+
+    /**
+     * Envelope strings the SDK cannot decode: invalid base64, bytes that are no envelope, a
+     * truncated envelope, a fee bump envelope with an unknown inner transaction type, and an
+     * allow trust operation whose asset is not an alphanumeric credit asset.
+     *
+     * @return array<string>
+     */
+    private function undecodableEnvelopes(): array
+    {
+        return [
+            'not*base64',
+            base64_encode('garbage'),
+            base64_encode("\x00\x00\x00"),
+            $this->feeBumpEnvelopeWithUnknownInnerType(),
+            $this->allowTrustEnvelopeWithNativeAsset(),
+        ];
+    }
+
+    public function testSubmitTransactionEnvelopeXdrBase64SubmitsAllowTrustForAssetCodeZero(): void
+    {
+        $envelope = $this->allowTrustTransaction('0')->toEnvelopeXdrBase64();
+        $sdk = $this->createMockedSdk([$this->submitResponse()]);
+
+        $response = $sdk->submitTransactionEnvelopeXdrBase64($envelope);
+
+        $this->assertSame(self::TEST_TRANSACTION_HASH, $response->getHash());
+        $this->assertOnlySubmission('transactions', $envelope);
     }
 
     public function testCheckMemoRequiredChecksInnerTransactionOfFeeBump(): void
