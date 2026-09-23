@@ -1647,6 +1647,127 @@ class SEP24Analyzer(SEPAnalyzerBase):
 
 
 # ===========================================================================
+# SEP-29: Account Memo Requirements
+# ===========================================================================
+
+class SEP29Analyzer(SEPAnalyzerBase):
+    sep_number = 29
+    sep_title = "Account Memo Requirements"
+    sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md"
+
+    def analyze(self) -> CompatibilityMatrix:
+        matrix = self._make_matrix()
+        sections: list[SEPSection] = []
+
+        sdk_members = self.sdk.get_class_members("StellarSDK")
+        sdk_path = self.sdk.find_class("StellarSDK")
+        sdk_src = sdk_path.read_text(encoding="utf-8") if sdk_path else ""
+
+        # The body of the single walk that implements the check. Its substrings are read
+        # from this body alone: the rest of the file also names NetworkConstants and the
+        # operation classes, which would make unrelated code look like the check.
+        walk = re.search(
+            r"function findMemoRequiredViolation.*?\n    }\n",
+            sdk_src,
+            re.DOTALL,
+        )
+        walk_src = walk.group(0) if walk else ""
+
+        # -- Memo requirement flag --
+        flag_section = SEPSection(
+            name="Memo requirement flag",
+            description="The data entry an account uses to declare that incoming payments need a memo",
+        )
+        flag_section.fields = [
+            self._field("config.memo_required",
+                        "Read the destination account's config.memo_required data entry and compare it with the value 1",
+                        "checkMemoRequired" in sdk_members
+                        and "config.memo_required" in walk_src
+                        and re.search(r"===\s*['\"]1['\"]", walk_src) is not None,
+                        sdk_class="StellarSDK.checkMemoRequired()"),
+            self._field("Setting the flag",
+                        "Set or remove the data entry with a manage data operation",
+                        self.sdk.class_exists("ManageDataOperationBuilder"),
+                        sdk_class="ManageDataOperationBuilder"),
+        ]
+        sections.append(flag_section)
+
+        # -- Sender-side check --
+        check_section = SEPSection(
+            name="Sender-side check",
+            description="What the sender inspects before submitting a transaction",
+        )
+        check_section.fields = [
+            self._field("PAYMENT",
+                        "Check the destination of a payment operation",
+                        "instanceof PaymentOperation" in walk_src,
+                        sdk_class="StellarSDK.checkMemoRequired()"),
+            self._field("PATH_PAYMENT_STRICT_SEND",
+                        "Check the destination of a path payment strict send operation",
+                        "instanceof PathPaymentStrictSendOperation" in walk_src,
+                        sdk_class="StellarSDK.checkMemoRequired()"),
+            self._field("PATH_PAYMENT_STRICT_RECEIVE",
+                        "Check the destination of a path payment strict receive operation",
+                        "instanceof PathPaymentStrictReceiveOperation" in walk_src,
+                        sdk_class="StellarSDK.checkMemoRequired()"),
+            self._field("MERGE_ACCOUNT",
+                        "Check the destination of an account merge operation",
+                        "instanceof AccountMergeOperation" in walk_src,
+                        sdk_class="StellarSDK.checkMemoRequired()"),
+            self._field("Multiplexed destinations exempt",
+                        "Skip destinations that carry a multiplexing id, which already identifies the customer",
+                        re.search(r"getId\(\)\s*[!=]==\s*null", walk_src) is not None,
+                        sdk_class="StellarSDK.checkMemoRequired()"),
+            self._field("Memo present skips the check",
+                        "Make no lookup when the transaction already carries a memo",
+                        "Memo::MEMO_TYPE_NONE" in walk_src,
+                        sdk_class="StellarSDK.checkMemoRequired()"),
+            self._field("Fee bump inner transaction",
+                        "Read the memo and the operations of a fee bump transaction from its inner transaction",
+                        "getInnerTx()" in walk_src,
+                        sdk_class="StellarSDK.checkMemoRequired()"),
+            self._field("Unknown destination skipped",
+                        "Skip a destination Horizon does not know and let the network report it",
+                        "NetworkConstants::HTTP_NOT_FOUND" in walk_src,
+                        sdk_class="StellarSDK.checkMemoRequired()"),
+        ]
+        sections.append(check_section)
+
+        # -- Submission integration --
+        submit_section = SEPSection(
+            name="Submission integration",
+            description="The check as part of transaction submission",
+        )
+        submit_fields: list[SEPField] = []
+        for method in ("submitTransaction", "submitAsyncTransaction",
+                       "submitTransactionEnvelopeXdrBase64", "submitAsyncTransactionEnvelopeXdrBase64"):
+            has_opt_out = re.search(
+                rf"function {method}\([^)]*skipMemoRequiredCheck",
+                sdk_src,
+            ) is not None
+            submit_fields.append(
+                self._field(method,
+                            f"`{method}` runs the check unless `skipMemoRequiredCheck` is true",
+                            method in sdk_members and has_opt_out,
+                            sdk_class=f"StellarSDK.{method}()")
+            )
+        submit_fields.append(
+            self._field("AccountRequiresMemoException",
+                        "Report the destination account id and the zero-based index of the operation that names it",
+                        self.sdk.class_exists("AccountRequiresMemoException")
+                        and self.sdk.has_method("AccountRequiresMemoException", "getAccountId")
+                        and self.sdk.has_method("AccountRequiresMemoException", "getOperationIndex"),
+                        sdk_class="AccountRequiresMemoException")
+        )
+        submit_section.fields = submit_fields
+        sections.append(submit_section)
+
+        matrix.sections = sections
+        matrix.overall_status = self._overall(sections)
+        return matrix
+
+
+# ===========================================================================
 # SEP-30: Account Recovery
 # ===========================================================================
 
@@ -3171,6 +3292,7 @@ class SEPAnalyzerFactory:
         11: SEP11Analyzer,
         12: SEP12Analyzer,
         24: SEP24Analyzer,
+        29: SEP29Analyzer,
         30: SEP30Analyzer,
         31: SEP31Analyzer,
         35: SEP35Analyzer,
