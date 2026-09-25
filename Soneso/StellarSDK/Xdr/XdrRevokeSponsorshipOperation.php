@@ -45,7 +45,7 @@ class XdrRevokeSponsorshipOperation {
                 $result->signer = XdrRevokeSponsorshipSigner::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrRevokeSponsorshipOperation discriminant: " . $result->type->getValue());
         }
         return $result;
     }

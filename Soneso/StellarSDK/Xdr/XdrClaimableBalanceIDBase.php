@@ -39,7 +39,7 @@ class XdrClaimableBalanceIDBase {
                 $result->hash = $xdr->readOpaqueFixed(32);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrClaimableBalanceID discriminant: " . $result->type->getValue());
         }
         return $result;
     }

@@ -41,7 +41,7 @@ class XdrClaimableBalanceEntry {
     public static function decode(XdrBuffer $xdr): XdrClaimableBalanceEntry {
         $accountID = XdrClaimableBalanceID::decode($xdr);
         $claimants = [];
-        $claimantsSize = $xdr->readInteger32();
+        $claimantsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $claimantsSize; $i++) {
             $claimants[] = XdrClaimant::decode($xdr);
         }

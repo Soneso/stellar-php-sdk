@@ -41,17 +41,17 @@ class XdrTransactionMetaV2 {
 
     public static function decode(XdrBuffer $xdr): XdrTransactionMetaV2 {
         $txChangesBefore = [];
-        $txChangesBeforeSize = $xdr->readInteger32();
+        $txChangesBeforeSize = $xdr->readArrayLength();
         for ($i = 0; $i < $txChangesBeforeSize; $i++) {
             $txChangesBefore[] = XdrLedgerEntryChange::decode($xdr);
         }
         $operations = [];
-        $operationsSize = $xdr->readInteger32();
+        $operationsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $operationsSize; $i++) {
             $operations[] = XdrOperationMeta::decode($xdr);
         }
         $txChangesAfter = [];
-        $txChangesAfterSize = $xdr->readInteger32();
+        $txChangesAfterSize = $xdr->readArrayLength();
         for ($i = 0; $i < $txChangesAfterSize; $i++) {
             $txChangesAfter[] = XdrLedgerEntryChange::decode($xdr);
         }

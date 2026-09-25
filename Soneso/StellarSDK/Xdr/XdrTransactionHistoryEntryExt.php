@@ -43,7 +43,7 @@ class XdrTransactionHistoryEntryExt {
                 $result->generalizedTxSet = XdrGeneralizedTransactionSet::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrTransactionHistoryEntryExt discriminant: " . $result->v);
         }
         return $result;
     }

@@ -45,7 +45,7 @@ class XdrTransactionSignaturePayloadTaggedTransaction {
                 $result->feeBump = XdrFeeBumpTransaction::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrTransactionSignaturePayloadTaggedTransaction discriminant: " . $result->type->getValue());
         }
         return $result;
     }

@@ -41,17 +41,17 @@ class XdrPersistedSCPStateV0 {
 
     public static function decode(XdrBuffer $xdr): XdrPersistedSCPStateV0 {
         $scpEnvelopes = [];
-        $scpEnvelopesSize = $xdr->readInteger32();
+        $scpEnvelopesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $scpEnvelopesSize; $i++) {
             $scpEnvelopes[] = XdrSCPEnvelope::decode($xdr);
         }
         $quorumSets = [];
-        $quorumSetsSize = $xdr->readInteger32();
+        $quorumSetsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $quorumSetsSize; $i++) {
             $quorumSets[] = XdrSCPQuorumSet::decode($xdr);
         }
         $txSets = [];
-        $txSetsSize = $xdr->readInteger32();
+        $txSetsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $txSetsSize; $i++) {
             $txSets[] = XdrStoredTransactionSet::decode($xdr);
         }

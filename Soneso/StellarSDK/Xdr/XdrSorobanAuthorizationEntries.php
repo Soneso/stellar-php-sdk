@@ -28,7 +28,7 @@ class XdrSorobanAuthorizationEntries {
 
     public static function decode(XdrBuffer $xdr): XdrSorobanAuthorizationEntries {
         $sorobanAuthorizationEntries = [];
-        $size = $xdr->readInteger32();
+        $size = $xdr->readArrayLength();
         for ($i = 0; $i < $size; $i++) {
             $sorobanAuthorizationEntries[] = XdrSorobanAuthorizationEntry::decode($xdr);
         }

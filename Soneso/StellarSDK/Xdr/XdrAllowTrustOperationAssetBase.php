@@ -45,7 +45,7 @@ class XdrAllowTrustOperationAssetBase {
                 $result->assetCode12 = $xdr->readOpaqueFixed(12);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrAllowTrustOperationAsset discriminant: " . $result->type->getValue());
         }
         return $result;
     }

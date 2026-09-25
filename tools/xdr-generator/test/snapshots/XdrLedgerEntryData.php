@@ -101,7 +101,7 @@ class XdrLedgerEntryData {
                 $result->ttlEntry = XdrTTLEntry::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrLedgerEntryData discriminant: " . $result->type->getValue());
         }
         return $result;
     }

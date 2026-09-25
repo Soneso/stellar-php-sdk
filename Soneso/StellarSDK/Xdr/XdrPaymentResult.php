@@ -55,7 +55,7 @@ class XdrPaymentResult {
             case XdrPaymentResultCode::NO_ISSUER:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrPaymentResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

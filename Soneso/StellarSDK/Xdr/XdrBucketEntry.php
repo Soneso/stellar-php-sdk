@@ -54,7 +54,7 @@ class XdrBucketEntry {
                 $result->metaEntry = XdrBucketMetadata::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrBucketEntry discriminant: " . $result->type->getValue());
         }
         return $result;
     }

@@ -38,7 +38,7 @@ class XdrLiquidityPoolBody {
                 $result->constantProduct = XdrConstantProduct::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrLiquidityPoolBody discriminant: " . $result->type->getValue());
         }
         return $result;
     }

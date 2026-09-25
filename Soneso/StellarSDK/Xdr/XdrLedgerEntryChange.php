@@ -66,7 +66,7 @@ class XdrLedgerEntryChange {
                 $result->restored = XdrLedgerEntry::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrLedgerEntryChange discriminant: " . $result->type->getValue());
         }
         return $result;
     }

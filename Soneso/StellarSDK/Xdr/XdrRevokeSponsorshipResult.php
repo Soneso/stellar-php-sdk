@@ -47,7 +47,7 @@ class XdrRevokeSponsorshipResult {
             case XdrRevokeSponsorshipResultCode::MALFORMED:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrRevokeSponsorshipResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

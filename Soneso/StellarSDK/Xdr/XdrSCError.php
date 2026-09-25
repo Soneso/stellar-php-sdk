@@ -61,7 +61,7 @@ class XdrSCError {
                 $result->code = XdrSCErrorCode::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrSCError discriminant: " . $result->type->getValue());
         }
         return $result;
     }

@@ -49,7 +49,7 @@ class XdrAllowTrustResult {
             case XdrAllowTrustResultCode::LOW_RESERVE:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrAllowTrustResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

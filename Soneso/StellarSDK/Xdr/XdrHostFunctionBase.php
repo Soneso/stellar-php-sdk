@@ -59,7 +59,7 @@ class XdrHostFunctionBase {
                 $result->createContractV2 = XdrCreateContractArgsV2::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrHostFunction discriminant: " . $result->type->getValue());
         }
         return $result;
     }

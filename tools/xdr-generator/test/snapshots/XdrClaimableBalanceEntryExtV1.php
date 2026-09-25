@@ -24,7 +24,7 @@ class XdrClaimableBalanceEntryExtV1 {
     }
 
     public static function decode(XdrBuffer $xdr): XdrClaimableBalanceEntryExtV1 {
-        $xdr->readInteger32(); // extension point
+        $xdr->readExtensionPoint('XdrClaimableBalanceEntryExtV1');
         $flags = $xdr->readUnsignedInteger32();
         return new XdrClaimableBalanceEntryExtV1($flags);
     }

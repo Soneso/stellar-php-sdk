@@ -28,7 +28,7 @@ class XdrContractCostParams {
 
     public static function decode(XdrBuffer $xdr): XdrContractCostParams {
         $entries = [];
-        $size = $xdr->readInteger32();
+        $size = $xdr->readArrayLength();
         for ($i = 0; $i < $size; $i++) {
             $entries[] = XdrContractCostParamEntry::decode($xdr);
         }

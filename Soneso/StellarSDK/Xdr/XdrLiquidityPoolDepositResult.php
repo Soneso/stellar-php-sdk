@@ -53,7 +53,7 @@ class XdrLiquidityPoolDepositResult {
             case XdrLiquidityPoolDepositResultCode::TRUSTLINE_FROZEN:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrLiquidityPoolDepositResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

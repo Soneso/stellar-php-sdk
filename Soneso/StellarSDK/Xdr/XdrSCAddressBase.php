@@ -67,7 +67,7 @@ class XdrSCAddressBase {
                 $result->liquidityPoolId = bin2hex($xdr->readOpaqueFixed(32));
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrSCAddress discriminant: " . $result->type->getValue());
         }
         return $result;
     }

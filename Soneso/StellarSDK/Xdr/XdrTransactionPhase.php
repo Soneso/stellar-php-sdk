@@ -45,7 +45,7 @@ class XdrTransactionPhase {
         switch ($result->v) {
             case 0:
                 $result->v0Components = [];
-                $v0ComponentsSize = $xdr->readInteger32();
+                $v0ComponentsSize = $xdr->readArrayLength();
                 for ($i = 0; $i < $v0ComponentsSize; $i++) {
                     $result->v0Components[] = XdrTxSetComponent::decode($xdr);
                 }
@@ -54,7 +54,7 @@ class XdrTransactionPhase {
                 $result->parallelTxsComponent = XdrParallelTxsComponent::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrTransactionPhase discriminant: " . $result->v);
         }
         return $result;
     }

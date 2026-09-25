@@ -275,8 +275,8 @@ class StellarSDKMemoRequiredTest extends TestCase
 
     /**
      * Builds a fee bump envelope whose inner transaction type is ENVELOPE_TYPE_TX_V0 instead of
-     * ENVELOPE_TYPE_TX. The XDR layer reads every byte of it, but no fee bump transaction can be
-     * built from it.
+     * ENVELOPE_TYPE_TX. The fee bump inner transaction union has no arm for ENVELOPE_TYPE_TX_V0,
+     * so the envelope does not decode.
      */
     private function feeBumpEnvelopeWithUnknownInnerType(): string
     {
@@ -304,8 +304,8 @@ class StellarSDKMemoRequiredTest extends TestCase
 
     /**
      * Builds an envelope whose allow trust operation names ASSET_TYPE_NATIVE instead of an
-     * alphanumeric credit asset. The XDR layer reads every byte of it, but no allow trust
-     * operation can be built from it.
+     * alphanumeric credit asset. The allow trust asset union has no arm for the native asset,
+     * so the envelope does not decode.
      */
     private function allowTrustEnvelopeWithNativeAsset(): string
     {
@@ -777,7 +777,7 @@ class StellarSDKMemoRequiredTest extends TestCase
     public function testFeeBumpEnvelopeWithUnknownInnerTypeIsUndecodable(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('fee bump envelope carries no ENVELOPE_TYPE_TX inner transaction, inner type: ' . XdrEnvelopeType::ENVELOPE_TYPE_TX_V0);
+        $this->expectExceptionMessage('Unknown XdrFeeBumpTransactionInnerTx discriminant: ' . XdrEnvelopeType::ENVELOPE_TYPE_TX_V0);
 
         AbstractTransaction::fromEnvelopeBase64XdrString($this->feeBumpEnvelopeWithUnknownInnerType());
     }

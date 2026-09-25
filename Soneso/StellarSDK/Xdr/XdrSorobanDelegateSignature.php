@@ -37,7 +37,7 @@ class XdrSorobanDelegateSignature {
             $address = XdrSCAddress::decode($xdr);
             $signature = XdrSCVal::decode($xdr);
             $nestedDelegates = [];
-            $nestedDelegatesSize = $xdr->readInteger32();
+            $nestedDelegatesSize = $xdr->readArrayLength();
             for ($i = 0; $i < $nestedDelegatesSize; $i++) {
                 $nestedDelegates[] = XdrSorobanDelegateSignature::decode($xdr);
             }

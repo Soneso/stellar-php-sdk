@@ -56,7 +56,7 @@ class XdrChangeTrustAssetBase {
                 $result->liquidityPool = XdrLiquidityPoolParameters::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrChangeTrustAsset discriminant: " . $result->type->getValue());
         }
         return $result;
     }

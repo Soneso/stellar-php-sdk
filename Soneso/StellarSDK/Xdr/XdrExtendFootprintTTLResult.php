@@ -43,7 +43,7 @@ class XdrExtendFootprintTTLResult {
             case XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrExtendFootprintTTLResult discriminant: " . $result->code->getValue());
         }
         return $result;
     }

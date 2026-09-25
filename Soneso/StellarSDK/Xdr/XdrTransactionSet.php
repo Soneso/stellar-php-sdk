@@ -31,7 +31,7 @@ class XdrTransactionSet {
     public static function decode(XdrBuffer $xdr): XdrTransactionSet {
         $previousLedgerHash = $xdr->readOpaqueFixed(32);
         $txs = [];
-        $txsSize = $xdr->readInteger32();
+        $txsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $txsSize; $i++) {
             $txs[] = XdrTransactionEnvelope::decode($xdr);
         }

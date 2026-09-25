@@ -38,7 +38,7 @@ class XdrClaimant {
                 $result->v0 = XdrClaimantV0::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrClaimant discriminant: " . $result->type->getValue());
         }
         return $result;
     }

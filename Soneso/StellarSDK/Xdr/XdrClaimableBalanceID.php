@@ -65,7 +65,7 @@ class XdrClaimableBalanceID extends XdrClaimableBalanceIDBase
                 $hash = bin2hex($xdr->readOpaqueFixed(32));
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrClaimableBalanceID discriminant: " . $type->getValue());
         }
         return new static($type, $hash);
     }

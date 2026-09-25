@@ -45,7 +45,7 @@ class XdrContractIDPreimageBase {
                 $result->fromAsset = XdrAsset::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrContractIDPreimage discriminant: " . $result->type->getValue());
         }
         return $result;
     }

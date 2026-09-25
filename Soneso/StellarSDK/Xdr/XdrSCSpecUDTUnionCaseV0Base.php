@@ -45,7 +45,7 @@ class XdrSCSpecUDTUnionCaseV0Base {
                 $result->tupleCase = XdrSCSpecUDTUnionCaseTupleV0::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrSCSpecUDTUnionCaseV0 discriminant: " . $result->kind->getValue());
         }
         return $result;
     }

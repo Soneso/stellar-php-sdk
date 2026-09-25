@@ -49,7 +49,7 @@ class XdrPreconditions {
                 $result->v2 = XdrPreconditionsV2::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrPreconditions discriminant: " . $result->type->getValue());
         }
         return $result;
     }

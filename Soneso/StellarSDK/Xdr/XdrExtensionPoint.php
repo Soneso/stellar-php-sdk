@@ -36,7 +36,7 @@ class XdrExtensionPoint {
             case 0:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrExtensionPoint discriminant: " . $result->discriminant);
         }
         return $result;
     }

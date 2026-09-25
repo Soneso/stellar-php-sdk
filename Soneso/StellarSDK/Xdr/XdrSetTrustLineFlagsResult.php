@@ -47,7 +47,7 @@ class XdrSetTrustLineFlagsResult {
             case XdrSetTrustLineFlagsResultCode::LOW_RESERVE:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrSetTrustLineFlagsResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

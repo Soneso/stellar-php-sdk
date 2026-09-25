@@ -45,7 +45,7 @@ class XdrPeerAddressIp {
                 $result->ipv6 = $xdr->readOpaqueFixed(16);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrPeerAddressIp discriminant: " . $result->type->getValue());
         }
         return $result;
     }

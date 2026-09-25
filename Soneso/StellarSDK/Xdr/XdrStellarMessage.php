@@ -132,7 +132,7 @@ class XdrStellarMessage {
                 break;
             case XdrMessageType::PEERS:
                 $result->peers = [];
-                $peersSize = $xdr->readInteger32();
+                $peersSize = $xdr->readArrayLength();
                 for ($i = 0; $i < $peersSize; $i++) {
                     $result->peers[] = XdrPeerAddress::decode($xdr);
                 }
@@ -186,7 +186,7 @@ class XdrStellarMessage {
                 $result->floodDemand = XdrFloodDemand::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrStellarMessage discriminant: " . $result->type->getValue());
         }
         return $result;
     }

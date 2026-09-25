@@ -34,12 +34,12 @@ class XdrLedgerFootprint {
 
     public static function decode(XdrBuffer $xdr): XdrLedgerFootprint {
         $readOnly = [];
-        $readOnlySize = $xdr->readInteger32();
+        $readOnlySize = $xdr->readArrayLength();
         for ($i = 0; $i < $readOnlySize; $i++) {
             $readOnly[] = XdrLedgerKey::decode($xdr);
         }
         $readWrite = [];
-        $readWriteSize = $xdr->readInteger32();
+        $readWriteSize = $xdr->readArrayLength();
         for ($i = 0; $i < $readWriteSize; $i++) {
             $readWrite[] = XdrLedgerKey::decode($xdr);
         }

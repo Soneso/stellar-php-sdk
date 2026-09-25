@@ -30,7 +30,7 @@ class XdrSCPHistoryEntryV0 {
 
     public static function decode(XdrBuffer $xdr): XdrSCPHistoryEntryV0 {
         $quorumSets = [];
-        $quorumSetsSize = $xdr->readInteger32();
+        $quorumSetsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $quorumSetsSize; $i++) {
             $quorumSets[] = XdrSCPQuorumSet::decode($xdr);
         }

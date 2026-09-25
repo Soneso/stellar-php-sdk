@@ -38,7 +38,7 @@ class XdrSurveyResponseBody {
                 $result->topologyResponseBodyV2 = XdrTopologyResponseBodyV2::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrSurveyResponseBody discriminant: " . $result->type->getValue());
         }
         return $result;
     }

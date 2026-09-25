@@ -28,7 +28,7 @@ class XdrTxAdvertVector {
 
     public static function decode(XdrBuffer $xdr): XdrTxAdvertVector {
         $txAdvertVector = [];
-        $size = $xdr->readInteger32();
+        $size = $xdr->readArrayLength();
         for ($i = 0; $i < $size; $i++) {
             $txAdvertVector[] = $xdr->readString();
         }

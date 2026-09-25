@@ -57,7 +57,7 @@ class XdrTrustlineAssetBase {
                 $result->liquidityPoolID = $xdr->readOpaqueFixed(32);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrTrustlineAsset discriminant: " . $result->type->getValue());
         }
         return $result;
     }

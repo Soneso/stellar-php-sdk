@@ -71,7 +71,7 @@ class XdrPathPaymentStrictSendResult {
             case XdrPathPaymentStrictSendResultCode::UNDER_DESTMIN:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrPathPaymentStrictSendResult discriminant: " . $result->code->getValue());
         }
         return $result;
     }

@@ -52,7 +52,7 @@ class XdrHotArchiveBucketEntry {
                 $result->metaEntry = XdrBucketMetadata::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrHotArchiveBucketEntry discriminant: " . $result->type->getValue());
         }
         return $result;
     }

@@ -35,7 +35,7 @@ class XdrCreateContractArgsV2 {
         $contractIDPreimage = XdrContractIDPreimage::decode($xdr);
         $executable = XdrContractExecutable::decode($xdr);
         $constructorArgs = [];
-        $constructorArgsSize = $xdr->readInteger32();
+        $constructorArgsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $constructorArgsSize; $i++) {
             $constructorArgs[] = XdrSCVal::decode($xdr);
         }

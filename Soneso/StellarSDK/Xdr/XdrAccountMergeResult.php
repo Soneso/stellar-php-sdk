@@ -55,7 +55,7 @@ class XdrAccountMergeResult {
             case XdrAccountMergeResultCode::IS_SPONSOR:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrAccountMergeResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

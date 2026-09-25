@@ -49,12 +49,12 @@ class XdrSCSpecEventV0 {
         $lib = $xdr->readString();
         $name = $xdr->readString();
         $prefixTopics = [];
-        $prefixTopicsSize = $xdr->readInteger32();
+        $prefixTopicsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $prefixTopicsSize; $i++) {
             $prefixTopics[] = $xdr->readString();
         }
         $params = [];
-        $paramsSize = $xdr->readInteger32();
+        $paramsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $paramsSize; $i++) {
             $params[] = XdrSCSpecEventParamV0::decode($xdr);
         }

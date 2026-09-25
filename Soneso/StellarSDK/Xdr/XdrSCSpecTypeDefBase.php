@@ -120,7 +120,7 @@ class XdrSCSpecTypeDefBase {
                 $result->udt = XdrSCSpecTypeUDT::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrSCSpecTypeDef discriminant: " . $result->type->getValue());
         }
         return $result;
     }

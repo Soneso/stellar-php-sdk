@@ -214,7 +214,7 @@ class XdrOperationBody {
                 $result->restoreFootprintOp = XdrRestoreFootprintOp::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrOperationBody discriminant: " . $result->type->getValue());
         }
         return $result;
     }

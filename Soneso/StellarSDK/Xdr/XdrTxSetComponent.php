@@ -38,7 +38,7 @@ class XdrTxSetComponent {
                 $result->txsMaybeDiscountedFee = XdrTxSetComponentTxsMaybeDiscountedFee::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrTxSetComponent discriminant: " . $result->type->getValue());
         }
         return $result;
     }

@@ -186,7 +186,7 @@ class XdrSCValBase {
             case XdrSCValType::SCV_VEC:
                 if ($xdr->readInteger32() !== 0) {
                     $result->vec = [];
-                    $vecSize = $xdr->readInteger32();
+                    $vecSize = $xdr->readArrayLength();
                     for ($i = 0; $i < $vecSize; $i++) {
                         $result->vec[] = XdrSCVal::decode($xdr);
                     }
@@ -195,7 +195,7 @@ class XdrSCValBase {
             case XdrSCValType::SCV_MAP:
                 if ($xdr->readInteger32() !== 0) {
                     $result->map = [];
-                    $mapSize = $xdr->readInteger32();
+                    $mapSize = $xdr->readArrayLength();
                     for ($i = 0; $i < $mapSize; $i++) {
                         $result->map[] = XdrSCMapEntry::decode($xdr);
                     }
@@ -216,7 +216,7 @@ class XdrSCValBase {
                 $result->executableTag = $xdr->readString();
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrSCVal discriminant: " . $result->type->getValue());
         }
         return $result;
     }

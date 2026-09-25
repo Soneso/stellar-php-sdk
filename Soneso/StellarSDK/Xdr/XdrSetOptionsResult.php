@@ -57,7 +57,7 @@ class XdrSetOptionsResult {
             case XdrSetOptionsResultCode::AUTH_REVOCABLE_REQUIRED:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrSetOptionsResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

@@ -35,7 +35,7 @@ class XdrLedgerCloseMetaBatch {
         $startSequence = $xdr->readUnsignedInteger32();
         $endSequence = $xdr->readUnsignedInteger32();
         $ledgerCloseMetas = [];
-        $ledgerCloseMetasSize = $xdr->readInteger32();
+        $ledgerCloseMetasSize = $xdr->readArrayLength();
         for ($i = 0; $i < $ledgerCloseMetasSize; $i++) {
             $ledgerCloseMetas[] = XdrLedgerCloseMeta::decode($xdr);
         }

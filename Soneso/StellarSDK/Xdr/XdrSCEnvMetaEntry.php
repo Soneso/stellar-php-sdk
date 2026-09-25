@@ -38,7 +38,7 @@ class XdrSCEnvMetaEntry {
                 $result->interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrSCEnvMetaEntry discriminant: " . $result->type->getValue());
         }
         return $result;
     }

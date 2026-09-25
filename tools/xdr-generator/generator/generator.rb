@@ -434,7 +434,7 @@ class Generator < Xdrgen::Generators::Base
     end
     fields.each do |f|
       if f[:is_ext_point]
-        out.puts "        #{indent}$xdr->readInteger32(); // extension point"
+        out.puts "        #{indent}$xdr->readExtensionPoint('#{struct_name}');"
       else
         if is_recursive
           # Temporarily redirect output to a buffer to add indentation
@@ -641,11 +641,12 @@ class Generator < Xdrgen::Generators::Base
       out.puts "        $result = new #{decode_class}(#{disc_type}::decode($xdr));"
     end
 
-    if disc_info[:kind] == :enum
-      out.puts "        switch ($result->#{disc_info[:field_name]}->getValue()) {"
+    disc_value = if disc_info[:kind] == :enum
+      "$result->#{disc_info[:field_name]}->getValue()"
     else
-      out.puts "        switch ($result->#{disc_info[:field_name]}) {"
+      "$result->#{disc_info[:field_name]}"
     end
+    out.puts "        switch (#{disc_value}) {"
 
     has_default = arms.any? { |a| a[:is_default] }
 
@@ -668,7 +669,7 @@ class Generator < Xdrgen::Generators::Base
 
     unless has_default
       out.puts "            default:"
-      out.puts "                break;"
+      out.puts "                throw new InvalidArgumentException(\"Unknown #{union_name} discriminant: \" . #{disc_value});"
     end
 
     out.puts "        }"
@@ -927,7 +928,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "            $#{field_name}[] = #{decode_call_for_typespec(element_typespec)};"
       out.puts "        }"
     else
-      out.puts "        $size = $xdr->readInteger32();"
+      out.puts "        $size = $xdr->readArrayLength();"
       out.puts "        for ($i = 0; $i < $size; $i++) {"
       out.puts "            $#{field_name}[] = #{decode_call_for_typespec(element_typespec)};"
       out.puts "        }"
@@ -1087,7 +1088,7 @@ class Generator < Xdrgen::Generators::Base
           size = resolve_size(decl)
           out.puts "            for ($i = 0; $i < #{size}; $i++) {"
         else
-          out.puts "            $#{local_name}Size = $xdr->readInteger32();"
+          out.puts "            $#{local_name}Size = $xdr->readArrayLength();"
           out.puts "            for ($i = 0; $i < $#{local_name}Size; $i++) {"
         end
         out.puts "                $#{local_name}[] = #{decode_type_call(element_type, typespec: element_typespec)};"
@@ -1099,7 +1100,7 @@ class Generator < Xdrgen::Generators::Base
           size = resolve_size(decl)
           out.puts "        for ($i = 0; $i < #{size}; $i++) {"
         else
-          out.puts "        $#{local_name}Size = $xdr->readInteger32();"
+          out.puts "        $#{local_name}Size = $xdr->readArrayLength();"
           out.puts "        for ($i = 0; $i < $#{local_name}Size; $i++) {"
         end
         if field_info[:elements_optional]
@@ -1219,7 +1220,7 @@ class Generator < Xdrgen::Generators::Base
       element_type = arm[:element_type]
       element_typespec = arm[:element_typespec]
       out.puts "                #{target}->#{field} = [];"
-      out.puts "                $#{field}Size = $xdr->readInteger32();"
+      out.puts "                $#{field}Size = $xdr->readArrayLength();"
       out.puts "                for ($i = 0; $i < $#{field}Size; $i++) {"
       out.puts "                    #{target}->#{field}[] = #{decode_type_call(element_type, typespec: element_typespec)};"
       out.puts "                }"
@@ -1234,7 +1235,7 @@ class Generator < Xdrgen::Generators::Base
       element_typespec = arm[:element_typespec]
       out.puts "                if ($xdr->readInteger32() !== 0) {"
       out.puts "                    #{target}->#{field} = [];"
-      out.puts "                    $#{field}Size = $xdr->readInteger32();"
+      out.puts "                    $#{field}Size = $xdr->readArrayLength();"
       out.puts "                    for ($i = 0; $i < $#{field}Size; $i++) {"
       out.puts "                        #{target}->#{field}[] = #{decode_type_call(element_type, typespec: element_typespec)};"
       out.puts "                    }"

@@ -36,7 +36,7 @@ class XdrTrustLineEntryExtensionV2Ext {
             case 0:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrTrustLineEntryExtensionV2Ext discriminant: " . $result->v);
         }
         return $result;
     }

@@ -53,7 +53,7 @@ class XdrLedgerCloseMeta {
                 $result->v2 = XdrLedgerCloseMetaV2::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrLedgerCloseMeta discriminant: " . $result->v);
         }
         return $result;
     }

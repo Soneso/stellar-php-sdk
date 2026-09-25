@@ -36,7 +36,7 @@ class XdrLedgerEntryV1Ext {
             case 0:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrLedgerEntryV1Ext discriminant: " . $result->discriminant);
         }
         return $result;
     }

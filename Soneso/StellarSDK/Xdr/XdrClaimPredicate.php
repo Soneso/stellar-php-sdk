@@ -69,14 +69,14 @@ class XdrClaimPredicate {
                 break;
             case XdrClaimPredicateType::AND:
                 $result->andPredicates = [];
-                $andPredicatesSize = $xdr->readInteger32();
+                $andPredicatesSize = $xdr->readArrayLength();
                 for ($i = 0; $i < $andPredicatesSize; $i++) {
                     $result->andPredicates[] = XdrClaimPredicate::decode($xdr);
                 }
                 break;
             case XdrClaimPredicateType::OR:
                 $result->orPredicates = [];
-                $orPredicatesSize = $xdr->readInteger32();
+                $orPredicatesSize = $xdr->readArrayLength();
                 for ($i = 0; $i < $orPredicatesSize; $i++) {
                     $result->orPredicates[] = XdrClaimPredicate::decode($xdr);
                 }
@@ -93,7 +93,7 @@ class XdrClaimPredicate {
                 $result->relBefore = $xdr->readInteger64();
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrClaimPredicate discriminant: " . $result->type->getValue());
         }
         return $result;
     }

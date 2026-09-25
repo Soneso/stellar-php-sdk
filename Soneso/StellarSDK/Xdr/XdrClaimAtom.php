@@ -52,7 +52,7 @@ class XdrClaimAtom {
                 $result->liquidityPool = XdrClaimLiquidityAtom::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrClaimAtom discriminant: " . $result->type->getValue());
         }
         return $result;
     }

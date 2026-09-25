@@ -91,7 +91,7 @@ class XdrAllowTrustOperationAsset extends XdrAllowTrustOperationAssetBase
                 $result->assetCode12 = $xdr->readOpaqueFixedString(12);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrAllowTrustOperationAsset discriminant: " . $result->type->getValue());
         }
         return $result;
     }

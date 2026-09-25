@@ -56,7 +56,7 @@ class XdrSorobanCredentialsBase {
                 $result->addressWithDelegates = XdrSorobanAddressCredentialsWithDelegates::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrSorobanCredentials discriminant: " . $result->type->getValue());
         }
         return $result;
     }

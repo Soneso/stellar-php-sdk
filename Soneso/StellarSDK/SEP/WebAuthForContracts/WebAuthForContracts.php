@@ -752,7 +752,7 @@ class WebAuthForContracts
             $xdrBuffer = new XdrBuffer($xdr);
 
             // Decode as array of SorobanAuthorizationEntry
-            $count = $xdrBuffer->readInteger32();
+            $count = $xdrBuffer->readArrayLength();
             $entries = [];
             for ($i = 0; $i < $count; $i++) {
                 $entries[] = SorobanAuthorizationEntry::fromXdr(XdrSorobanAuthorizationEntry::decode($xdrBuffer));

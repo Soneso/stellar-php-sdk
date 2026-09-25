@@ -71,7 +71,7 @@ class XdrPathPaymentStrictReceiveResult {
             case XdrPathPaymentStrictReceiveResultCode::OVER_SENDMAX:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrPathPaymentStrictReceiveResult discriminant: " . $result->code->getValue());
         }
         return $result;
     }

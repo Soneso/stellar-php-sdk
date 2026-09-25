@@ -46,7 +46,7 @@ class XdrPersistedSCPState {
                 $result->v1 = XdrPersistedSCPStateV1::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrPersistedSCPState discriminant: " . $result->v);
         }
         return $result;
     }

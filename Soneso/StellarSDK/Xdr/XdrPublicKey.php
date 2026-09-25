@@ -39,7 +39,7 @@ class XdrPublicKey {
                 $result->ed25519 = $xdr->readOpaqueFixed(32);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrPublicKey discriminant: " . $result->type->getValue());
         }
         return $result;
     }

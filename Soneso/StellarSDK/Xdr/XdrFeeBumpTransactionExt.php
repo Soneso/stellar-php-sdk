@@ -36,7 +36,7 @@ class XdrFeeBumpTransactionExt {
             case 0:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrFeeBumpTransactionExt discriminant: " . $result->discriminant);
         }
         return $result;
     }

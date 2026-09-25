@@ -28,7 +28,7 @@ class XdrTimeSlicedPeerDataList {
 
     public static function decode(XdrBuffer $xdr): XdrTimeSlicedPeerDataList {
         $timeSlicedPeerDataList = [];
-        $size = $xdr->readInteger32();
+        $size = $xdr->readArrayLength();
         for ($i = 0; $i < $size; $i++) {
             $timeSlicedPeerDataList[] = XdrTimeSlicedPeerData::decode($xdr);
         }

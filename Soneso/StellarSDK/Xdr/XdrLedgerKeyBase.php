@@ -101,7 +101,7 @@ class XdrLedgerKeyBase {
                 $result->ttl = XdrLedgerKeyTTL::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrLedgerKey discriminant: " . $result->type->getValue());
         }
         return $result;
     }

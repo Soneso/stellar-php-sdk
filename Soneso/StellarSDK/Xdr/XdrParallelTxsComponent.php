@@ -39,7 +39,7 @@ class XdrParallelTxsComponent {
             $baseFee = $xdr->readInteger64();
         }
         $executionStages = [];
-        $executionStagesSize = $xdr->readInteger32();
+        $executionStagesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $executionStagesSize; $i++) {
             $executionStages[] = XdrParallelTxExecutionStage::decode($xdr);
         }

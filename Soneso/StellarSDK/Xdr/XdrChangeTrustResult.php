@@ -53,7 +53,7 @@ class XdrChangeTrustResult {
             case XdrChangeTrustResultCode::NOT_AUTH_MAINTAIN_LIABILITIES:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrChangeTrustResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

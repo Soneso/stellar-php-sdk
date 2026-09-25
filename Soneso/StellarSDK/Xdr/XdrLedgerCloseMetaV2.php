@@ -63,23 +63,23 @@ class XdrLedgerCloseMetaV2 {
         $ledgerHeader = XdrLedgerHeaderHistoryEntry::decode($xdr);
         $txSet = XdrGeneralizedTransactionSet::decode($xdr);
         $txProcessing = [];
-        $txProcessingSize = $xdr->readInteger32();
+        $txProcessingSize = $xdr->readArrayLength();
         for ($i = 0; $i < $txProcessingSize; $i++) {
             $txProcessing[] = XdrTransactionResultMetaV1::decode($xdr);
         }
         $upgradesProcessing = [];
-        $upgradesProcessingSize = $xdr->readInteger32();
+        $upgradesProcessingSize = $xdr->readArrayLength();
         for ($i = 0; $i < $upgradesProcessingSize; $i++) {
             $upgradesProcessing[] = XdrUpgradeEntryMeta::decode($xdr);
         }
         $scpInfo = [];
-        $scpInfoSize = $xdr->readInteger32();
+        $scpInfoSize = $xdr->readArrayLength();
         for ($i = 0; $i < $scpInfoSize; $i++) {
             $scpInfo[] = XdrSCPHistoryEntry::decode($xdr);
         }
         $totalByteSizeOfLiveSorobanState = $xdr->readUnsignedInteger64();
         $evictedKeys = [];
-        $evictedKeysSize = $xdr->readInteger32();
+        $evictedKeysSize = $xdr->readArrayLength();
         for ($i = 0; $i < $evictedKeysSize; $i++) {
             $evictedKeys[] = XdrLedgerKey::decode($xdr);
         }

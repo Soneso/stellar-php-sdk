@@ -49,7 +49,7 @@ class XdrClaimClaimableBalanceResult {
             case XdrClaimClaimableBalanceResultCode::TRUSTLINE_FROZEN:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrClaimClaimableBalanceResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

@@ -31,7 +31,7 @@ class XdrSorobanAuthorizedInvocation {
     public static function decode(XdrBuffer $xdr): XdrSorobanAuthorizedInvocation {
         $function = XdrSorobanAuthorizedFunction::decode($xdr);
         $subInvocations = [];
-        $subInvocationsSize = $xdr->readInteger32();
+        $subInvocationsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $subInvocationsSize; $i++) {
             $subInvocations[] = XdrSorobanAuthorizedInvocation::decode($xdr);
         }

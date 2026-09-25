@@ -59,7 +59,7 @@ class XdrSCPStatementPledges {
                 $result->nominate = XdrSCPNomination::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrSCPStatementPledges discriminant: " . $result->type->getValue());
         }
         return $result;
     }

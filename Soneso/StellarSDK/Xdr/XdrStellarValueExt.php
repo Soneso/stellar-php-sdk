@@ -49,7 +49,7 @@ class XdrStellarValueExt {
                 $result->proposedValue = XdrStellarValueProposedValue::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrStellarValueExt discriminant: " . $result->v->getValue());
         }
         return $result;
     }

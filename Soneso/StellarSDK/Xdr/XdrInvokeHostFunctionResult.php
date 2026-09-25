@@ -50,7 +50,7 @@ class XdrInvokeHostFunctionResult {
             case XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrInvokeHostFunctionResult discriminant: " . $result->type->getValue());
         }
         return $result;
     }

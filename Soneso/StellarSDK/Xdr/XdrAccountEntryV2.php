@@ -43,7 +43,7 @@ class XdrAccountEntryV2 {
         $numSponsored = $xdr->readUnsignedInteger32();
         $numSponsoring = $xdr->readUnsignedInteger32();
         $signerSponsoringIDs = [];
-        $signerSponsoringIDsSize = $xdr->readInteger32();
+        $signerSponsoringIDsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $signerSponsoringIDsSize; $i++) {
             if ($xdr->readInteger32() !== 0) {
                 $signerSponsoringIDs[] = XdrAccountID::decode($xdr);

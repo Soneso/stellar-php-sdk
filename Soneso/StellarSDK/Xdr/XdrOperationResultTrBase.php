@@ -220,7 +220,7 @@ class XdrOperationResultTrBase {
                 $result->restoreFootprintResult = XdrRestoreFootprintResult::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrOperationResultTr discriminant: " . $result->type->getValue());
         }
         return $result;
     }

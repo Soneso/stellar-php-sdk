@@ -42,7 +42,7 @@ class XdrInflationResult {
         switch ($result->code->getValue()) {
             case XdrInflationResultCode::SUCCESS:
                 $result->payouts = [];
-                $payoutsSize = $xdr->readInteger32();
+                $payoutsSize = $xdr->readArrayLength();
                 for ($i = 0; $i < $payoutsSize; $i++) {
                     $result->payouts[] = XdrInflationPayout::decode($xdr);
                 }
@@ -50,7 +50,7 @@ class XdrInflationResult {
             case XdrInflationResultCode::NOT_TIME:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrInflationResult discriminant: " . $result->code->getValue());
         }
         return $result;
     }

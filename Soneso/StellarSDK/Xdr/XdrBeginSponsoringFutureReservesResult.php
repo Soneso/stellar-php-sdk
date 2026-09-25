@@ -43,7 +43,7 @@ class XdrBeginSponsoringFutureReservesResult {
             case XdrBeginSponsoringFutureReservesResultCode::RECURSIVE:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrBeginSponsoringFutureReservesResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

@@ -50,7 +50,7 @@ class XdrCreateClaimableBalanceResult {
             case XdrCreateClaimableBalanceResultCode::UNDERFUNDED:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrCreateClaimableBalanceResult discriminant: " . $result->code->getValue());
         }
         return $result;
     }

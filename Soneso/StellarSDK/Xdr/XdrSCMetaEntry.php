@@ -38,7 +38,7 @@ class XdrSCMetaEntry {
                 $result->v0 = XdrSCMetaV0::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrSCMetaEntry discriminant: " . $result->type->getValue());
         }
         return $result;
     }

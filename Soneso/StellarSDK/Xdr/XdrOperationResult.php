@@ -52,7 +52,7 @@ class XdrOperationResult {
             case XdrOperationResultCode::TOO_MANY_SPONSORING:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrOperationResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

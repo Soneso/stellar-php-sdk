@@ -49,7 +49,7 @@ class XdrAsset {
                 $result->alphaNum12 = XdrAssetAlphaNum12::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrAsset discriminant: " . $result->type->getValue());
         }
         return $result;
     }

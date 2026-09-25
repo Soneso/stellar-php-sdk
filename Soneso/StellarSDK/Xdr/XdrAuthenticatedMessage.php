@@ -39,7 +39,7 @@ class XdrAuthenticatedMessage {
                 $result->v0 = XdrAuthenticatedMessageV0::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrAuthenticatedMessage discriminant: " . $result->v);
         }
         return $result;
     }

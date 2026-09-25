@@ -73,7 +73,7 @@ class XdrSCSpecEntryBase {
                 $result->eventV0 = XdrSCSpecEventV0::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrSCSpecEntry discriminant: " . $result->type->getValue());
         }
         return $result;
     }

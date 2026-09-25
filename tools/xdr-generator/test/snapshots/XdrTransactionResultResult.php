@@ -68,7 +68,7 @@ class XdrTransactionResultResult {
             case XdrTransactionResultCode::SUCCESS:
             case XdrTransactionResultCode::FAILED:
                 $result->results = [];
-                $resultsSize = $xdr->readInteger32();
+                $resultsSize = $xdr->readArrayLength();
                 for ($i = 0; $i < $resultsSize; $i++) {
                     $result->results[] = XdrOperationResult::decode($xdr);
                 }
@@ -91,7 +91,7 @@ class XdrTransactionResultResult {
             case XdrTransactionResultCode::FROZEN_KEY_ACCESSED:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrTransactionResultResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }
