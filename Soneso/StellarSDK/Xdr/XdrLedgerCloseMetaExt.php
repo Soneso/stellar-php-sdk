@@ -43,7 +43,7 @@ class XdrLedgerCloseMetaExt {
                 $result->v1 = XdrLedgerCloseMetaExtV1::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrLedgerCloseMetaExt discriminant: " . $result->v);
         }
         return $result;
     }

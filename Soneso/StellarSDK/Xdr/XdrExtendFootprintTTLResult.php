@@ -42,8 +42,6 @@ class XdrExtendFootprintTTLResult {
             case XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
             case XdrExtendFootprintTTLResultCode::EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE:
                 break;
-            default:
-                break;
         }
         return $result;
     }

@@ -31,7 +31,7 @@ class XdrTransactionV0Envelope {
     public static function decode(XdrBuffer $xdr): XdrTransactionV0Envelope {
         $tx = XdrTransactionV0::decode($xdr);
         $signatures = [];
-        $signaturesSize = $xdr->readInteger32();
+        $signaturesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $signaturesSize; $i++) {
             $signatures[] = XdrDecoratedSignature::decode($xdr);
         }

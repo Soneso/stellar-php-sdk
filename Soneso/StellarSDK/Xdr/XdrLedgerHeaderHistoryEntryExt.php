@@ -36,7 +36,7 @@ class XdrLedgerHeaderHistoryEntryExt {
             case 0:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrLedgerHeaderHistoryEntryExt discriminant: " . $result->v);
         }
         return $result;
     }

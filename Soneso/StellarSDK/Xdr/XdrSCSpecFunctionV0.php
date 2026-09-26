@@ -42,12 +42,12 @@ class XdrSCSpecFunctionV0 {
         $doc = $xdr->readString();
         $name = $xdr->readString();
         $inputs = [];
-        $inputsSize = $xdr->readInteger32();
+        $inputsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $inputsSize; $i++) {
             $inputs[] = XdrSCSpecFunctionInputV0::decode($xdr);
         }
         $outputs = [];
-        $outputsSize = $xdr->readInteger32();
+        $outputsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $outputsSize; $i++) {
             $outputs[] = XdrSCSpecTypeDef::decode($xdr);
         }

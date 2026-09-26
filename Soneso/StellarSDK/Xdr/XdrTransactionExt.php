@@ -43,7 +43,7 @@ class XdrTransactionExt {
                 $result->sorobanTransactionData = XdrSorobanTransactionData::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrTransactionExt discriminant: " . $result->discriminant);
         }
         return $result;
     }

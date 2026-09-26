@@ -37,8 +37,6 @@ class XdrSurveyResponseBody {
             case XdrSurveyMessageResponseType::SURVEY_TOPOLOGY_RESPONSE_V2:
                 $result->topologyResponseBodyV2 = XdrTopologyResponseBodyV2::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

@@ -43,7 +43,7 @@ class XdrClaimableBalanceEntryExt {
                 $result->v1 = XdrClaimableBalanceEntryExtV1::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrClaimableBalanceEntryExt discriminant: " . $result->discriminant);
         }
         return $result;
     }

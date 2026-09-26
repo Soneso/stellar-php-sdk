@@ -43,7 +43,7 @@ class XdrLedgerHeaderExt {
                 $result->v1 = XdrLedgerHeaderExtensionV1::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrLedgerHeaderExt discriminant: " . $result->v);
         }
         return $result;
     }

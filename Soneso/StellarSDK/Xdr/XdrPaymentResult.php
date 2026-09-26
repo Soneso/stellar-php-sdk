@@ -54,8 +54,6 @@ class XdrPaymentResult {
             case XdrPaymentResultCode::LINE_FULL:
             case XdrPaymentResultCode::NO_ISSUER:
                 break;
-            default:
-                break;
         }
         return $result;
     }

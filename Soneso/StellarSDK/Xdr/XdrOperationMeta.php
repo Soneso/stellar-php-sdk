@@ -27,7 +27,7 @@ class XdrOperationMeta {
 
     public static function decode(XdrBuffer $xdr): XdrOperationMeta {
         $ledgerEntryChanges = [];
-        $ledgerEntryChangesSize = $xdr->readInteger32();
+        $ledgerEntryChangesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $ledgerEntryChangesSize; $i++) {
             $ledgerEntryChanges[] = XdrLedgerEntryChange::decode($xdr);
         }

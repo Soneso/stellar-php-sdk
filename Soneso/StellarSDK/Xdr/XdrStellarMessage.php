@@ -132,7 +132,7 @@ class XdrStellarMessage {
                 break;
             case XdrMessageType::PEERS:
                 $result->peers = [];
-                $peersSize = $xdr->readInteger32();
+                $peersSize = $xdr->readArrayLength();
                 for ($i = 0; $i < $peersSize; $i++) {
                     $result->peers[] = XdrPeerAddress::decode($xdr);
                 }
@@ -184,8 +184,6 @@ class XdrStellarMessage {
                 break;
             case XdrMessageType::FLOOD_DEMAND:
                 $result->floodDemand = XdrFloodDemand::decode($xdr);
-                break;
-            default:
                 break;
         }
         return $result;

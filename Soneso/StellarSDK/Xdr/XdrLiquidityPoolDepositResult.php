@@ -52,8 +52,6 @@ class XdrLiquidityPoolDepositResult {
             case XdrLiquidityPoolDepositResultCode::POOL_FULL:
             case XdrLiquidityPoolDepositResultCode::TRUSTLINE_FROZEN:
                 break;
-            default:
-                break;
         }
         return $result;
     }

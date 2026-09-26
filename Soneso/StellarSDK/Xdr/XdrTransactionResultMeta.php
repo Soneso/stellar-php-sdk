@@ -34,7 +34,7 @@ class XdrTransactionResultMeta {
     public static function decode(XdrBuffer $xdr): XdrTransactionResultMeta {
         $result = XdrTransactionResultPair::decode($xdr);
         $feeProcessing = [];
-        $feeProcessingSize = $xdr->readInteger32();
+        $feeProcessingSize = $xdr->readArrayLength();
         for ($i = 0; $i < $feeProcessingSize; $i++) {
             $feeProcessing[] = XdrLedgerEntryChange::decode($xdr);
         }

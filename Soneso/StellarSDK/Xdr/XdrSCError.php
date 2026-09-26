@@ -60,8 +60,6 @@ class XdrSCError {
             case XdrSCErrorType::SCE_AUTH:
                 $result->code = XdrSCErrorCode::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

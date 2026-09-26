@@ -31,7 +31,7 @@ class XdrUpgradeEntryMeta {
     public static function decode(XdrBuffer $xdr): XdrUpgradeEntryMeta {
         $upgrade = XdrLedgerUpgrade::decode($xdr);
         $changes = [];
-        $changesSize = $xdr->readInteger32();
+        $changesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $changesSize; $i++) {
             $changes[] = XdrLedgerEntryChange::decode($xdr);
         }

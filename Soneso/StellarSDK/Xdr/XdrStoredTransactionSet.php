@@ -46,7 +46,7 @@ class XdrStoredTransactionSet {
                 $result->generalizedTxSet = XdrGeneralizedTransactionSet::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrStoredTransactionSet discriminant: " . $result->v);
         }
         return $result;
     }

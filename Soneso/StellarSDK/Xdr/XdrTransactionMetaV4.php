@@ -67,17 +67,17 @@ class XdrTransactionMetaV4 {
     public static function decode(XdrBuffer $xdr): XdrTransactionMetaV4 {
         $ext = XdrExtensionPoint::decode($xdr);
         $txChangesBefore = [];
-        $txChangesBeforeSize = $xdr->readInteger32();
+        $txChangesBeforeSize = $xdr->readArrayLength();
         for ($i = 0; $i < $txChangesBeforeSize; $i++) {
             $txChangesBefore[] = XdrLedgerEntryChange::decode($xdr);
         }
         $operations = [];
-        $operationsSize = $xdr->readInteger32();
+        $operationsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $operationsSize; $i++) {
             $operations[] = XdrOperationMetaV2::decode($xdr);
         }
         $txChangesAfter = [];
-        $txChangesAfterSize = $xdr->readInteger32();
+        $txChangesAfterSize = $xdr->readArrayLength();
         for ($i = 0; $i < $txChangesAfterSize; $i++) {
             $txChangesAfter[] = XdrLedgerEntryChange::decode($xdr);
         }
@@ -86,12 +86,12 @@ class XdrTransactionMetaV4 {
             $sorobanMeta = XdrSorobanTransactionMetaV2::decode($xdr);
         }
         $events = [];
-        $eventsSize = $xdr->readInteger32();
+        $eventsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $eventsSize; $i++) {
             $events[] = XdrTransactionEvent::decode($xdr);
         }
         $diagnosticEvents = [];
-        $diagnosticEventsSize = $xdr->readInteger32();
+        $diagnosticEventsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $diagnosticEventsSize; $i++) {
             $diagnosticEvents[] = XdrDiagnosticEvent::decode($xdr);
         }

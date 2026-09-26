@@ -35,7 +35,7 @@ class XdrInvokeContractArgs {
         $contractAddress = XdrSCAddress::decode($xdr);
         $functionName = $xdr->readString();
         $args = [];
-        $argsSize = $xdr->readInteger32();
+        $argsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $argsSize; $i++) {
             $args[] = XdrSCVal::decode($xdr);
         }

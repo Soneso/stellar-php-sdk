@@ -36,7 +36,7 @@ class XdrTransactionHistoryResultEntryExt {
             case 0:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrTransactionHistoryResultEntryExt discriminant: " . $result->v);
         }
         return $result;
     }

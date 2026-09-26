@@ -57,7 +57,7 @@ class XdrTransactionMeta {
         switch ($result->v) {
             case 0:
                 $result->operations = [];
-                $operationsSize = $xdr->readInteger32();
+                $operationsSize = $xdr->readArrayLength();
                 for ($i = 0; $i < $operationsSize; $i++) {
                     $result->operations[] = XdrOperationMeta::decode($xdr);
                 }
@@ -75,7 +75,7 @@ class XdrTransactionMeta {
                 $result->v4 = XdrTransactionMetaV4::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrTransactionMeta discriminant: " . $result->v);
         }
         return $result;
     }

@@ -31,7 +31,7 @@ class XdrInvokeHostFunctionOp {
     public static function decode(XdrBuffer $xdr): XdrInvokeHostFunctionOp {
         $hostFunction = XdrHostFunction::decode($xdr);
         $auth = [];
-        $authSize = $xdr->readInteger32();
+        $authSize = $xdr->readArrayLength();
         for ($i = 0; $i < $authSize; $i++) {
             $auth[] = XdrSorobanAuthorizationEntry::decode($xdr);
         }

@@ -37,8 +37,6 @@ class XdrSCEnvMetaEntry {
             case XdrSCEnvMetaKind::SC_ENV_META_KIND_INTERFACE_VERSION:
                 $result->interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

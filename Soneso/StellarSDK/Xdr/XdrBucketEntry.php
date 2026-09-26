@@ -53,8 +53,6 @@ class XdrBucketEntry {
             case XdrBucketEntryType::METAENTRY:
                 $result->metaEntry = XdrBucketMetadata::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

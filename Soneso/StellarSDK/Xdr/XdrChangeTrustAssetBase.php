@@ -55,8 +55,6 @@ class XdrChangeTrustAssetBase {
             case XdrAssetType::ASSET_TYPE_POOL_SHARE:
                 $result->liquidityPool = XdrLiquidityPoolParameters::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

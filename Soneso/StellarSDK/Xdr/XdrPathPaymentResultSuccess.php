@@ -30,7 +30,7 @@ class XdrPathPaymentResultSuccess {
 
     public static function decode(XdrBuffer $xdr): XdrPathPaymentResultSuccess {
         $offers = [];
-        $offersSize = $xdr->readInteger32();
+        $offersSize = $xdr->readArrayLength();
         for ($i = 0; $i < $offersSize; $i++) {
             $offers[] = XdrClaimAtom::decode($xdr);
         }

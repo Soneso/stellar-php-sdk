@@ -51,8 +51,6 @@ class XdrHotArchiveBucketEntry {
             case XdrHotArchiveBucketEntryType::HOT_ARCHIVE_METAENTRY:
                 $result->metaEntry = XdrBucketMetadata::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

@@ -2843,6 +2843,17 @@ class XdrOverlayGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrAuthenticatedMessage');
     }
 
+    public function testXdrAuthenticatedMessageDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = (function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); $u = new XdrAuthenticatedMessage(0); $u->v0 = new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat("\xAB", 32))); return $u; })();
+        $encoded = $original->encode();
+        $this->assertSame($original->v, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(1) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrAuthenticatedMessage discriminant: 1');
+        XdrAuthenticatedMessage::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrAuthenticatedMessageUnionJsonRoundTrip(): void
     {
         $arm0 = (function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); $u = new XdrAuthenticatedMessage(0); $u->v0 = new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat("\xAB", 32))); return $u; })();

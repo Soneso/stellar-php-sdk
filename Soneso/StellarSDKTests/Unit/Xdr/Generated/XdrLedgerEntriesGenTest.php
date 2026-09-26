@@ -196,6 +196,17 @@ class XdrLedgerEntriesGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrAllowTrustOperationAsset');
     }
 
+    public function testXdrAllowTrustOperationAssetDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = XdrAllowTrustOperationAsset::fromAlphaNumAssetCode('USD');
+        $encoded = $original->encode();
+        $this->assertSame($original->type->getValue(), (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(0) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrAllowTrustOperationAsset discriminant: 0');
+        XdrAllowTrustOperationAssetBase::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrAllowTrustOperationAssetUnionJsonRoundTrip(): void
     {
         $arm0 = XdrAllowTrustOperationAsset::fromAlphaNumAssetCode('USD');
@@ -507,6 +518,17 @@ class XdrLedgerEntriesGenTest extends TestCase
         $decoded = XdrAsset::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrAssetDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        $encoded = $original->encode();
+        $this->assertSame($original->type->getValue(), (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(3) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrAsset discriminant: 3');
+        XdrAsset::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrAssetUnionJsonRoundTrip(): void
@@ -1220,6 +1242,17 @@ class XdrLedgerEntriesGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode());
     }
 
+    public function testXdrAccountEntryV2ExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrAccountEntryV2Ext(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->discriminant, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(4) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrAccountEntryV2Ext discriminant: 4');
+        XdrAccountEntryV2Ext::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrAccountEntryV2ExtUnionJsonRoundTrip(): void
     {
         $arm0 = new XdrAccountEntryV2Ext(0);
@@ -1386,6 +1419,17 @@ class XdrLedgerEntriesGenTest extends TestCase
         $decoded = XdrAccountEntryV1Ext::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->discriminant, $decoded->discriminant);
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrAccountEntryV1ExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrAccountEntryV1Ext(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->discriminant, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(3) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrAccountEntryV1Ext discriminant: 3');
+        XdrAccountEntryV1Ext::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrAccountEntryV1ExtUnionJsonRoundTrip(): void
@@ -1619,6 +1663,17 @@ class XdrLedgerEntriesGenTest extends TestCase
         $decoded = XdrAccountEntryExt::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->discriminant, $decoded->discriminant);
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrAccountEntryExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrAccountEntryExt(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->discriminant, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(2) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrAccountEntryExt discriminant: 2');
+        XdrAccountEntryExt::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrAccountEntryExtUnionJsonRoundTrip(): void
@@ -2037,6 +2092,17 @@ class XdrLedgerEntriesGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode());
     }
 
+    public function testXdrTrustLineEntryExtensionV2ExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrTrustLineEntryExtensionV2Ext(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->v, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(1) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrTrustLineEntryExtensionV2Ext discriminant: 1');
+        XdrTrustLineEntryExtensionV2Ext::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrTrustLineEntryExtensionV2ExtUnionJsonRoundTrip(): void
     {
         $arm0 = new XdrTrustLineEntryExtensionV2Ext(0);
@@ -2220,6 +2286,17 @@ class XdrLedgerEntriesGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode());
     }
 
+    public function testXdrTrustLineEntryExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrTrustLineEntryExt(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->discriminant, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(2) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrTrustLineEntryExt discriminant: 2');
+        XdrTrustLineEntryExt::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrTrustLineEntryExtUnionJsonRoundTrip(): void
     {
         $arm0 = new XdrTrustLineEntryExt(0);
@@ -2374,6 +2451,17 @@ class XdrLedgerEntriesGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTrustLineEntryV1Ext');
         $b64Decoded = XdrTrustLineEntryV1Ext::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTrustLineEntryV1Ext');
+    }
+
+    public function testXdrTrustLineEntryV1ExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrTrustLineEntryV1Ext(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->discriminant, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(3) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrTrustLineEntryV1Ext discriminant: 3');
+        XdrTrustLineEntryV1Ext::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrTrustLineEntryV1ExtUnionJsonRoundTrip(): void
@@ -2621,6 +2709,17 @@ class XdrLedgerEntriesGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode());
     }
 
+    public function testXdrOfferEntryExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrOfferEntryExt(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->discriminant, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(1) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrOfferEntryExt discriminant: 1');
+        XdrOfferEntryExt::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrOfferEntryExtUnionJsonRoundTrip(): void
     {
         $arm0 = new XdrOfferEntryExt(0);
@@ -2773,6 +2872,17 @@ class XdrLedgerEntriesGenTest extends TestCase
         $decoded = XdrDataEntryExt::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->discriminant, $decoded->discriminant);
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrDataEntryExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrDataEntryExt(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->discriminant, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(1) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrDataEntryExt discriminant: 1');
+        XdrDataEntryExt::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrDataEntryExtUnionJsonRoundTrip(): void
@@ -3433,6 +3543,17 @@ class XdrLedgerEntriesGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode());
     }
 
+    public function testXdrClaimableBalanceEntryExtV1ExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrClaimableBalanceEntryExtV1Ext(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->v, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(1) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrClaimableBalanceEntryExtV1Ext discriminant: 1');
+        XdrClaimableBalanceEntryExtV1Ext::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrClaimableBalanceEntryExtV1ExtUnionJsonRoundTrip(): void
     {
         $arm0 = new XdrClaimableBalanceEntryExtV1Ext(0);
@@ -3599,6 +3720,17 @@ class XdrLedgerEntriesGenTest extends TestCase
         $decoded = XdrClaimableBalanceEntryExt::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->discriminant, $decoded->discriminant);
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrClaimableBalanceEntryExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrClaimableBalanceEntryExt(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->discriminant, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(2) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrClaimableBalanceEntryExt discriminant: 2');
+        XdrClaimableBalanceEntryExt::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrClaimableBalanceEntryExtUnionJsonRoundTrip(): void
@@ -4335,6 +4467,17 @@ class XdrLedgerEntriesGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode());
     }
 
+    public function testXdrContractCodeEntryExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrContractCodeEntryExt(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->v, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(2) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrContractCodeEntryExt discriminant: 2');
+        XdrContractCodeEntryExt::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrContractCodeEntryExtUnionJsonRoundTrip(): void
     {
         $arm0 = new XdrContractCodeEntryExt(0);
@@ -4664,6 +4807,17 @@ class XdrLedgerEntriesGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode());
     }
 
+    public function testXdrLedgerEntryV1ExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrLedgerEntryV1Ext(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->discriminant, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(1) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrLedgerEntryV1Ext discriminant: 1');
+        XdrLedgerEntryV1Ext::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrLedgerEntryV1ExtUnionJsonRoundTrip(): void
     {
         $arm0 = new XdrLedgerEntryV1Ext(0);
@@ -4927,6 +5081,17 @@ class XdrLedgerEntriesGenTest extends TestCase
         $decoded = XdrLedgerEntryExt::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->discriminant, $decoded->discriminant);
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrLedgerEntryExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrLedgerEntryExt(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->discriminant, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(2) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrLedgerEntryExt discriminant: 2');
+        XdrLedgerEntryExt::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrLedgerEntryExtUnionJsonRoundTrip(): void
@@ -6235,6 +6400,17 @@ class XdrLedgerEntriesGenTest extends TestCase
         $decoded = XdrBucketMetadataExt::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->v, $decoded->v);
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrBucketMetadataExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrBucketMetadataExt(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->v, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(2) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrBucketMetadataExt discriminant: 2');
+        XdrBucketMetadataExt::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrBucketMetadataExtUnionJsonRoundTrip(): void

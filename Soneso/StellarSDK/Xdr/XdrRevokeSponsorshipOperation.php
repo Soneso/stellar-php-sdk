@@ -44,8 +44,6 @@ class XdrRevokeSponsorshipOperation {
             case XdrRevokeSponsorshipType::SIGNER:
                 $result->signer = XdrRevokeSponsorshipSigner::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

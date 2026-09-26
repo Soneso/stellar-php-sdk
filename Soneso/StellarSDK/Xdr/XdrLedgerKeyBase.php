@@ -100,8 +100,6 @@ class XdrLedgerKeyBase {
             case XdrLedgerEntryType::TTL:
                 $result->ttl = XdrLedgerKeyTTL::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

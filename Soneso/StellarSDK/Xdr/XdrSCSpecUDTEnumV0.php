@@ -39,7 +39,7 @@ class XdrSCSpecUDTEnumV0 {
         $lib = $xdr->readString();
         $name = $xdr->readString();
         $cases = [];
-        $casesSize = $xdr->readInteger32();
+        $casesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $casesSize; $i++) {
             $cases[] = XdrSCSpecUDTEnumCaseV0::decode($xdr);
         }

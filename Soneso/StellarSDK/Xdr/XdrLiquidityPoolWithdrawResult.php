@@ -48,8 +48,6 @@ class XdrLiquidityPoolWithdrawResult {
             case XdrLiquidityPoolWithdrawResultCode::UNDER_MINIMUM:
             case XdrLiquidityPoolWithdrawResultCode::TRUSTLINE_FROZEN:
                 break;
-            default:
-                break;
         }
         return $result;
     }

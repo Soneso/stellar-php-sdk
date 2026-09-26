@@ -36,7 +36,7 @@ class XdrTransactionV0Ext {
             case 0:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrTransactionV0Ext discriminant: " . $result->discriminant);
         }
         return $result;
     }

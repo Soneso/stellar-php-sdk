@@ -55,8 +55,6 @@ class XdrSorobanCredentialsBase {
             case XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
                 $result->addressWithDelegates = XdrSorobanAddressCredentialsWithDelegates::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

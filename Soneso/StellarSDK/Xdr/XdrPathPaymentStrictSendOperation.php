@@ -48,7 +48,7 @@ class XdrPathPaymentStrictSendOperation {
         $destAsset = XdrAsset::decode($xdr);
         $destMin = $xdr->readBigInteger64();
         $path = [];
-        $pathSize = $xdr->readInteger32();
+        $pathSize = $xdr->readArrayLength();
         for ($i = 0; $i < $pathSize; $i++) {
             $path[] = XdrAsset::decode($xdr);
         }

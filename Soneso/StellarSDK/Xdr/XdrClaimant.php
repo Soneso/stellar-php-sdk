@@ -37,8 +37,6 @@ class XdrClaimant {
             case XdrClaimantType::V0:
                 $result->v0 = XdrClaimantV0::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

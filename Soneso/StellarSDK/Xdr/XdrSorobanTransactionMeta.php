@@ -41,13 +41,13 @@ class XdrSorobanTransactionMeta {
     public static function decode(XdrBuffer $xdr): XdrSorobanTransactionMeta {
         $ext = XdrSorobanTransactionMetaExt::decode($xdr);
         $events = [];
-        $eventsSize = $xdr->readInteger32();
+        $eventsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $eventsSize; $i++) {
             $events[] = XdrContractEvent::decode($xdr);
         }
         $returnValue = XdrSCVal::decode($xdr);
         $diagnosticEvents = [];
-        $diagnosticEventsSize = $xdr->readInteger32();
+        $diagnosticEventsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $diagnosticEventsSize; $i++) {
             $diagnosticEvents[] = XdrDiagnosticEvent::decode($xdr);
         }

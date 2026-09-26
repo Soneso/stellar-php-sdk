@@ -36,7 +36,7 @@ class XdrCreateClaimableBalanceOperation {
         $asset = XdrAsset::decode($xdr);
         $amount = $xdr->readBigInteger64();
         $claimants = [];
-        $claimantsSize = $xdr->readInteger32();
+        $claimantsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $claimantsSize; $i++) {
             $claimants[] = XdrClaimant::decode($xdr);
         }

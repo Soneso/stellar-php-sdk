@@ -49,8 +49,6 @@ class XdrInvokeHostFunctionResult {
             case XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED:
             case XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
                 break;
-            default:
-                break;
         }
         return $result;
     }

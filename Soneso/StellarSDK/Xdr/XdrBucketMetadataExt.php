@@ -43,7 +43,7 @@ class XdrBucketMetadataExt {
                 $result->bucketListType = XdrBucketListType::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrBucketMetadataExt discriminant: " . $result->v);
         }
         return $result;
     }

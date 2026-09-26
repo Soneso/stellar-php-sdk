@@ -27,7 +27,7 @@ class XdrConfigUpgradeSet {
 
     public static function decode(XdrBuffer $xdr): XdrConfigUpgradeSet {
         $updatedEntry = [];
-        $updatedEntrySize = $xdr->readInteger32();
+        $updatedEntrySize = $xdr->readArrayLength();
         for ($i = 0; $i < $updatedEntrySize; $i++) {
             $updatedEntry[] = XdrConfigSettingEntry::decode($xdr);
         }

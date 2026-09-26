@@ -43,7 +43,7 @@ class XdrSorobanTransactionMetaExt {
                 $result->v1 = XdrSorobanTransactionMetaExtV1::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrSorobanTransactionMetaExt discriminant: " . $result->discriminant);
         }
         return $result;
     }

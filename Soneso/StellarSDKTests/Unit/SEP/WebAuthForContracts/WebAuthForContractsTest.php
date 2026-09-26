@@ -15,6 +15,7 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeRequestErrorResponse;
+use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationError;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidAccount;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidArgs;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidContractAddress;
@@ -1322,6 +1323,25 @@ class WebAuthForContractsTest extends TestCase
             [$clientSigner],
             $this->domain
         );
+    }
+
+    /**
+     * Test authorization entries decoding: an entry count the remaining bytes cannot hold is rejected
+     */
+    public function testDecodeAuthorizationEntriesRejectsCountBeyondRemainingBytes(): void
+    {
+        $webAuth = new WebAuthForContracts(
+            $this->authServer,
+            $this->webAuthContractId,
+            $this->serverAccountId,
+            $this->domain,
+            Network::testnet()
+        );
+
+        $this->expectException(ContractChallengeValidationError::class);
+        $this->expectExceptionMessage("Failed to decode authorization entries: XDR array count 1 exceeds the maximum of 0 for the 0 remaining bytes");
+
+        $webAuth->decodeAuthorizationEntries(base64_encode(pack('N', 1)));
     }
 
     /**

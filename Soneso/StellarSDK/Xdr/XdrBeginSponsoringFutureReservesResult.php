@@ -42,8 +42,6 @@ class XdrBeginSponsoringFutureReservesResult {
             case XdrBeginSponsoringFutureReservesResultCode::ALREADY_SPONSORED:
             case XdrBeginSponsoringFutureReservesResultCode::RECURSIVE:
                 break;
-            default:
-                break;
         }
         return $result;
     }

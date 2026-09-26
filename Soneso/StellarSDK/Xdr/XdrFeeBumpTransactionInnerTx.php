@@ -38,7 +38,7 @@ class XdrFeeBumpTransactionInnerTx {
                 $result->v1 = XdrTransactionV1Envelope::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrFeeBumpTransactionInnerTx discriminant: " . $result->type->getValue());
         }
         return $result;
     }

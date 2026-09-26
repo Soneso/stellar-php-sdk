@@ -48,8 +48,6 @@ class XdrContractExecutableBase {
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF:
                 $result->externalRef = XdrContractExecutableExternalRef::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

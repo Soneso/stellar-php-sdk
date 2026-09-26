@@ -31,7 +31,7 @@ class XdrLedgerSCPMessages {
     public static function decode(XdrBuffer $xdr): XdrLedgerSCPMessages {
         $ledgerSeq = $xdr->readUnsignedInteger32();
         $messages = [];
-        $messagesSize = $xdr->readInteger32();
+        $messagesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $messagesSize; $i++) {
             $messages[] = XdrSCPEnvelope::decode($xdr);
         }

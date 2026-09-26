@@ -34,12 +34,12 @@ class XdrFrozenLedgerKeysDelta {
 
     public static function decode(XdrBuffer $xdr): XdrFrozenLedgerKeysDelta {
         $keysToFreeze = [];
-        $keysToFreezeSize = $xdr->readInteger32();
+        $keysToFreezeSize = $xdr->readArrayLength();
         for ($i = 0; $i < $keysToFreezeSize; $i++) {
             $keysToFreeze[] = XdrEncodedLedgerKey::decode($xdr);
         }
         $keysToUnfreeze = [];
-        $keysToUnfreezeSize = $xdr->readInteger32();
+        $keysToUnfreezeSize = $xdr->readArrayLength();
         for ($i = 0; $i < $keysToUnfreezeSize; $i++) {
             $keysToUnfreeze[] = XdrEncodedLedgerKey::decode($xdr);
         }

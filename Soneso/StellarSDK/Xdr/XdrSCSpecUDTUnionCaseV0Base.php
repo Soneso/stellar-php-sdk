@@ -44,8 +44,6 @@ class XdrSCSpecUDTUnionCaseV0Base {
             case XdrSCSpecUDTUnionCaseV0Kind::SC_SPEC_UDT_UNION_CASE_TUPLE_V0:
                 $result->tupleCase = XdrSCSpecUDTUnionCaseTupleV0::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

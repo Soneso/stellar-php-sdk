@@ -38,8 +38,6 @@ class XdrClaimableBalanceIDBase {
             case XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0:
                 $result->hash = $xdr->readOpaqueFixed(32);
                 break;
-            default:
-                break;
         }
         return $result;
     }

@@ -30,7 +30,7 @@ class XdrContractEventBodyV0 {
 
     public static function decode(XdrBuffer $xdr): XdrContractEventBodyV0 {
         $topics = [];
-        $topicsSize = $xdr->readInteger32();
+        $topicsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $topicsSize; $i++) {
             $topics[] = XdrSCVal::decode($xdr);
         }

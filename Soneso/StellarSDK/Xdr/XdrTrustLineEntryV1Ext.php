@@ -43,7 +43,7 @@ class XdrTrustLineEntryV1Ext {
                 $result->v2 = XdrTrustLineEntryExtensionV2::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrTrustLineEntryV1Ext discriminant: " . $result->discriminant);
         }
         return $result;
     }

@@ -70,8 +70,6 @@ class XdrPathPaymentStrictReceiveResult {
             case XdrPathPaymentStrictReceiveResultCode::OFFER_CROSS_SELF:
             case XdrPathPaymentStrictReceiveResultCode::OVER_SENDMAX:
                 break;
-            default:
-                break;
         }
         return $result;
     }

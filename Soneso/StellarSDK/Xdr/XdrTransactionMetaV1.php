@@ -34,12 +34,12 @@ class XdrTransactionMetaV1 {
 
     public static function decode(XdrBuffer $xdr): XdrTransactionMetaV1 {
         $ledgerEntryChanges = [];
-        $ledgerEntryChangesSize = $xdr->readInteger32();
+        $ledgerEntryChangesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $ledgerEntryChangesSize; $i++) {
             $ledgerEntryChanges[] = XdrLedgerEntryChange::decode($xdr);
         }
         $operations = [];
-        $operationsSize = $xdr->readInteger32();
+        $operationsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $operationsSize; $i++) {
             $operations[] = XdrOperationMeta::decode($xdr);
         }

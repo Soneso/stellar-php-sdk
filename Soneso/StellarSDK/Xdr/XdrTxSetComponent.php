@@ -37,8 +37,6 @@ class XdrTxSetComponent {
             case XdrTxSetComponentType::TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE:
                 $result->txsMaybeDiscountedFee = XdrTxSetComponentTxsMaybeDiscountedFee::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

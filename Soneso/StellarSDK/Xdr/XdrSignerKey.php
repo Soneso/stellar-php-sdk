@@ -60,7 +60,7 @@ class XdrSignerKey {
                 $result->signedPayload = XdrSignedPayload::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrSignerKey discriminant: " . $result->type->getValue());
         }
         return $result;
     }

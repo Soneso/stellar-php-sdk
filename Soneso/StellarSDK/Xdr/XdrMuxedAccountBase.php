@@ -46,7 +46,7 @@ class XdrMuxedAccountBase {
                 $result->med25519 = XdrMuxedAccountMed25519::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrMuxedAccount discriminant: " . $result->type->getValue());
         }
         return $result;
     }

@@ -38,12 +38,12 @@ class XdrOperationMetaV2 {
     public static function decode(XdrBuffer $xdr): XdrOperationMetaV2 {
         $ext = XdrExtensionPoint::decode($xdr);
         $changes = [];
-        $changesSize = $xdr->readInteger32();
+        $changesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $changesSize; $i++) {
             $changes[] = XdrLedgerEntryChange::decode($xdr);
         }
         $events = [];
-        $eventsSize = $xdr->readInteger32();
+        $eventsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $eventsSize; $i++) {
             $events[] = XdrContractEvent::decode($xdr);
         }

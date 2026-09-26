@@ -38,7 +38,7 @@ class XdrStellarValue {
         $txSetHash = $xdr->readOpaqueFixed(32);
         $closeTime = $xdr->readUnsignedInteger64();
         $upgrades = [];
-        $upgradesSize = $xdr->readInteger32();
+        $upgradesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $upgradesSize; $i++) {
             $upgrades[] = XdrUpgradeType::decode($xdr);
         }

@@ -39,7 +39,7 @@ class XdrSCPHistoryEntry {
                 $result->v0 = XdrSCPHistoryEntryV0::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrSCPHistoryEntry discriminant: " . $result->v);
         }
         return $result;
     }

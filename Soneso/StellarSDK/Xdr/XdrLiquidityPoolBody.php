@@ -37,8 +37,6 @@ class XdrLiquidityPoolBody {
             case XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT:
                 $result->constantProduct = XdrConstantProduct::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

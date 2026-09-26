@@ -27,7 +27,7 @@ class XdrFrozenLedgerKeys {
 
     public static function decode(XdrBuffer $xdr): XdrFrozenLedgerKeys {
         $keys = [];
-        $keysSize = $xdr->readInteger32();
+        $keysSize = $xdr->readArrayLength();
         for ($i = 0; $i < $keysSize; $i++) {
             $keys[] = XdrEncodedLedgerKey::decode($xdr);
         }

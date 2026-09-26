@@ -219,8 +219,6 @@ class XdrOperationResultTrBase {
             case XdrOperationType::RESTORE_FOOTPRINT:
                 $result->restoreFootprintResult = XdrRestoreFootprintResult::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

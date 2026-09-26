@@ -31,7 +31,7 @@ class XdrTransactionSetV1 {
     public static function decode(XdrBuffer $xdr): XdrTransactionSetV1 {
         $previousLedgerHash = $xdr->readOpaqueFixed(32);
         $phases = [];
-        $phasesSize = $xdr->readInteger32();
+        $phasesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $phasesSize; $i++) {
             $phases[] = XdrTransactionPhase::decode($xdr);
         }

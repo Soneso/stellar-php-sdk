@@ -43,7 +43,7 @@ class XdrAccountEntryV2Ext {
                 $result->v3 = XdrAccountEntryV3::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrAccountEntryV2Ext discriminant: " . $result->discriminant);
         }
         return $result;
     }

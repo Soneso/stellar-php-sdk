@@ -46,8 +46,6 @@ class XdrSetTrustLineFlagsResult {
             case XdrSetTrustLineFlagsResultCode::INVALID_STATE:
             case XdrSetTrustLineFlagsResultCode::LOW_RESERVE:
                 break;
-            default:
-                break;
         }
         return $result;
     }
