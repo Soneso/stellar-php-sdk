@@ -43,8 +43,6 @@ class XdrManageOfferSuccessResultOffer {
                 break;
             case XdrManageOfferEffect::MANAGE_OFFER_DELETED:
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrManageOfferSuccessResultOffer discriminant: " . $result->effect->getValue());
         }
         return $result;
     }

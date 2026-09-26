@@ -48,8 +48,6 @@ class XdrPreconditions {
             case XdrPreconditionType::V2:
                 $result->v2 = XdrPreconditionsV2::decode($xdr);
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrPreconditions discriminant: " . $result->type->getValue());
         }
         return $result;
     }

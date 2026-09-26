@@ -51,8 +51,6 @@ class XdrClaimAtom {
             case XdrClaimAtomType::LIQUIDITY_POOL:
                 $result->liquidityPool = XdrClaimLiquidityAtom::decode($xdr);
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrClaimAtom discriminant: " . $result->type->getValue());
         }
         return $result;
     }

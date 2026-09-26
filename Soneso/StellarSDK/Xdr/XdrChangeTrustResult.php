@@ -52,8 +52,6 @@ class XdrChangeTrustResult {
             case XdrChangeTrustResultCode::CANNOT_DELETE:
             case XdrChangeTrustResultCode::NOT_AUTH_MAINTAIN_LIABILITIES:
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrChangeTrustResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

@@ -44,8 +44,6 @@ class XdrCreateAccountResult {
             case XdrCreateAccountResultCode::LOW_RESERVE:
             case XdrCreateAccountResultCode::ACCOUNT_ALREADY_EXIST:
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrCreateAccountResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

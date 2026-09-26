@@ -63,8 +63,6 @@ class XdrManageOfferResult {
             case XdrManageOfferResultCode::NOT_FOUND:
             case XdrManageOfferResultCode::LOW_RESERVE:
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrManageOfferResult discriminant: " . $result->code->getValue());
         }
         return $result;
     }

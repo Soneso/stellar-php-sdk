@@ -70,8 +70,6 @@ class XdrPathPaymentStrictSendResult {
             case XdrPathPaymentStrictSendResultCode::OFFER_CROSS_SELF:
             case XdrPathPaymentStrictSendResultCode::UNDER_DESTMIN:
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrPathPaymentStrictSendResult discriminant: " . $result->code->getValue());
         }
         return $result;
     }

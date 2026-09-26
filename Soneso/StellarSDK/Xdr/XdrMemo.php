@@ -62,8 +62,6 @@ class XdrMemo {
             case XdrMemoType::MEMO_RETURN:
                 $result->returnHash = $xdr->readOpaqueFixed(32);
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrMemo discriminant: " . $result->type->getValue());
         }
         return $result;
     }

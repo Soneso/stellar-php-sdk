@@ -56,8 +56,6 @@ class XdrSetOptionsResult {
             case XdrSetOptionsResultCode::INVALID_HOME_DOMAIN:
             case XdrSetOptionsResultCode::AUTH_REVOCABLE_REQUIRED:
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrSetOptionsResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

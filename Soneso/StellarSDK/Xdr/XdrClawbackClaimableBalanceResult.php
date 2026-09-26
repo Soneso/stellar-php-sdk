@@ -42,8 +42,6 @@ class XdrClawbackClaimableBalanceResult {
             case XdrClawbackClaimableBalanceResultCode::NOT_ISSUER:
             case XdrClawbackClaimableBalanceResultCode::NOT_CLAWBACK_ENABLED:
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrClawbackClaimableBalanceResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

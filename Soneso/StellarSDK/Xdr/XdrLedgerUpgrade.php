@@ -79,8 +79,6 @@ class XdrLedgerUpgrade {
             case XdrLedgerUpgradeType::LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE:
                 $result->newMaxSorobanTxSetSize = $xdr->readUnsignedInteger32();
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrLedgerUpgrade discriminant: " . $result->type->getValue());
         }
         return $result;
     }

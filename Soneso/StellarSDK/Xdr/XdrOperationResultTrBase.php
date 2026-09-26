@@ -219,8 +219,6 @@ class XdrOperationResultTrBase {
             case XdrOperationType::RESTORE_FOOTPRINT:
                 $result->restoreFootprintResult = XdrRestoreFootprintResult::decode($xdr);
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrOperationResultTr discriminant: " . $result->type->getValue());
         }
         return $result;
     }

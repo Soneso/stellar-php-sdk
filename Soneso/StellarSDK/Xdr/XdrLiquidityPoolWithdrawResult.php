@@ -48,8 +48,6 @@ class XdrLiquidityPoolWithdrawResult {
             case XdrLiquidityPoolWithdrawResultCode::UNDER_MINIMUM:
             case XdrLiquidityPoolWithdrawResultCode::TRUSTLINE_FROZEN:
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrLiquidityPoolWithdrawResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

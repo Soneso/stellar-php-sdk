@@ -49,8 +49,6 @@ class XdrCreateClaimableBalanceResult {
             case XdrCreateClaimableBalanceResultCode::NOT_AUTHORIZED:
             case XdrCreateClaimableBalanceResultCode::UNDERFUNDED:
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrCreateClaimableBalanceResult discriminant: " . $result->code->getValue());
         }
         return $result;
     }

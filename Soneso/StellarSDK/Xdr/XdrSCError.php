@@ -60,8 +60,6 @@ class XdrSCError {
             case XdrSCErrorType::SCE_AUTH:
                 $result->code = XdrSCErrorCode::decode($xdr);
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrSCError discriminant: " . $result->type->getValue());
         }
         return $result;
     }

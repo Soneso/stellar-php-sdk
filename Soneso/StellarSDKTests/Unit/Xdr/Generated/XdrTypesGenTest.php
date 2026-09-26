@@ -42,6 +42,17 @@ class XdrTypesGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrExtensionPoint');
     }
 
+    public function testXdrExtensionPointDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrExtensionPoint(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->discriminant, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(1) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrExtensionPoint discriminant: 1');
+        XdrExtensionPoint::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrExtensionPointUnionJsonRoundTrip(): void
     {
         $arm0 = new XdrExtensionPoint(0);
@@ -371,6 +382,17 @@ class XdrTypesGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSignerKey');
         $b64Decoded = XdrSignerKey::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSignerKey');
+    }
+
+    public function testXdrSignerKeyDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = (function() { $sk = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519)); $sk->ed25519 = str_repeat("\xAB", 32); return $sk; })();
+        $encoded = $original->encode();
+        $this->assertSame($original->type->getValue(), (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(256) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrSignerKey discriminant: 256');
+        XdrSignerKey::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrSignerKeyUnionJsonRoundTrip(): void

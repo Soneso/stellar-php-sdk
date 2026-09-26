@@ -215,8 +215,6 @@ class XdrSCValBase {
             case XdrSCValType::SCV_EXECUTABLE_TAG:
                 $result->executableTag = $xdr->readString();
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrSCVal discriminant: " . $result->type->getValue());
         }
         return $result;
     }

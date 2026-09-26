@@ -32,6 +32,17 @@ class XdrInternalGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrStoredTransactionSet');
     }
 
+    public function testXdrStoredTransactionSetDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = (function() { $u = new XdrStoredTransactionSet(0); $u->txSet = new XdrTransactionSet(str_repeat("\0", 32), []); return $u; })();
+        $encoded = $original->encode();
+        $this->assertSame($original->v, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(2) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrStoredTransactionSet discriminant: 2');
+        XdrStoredTransactionSet::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrStoredTransactionSetUnionJsonRoundTrip(): void
     {
         $arm0 = (function() { $u = new XdrStoredTransactionSet(0); $u->txSet = new XdrTransactionSet(str_repeat("\0", 32), []); return $u; })();
@@ -336,6 +347,17 @@ class XdrInternalGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrPersistedSCPState');
         $b64Decoded = XdrPersistedSCPState::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrPersistedSCPState');
+    }
+
+    public function testXdrPersistedSCPStateDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = (function() { $u = new XdrPersistedSCPState(0); $u->v0 = new XdrPersistedSCPStateV0([], [], []); return $u; })();
+        $encoded = $original->encode();
+        $this->assertSame($original->v, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(2) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrPersistedSCPState discriminant: 2');
+        XdrPersistedSCPState::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrPersistedSCPStateUnionJsonRoundTrip(): void

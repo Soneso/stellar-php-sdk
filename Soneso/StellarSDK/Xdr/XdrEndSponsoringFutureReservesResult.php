@@ -38,8 +38,6 @@ class XdrEndSponsoringFutureReservesResult {
                 break;
             case XdrEndSponsoringFutureReservesResultCode::NOT_SPONSORED:
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrEndSponsoringFutureReservesResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

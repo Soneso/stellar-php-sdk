@@ -38,8 +38,6 @@ class XdrBumpSequenceResult {
                 break;
             case XdrBumpSequenceResultCode::BAD_SEQ:
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrBumpSequenceResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

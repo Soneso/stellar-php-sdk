@@ -90,8 +90,6 @@ class XdrTransactionResultResult {
             case XdrTransactionResultCode::SOROBAN_INVALID:
             case XdrTransactionResultCode::FROZEN_KEY_ACCESSED:
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrTransactionResultResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

@@ -51,8 +51,6 @@ class XdrSorobanAuthorizedFunctionBase {
             case XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
                 $result->createContractV2HostFn = XdrCreateContractArgsV2::decode($xdr);
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrSorobanAuthorizedFunction discriminant: " . $result->type->getValue());
         }
         return $result;
     }

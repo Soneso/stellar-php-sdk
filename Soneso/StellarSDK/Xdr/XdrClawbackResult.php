@@ -44,8 +44,6 @@ class XdrClawbackResult {
             case XdrClawbackResultCode::NO_TRUST:
             case XdrClawbackResultCode::UNDERFUNDED:
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrClawbackResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

@@ -51,8 +51,6 @@ class XdrOperationResult {
             case XdrOperationResultCode::EXCEEDED_WORK_LIMIT:
             case XdrOperationResultCode::TOO_MANY_SPONSORING:
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrOperationResult discriminant: " . $result->resultCode->getValue());
         }
         return $result;
     }

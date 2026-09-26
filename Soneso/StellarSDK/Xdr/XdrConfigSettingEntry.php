@@ -185,8 +185,6 @@ class XdrConfigSettingEntry {
             case XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA:
                 $result->freezeBypassTxsDelta = XdrFreezeBypassTxsDelta::decode($xdr);
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrConfigSettingEntry discriminant: " . $result->configSettingID->getValue());
         }
         return $result;
     }

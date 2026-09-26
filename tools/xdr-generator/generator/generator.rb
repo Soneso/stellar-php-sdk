@@ -544,7 +544,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
 
     # decode()
-    render_union_decode(out, union_name, class_name, disc_info, arms, is_base)
+    render_union_decode(out, union, union_name, class_name, disc_info, arms, is_base)
     out.puts ""
 
     # Getters and setters for backward compatibility
@@ -628,7 +628,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
   end
 
-  def render_union_decode(out, union_name, class_name, disc_info, arms, is_base)
+  def render_union_decode(out, union, union_name, class_name, disc_info, arms, is_base)
     _, _, return_type, _ = resolve_class_info(union_name)
     decode_class = is_base ? "static" : union_name
     out.puts "    public static function decode(XdrBuffer $xdr): #{return_type} {"
@@ -667,7 +667,7 @@ class Generator < Xdrgen::Generators::Base
       end
     end
 
-    unless has_default
+    if !has_default && union_default_reachable?(union, disc_info)
       out.puts "            default:"
       out.puts "                throw new InvalidArgumentException(\"Unknown #{union_name} discriminant: \" . #{disc_value});"
     end
@@ -1266,6 +1266,22 @@ class Generator < Xdrgen::Generators::Base
     end
 
     { kind: :int, php_name: nil, enum_defn: nil, field_name: disc_field_name, xdr_name: xdr_disc_name }
+  end
+
+  # Whether decode() can reach a discriminant value that no case arm handles.
+  # An int discriminant can carry any value. An enum discriminant only carries
+  # values the enum decoder accepts (its members plus EXTRA_ENUM_VALUES), so
+  # the default is reachable only when one of those values has no arm.
+  def union_default_reachable?(union, disc_info)
+    return true if disc_info[:kind] == :int
+
+    enum_defn = disc_info[:enum_defn]
+    member_values = enum_defn.members.to_h { |m| [m.name.to_s, Integer(m.value)] }
+    covered = union.normal_arms.flat_map(&:cases).map do |c|
+      c.value.is_a?(AST::Identifier) ? member_values.fetch(c.value.name.to_s) : Integer(c.value.value)
+    end
+    accepted = member_values.values + (EXTRA_ENUM_VALUES[disc_info[:php_name]] || [])
+    !(accepted - covered).empty?
   end
 
   # ---------------------------------------------------------------------------

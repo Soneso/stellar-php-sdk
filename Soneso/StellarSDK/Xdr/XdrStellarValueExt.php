@@ -48,8 +48,6 @@ class XdrStellarValueExt {
             case XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET:
                 $result->proposedValue = XdrStellarValueProposedValue::decode($xdr);
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrStellarValueExt discriminant: " . $result->v->getValue());
         }
         return $result;
     }

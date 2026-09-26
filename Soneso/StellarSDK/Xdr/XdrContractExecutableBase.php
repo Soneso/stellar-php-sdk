@@ -48,8 +48,6 @@ class XdrContractExecutableBase {
             case XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF:
                 $result->externalRef = XdrContractExecutableExternalRef::decode($xdr);
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrContractExecutable discriminant: " . $result->type->getValue());
         }
         return $result;
     }

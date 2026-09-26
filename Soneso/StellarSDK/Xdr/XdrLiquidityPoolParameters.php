@@ -37,8 +37,6 @@ class XdrLiquidityPoolParameters {
             case XdrLiquidityPoolType::LIQUIDITY_POOL_CONSTANT_PRODUCT:
                 $result->constantProduct = XdrLiquidityPoolConstantProductParameters::decode($xdr);
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrLiquidityPoolParameters discriminant: " . $result->type->getValue());
         }
         return $result;
     }

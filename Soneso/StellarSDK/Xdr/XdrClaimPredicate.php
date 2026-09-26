@@ -92,8 +92,6 @@ class XdrClaimPredicate {
             case XdrClaimPredicateType::BEFORE_RELATIVE_TIME:
                 $result->relBefore = $xdr->readInteger64();
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrClaimPredicate discriminant: " . $result->type->getValue());
         }
         return $result;
     }

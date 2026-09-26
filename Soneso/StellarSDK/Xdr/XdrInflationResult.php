@@ -49,8 +49,6 @@ class XdrInflationResult {
                 break;
             case XdrInflationResultCode::NOT_TIME:
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrInflationResult discriminant: " . $result->code->getValue());
         }
         return $result;
     }

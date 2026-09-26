@@ -44,8 +44,6 @@ class XdrManageDataResult {
             case XdrManageDataResultCode::LOW_RESERVE:
             case XdrManageDataResultCode::INVALID_NAME:
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrManageDataResult discriminant: " . $result->code->getValue());
         }
         return $result;
     }

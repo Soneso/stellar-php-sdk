@@ -185,8 +185,6 @@ class XdrStellarMessage {
             case XdrMessageType::FLOOD_DEMAND:
                 $result->floodDemand = XdrFloodDemand::decode($xdr);
                 break;
-            default:
-                throw new InvalidArgumentException("Unknown XdrStellarMessage discriminant: " . $result->type->getValue());
         }
         return $result;
     }
