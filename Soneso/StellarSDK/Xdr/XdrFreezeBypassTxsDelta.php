@@ -34,12 +34,12 @@ class XdrFreezeBypassTxsDelta {
 
     public static function decode(XdrBuffer $xdr): XdrFreezeBypassTxsDelta {
         $addTxs = [];
-        $addTxsSize = $xdr->readInteger32();
+        $addTxsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $addTxsSize; $i++) {
             $addTxs[] = $xdr->readOpaqueFixed(32);
         }
         $removeTxs = [];
-        $removeTxsSize = $xdr->readInteger32();
+        $removeTxsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $removeTxsSize; $i++) {
             $removeTxs[] = $xdr->readOpaqueFixed(32);
         }

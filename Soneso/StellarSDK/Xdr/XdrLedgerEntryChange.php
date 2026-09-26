@@ -65,8 +65,6 @@ class XdrLedgerEntryChange {
             case XdrLedgerEntryChangeType::LEDGER_ENTRY_RESTORED:
                 $result->restored = XdrLedgerEntry::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

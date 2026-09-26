@@ -27,7 +27,7 @@ class XdrSorobanResourcesExtV0 {
 
     public static function decode(XdrBuffer $xdr): XdrSorobanResourcesExtV0 {
         $archivedSorobanEntries = [];
-        $archivedSorobanEntriesSize = $xdr->readInteger32();
+        $archivedSorobanEntriesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $archivedSorobanEntriesSize; $i++) {
             $archivedSorobanEntries[] = $xdr->readUnsignedInteger32();
         }

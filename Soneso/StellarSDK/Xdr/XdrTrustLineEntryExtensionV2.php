@@ -25,7 +25,7 @@ class XdrTrustLineEntryExtensionV2 {
 
     public static function decode(XdrBuffer $xdr): XdrTrustLineEntryExtensionV2 {
         $liquidityPoolUseCount = $xdr->readInteger32();
-        $xdr->readInteger32(); // extension point
+        $xdr->readExtensionPoint('XdrTrustLineEntryExtensionV2');
         return new XdrTrustLineEntryExtensionV2($liquidityPoolUseCount);
     }
 

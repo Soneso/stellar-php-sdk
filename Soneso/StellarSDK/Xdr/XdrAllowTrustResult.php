@@ -48,8 +48,6 @@ class XdrAllowTrustResult {
             case XdrAllowTrustResultCode::SELF_NOT_ALLOWED:
             case XdrAllowTrustResultCode::LOW_RESERVE:
                 break;
-            default:
-                break;
         }
         return $result;
     }

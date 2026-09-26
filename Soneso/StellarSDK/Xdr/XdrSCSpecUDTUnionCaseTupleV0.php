@@ -35,7 +35,7 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
         $doc = $xdr->readString();
         $name = $xdr->readString();
         $type = [];
-        $typeSize = $xdr->readInteger32();
+        $typeSize = $xdr->readArrayLength();
         for ($i = 0; $i < $typeSize; $i++) {
             $type[] = XdrSCSpecTypeDef::decode($xdr);
         }

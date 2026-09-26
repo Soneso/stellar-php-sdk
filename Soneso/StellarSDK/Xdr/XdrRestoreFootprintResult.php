@@ -42,8 +42,6 @@ class XdrRestoreFootprintResult {
             case XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
             case XdrRestoreFootprintResultCode::RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
                 break;
-            default:
-                break;
         }
         return $result;
     }

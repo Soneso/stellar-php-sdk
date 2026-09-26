@@ -27,7 +27,7 @@ class XdrSCSpecTypeTuple {
 
     public static function decode(XdrBuffer $xdr): XdrSCSpecTypeTuple {
         $valueTypes = [];
-        $valueTypesSize = $xdr->readInteger32();
+        $valueTypesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $valueTypesSize; $i++) {
             $valueTypes[] = XdrSCSpecTypeDef::decode($xdr);
         }

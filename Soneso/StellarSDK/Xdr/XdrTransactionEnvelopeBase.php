@@ -52,7 +52,7 @@ class XdrTransactionEnvelopeBase {
                 $result->feeBump = XdrFeeBumpTransactionEnvelope::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrTransactionEnvelope discriminant: " . $result->type->getValue());
         }
         return $result;
     }

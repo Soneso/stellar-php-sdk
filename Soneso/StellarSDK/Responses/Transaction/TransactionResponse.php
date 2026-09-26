@@ -431,7 +431,7 @@ class TransactionResponse extends Response
             }
             $xdrBuffer = new XdrBuffer($xdr);
             $this->feeMetaXdr = array();
-            $valCount = $xdrBuffer->readInteger32();
+            $valCount = $xdrBuffer->readArrayLength();
             for ($i = 0; $i < $valCount; $i++) {
                 array_push($this->feeMetaXdr, XdrLedgerEntryChange::decode($xdrBuffer));
             }

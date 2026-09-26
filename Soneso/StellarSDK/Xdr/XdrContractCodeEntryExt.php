@@ -43,7 +43,7 @@ class XdrContractCodeEntryExt {
                 $result->v1 = XdrContractCodeEntryV1::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrContractCodeEntryExt discriminant: " . $result->v);
         }
         return $result;
     }

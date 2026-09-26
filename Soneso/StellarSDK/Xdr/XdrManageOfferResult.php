@@ -63,8 +63,6 @@ class XdrManageOfferResult {
             case XdrManageOfferResultCode::NOT_FOUND:
             case XdrManageOfferResultCode::LOW_RESERVE:
                 break;
-            default:
-                break;
         }
         return $result;
     }

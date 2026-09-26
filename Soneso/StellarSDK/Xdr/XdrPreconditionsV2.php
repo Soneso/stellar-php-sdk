@@ -71,7 +71,7 @@ class XdrPreconditionsV2 {
         $minSeqAge = $xdr->readUnsignedInteger64();
         $minSeqLedgerGap = $xdr->readUnsignedInteger32();
         $extraSigners = [];
-        $extraSignersSize = $xdr->readInteger32();
+        $extraSignersSize = $xdr->readArrayLength();
         for ($i = 0; $i < $extraSignersSize; $i++) {
             $extraSigners[] = XdrSignerKey::decode($xdr);
         }

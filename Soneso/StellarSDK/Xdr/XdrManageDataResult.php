@@ -44,8 +44,6 @@ class XdrManageDataResult {
             case XdrManageDataResultCode::LOW_RESERVE:
             case XdrManageDataResultCode::INVALID_NAME:
                 break;
-            default:
-                break;
         }
         return $result;
     }

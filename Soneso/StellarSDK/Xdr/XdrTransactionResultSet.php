@@ -27,7 +27,7 @@ class XdrTransactionResultSet {
 
     public static function decode(XdrBuffer $xdr): XdrTransactionResultSet {
         $results = [];
-        $resultsSize = $xdr->readInteger32();
+        $resultsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $resultsSize; $i++) {
             $results[] = XdrTransactionResultPair::decode($xdr);
         }

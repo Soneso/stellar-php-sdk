@@ -58,8 +58,6 @@ class XdrSCPStatementPledges {
             case XdrSCPStatementType::SCP_ST_NOMINATE:
                 $result->nominate = XdrSCPNomination::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

@@ -71,7 +71,7 @@ class XdrAccountEntry {
         $homeDomain = $xdr->readString();
         $thresholds = $xdr->readOpaqueFixed(4);
         $signers = [];
-        $signersSize = $xdr->readInteger32();
+        $signersSize = $xdr->readArrayLength();
         for ($i = 0; $i < $signersSize; $i++) {
             $signers[] = XdrSigner::decode($xdr);
         }

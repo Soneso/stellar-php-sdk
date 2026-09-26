@@ -42,8 +42,6 @@ class XdrClawbackClaimableBalanceResult {
             case XdrClawbackClaimableBalanceResultCode::NOT_ISSUER:
             case XdrClawbackClaimableBalanceResultCode::NOT_CLAWBACK_ENABLED:
                 break;
-            default:
-                break;
         }
         return $result;
     }

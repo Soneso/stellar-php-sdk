@@ -36,7 +36,7 @@ class XdrDataEntryExt {
             case 0:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrDataEntryExt discriminant: " . $result->discriminant);
         }
         return $result;
     }

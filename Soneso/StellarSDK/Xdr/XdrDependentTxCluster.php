@@ -28,7 +28,7 @@ class XdrDependentTxCluster {
 
     public static function decode(XdrBuffer $xdr): XdrDependentTxCluster {
         $dependentTxCluster = [];
-        $size = $xdr->readInteger32();
+        $size = $xdr->readArrayLength();
         for ($i = 0; $i < $size; $i++) {
             $dependentTxCluster[] = XdrTransactionEnvelope::decode($xdr);
         }

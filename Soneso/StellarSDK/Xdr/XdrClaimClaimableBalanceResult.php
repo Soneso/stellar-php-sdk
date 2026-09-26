@@ -48,8 +48,6 @@ class XdrClaimClaimableBalanceResult {
             case XdrClaimClaimableBalanceResultCode::NOT_AUTHORIZED:
             case XdrClaimClaimableBalanceResultCode::TRUSTLINE_FROZEN:
                 break;
-            default:
-                break;
         }
         return $result;
     }

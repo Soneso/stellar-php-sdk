@@ -31,7 +31,7 @@ class XdrFeeBumpTransactionEnvelope {
     public static function decode(XdrBuffer $xdr): XdrFeeBumpTransactionEnvelope {
         $tx = XdrFeeBumpTransaction::decode($xdr);
         $signatures = [];
-        $signaturesSize = $xdr->readInteger32();
+        $signaturesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $signaturesSize; $i++) {
             $signatures[] = XdrDecoratedSignature::decode($xdr);
         }

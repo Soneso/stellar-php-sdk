@@ -304,6 +304,17 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrMuxedAccount');
     }
 
+    public function testXdrMuxedAccountDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrMuxedAccount(str_repeat("\xAB", 32));
+        $encoded = $original->encode();
+        $this->assertSame($original->type->getValue(), (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(1) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrMuxedAccount discriminant: 1');
+        XdrMuxedAccountBase::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrMuxedAccountUnionJsonRoundTrip(): void
     {
         $arm0 = new XdrMuxedAccount(str_repeat("\xAB", 32));
@@ -4834,6 +4845,17 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed');
     }
 
+    public function testXdrHashIDPreimageDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = (function() { $u = new XdrHashIDPreimage(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_OP_ID)); $u->operationID = new XdrHashIDPreimageOperationID(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSequenceNumber(new BigInteger('123456789')), 42); return $u; })();
+        $encoded = $original->encode();
+        $this->assertSame($original->type->getValue(), (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(0) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrHashIDPreimage discriminant: 0');
+        XdrHashIDPreimage::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrHashIDPreimageUnionJsonRoundTrip(): void
     {
         $arm0 = (function() { $u = new XdrHashIDPreimage(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_OP_ID)); $u->operationID = new XdrHashIDPreimageOperationID(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new XdrSequenceNumber(new BigInteger('123456789')), 42); return $u; })();
@@ -6353,6 +6375,17 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSorobanTransactionDataExt');
     }
 
+    public function testXdrSorobanTransactionDataExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrSorobanTransactionDataExt(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->discriminant, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(2) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrSorobanTransactionDataExt discriminant: 2');
+        XdrSorobanTransactionDataExt::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrSorobanTransactionDataExtUnionJsonRoundTrip(): void
     {
         $arm0 = new XdrSorobanTransactionDataExt(0);
@@ -6546,6 +6579,17 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrTransactionV0Ext::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->discriminant, $decoded->discriminant);
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrTransactionV0ExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrTransactionV0Ext(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->discriminant, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(1) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrTransactionV0Ext discriminant: 1');
+        XdrTransactionV0Ext::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrTransactionV0ExtUnionJsonRoundTrip(): void
@@ -6753,6 +6797,17 @@ class XdrTransactionGenTest extends TestCase
         $decoded = XdrTransactionExt::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->discriminant, $decoded->discriminant);
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrTransactionExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrTransactionExt(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->discriminant, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(2) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrTransactionExt discriminant: 2');
+        XdrTransactionExt::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrTransactionExtUnionJsonRoundTrip(): void
@@ -6994,6 +7049,17 @@ class XdrTransactionGenTest extends TestCase
         }
     }
 
+    public function testXdrFeeBumpTransactionInnerTxDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = (function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $i = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $i->v1 = new XdrTransactionV1Envelope($tx, []); return $i; })();
+        $encoded = $original->encode();
+        $this->assertSame($original->type->getValue(), (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(0) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrFeeBumpTransactionInnerTx discriminant: 0');
+        XdrFeeBumpTransactionInnerTx::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrFeeBumpTransactionExtUnionRoundTrip(): void
     {
         $original = new XdrFeeBumpTransactionExt(0);
@@ -7002,6 +7068,17 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrFeeBumpTransactionExt');
         $b64Decoded = XdrFeeBumpTransactionExt::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrFeeBumpTransactionExt');
+    }
+
+    public function testXdrFeeBumpTransactionExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrFeeBumpTransactionExt(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->discriminant, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(1) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrFeeBumpTransactionExt discriminant: 1');
+        XdrFeeBumpTransactionExt::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrFeeBumpTransactionExtUnionJsonRoundTrip(): void
@@ -7199,6 +7276,17 @@ class XdrTransactionGenTest extends TestCase
         }
     }
 
+    public function testXdrTransactionEnvelopeDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = (function() { $u = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0)); $u->v0 = new XdrTransactionV0Envelope(new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []), []); return $u; })();
+        $encoded = $original->encode();
+        $this->assertSame($original->type->getValue(), (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(1) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrTransactionEnvelope discriminant: 1');
+        XdrTransactionEnvelopeBase::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrTransactionSignaturePayloadStructJsonRoundTrip(): void
     {
         $original = (function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $t = new XdrTransactionSignaturePayloadTaggedTransaction(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $t->tx = $tx; return new XdrTransactionSignaturePayload(str_repeat("\0", 32), $t); })();
@@ -7321,6 +7409,17 @@ class XdrTransactionGenTest extends TestCase
                 }
             }
         }
+    }
+
+    public function testXdrTransactionSignaturePayloadTaggedTransactionDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = (function() { $tx = new XdrTransaction(new XdrMuxedAccount(str_repeat("\xAB", 32)), new XdrSequenceNumber(new BigInteger('123456789')), [], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0)); $t = new XdrTransactionSignaturePayloadTaggedTransaction(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX)); $t->tx = $tx; return $t; })();
+        $encoded = $original->encode();
+        $this->assertSame($original->type->getValue(), (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(0) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrTransactionSignaturePayloadTaggedTransaction discriminant: 0');
+        XdrTransactionSignaturePayloadTaggedTransaction::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrClaimAtomTypeEnumRoundTrip(): void
@@ -13458,6 +13557,17 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrInnerTransactionResultResult');
     }
 
+    public function testXdrInnerTransactionResultResultDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY));
+        $encoded = $original->encode();
+        $this->assertSame($original->resultCode->getValue(), (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(1) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrInnerTransactionResultResult discriminant: 1');
+        XdrInnerTransactionResultResult::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrInnerTransactionResultResultUnionJsonRoundTrip(): void
     {
         $arm0 = new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY));
@@ -13674,6 +13784,17 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTransactionResultExt');
         $b64Decoded = XdrTransactionResultExt::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrTransactionResultExt');
+    }
+
+    public function testXdrTransactionResultExtDecodeUnknownDiscriminantThrows(): void
+    {
+        $original = new XdrTransactionResultExt(0);
+        $encoded = $original->encode();
+        $this->assertSame($original->discriminant, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());
+        $patched = XdrEncoder::integer32(1) . substr($encoded, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrTransactionResultExt discriminant: 1');
+        XdrTransactionResultExt::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrTransactionResultExtUnionJsonRoundTrip(): void

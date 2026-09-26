@@ -39,7 +39,7 @@ class XdrSCSpecUDTStructV0 {
         $lib = $xdr->readString();
         $name = $xdr->readString();
         $fields = [];
-        $fieldsSize = $xdr->readInteger32();
+        $fieldsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $fieldsSize; $i++) {
             $fields[] = XdrSCSpecUDTStructFieldV0::decode($xdr);
         }

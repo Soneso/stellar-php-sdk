@@ -31,7 +31,7 @@ class XdrInvokeHostFunctionSuccessPreImage {
     public static function decode(XdrBuffer $xdr): XdrInvokeHostFunctionSuccessPreImage {
         $returnValue = XdrSCVal::decode($xdr);
         $events = [];
-        $eventsSize = $xdr->readInteger32();
+        $eventsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $eventsSize; $i++) {
             $events[] = XdrContractEvent::decode($xdr);
         }

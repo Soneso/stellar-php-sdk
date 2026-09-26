@@ -38,8 +38,6 @@ class XdrBumpSequenceResult {
                 break;
             case XdrBumpSequenceResultCode::BAD_SEQ:
                 break;
-            default:
-                break;
         }
         return $result;
     }

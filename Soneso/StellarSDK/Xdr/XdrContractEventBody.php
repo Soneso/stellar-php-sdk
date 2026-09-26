@@ -39,7 +39,7 @@ class XdrContractEventBody {
                 $result->v0 = XdrContractEventBodyV0::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrContractEventBody discriminant: " . $result->v);
         }
         return $result;
     }

@@ -37,8 +37,6 @@ class XdrSCMetaEntry {
             case XdrSCMetaKind::SC_META_V0:
                 $result->v0 = XdrSCMetaV0::decode($xdr);
                 break;
-            default:
-                break;
         }
         return $result;
     }

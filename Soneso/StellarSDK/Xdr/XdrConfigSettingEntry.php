@@ -156,7 +156,7 @@ class XdrConfigSettingEntry {
                 break;
             case XdrConfigSettingID::CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW:
                 $result->liveSorobanStateSizeWindow = [];
-                $liveSorobanStateSizeWindowSize = $xdr->readInteger32();
+                $liveSorobanStateSizeWindowSize = $xdr->readArrayLength();
                 for ($i = 0; $i < $liveSorobanStateSizeWindowSize; $i++) {
                     $result->liveSorobanStateSizeWindow[] = $xdr->readUnsignedInteger64();
                 }
@@ -184,8 +184,6 @@ class XdrConfigSettingEntry {
                 break;
             case XdrConfigSettingID::CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA:
                 $result->freezeBypassTxsDelta = XdrFreezeBypassTxsDelta::decode($xdr);
-                break;
-            default:
                 break;
         }
         return $result;

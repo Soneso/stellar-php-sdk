@@ -36,7 +36,7 @@ class XdrOfferEntryExt {
             case 0:
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrOfferEntryExt discriminant: " . $result->discriminant);
         }
         return $result;
     }

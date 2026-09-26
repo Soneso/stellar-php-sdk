@@ -66,7 +66,7 @@ class XdrHashIDPreimage {
                 $result->sorobanAuthorizationWithAddress = XdrHashIDPreimageSorobanAuthorizationWithAddress::decode($xdr);
                 break;
             default:
-                break;
+                throw new InvalidArgumentException("Unknown XdrHashIDPreimage discriminant: " . $result->type->getValue());
         }
         return $result;
     }

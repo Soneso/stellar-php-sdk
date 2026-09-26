@@ -50,7 +50,7 @@ class XdrTransactionBase {
         $preconditions = XdrPreconditions::decode($xdr);
         $memo = XdrMemo::decode($xdr);
         $operations = [];
-        $operationsSize = $xdr->readInteger32();
+        $operationsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $operationsSize; $i++) {
             $operations[] = XdrOperation::decode($xdr);
         }

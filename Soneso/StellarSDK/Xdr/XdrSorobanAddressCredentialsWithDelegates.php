@@ -31,7 +31,7 @@ class XdrSorobanAddressCredentialsWithDelegates {
     public static function decode(XdrBuffer $xdr): XdrSorobanAddressCredentialsWithDelegates {
         $addressCredentials = XdrSorobanAddressCredentials::decode($xdr);
         $delegates = [];
-        $delegatesSize = $xdr->readInteger32();
+        $delegatesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $delegatesSize; $i++) {
             $delegates[] = XdrSorobanDelegateSignature::decode($xdr);
         }

@@ -38,8 +38,6 @@ class XdrEndSponsoringFutureReservesResult {
                 break;
             case XdrEndSponsoringFutureReservesResultCode::NOT_SPONSORED:
                 break;
-            default:
-                break;
         }
         return $result;
     }

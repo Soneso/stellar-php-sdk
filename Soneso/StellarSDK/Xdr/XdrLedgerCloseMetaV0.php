@@ -49,17 +49,17 @@ class XdrLedgerCloseMetaV0 {
         $ledgerHeader = XdrLedgerHeaderHistoryEntry::decode($xdr);
         $txSet = XdrTransactionSet::decode($xdr);
         $txProcessing = [];
-        $txProcessingSize = $xdr->readInteger32();
+        $txProcessingSize = $xdr->readArrayLength();
         for ($i = 0; $i < $txProcessingSize; $i++) {
             $txProcessing[] = XdrTransactionResultMeta::decode($xdr);
         }
         $upgradesProcessing = [];
-        $upgradesProcessingSize = $xdr->readInteger32();
+        $upgradesProcessingSize = $xdr->readArrayLength();
         for ($i = 0; $i < $upgradesProcessingSize; $i++) {
             $upgradesProcessing[] = XdrUpgradeEntryMeta::decode($xdr);
         }
         $scpInfo = [];
-        $scpInfoSize = $xdr->readInteger32();
+        $scpInfoSize = $xdr->readArrayLength();
         for ($i = 0; $i < $scpInfoSize; $i++) {
             $scpInfo[] = XdrSCPHistoryEntry::decode($xdr);
         }

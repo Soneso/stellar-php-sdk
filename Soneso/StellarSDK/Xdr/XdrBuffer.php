@@ -188,6 +188,61 @@ class XdrBuffer
     }
     
     /**
+     * Reads the element count of a variable-length XDR array and validates it against the
+     * remaining bytes before the caller decodes any element.
+     *
+     * Every XDR array element occupies at least 4 bytes (scalars, enum and union discriminants,
+     * optional flags and length prefixes are 4 bytes; fixed opaque data is padded to 4), so a
+     * count above a quarter of the remaining bytes cannot be satisfied by the buffer. The count
+     * is read as a signed int32, so a value with the high bit set is negative on 32-bit and
+     * 64-bit PHP alike and is rejected as negative.
+     *
+     * @return int the element count, between 0 and a quarter of the remaining bytes (inclusive)
+     * @throws InvalidArgumentException if the count is negative, exceeds a quarter of the remaining
+     *                                  bytes or fewer than 4 bytes remain
+     */
+    public function readArrayLength() : int
+    {
+        $count = $this->readInteger32();
+        if ($count < 0) {
+            throw new InvalidArgumentException(sprintf('XDR array count cannot be negative, got %d', $count));
+        }
+        $remaining = $this->size - $this->position;
+        $maxCount = intdiv($remaining, 4);
+        if ($count > $maxCount) {
+            throw new InvalidArgumentException(sprintf(
+                'XDR array count %d exceeds the maximum of %d for the %d remaining bytes',
+                $count,
+                $maxCount,
+                $remaining
+            ));
+        }
+
+        return $count;
+    }
+
+    /**
+     * Reads a void-only extension point that the SDK stores as a plain integer field.
+     *
+     * The XDR union behind such a field has a single arm, `case 0: void`, so any other
+     * discriminant is not decodable.
+     *
+     * @param string $typeName name of the type that holds the extension point, used in the error message
+     * @throws InvalidArgumentException if the discriminant is not 0 or fewer than 4 bytes remain
+     */
+    public function readExtensionPoint(string $typeName) : void
+    {
+        $discriminant = $this->readInteger32();
+        if ($discriminant !== 0) {
+            throw new InvalidArgumentException(sprintf(
+                '%s extension point must be 0, got %d',
+                $typeName,
+                $discriminant
+            ));
+        }
+    }
+
+    /**
      * @return bool
      */
     public function readBoolean() : bool

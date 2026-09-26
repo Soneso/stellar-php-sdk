@@ -45,13 +45,13 @@ class XdrTransactionResultMetaV1 {
         $ext = XdrExtensionPoint::decode($xdr);
         $result = XdrTransactionResultPair::decode($xdr);
         $feeProcessing = [];
-        $feeProcessingSize = $xdr->readInteger32();
+        $feeProcessingSize = $xdr->readArrayLength();
         for ($i = 0; $i < $feeProcessingSize; $i++) {
             $feeProcessing[] = XdrLedgerEntryChange::decode($xdr);
         }
         $txApplyProcessing = XdrTransactionMeta::decode($xdr);
         $postTxApplyFeeProcessing = [];
-        $postTxApplyFeeProcessingSize = $xdr->readInteger32();
+        $postTxApplyFeeProcessingSize = $xdr->readArrayLength();
         for ($i = 0; $i < $postTxApplyFeeProcessingSize; $i++) {
             $postTxApplyFeeProcessing[] = XdrLedgerEntryChange::decode($xdr);
         }

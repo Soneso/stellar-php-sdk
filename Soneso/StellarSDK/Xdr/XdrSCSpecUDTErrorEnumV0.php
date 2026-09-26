@@ -39,7 +39,7 @@ class XdrSCSpecUDTErrorEnumV0 {
         $lib = $xdr->readString();
         $name = $xdr->readString();
         $cases = [];
-        $casesSize = $xdr->readInteger32();
+        $casesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $casesSize; $i++) {
             $cases[] = XdrSCSpecUDTErrorEnumCaseV0::decode($xdr);
         }

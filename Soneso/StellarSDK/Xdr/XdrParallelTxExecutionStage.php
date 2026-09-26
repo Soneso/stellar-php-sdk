@@ -28,7 +28,7 @@ class XdrParallelTxExecutionStage {
 
     public static function decode(XdrBuffer $xdr): XdrParallelTxExecutionStage {
         $parallelTxExecutionStage = [];
-        $size = $xdr->readInteger32();
+        $size = $xdr->readArrayLength();
         for ($i = 0; $i < $size; $i++) {
             $parallelTxExecutionStage[] = XdrDependentTxCluster::decode($xdr);
         }

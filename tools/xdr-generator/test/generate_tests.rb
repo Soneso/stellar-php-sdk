@@ -822,6 +822,12 @@ def generate_test_file(source, definitions, output_dir)
     if $json_only_names.include?(php_name)
       json_only = generate_json_only_tests(php_name, defn)
       tests.concat(json_only) if json_only
+      # One encodable instance is enough to exercise the decoder's rejection of
+      # a discriminant without a matching arm.
+      if defn.is_a?(AST::Definitions::Union)
+        unknown_disc_test = generate_union_unknown_discriminant_test(php_name, defn)
+        tests << unknown_disc_test if unknown_disc_test
+      end
       next
     end
 
@@ -874,6 +880,9 @@ def generate_test_file(source, definitions, output_dir)
     when AST::Definitions::Union
       union_tests = generate_union_tests(php_name, defn)
       tests.concat(union_tests) if union_tests
+      # Discriminant without a matching arm
+      unknown_disc_test = generate_union_unknown_discriminant_test(php_name, defn)
+      tests << unknown_disc_test if unknown_disc_test
       # JSON (SEP-51) per-arm round-trip
       union_json_test = generate_union_json_test(php_name, defn)
       tests << union_json_test if union_json_test
@@ -1416,6 +1425,70 @@ def generate_union_tests(php_name, union_defn)
   end
 
   tests.empty? ? nil : tests
+end
+
+# ---------------------------------------------------------------------------
+# Union decode of a discriminant without a matching arm
+#
+# The generator emits a throwing default arm for every union whose decoder can
+# read a discriminant that no case handles: any int discriminant, and an enum
+# discriminant when one of the values the enum decoder accepts (its members
+# plus EXTRA_ENUM_VALUES) has no arm. The test encodes a valid instance,
+# replaces its leading discriminant word with such a value and expects the
+# decoder of the generated class to reject it.
+# ---------------------------------------------------------------------------
+
+# The discriminant value without a matching arm, or nil when every value the
+# decoder can read has an arm (the generated union then has no default arm).
+def unhandled_discriminant_value(union_defn, disc_info)
+  if disc_info[:kind] == :enum
+    member_values = disc_info[:enum_defn].members.map { |m| [m.name.to_s, Integer(m.value)] }.to_h
+    covered = union_defn.normal_arms.flat_map(&:cases).map do |c|
+      c.value.is_a?(AST::Identifier) ? member_values.fetch(c.value.name.to_s) : Integer(c.value.value)
+    end
+    accepted = member_values.values + (EXTRA_ENUM_VALUES[disc_info[:php_name]] || [])
+    (accepted - covered).first
+  else
+    covered = union_defn.normal_arms.flat_map(&:cases).map do |c|
+      raise "int discriminant case #{c.value.name} of #{name(union_defn)} is not a literal" if c.value.is_a?(AST::Identifier)
+      Integer(c.value.value)
+    end
+    covered.max + 1
+  end
+end
+
+def generate_union_unknown_discriminant_test(php_name, union_defn)
+  return nil if union_defn.default_arm.present?
+
+  disc_info = resolve_discriminant_info_test(union_defn, php_name)
+  unhandled = unhandled_discriminant_value(union_defn, disc_info)
+  return nil if unhandled.nil?
+
+  value_expr = generate_union_value(php_name, union_defn, 1)
+  unless value_expr
+    puts "  SKIP unknown discriminant test for #{php_name}: no constructible value"
+    return nil
+  end
+
+  decode_class = union_construct_class(php_name)
+  disc_read = disc_info[:kind] == :enum ? "$original->#{disc_info[:field_name]}->getValue()" : "$original->#{disc_info[:field_name]}"
+
+  imports = collect_imports_from_expr(value_expr)
+  imports.add(decode_class)
+
+  lines = []
+  lines << "    public function test#{php_name}DecodeUnknownDiscriminantThrows(): void"
+  lines << "    {"
+  lines << "        $original = #{value_expr};"
+  lines << "        $encoded = $original->encode();"
+  lines << "        $this->assertSame(#{disc_read}, (new XdrBuffer(substr($encoded, 0, 4)))->readInteger32());"
+  lines << "        $patched = XdrEncoder::integer32(#{unhandled}) . substr($encoded, 4);"
+  lines << "        $this->expectException(\\InvalidArgumentException::class);"
+  lines << "        $this->expectExceptionMessage('Unknown #{php_name} discriminant: #{unhandled}');"
+  lines << "        #{decode_class}::fromBase64Xdr(base64_encode($patched));"
+  lines << "    }"
+
+  { lines: lines, imports: imports }
 end
 
 # ---------------------------------------------------------------------------

@@ -28,7 +28,7 @@ class XdrTxDemandVector {
 
     public static function decode(XdrBuffer $xdr): XdrTxDemandVector {
         $txDemandVector = [];
-        $size = $xdr->readInteger32();
+        $size = $xdr->readArrayLength();
         for ($i = 0; $i < $size; $i++) {
             $txDemandVector[] = $xdr->readString();
         }

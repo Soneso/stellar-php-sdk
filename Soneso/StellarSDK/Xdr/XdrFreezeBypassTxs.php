@@ -27,7 +27,7 @@ class XdrFreezeBypassTxs {
 
     public static function decode(XdrBuffer $xdr): XdrFreezeBypassTxs {
         $txHashes = [];
-        $txHashesSize = $xdr->readInteger32();
+        $txHashesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $txHashesSize; $i++) {
             $txHashes[] = $xdr->readOpaqueFixed(32);
         }

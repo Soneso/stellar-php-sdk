@@ -54,8 +54,6 @@ class XdrAccountMergeResult {
             case XdrAccountMergeResultCode::DEST_FULL:
             case XdrAccountMergeResultCode::IS_SPONSOR:
                 break;
-            default:
-                break;
         }
         return $result;
     }

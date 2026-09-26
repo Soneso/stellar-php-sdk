@@ -44,8 +44,6 @@ class XdrCreateAccountResult {
             case XdrCreateAccountResultCode::LOW_RESERVE:
             case XdrCreateAccountResultCode::ACCOUNT_ALREADY_EXIST:
                 break;
-            default:
-                break;
         }
         return $result;
     }

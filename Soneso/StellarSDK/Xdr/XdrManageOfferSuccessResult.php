@@ -30,7 +30,7 @@ class XdrManageOfferSuccessResult {
 
     public static function decode(XdrBuffer $xdr): XdrManageOfferSuccessResult {
         $offersClaimed = [];
-        $offersClaimedSize = $xdr->readInteger32();
+        $offersClaimedSize = $xdr->readArrayLength();
         for ($i = 0; $i < $offersClaimedSize; $i++) {
             $offersClaimed[] = XdrClaimAtom::decode($xdr);
         }

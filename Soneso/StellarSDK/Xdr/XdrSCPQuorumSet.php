@@ -38,12 +38,12 @@ class XdrSCPQuorumSet {
     public static function decode(XdrBuffer $xdr): XdrSCPQuorumSet {
         $threshold = $xdr->readUnsignedInteger32();
         $validators = [];
-        $validatorsSize = $xdr->readInteger32();
+        $validatorsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $validatorsSize; $i++) {
             $validators[] = XdrNodeID::decode($xdr);
         }
         $innerSets = [];
-        $innerSetsSize = $xdr->readInteger32();
+        $innerSetsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $innerSetsSize; $i++) {
             $innerSets[] = XdrSCPQuorumSet::decode($xdr);
         }

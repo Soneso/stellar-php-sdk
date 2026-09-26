@@ -44,8 +44,6 @@ class XdrClawbackResult {
             case XdrClawbackResultCode::NO_TRUST:
             case XdrClawbackResultCode::UNDERFUNDED:
                 break;
-            default:
-                break;
         }
         return $result;
     }

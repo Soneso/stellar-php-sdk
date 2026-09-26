@@ -38,12 +38,12 @@ class XdrSCPNomination {
     public static function decode(XdrBuffer $xdr): XdrSCPNomination {
         $quorumSetHash = $xdr->readOpaqueFixed(32);
         $votes = [];
-        $votesSize = $xdr->readInteger32();
+        $votesSize = $xdr->readArrayLength();
         for ($i = 0; $i < $votesSize; $i++) {
             $votes[] = XdrValue::decode($xdr);
         }
         $accepted = [];
-        $acceptedSize = $xdr->readInteger32();
+        $acceptedSize = $xdr->readArrayLength();
         for ($i = 0; $i < $acceptedSize; $i++) {
             $accepted[] = XdrValue::decode($xdr);
         }

@@ -38,7 +38,7 @@ class XdrSCContractInstance {
         $storage = null;
         if ($xdr->readInteger32() !== 0) {
             $storage = [];
-            $storageSize = $xdr->readInteger32();
+            $storageSize = $xdr->readArrayLength();
             for ($i = 0; $i < $storageSize; $i++) {
                 $storage[] = XdrSCMapEntry::decode($xdr);
             }

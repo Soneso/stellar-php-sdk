@@ -38,8 +38,6 @@ class XdrPublicKey {
             case XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519:
                 $result->ed25519 = $xdr->readOpaqueFixed(32);
                 break;
-            default:
-                break;
         }
         return $result;
     }

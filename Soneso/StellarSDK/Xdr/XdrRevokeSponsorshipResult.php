@@ -46,8 +46,6 @@ class XdrRevokeSponsorshipResult {
             case XdrRevokeSponsorshipResultCode::ONLY_TRANSFERABLE:
             case XdrRevokeSponsorshipResultCode::MALFORMED:
                 break;
-            default:
-                break;
         }
         return $result;
     }

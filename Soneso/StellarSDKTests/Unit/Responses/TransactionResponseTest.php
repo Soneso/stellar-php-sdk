@@ -885,4 +885,21 @@ class TransactionResponseTest extends TestCase
         $this->assertNull($response->getResultMetaXdr());
         $this->assertInstanceOf(Memo::class, $response->getMemo());
     }
+
+    /**
+     * Test that a fee meta change count the remaining bytes cannot hold is rejected
+     */
+    public function testTransactionResponseRejectsFeeMetaCountBeyondRemainingBytes(): void
+    {
+        $json = [
+            'id' => 'fee_meta_tx',
+            'hash' => 'fee_meta_hash',
+            'fee_meta_xdr' => base64_encode(pack('N', 1)),
+        ];
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XDR array count 1 exceeds the maximum of 0 for the 0 remaining bytes');
+
+        TransactionResponse::fromJson($json);
+    }
 }
