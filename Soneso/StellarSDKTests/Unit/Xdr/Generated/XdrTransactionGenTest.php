@@ -1363,6 +1363,141 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 optionals-present roundtrip failed for XdrSetOptionsOperation');
     }
 
+    public function testXdrSetOptionsOperationInflationDestPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $present->inflationDest = XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        $absent = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $absent->inflationDest = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrSetOptionsOperation.inflationDest presence flag must be 0 or 1, got 2');
+        XdrSetOptionsOperation::fromBase64Xdr(base64_encode($patched));
+    }
+
+    public function testXdrSetOptionsOperationClearFlagsPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $present->clearFlags = 42;
+        $absent = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $absent->clearFlags = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrSetOptionsOperation.clearFlags presence flag must be 0 or 1, got 2');
+        XdrSetOptionsOperation::fromBase64Xdr(base64_encode($patched));
+    }
+
+    public function testXdrSetOptionsOperationSetFlagsPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $present->setFlags = 42;
+        $absent = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $absent->setFlags = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrSetOptionsOperation.setFlags presence flag must be 0 or 1, got 2');
+        XdrSetOptionsOperation::fromBase64Xdr(base64_encode($patched));
+    }
+
+    public function testXdrSetOptionsOperationMasterWeightPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $present->masterWeight = 42;
+        $absent = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $absent->masterWeight = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrSetOptionsOperation.masterWeight presence flag must be 0 or 1, got 2');
+        XdrSetOptionsOperation::fromBase64Xdr(base64_encode($patched));
+    }
+
+    public function testXdrSetOptionsOperationLowThresholdPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $present->lowThreshold = 42;
+        $absent = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $absent->lowThreshold = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrSetOptionsOperation.lowThreshold presence flag must be 0 or 1, got 2');
+        XdrSetOptionsOperation::fromBase64Xdr(base64_encode($patched));
+    }
+
+    public function testXdrSetOptionsOperationMedThresholdPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $present->medThreshold = 42;
+        $absent = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $absent->medThreshold = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrSetOptionsOperation.medThreshold presence flag must be 0 or 1, got 2');
+        XdrSetOptionsOperation::fromBase64Xdr(base64_encode($patched));
+    }
+
+    public function testXdrSetOptionsOperationHighThresholdPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $present->highThreshold = 42;
+        $absent = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $absent->highThreshold = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrSetOptionsOperation.highThreshold presence flag must be 0 or 1, got 2');
+        XdrSetOptionsOperation::fromBase64Xdr(base64_encode($patched));
+    }
+
+    public function testXdrSetOptionsOperationHomeDomainPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $present->homeDomain = 'test_string';
+        $absent = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $absent->homeDomain = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrSetOptionsOperation.homeDomain presence flag must be 0 or 1, got 2');
+        XdrSetOptionsOperation::fromBase64Xdr(base64_encode($patched));
+    }
+
+    public function testXdrSetOptionsOperationSignerPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $present->signer = new XdrSigner((function() { $sk = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519)); $sk->ed25519 = str_repeat("\xAB", 32); return $sk; })(), 42);
+        $absent = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
+        $absent->signer = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrSetOptionsOperation.signer presence flag must be 0 or 1, got 2');
+        XdrSetOptionsOperation::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrSetOptionsOperationGettersSetters(): void
     {
         $obj = new XdrSetOptionsOperation(null, null, null, null, null, null, null, null, null);
@@ -1764,6 +1899,21 @@ class XdrTransactionGenTest extends TestCase
             else { $wrong[$k] = []; }
             $assertRejects($wrong, 'wrong type for field ' . $k);
         }
+    }
+
+    public function testXdrManageDataOperationDataValuePresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrManageDataOperation('test_key', new XdrDataValue("\x01\x02\x03\x04"));
+        $present->dataValue = "\x01\x02\x03\x04";
+        $absent = new XdrManageDataOperation('test_key', new XdrDataValue("\x01\x02\x03\x04"));
+        $absent->dataValue = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrManageDataOperation.dataValue presence flag must be 0 or 1, got 2');
+        XdrManageDataOperationBase::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrManageDataOperationGettersSetters(): void
@@ -4537,6 +4687,21 @@ class XdrTransactionGenTest extends TestCase
         }
     }
 
+    public function testXdrOperationSourceAccountPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrOperation(new XdrOperationBody(new XdrOperationType(XdrOperationType::INFLATION)), null);
+        $present->sourceAccount = new XdrMuxedAccount(str_repeat("\xAB", 32));
+        $absent = new XdrOperation(new XdrOperationBody(new XdrOperationType(XdrOperationType::INFLATION)), null);
+        $absent->sourceAccount = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrOperation.sourceAccount presence flag must be 0 or 1, got 2');
+        XdrOperation::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrOperationBodyUnionJsonRoundTrip(): void
     {
         $arm0 = (function() { $u = new XdrOperationBody(new XdrOperationType(XdrOperationType::CREATE_ACCOUNT)); $u->createAccountOp = new XdrCreateAccountOperation(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new BigInteger('123456789')); return $u; })();
@@ -5865,6 +6030,51 @@ class XdrTransactionGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 arrays roundtrip failed for XdrPreconditionsV2');
     }
 
+    public function testXdrPreconditionsV2TimeBoundsPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrPreconditionsV2(42, 42, [], null, null, null);
+        $present->timeBounds = new XdrTimeBounds(new \DateTime('@1000'), new \DateTime('@2000'));
+        $absent = new XdrPreconditionsV2(42, 42, [], null, null, null);
+        $absent->timeBounds = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrPreconditionsV2.timeBounds presence flag must be 0 or 1, got 2');
+        XdrPreconditionsV2::fromBase64Xdr(base64_encode($patched));
+    }
+
+    public function testXdrPreconditionsV2LedgerBoundsPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrPreconditionsV2(42, 42, [], null, null, null);
+        $present->ledgerBounds = new XdrLedgerBounds(42, 42);
+        $absent = new XdrPreconditionsV2(42, 42, [], null, null, null);
+        $absent->ledgerBounds = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrPreconditionsV2.ledgerBounds presence flag must be 0 or 1, got 2');
+        XdrPreconditionsV2::fromBase64Xdr(base64_encode($patched));
+    }
+
+    public function testXdrPreconditionsV2MinSeqNumPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrPreconditionsV2(42, 42, [], null, null, null);
+        $present->minSeqNum = new XdrSequenceNumber(new BigInteger('123456789'));
+        $absent = new XdrPreconditionsV2(42, 42, [], null, null, null);
+        $absent->minSeqNum = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrPreconditionsV2.minSeqNum presence flag must be 0 or 1, got 2');
+        XdrPreconditionsV2::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrPreconditionsV2EdgeCaseZeroRoundTrip(): void
     {
         $original = new XdrPreconditionsV2(0, 42, [], null, null, null);
@@ -6525,6 +6735,21 @@ class XdrTransactionGenTest extends TestCase
             else { $wrong[$k] = []; }
             $assertRejects($wrong, 'wrong type for field ' . $k);
         }
+    }
+
+    public function testXdrTransactionV0TimeBoundsPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []);
+        $present->timeBounds = new XdrTimeBounds(new \DateTime('@1000'), new \DateTime('@2000'));
+        $absent = new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []);
+        $absent->timeBounds = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrTransactionV0.timeBounds presence flag must be 0 or 1, got 2');
+        XdrTransactionV0Base::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrTransactionV0GettersSetters(): void

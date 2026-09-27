@@ -31,7 +31,7 @@ class XdrLedgerEntryV1 {
 
     public static function decode(XdrBuffer $xdr): XdrLedgerEntryV1 {
         $sponsoringID = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrLedgerEntryV1.sponsoringID')) {
             $sponsoringID = XdrAccountID::decode($xdr);
         }
         $ext = XdrLedgerEntryV1Ext::decode($xdr);

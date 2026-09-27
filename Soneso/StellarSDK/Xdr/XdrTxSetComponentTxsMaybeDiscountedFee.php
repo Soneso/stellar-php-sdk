@@ -35,7 +35,7 @@ class XdrTxSetComponentTxsMaybeDiscountedFee {
 
     public static function decode(XdrBuffer $xdr): XdrTxSetComponentTxsMaybeDiscountedFee {
         $baseFee = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrTxSetComponentTxsMaybeDiscountedFee.baseFee')) {
             $baseFee = $xdr->readInteger64();
         }
         $txs = [];

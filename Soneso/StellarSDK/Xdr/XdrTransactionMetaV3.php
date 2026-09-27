@@ -68,7 +68,7 @@ class XdrTransactionMetaV3 {
             $txChangesAfter[] = XdrLedgerEntryChange::decode($xdr);
         }
         $sorobanMeta = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrTransactionMetaV3.sorobanMeta')) {
             $sorobanMeta = XdrSorobanTransactionMeta::decode($xdr);
         }
         return new XdrTransactionMetaV3($ext, $txChangesBefore, $operations, $txChangesAfter, $sorobanMeta);

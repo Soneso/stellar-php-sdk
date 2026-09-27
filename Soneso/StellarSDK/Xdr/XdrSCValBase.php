@@ -184,7 +184,7 @@ class XdrSCValBase {
                 $result->sym = $xdr->readString();
                 break;
             case XdrSCValType::SCV_VEC:
-                if ($xdr->readInteger32() !== 0) {
+                if ($xdr->readOptionalPresence('XdrSCVal.vec')) {
                     $result->vec = [];
                     $vecSize = $xdr->readArrayLength();
                     for ($i = 0; $i < $vecSize; $i++) {
@@ -193,7 +193,7 @@ class XdrSCValBase {
                 }
                 break;
             case XdrSCValType::SCV_MAP:
-                if ($xdr->readInteger32() !== 0) {
+                if ($xdr->readOptionalPresence('XdrSCVal.map')) {
                     $result->map = [];
                     $mapSize = $xdr->readArrayLength();
                     for ($i = 0; $i < $mapSize; $i++) {
@@ -444,6 +444,10 @@ class XdrSCValBase {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $this->type->toTxRep($prefix . '.type', $lines);
         switch ($this->type->getValue()) {

@@ -111,6 +111,10 @@ class XdrLedgerKeyContractData {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $this->contract->toTxRep($prefix . '.contract', $lines);
         $this->key->toTxRep($prefix . '.key', $lines);

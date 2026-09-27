@@ -109,6 +109,10 @@ class XdrAssetAlphaNum4Base {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.assetCode'] = TxRepHelper::bytesToHex($this->assetCode);
         $lines[$prefix . '.issuer'] = TxRepHelper::formatAccountId($this->issuer);

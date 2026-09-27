@@ -25,6 +25,7 @@ use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrPreconditions;
+use Soneso\StellarSDK\Xdr\XdrPreconditionsV2;
 use Soneso\StellarSDK\Xdr\XdrPreconditionType;
 use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
 use Soneso\StellarSDK\Xdr\XdrTimeBounds;
@@ -410,6 +411,62 @@ class XdrTransactionTest extends TestCase
         $preconditions = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::V2));
 
         $this->assertEquals(XdrPreconditionType::V2, $preconditions->getType()->getValue());
+    }
+
+    public function testGetTimeBoundsReturnsBoundsOfTimePreconditions(): void
+    {
+        $timeBounds = new XdrTimeBounds(new DateTime('@1700000000'), new DateTime('@1700003600'));
+        $preconditions = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::TIME));
+        $preconditions->setTimeBounds($timeBounds);
+
+        $result = $this->transactionWithPreconditions($preconditions)->getTimeBounds();
+
+        $this->assertSame($timeBounds, $result);
+        $this->assertSame(1700000000, $result->getMinTime()->getTimestamp());
+        $this->assertSame(1700003600, $result->getMaxTime()->getTimestamp());
+    }
+
+    public function testGetTimeBoundsReturnsBoundsOfV2Preconditions(): void
+    {
+        $timeBounds = new XdrTimeBounds(new DateTime('@1700000000'), new DateTime('@1700003600'));
+        $preconditions = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::V2));
+        $preconditions->setV2(new XdrPreconditionsV2(0, 0, [], $timeBounds, new XdrLedgerBounds(100, 200)));
+
+        $result = $this->transactionWithPreconditions($preconditions)->getTimeBounds();
+
+        $this->assertSame($timeBounds, $result);
+        $this->assertSame(1700000000, $result->getMinTime()->getTimestamp());
+        $this->assertSame(1700003600, $result->getMaxTime()->getTimestamp());
+    }
+
+    public function testGetTimeBoundsReturnsNullForNonePreconditions(): void
+    {
+        $preconditions = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::NONE));
+
+        $this->assertNull($this->transactionWithPreconditions($preconditions)->getTimeBounds());
+    }
+
+    public function testGetTimeBoundsReturnsNullForV2PreconditionsWithoutTimeBounds(): void
+    {
+        $preconditions = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::V2));
+        $preconditions->setV2(new XdrPreconditionsV2(0, 0, [], null, new XdrLedgerBounds(100, 200)));
+
+        $this->assertNull($this->transactionWithPreconditions($preconditions)->getTimeBounds());
+    }
+
+    /**
+     * Helper: Create a one-operation transaction with the given preconditions.
+     */
+    private function transactionWithPreconditions(XdrPreconditions $preconditions): XdrTransaction
+    {
+        return new XdrTransaction(
+            new XdrMuxedAccount(hex2bin(self::TEST_ACCOUNT_ED25519)),
+            new XdrSequenceNumber(new BigInteger('12345')),
+            [$this->createBumpSequenceOperation(100)],
+            100,
+            null,
+            $preconditions,
+        );
     }
 
     /**

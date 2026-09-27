@@ -243,6 +243,7 @@ class TxRepHelper
 
         $out = '';
         $len = strlen($input);
+        /** @var list<int> $pendingBytes */
         $pendingBytes = [];
 
         $flushPending = static function () use (&$pendingBytes, &$out): void {

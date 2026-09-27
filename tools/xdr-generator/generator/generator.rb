@@ -6,6 +6,7 @@
 # Usage:
 #   cd tools/xdr-generator && bundle exec ruby generate.rb
 
+require 'pathname'
 require 'set'
 require 'xdrgen'
 require_relative 'name_overrides'
@@ -34,6 +35,9 @@ class Generator < Xdrgen::Generators::Base
     string bool void never mixed
   ].freeze
 
+  # PHPStan config listing every generated file; see write_phpstan_exclusions.
+  PHPSTAN_EXCLUSIONS_PATH = File.expand_path('../phpstan-generated.neon', __dir__)
+
   GENERATED_HEADER = <<~HEADER.freeze
     <?php declare(strict_types=1);
 
@@ -49,7 +53,9 @@ class Generator < Xdrgen::Generators::Base
 
   def generate
     @generated_files = Set.new
+    @emitted_files = []
     render_definitions(@top)
+    write_phpstan_exclusions
   end
 
   private
@@ -108,8 +114,7 @@ class Generator < Xdrgen::Generators::Base
   def render_enum(enum_defn)
     php_name = name(enum_defn)
     is_base, class_name, return_type, new_call = resolve_class_info(php_name)
-    file = file_name(class_name)
-    out = @output.open(file)
+    out = open_output_file(class_name)
 
     emits_sep51_methods = emits_sep51?(php_name, is_base) && (
       StellarJsonOverrides.has?(php_name) ||
@@ -221,8 +226,7 @@ class Generator < Xdrgen::Generators::Base
   def render_struct(struct)
     struct_name = name(struct)
     is_base, class_name, _, _ = resolve_class_info(struct_name)
-    file = file_name(class_name)
-    out = @output.open(file)
+    out = open_output_file(class_name)
 
     # Collect field info
     fields = collect_struct_fields(struct, struct_name)
@@ -439,10 +443,10 @@ class Generator < Xdrgen::Generators::Base
         if is_recursive
           # Temporarily redirect output to a buffer to add indentation
           buf = StringIO.new
-          render_decode_field_php(buf, f[:name], f)
+          render_decode_field_php(buf, f[:name], f, struct_name)
           buf.string.each_line { |line| out.puts "    #{line.rstrip}" }
         else
-          render_decode_field_php(out, f[:name], f)
+          render_decode_field_php(out, f[:name], f, struct_name)
         end
       end
     end
@@ -480,8 +484,7 @@ class Generator < Xdrgen::Generators::Base
   def render_union(union)
     union_name = name(union)
     is_base, class_name, _, _ = resolve_class_info(union_name)
-    file = file_name(class_name)
-    out = @output.open(file)
+    out = open_output_file(class_name)
 
     disc_info = resolve_discriminant_info(union)
     arms = build_union_arms(union, union_name, disc_info)
@@ -749,8 +752,7 @@ class Generator < Xdrgen::Generators::Base
     return unless type_info
 
     _, class_name, return_type, new_expr = resolve_class_info(php_name)
-    file = file_name(class_name)
-    out = @output.open(file)
+    out = open_output_file(class_name)
 
     php_type = type_info[:php_type]
     field_name = type_info[:field_name] || underscore_field(php_name)
@@ -818,8 +820,7 @@ class Generator < Xdrgen::Generators::Base
   # Renders a single-field typedef wrapper class (opaque fixed/variable, string).
   def render_scalar_typedef(php_name, encode_expr, decode_expr, scalar_kind = :opaque)
     _, class_name, return_type, new_expr = resolve_class_info(php_name)
-    file = file_name(class_name)
-    out = @output.open(file)
+    out = open_output_file(class_name)
 
     field_name = underscore_field(php_name)
     is_base = BASE_WRAPPER_TYPES.include?(php_name)
@@ -869,8 +870,7 @@ class Generator < Xdrgen::Generators::Base
     element_typespec = decl.type
     element_type = php_type_for_typespec(element_typespec)
     _, class_name, return_type, new_expr = resolve_class_info(php_name)
-    file = file_name(class_name)
-    out = @output.open(file)
+    out = open_output_file(class_name)
 
     field_name = underscore_field(php_name)
     # Apply per-field name override for array typedefs
@@ -1058,16 +1058,19 @@ class Generator < Xdrgen::Generators::Base
     end
   end
 
-  def render_decode_field_php(out, local_name, field_info)
+  # owner_name is the PHP type that holds the field; with local_name it names
+  # the field in the presence-flag error message.
+  def render_decode_field_php(out, local_name, field_info, owner_name)
     decl = field_info[:decl]
     is_optional = field_info[:is_optional]
+    presence = "$xdr->readOptionalPresence('#{owner_name}.#{local_name}')"
 
     # When a FIELD_TYPE_OVERRIDE changes the type, use that type's decode
     if field_info[:type_overridden]
       type_str = field_info[:php_type]
       if is_optional
         out.puts "        $#{local_name} = null;"
-        out.puts "        if ($xdr->readInteger32() !== 0) {"
+        out.puts "        if (#{presence}) {"
         out.puts "            $#{local_name} = #{decode_type_call(type_str)};"
         out.puts "        }"
       else
@@ -1082,7 +1085,7 @@ class Generator < Xdrgen::Generators::Base
       element_type = php_type_for_typespec(element_typespec)
       if is_optional
         out.puts "        $#{local_name} = null;"
-        out.puts "        if ($xdr->readInteger32() !== 0) {"
+        out.puts "        if (#{presence}) {"
         out.puts "            $#{local_name} = [];"
         if decl.fixed?
           size = resolve_size(decl)
@@ -1104,7 +1107,7 @@ class Generator < Xdrgen::Generators::Base
           out.puts "        for ($i = 0; $i < $#{local_name}Size; $i++) {"
         end
         if field_info[:elements_optional]
-          out.puts "            if ($xdr->readInteger32() !== 0) {"
+          out.puts "            if (#{presence}) {"
           out.puts "                $#{local_name}[] = #{decode_type_call(element_type, typespec: element_typespec)};"
           out.puts "            } else {"
           out.puts "                $#{local_name}[] = null;"
@@ -1124,7 +1127,7 @@ class Generator < Xdrgen::Generators::Base
     when AST::Declarations::String
       if is_optional
         out.puts "        $#{local_name} = null;"
-        out.puts "        if ($xdr->readInteger32() !== 0) {"
+        out.puts "        if (#{presence}) {"
         out.puts "            $#{local_name} = $xdr->readString();"
         out.puts "        }"
       else
@@ -1135,7 +1138,7 @@ class Generator < Xdrgen::Generators::Base
       type_str = field_info[:php_type]
       if is_optional
         out.puts "        $#{local_name} = null;"
-        out.puts "        if ($xdr->readInteger32() !== 0) {"
+        out.puts "        if (#{presence}) {"
         out.puts "            $#{local_name} = #{decode_type_call(type_str, typespec: typespec)};"
         out.puts "        }"
       else
@@ -1202,6 +1205,7 @@ class Generator < Xdrgen::Generators::Base
 
   def render_decode_arm_value(out, target, arm, union_name)
     field = arm[:field_name]
+    presence = "$xdr->readOptionalPresence('#{union_name}.#{field}')"
     override = arm_storage_override(union_name, field, :decode)
     if override
       write_php_block(out, override, "                ")
@@ -1227,13 +1231,13 @@ class Generator < Xdrgen::Generators::Base
     when :optional
       inner_type = arm[:inner_type]
       inner_typespec = arm[:inner_typespec]
-      out.puts "                if ($xdr->readInteger32() !== 0) {"
+      out.puts "                if (#{presence}) {"
       out.puts "                    #{target}->#{field} = #{decode_type_call(inner_type, typespec: inner_typespec)};"
       out.puts "                }"
     when :optional_array
       element_type = arm[:element_type]
       element_typespec = arm[:element_typespec]
-      out.puts "                if ($xdr->readInteger32() !== 0) {"
+      out.puts "                if (#{presence}) {"
       out.puts "                    #{target}->#{field} = [];"
       out.puts "                    $#{field}Size = $xdr->readArrayLength();"
       out.puts "                    for ($i = 0; $i < $#{field}Size; $i++) {"
@@ -1741,6 +1745,16 @@ class Generator < Xdrgen::Generators::Base
   # Enum TxRep methods: enumName, fromTxRepName, toTxRep, fromTxRep
   # ---------------------------------------------------------------------------
 
+  # Emits the toTxRep docblock and signature. $lines maps each TxRep key to its
+  # string value; hand-written overrides declare the same type.
+  def render_to_txrep_signature(out)
+    out.puts "    /**"
+    out.puts "     * @param string $prefix"
+    out.puts "     * @param array<string, string> $lines"
+    out.puts "     */"
+    out.puts "    public function toTxRep(string $prefix, array &$lines): void {"
+  end
+
   def render_enum_txrep_methods(out, php_name, class_name, enum_defn)
     out.puts ""
     out.puts "    public function enumName(): string {"
@@ -1774,7 +1788,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        }"
     out.puts "    }"
     out.puts ""
-    out.puts "    public function toTxRep(string $prefix, array &$lines): void {"
+    render_to_txrep_signature(out)
     out.puts "        $lines[$prefix] = $this->enumName();"
     out.puts "    }"
     out.puts ""
@@ -1839,7 +1853,7 @@ class Generator < Xdrgen::Generators::Base
     decode_class = is_base ? "static" : struct_name
 
     out.puts ""
-    out.puts "    public function toTxRep(string $prefix, array &$lines): void {"
+    render_to_txrep_signature(out)
     fields.each do |f|
       txrep_field_to_line(out, struct_name, f, "        ")
     end
@@ -2145,7 +2159,7 @@ class Generator < Xdrgen::Generators::Base
 
     # --- toTxRep ---
     out.puts ""
-    out.puts "    public function toTxRep(string $prefix, array &$lines): void {"
+    render_to_txrep_signature(out)
 
     # Emit discriminant
     if disc_info[:kind] == :enum
@@ -2503,7 +2517,7 @@ class Generator < Xdrgen::Generators::Base
     decode_class = is_base ? "static" : class_name
 
     out.puts ""
-    out.puts "    public function toTxRep(string $prefix, array &$lines): void {"
+    render_to_txrep_signature(out)
     case php_type
     when "int"
       out.puts "        $lines[$prefix] = (string)$this->#{field_name};"
@@ -2544,7 +2558,7 @@ class Generator < Xdrgen::Generators::Base
     decode_class = is_base ? "static" : class_name
 
     out.puts ""
-    out.puts "    public function toTxRep(string $prefix, array &$lines): void {"
+    render_to_txrep_signature(out)
     case scalar_kind
     when :opaque
       out.puts "        $lines[$prefix] = TxRepHelper::bytesToHex($this->#{field_name});"
@@ -2571,7 +2585,7 @@ class Generator < Xdrgen::Generators::Base
     is_fixed = decl.is_a?(AST::Declarations::Array) && decl.fixed?
 
     out.puts ""
-    out.puts "    public function toTxRep(string $prefix, array &$lines): void {"
+    render_to_txrep_signature(out)
     if is_fixed
       size = resolve_size(decl)
       out.puts "        for ($i = 0; $i < #{size}; $i++) {"
@@ -4245,6 +4259,45 @@ class Generator < Xdrgen::Generators::Base
 
   def file_name(php_class_name)
     "#{php_class_name}.php"
+  end
+
+  # Opens the output file for a generated class and records its name for the
+  # PHPStan exclusion list.
+  def open_output_file(php_class_name)
+    file = file_name(php_class_name)
+    @emitted_files << file
+    @output.open(file)
+  end
+
+  # ---------------------------------------------------------------------------
+  # PHPStan exclusion list
+  #
+  # phpstan.neon.dist analyses Soneso/StellarSDK, which holds generated and
+  # hand-written XDR classes side by side. PHPStan cannot exclude by file
+  # content, so every run writes the sorted list of the files it emitted to
+  # PHPSTAN_EXCLUSIONS_PATH; phpstan.neon.dist includes it and the hand-written
+  # classes stay under analysis. Entries are relative to the neon file, which is
+  # how PHPStan resolves relative paths in an included config.
+  # ---------------------------------------------------------------------------
+
+  def write_phpstan_exclusions
+    neon_dir = Pathname.new(File.dirname(PHPSTAN_EXCLUSIONS_PATH))
+    output_dir = Pathname.new(File.expand_path(@output.output_dir))
+    entries = @emitted_files.sort.map do |file|
+      (output_dir + file).relative_path_from(neon_dir).to_s
+    end
+
+    lines = [
+      '# This file was automatically generated by tools/xdr-generator/generate.rb.',
+      '# DO NOT EDIT or your changes may be overwritten.',
+      '#',
+      '# Generated XDR classes, excluded from PHPStan by phpstan.neon.dist.',
+      '',
+      'parameters:',
+      '    excludePaths:',
+    ]
+    entries.each { |entry| lines << "        - #{entry}" }
+    File.write(PHPSTAN_EXCLUSIONS_PATH, lines.join("\n") + "\n")
   end
 
   # Returns [is_base, class_name, return_type, new_expr] for a given php_name.

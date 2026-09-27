@@ -5,6 +5,9 @@ namespace Soneso\StellarSDK\Xdr;
 use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Crypto\StrKey;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class XdrLiquidityPoolDepositOperation extends XdrLiquidityPoolDepositOperationBase
 {
     public function encode(): string {

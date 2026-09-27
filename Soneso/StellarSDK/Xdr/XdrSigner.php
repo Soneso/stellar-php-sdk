@@ -98,6 +98,10 @@ class XdrSigner {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.key'] = TxRepHelper::formatSignerKey($this->key);
         $lines[$prefix . '.weight'] = (string)$this->weight;

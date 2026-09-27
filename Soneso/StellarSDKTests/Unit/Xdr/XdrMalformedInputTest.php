@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDKTests\Unit\Xdr;
 
+use DateTime;
 use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
@@ -14,6 +15,7 @@ use Soneso\StellarSDK\AllowTrustOperationBuilder;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\FeeBumpTransactionBuilder;
+use Soneso\StellarSDK\ManageDataOperationBuilder;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
@@ -22,6 +24,7 @@ use Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntryExtV1;
 use Soneso\StellarSDK\Xdr\XdrContractCostParamEntry;
 use Soneso\StellarSDK\Xdr\XdrContractCostParams;
 use Soneso\StellarSDK\Xdr\XdrContractExecutable;
+use Soneso\StellarSDK\Xdr\XdrDataValue;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrSCContractInstance;
@@ -29,6 +32,7 @@ use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
+use Soneso\StellarSDK\Xdr\XdrTimeBounds;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 use Soneso\StellarSDK\Xdr\XdrTransactionResult;
 use Soneso\StellarSDK\Xdr\XdrTransactionResultCode;
@@ -40,7 +44,8 @@ use Soneso\StellarSDK\Xdr\XdrTrustLineEntryExtensionV2;
 
 /**
  * Decoding of malformed XDR through the public decoders: array counts the remaining bytes
- * cannot hold, union discriminants without a matching arm and non-zero extension points.
+ * cannot hold, union discriminants without a matching arm, non-zero extension points and
+ * optional presence flags other than 0 or 1.
  *
  * Each vector is built with the SDK's own encoder and patched at a computed offset; the test
  * checks the original bytes at that offset before patching.
@@ -237,6 +242,65 @@ class XdrMalformedInputTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('XdrTrustLineEntryExtensionV2 extension point must be 0, got 1');
         XdrTrustLineEntryExtensionV2::fromBase64Xdr(base64_encode(pack('N', 0) . pack('N', 1)));
+    }
+
+    public function testManageDataValuePresenceFlagOtherThanZeroOrOneIsRejected(): void
+    {
+        $transaction = (new TransactionBuilder(new Account(KeyPair::random()->getAccountId(), new BigInteger('123'))))
+            ->addOperation((new ManageDataOperationBuilder('key', 'value'))->build())
+            ->build();
+        $bytes = base64_decode($transaction->toEnvelopeXdrBase64());
+        // Envelope type, source account (4 + 32), fee, sequence number (8), preconditions, memo,
+        // operation count, operation source flag, operation type and the data name (4 + 4)
+        // precede the data value presence flag.
+        $flagOffset = 80;
+        $this->assertSame(pack('N', 3) . 'key' . "\x00" . pack('N', 1), substr($bytes, $flagOffset - 8, 12));
+        $patched = substr_replace($bytes, pack('N', 2), $flagOffset, 4);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrManageDataOperation.dataValue presence flag must be 0 or 1, got 2');
+        XdrTransactionEnvelope::fromEnvelopeBase64XdrString(base64_encode($patched));
+    }
+
+    public function testDataValuePresenceFlagOtherThanZeroOrOneIsRejected(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrDataValue.value presence flag must be 0 or 1, got 2');
+        XdrDataValue::fromBase64Xdr(base64_encode(pack('N', 2) . pack('N', 0)));
+    }
+
+    public function testTransactionV0TimeBoundsPresenceFlagOtherThanZeroOrOneIsRejected(): void
+    {
+        $transaction = $this->paymentTransaction();
+        $v0 = new XdrTransactionV0(
+            KeyPair::fromAccountId($transaction->getSourceAccount()->getAccountId())->getPublicKey(),
+            new XdrSequenceNumber(new BigInteger(124)),
+            [$transaction->getOperations()[0]->toXdr()],
+            null,
+            null,
+            new XdrTimeBounds(new DateTime('@1000'), new DateTime('@2000')),
+        );
+        $bytes = pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX_V0) . (new XdrTransactionV0Envelope($v0, []))->encode();
+        // Envelope type, source account key (32), fee and sequence number (8) precede the time
+        // bounds presence flag; the minimum time follows it.
+        $flagOffset = 48;
+        $this->assertSame(pack('N', 1) . pack('N', 0) . pack('N', 1000), substr($bytes, $flagOffset, 12));
+        $patched = substr_replace($bytes, pack('N', 2), $flagOffset, 4);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrTransactionV0.timeBounds presence flag must be 0 or 1, got 2');
+        XdrTransactionEnvelope::fromEnvelopeBase64XdrString(base64_encode($patched));
+    }
+
+    public function testSCValVecPresenceFlagOtherThanZeroOrOneIsRejected(): void
+    {
+        [$bytes, $countOffset] = $this->scValVecCountVector();
+        $flagOffset = $countOffset - 4;
+        $patched = substr_replace($bytes, pack('N', 2), $flagOffset, 4);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrSCVal.vec presence flag must be 0 or 1, got 2');
+        XdrSCVal::fromBase64Xdr(base64_encode($patched));
     }
 
     private function paymentTransaction(): Transaction

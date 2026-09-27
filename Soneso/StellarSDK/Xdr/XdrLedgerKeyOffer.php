@@ -98,6 +98,10 @@ class XdrLedgerKeyOffer {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.sellerID'] = TxRepHelper::formatAccountId($this->sellerID);
         $lines[$prefix . '.offerID'] = (string)$this->offerID;

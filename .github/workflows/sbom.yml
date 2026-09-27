@@ -10,6 +10,7 @@ concurrency:
 
 jobs:
   sbom:
+    if: github.repository == 'Soneso/stellar-php-sdk'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

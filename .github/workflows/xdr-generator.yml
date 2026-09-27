@@ -60,6 +60,7 @@ jobs:
       - name: Check for drift
         run: |
           if ! git diff --exit-code Soneso/StellarSDK/Xdr/ \
+              tools/xdr-generator/phpstan-generated.neon \
               Soneso/StellarSDKTests/Unit/Xdr/Sep51/EnumRoundTripTest.php \
               Soneso/StellarSDKTests/Unit/Xdr/Sep51/CorpusRoundTripTest.php \
               Soneso/StellarSDKTests/Unit/Xdr/Sep51/UnionArmRoundTripTest.php \

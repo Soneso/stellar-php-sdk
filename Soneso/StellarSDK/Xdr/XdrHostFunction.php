@@ -8,6 +8,9 @@ namespace Soneso\StellarSDK\Xdr;
 
 use InvalidArgumentException;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class XdrHostFunction extends XdrHostFunctionBase
 {
     public function encode(): string {

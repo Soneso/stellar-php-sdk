@@ -4,6 +4,9 @@ namespace Soneso\StellarSDK\Xdr;
 
 use InvalidArgumentException;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class XdrAllowTrustOperationAsset extends XdrAllowTrustOperationAssetBase
 {
     /**

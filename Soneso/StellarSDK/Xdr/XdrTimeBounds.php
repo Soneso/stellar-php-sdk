@@ -8,6 +8,9 @@ namespace Soneso\StellarSDK\Xdr;
 
 use DateTime;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class XdrTimeBounds extends XdrTimeBoundsBase
 {
 

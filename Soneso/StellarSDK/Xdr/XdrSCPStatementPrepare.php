@@ -50,11 +50,11 @@ class XdrSCPStatementPrepare {
         $quorumSetHash = $xdr->readOpaqueFixed(32);
         $ballot = XdrSCPBallot::decode($xdr);
         $prepared = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrSCPStatementPrepare.prepared')) {
             $prepared = XdrSCPBallot::decode($xdr);
         }
         $preparedPrime = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrSCPStatementPrepare.preparedPrime')) {
             $preparedPrime = XdrSCPBallot::decode($xdr);
         }
         $nC = $xdr->readUnsignedInteger32();

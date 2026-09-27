@@ -121,7 +121,7 @@ class XdrBuffer
     }
 
     /**
-     * @param $length
+     * @param int $length
      * @return string
      */
     public function readOpaqueFixed($length): string
@@ -135,7 +135,7 @@ class XdrBuffer
     }
     
     /**
-     * @param $length
+     * @param int $length
      * @return string
      */
     public function readOpaqueFixedString($length) : string
@@ -149,7 +149,7 @@ class XdrBuffer
     }
 
     /**
-     * @param null $maxLength
+     * @param int|null $maxLength maximum accepted length in bytes, or null for no limit
      * @return string
      */
     public function readOpaqueVariable($maxLength = null) : string
@@ -170,7 +170,7 @@ class XdrBuffer
     }
 
     /**
-     * @param null $maxLength
+     * @param int|null $maxLength maximum accepted length in bytes, or null for no limit
      * @return string
      */
     public function readString($maxLength = null): string
@@ -243,6 +243,32 @@ class XdrBuffer
     }
 
     /**
+     * Reads the presence flag of an optional XDR value.
+     *
+     * XDR encodes an optional value as a bool followed by the value when the bool is
+     * 1. A bool is 0 or 1, so any other word is not decodable.
+     *
+     * @param string $fieldName type and field name of the optional value, used in the error message
+     * @return bool true if the value follows, false if it is absent
+     * @throws InvalidArgumentException if the flag is not 0 or 1 or fewer than 4 bytes remain
+     */
+    public function readOptionalPresence(string $fieldName) : bool
+    {
+        $word = $this->readInteger32();
+        if ($word === 0) {
+            return false;
+        }
+        if ($word === 1) {
+            return true;
+        }
+        throw new InvalidArgumentException(sprintf(
+            '%s presence flag must be 0 or 1, got %d',
+            $fieldName,
+            $word
+        ));
+    }
+
+    /**
      * @return bool
      */
     public function readBoolean() : bool
@@ -257,7 +283,8 @@ class XdrBuffer
     }
     
     /**
-     * @param $numBytes
+     * @param int $numBytes
+     * @return void
      */
     protected function assertBytesRemaining($numBytes)
     {
@@ -310,7 +337,7 @@ class XdrBuffer
     /**
      * rounds $number up to the nearest value that's a multiple of 4
      *
-     * @param $number
+     * @param int $number
      * @return int
      */
     protected function roundTo4($number) : int

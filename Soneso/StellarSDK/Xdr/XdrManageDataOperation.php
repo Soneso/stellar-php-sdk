@@ -6,6 +6,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class XdrManageDataOperation extends XdrManageDataOperationBase
 {
     public function __construct(string $key, XdrDataValue $value) {
@@ -31,7 +34,7 @@ class XdrManageDataOperation extends XdrManageDataOperationBase
     public static function decode(XdrBuffer $xdr): static {
         $dataName = $xdr->readString();
         $dataValue = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrManageDataOperation.dataValue')) {
             $dataValue = $xdr->readOpaqueVariable();
         }
         $instance = new static($dataName, new XdrDataValue($dataValue));
