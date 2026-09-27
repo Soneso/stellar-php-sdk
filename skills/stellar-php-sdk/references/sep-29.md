@@ -5,7 +5,7 @@
 **SDK Namespace:** `Soneso\StellarSDK` (methods on the `StellarSDK` class)
 **Spec:** [SEP-0029](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md)
 
-Exchanges and custodial services use SEP-29 to identify which customer a deposit belongs to. Without a memo, incoming payments cannot be credited to the right user. The SDK submit methods run the check for you: a memo-less transaction paying a destination that requires a memo throws `AccountRequiresMemoException` before anything reaches the network.
+Exchanges and custodial services use SEP-29 to identify which customer a deposit belongs to. Without a memo, incoming payments cannot be credited to the right user. The SDK submit methods run the check for you: a memo-less transaction paying a destination that requires a memo throws `AccountRequiresMemoException` and the transaction is not submitted.
 
 ## Method Signatures
 
@@ -58,7 +58,7 @@ Destination account GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY of 
 
 **Lookup rules:**
 - A `FeeBumpTransaction` is checked through its inner transaction
-- A destination Horizon answers 404 for is skipped; the network reports the missing account on submission
+- A destination Horizon answers 404 for is skipped; the network decides the outcome on submission (see Error Handling)
 - Any other lookup failure throws `HorizonRequestException`
 
 **Operation types checked:** `PaymentOperation`, `PathPaymentStrictSendOperation`, `PathPaymentStrictReceiveOperation`, `AccountMergeOperation`
@@ -175,7 +175,7 @@ $sdk->submitTransaction($transaction);
 The submit methods and `checkMemoRequired()` share one walk, in this order:
 
 1. If the transaction is a `FeeBumpTransaction`, continue with its inner transaction (`getInnerTx()`); the fee bump envelope itself carries neither memo nor operations
-2. If the transaction has any memo (type != `MEMO_TYPE_NONE`) → no violation, and no network call is made
+2. If the transaction has any memo (type != `MEMO_TYPE_NONE`), there is no violation and no network call is made
 3. Collect destinations from qualifying operations (`PaymentOperation`, `PathPaymentStrictSendOperation`, `PathPaymentStrictReceiveOperation`, `AccountMergeOperation`), in operation order, skipping any destination whose `getId()` is non-null (muxed accounts). The operation index counts every operation of the transaction, including those without a destination. A destination named twice keeps the index of the first operation that names it
 4. Look the collected destinations up one by one with `requestAccount()`, in collection order. A lookup that fails with HTTP 404 skips that destination; any other failure throws `HorizonRequestException`
 5. The first account whose `$account->getData()->get('config.memo_required')` is identical to the string `'1'` is the hit. The submit methods throw `AccountRequiresMemoException` for it, `checkMemoRequired()` returns its account ID. No further destination is looked up
@@ -416,7 +416,7 @@ $sdk->submitTransaction($paymentToOwnHotWallet, skipMemoRequiredCheck: true);
 // WRONG: non-empty string is truthy; "false" never equals false
 if ($sdk->checkMemoRequired($transaction)) {
     // This branch fires even when a G-address string is returned
-    // AND when testing against a string "false" — use strict comparison
+    // AND when testing against a string "false". Use strict comparison
 }
 
 // CORRECT: use strict identity check
@@ -434,7 +434,7 @@ $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 $tx = (new TransactionBuilder($senderAccount))->addOperation($op)->build();
 // ... the submit throws AccountRequiresMemoException ...
 $tx2 = (new TransactionBuilder($senderAccount))->addOperation($op)->addMemo(Memo::text('user-12345'))->build();
-// tx2 has a stale sequence number → tx_bad_seq on submit
+// tx2 has a stale sequence number, so the submit fails with tx_bad_seq
 
 // CORRECT: reload the account before rebuilding
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
@@ -445,14 +445,14 @@ $tx2 = (new TransactionBuilder($senderAccount))->addOperation($op)->addMemo(Memo
 
 ```php
 // WRONG: these values will NOT trigger the memo requirement check
-new ManageDataOperationBuilder('config.memo_required', 'true')
-new ManageDataOperationBuilder('config.memo_required', '1 ')  // trailing space
+new ManageDataOperationBuilder('config.memo_required', 'true');
+new ManageDataOperationBuilder('config.memo_required', '1 ');  // trailing space
 
 // CORRECT: must be exactly the string "1"
-new ManageDataOperationBuilder('config.memo_required', '1')
+new ManageDataOperationBuilder('config.memo_required', '1');
 ```
 
-The builder's `$value` parameter is typed `?string`, so the int `1` is not a third wrong value: under `declare(strict_types=1)` it raises a `TypeError`, and without strict types it is coerced to `'1'` and sets the entry correctly.
+The builder's `$value` parameter is typed `?string`. Passing the int `1` raises a `TypeError` under `declare(strict_types=1)`; without strict types it is coerced to `'1'` and sets the entry correctly.
 
 **Wrong: expecting the check to validate memo *type* or *content*:**
 
@@ -510,6 +510,6 @@ try {
 
 ## Related SEPs
 
-- **[SEP-10](sep-10.md)** — Web Authentication (often required by exchanges that use memos)
-- **[SEP-24](sep-24.md)** — Interactive deposit/withdrawal (anchors provide deposit memos per user)
-- **[SEP-31](sep-31.md)** — Cross-border payments (uses memos for transaction tracking)
+- **[SEP-10](sep-10.md)**: Web Authentication (often required by exchanges that use memos)
+- **[SEP-24](sep-24.md)**: Interactive deposit/withdrawal (anchors provide deposit memos per user)
+- **[SEP-31](sep-31.md)**: Cross-border payments (uses memos for transaction tracking)

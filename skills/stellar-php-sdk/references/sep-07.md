@@ -15,7 +15,7 @@
 6. [Sign and Submit a Transaction](#sign-and-submit-a-transaction)
 7. [Extract URI Parameters](#extract-uri-parameters)
 8. [SubmitUriSchemeTransactionResponse](#submiturisschemetransactionresponse)
-9. [URISchemeError](#urischerneerror)
+9. [URISchemeError](#urischemeerror)
 10. [Testing with Mock HTTP](#testing-with-mock-http)
 11. [Parameter Constants](#parameter-constants)
 12. [Common Pitfalls](#common-pitfalls)
@@ -51,7 +51,7 @@ echo $uri . PHP_EOL;
 
 `generatePayOperationURI()` creates a `web+stellar:pay?` URI. The wallet can choose the payment path (direct payment or path payment) and source asset.
 
-### Minimum (destination only — donation/open amount)
+### Minimum (destination only, donation/open amount)
 
 ```php
 <?php declare(strict_types=1);
@@ -257,7 +257,7 @@ try {
 } catch (URISchemeError $e) {
     switch ($e->getCode()) {
         case URISchemeError::missingOriginDomain:   // 2
-            echo "No origin_domain — unsigned/untrusted URI" . PHP_EOL;
+            echo "No origin_domain: unsigned/untrusted URI" . PHP_EOL;
             break;
         case URISchemeError::invalidOriginDomain:   // 1
             echo "origin_domain is not a valid FQDN" . PHP_EOL;
@@ -272,7 +272,7 @@ try {
             echo "stellar.toml has no URI_REQUEST_SIGNING_KEY" . PHP_EOL;
             break;
         case URISchemeError::invalidSignature:       // 0
-            echo "Signature verification failed — possible tampering" . PHP_EOL;
+            echo "Signature verification failed: possible tampering" . PHP_EOL;
             break;
     }
 }
@@ -387,10 +387,10 @@ use Psr\Http\Message\ResponseInterface;
 $txResponse = $response->getSubmitTransactionResponse(); // SubmitTransactionResponse|null
 if ($txResponse !== null) {
     $txResponse->isSuccessful();      // bool
-    $txResponse->getHash();           // string — transaction hash
+    $txResponse->getHash();           // string: transaction hash
     $txResponse->getLedger();         // int
-    $txResponse->getEnvelopeXdr();    // string — signed envelope XDR
-    $txResponse->getResultXdr();      // string — result XDR
+    $txResponse->getEnvelopeXdr();    // string: signed envelope XDR
+    $txResponse->getResultXdr();      // string: result XDR
     $extras = $txResponse->getExtras();
     if ($extras !== null) {
         $extras->getResultCodes()->getTransactionResultCode(); // e.g. "tx_failed"
@@ -401,8 +401,8 @@ if ($txResponse !== null) {
 // Callback URL submission path:
 $callbackResponse = $response->getCallBackResponse(); // ResponseInterface|null (PSR-7)
 if ($callbackResponse !== null) {
-    $callbackResponse->getStatusCode();             // int — HTTP status
-    $callbackResponse->getBody()->getContents();    // string — response body
+    $callbackResponse->getStatusCode();             // int: HTTP status
+    $callbackResponse->getBody()->getContents();    // string: response body
     $callbackResponse->getHeaders();                // array
 }
 ```
@@ -417,17 +417,17 @@ if ($callbackResponse !== null) {
 use Soneso\StellarSDK\SEP\URIScheme\URISchemeError;
 
 // Error code constants (int values):
-URISchemeError::invalidSignature;    // 0 — Ed25519 signature mismatch
-URISchemeError::invalidOriginDomain; // 1 — origin_domain not a valid FQDN
-URISchemeError::missingOriginDomain; // 2 — origin_domain parameter absent
-URISchemeError::missingSignature;    // 3 — signature parameter absent
-URISchemeError::tomlNotFoundOrInvalid; // 4 — stellar.toml not found or malformed
-URISchemeError::tomlSignatureMissing;  // 5 — URI_REQUEST_SIGNING_KEY absent from stellar.toml
+URISchemeError::invalidSignature;    // 0: Ed25519 signature mismatch
+URISchemeError::invalidOriginDomain; // 1: origin_domain not a valid FQDN
+URISchemeError::missingOriginDomain; // 2: origin_domain parameter absent
+URISchemeError::missingSignature;    // 3: signature parameter absent
+URISchemeError::tomlNotFoundOrInvalid; // 4: stellar.toml not found or malformed
+URISchemeError::tomlSignatureMissing;  // 5: URI_REQUEST_SIGNING_KEY absent from stellar.toml
 
 // Methods:
-$e->getCode();     // int — one of the constants above
-$e->toString();    // string — human-readable message, e.g. "URISchemeError: invalid Signature"
-$e->getMessage();  // string — inherited from ErrorException (may be empty)
+$e->getCode();     // int: one of the constants above
+$e->toString();    // string: human-readable message, e.g. "URISchemeError: invalid Signature"
+$e->getMessage();  // string: inherited from ErrorException (may be empty)
 ```
 
 `toString()` return values by code:
@@ -540,15 +540,15 @@ All constants are on the `URIScheme` class:
 | `URIScheme::uriSchemeName` | `web+stellar:` | URI prefix |
 | `URIScheme::signOperation` | `tx?` | tx URI operation string |
 | `URIScheme::payOperation` | `pay?` | pay URI operation string |
-| `URIScheme::xdrParameterName` | `xdr` | tx URI — transaction XDR |
-| `URIScheme::replaceParameterName` | `replace` | tx URI — Txrep field spec |
-| `URIScheme::callbackParameterName` | `callback` | both — callback URL |
-| `URIScheme::publicKeyParameterName` | `pubkey` | tx URI — required signer |
-| `URIScheme::chainParameterName` | `chain` | tx URI — nested URI |
-| `URIScheme::messageParameterName` | `msg` | both — user-facing message |
+| `URIScheme::xdrParameterName` | `xdr` | tx URI: transaction XDR |
+| `URIScheme::replaceParameterName` | `replace` | tx URI: Txrep field spec |
+| `URIScheme::callbackParameterName` | `callback` | both: callback URL |
+| `URIScheme::publicKeyParameterName` | `pubkey` | tx URI: required signer |
+| `URIScheme::chainParameterName` | `chain` | tx URI: nested URI |
+| `URIScheme::messageParameterName` | `msg` | both: user-facing message |
 | `URIScheme::networkPassphraseParameterName` | `network_passphrase` | both |
-| `URIScheme::originDomainParameterName` | `origin_domain` | both — for signing |
-| `URIScheme::signatureParameterName` | `signature` | both — URI signature |
+| `URIScheme::originDomainParameterName` | `origin_domain` | both: for signing |
+| `URIScheme::signatureParameterName` | `signature` | both: URI signature |
 | `URIScheme::destinationParameterName` | `destination` | pay URI |
 | `URIScheme::amountParameterName` | `amount` | pay URI |
 | `URIScheme::assetCodeParameterName` | `asset_code` | pay URI |
@@ -561,7 +561,7 @@ All constants are on the `URIScheme` class:
 
 ## Common Pitfalls
 
-**Method name has a typo — UIR not URI:**
+**Method name has a typo, UIR not URI:**
 
 ```php
 // WRONG: checkURISchemeIsValid() -- method does NOT exist
@@ -574,7 +574,7 @@ $uriScheme->checkUIRSchemeIsValid($uri);
 **Callback value must be prefixed with "url:":**
 
 ```php
-// WRONG: raw URL — signAndSubmitTransaction() will NOT route to callback
+// WRONG: raw URL, signAndSubmitTransaction() will NOT route to callback
 $uri = $uriScheme->generateSignTransactionURI(
     transactionEnvelopeXdrBase64: $xdrBase64,
     callback: 'https://example.com/submit'  // missing "url:" prefix
@@ -606,14 +606,14 @@ $uri = $uriScheme->generateSignTransactionURI(
 $signedUri = $uriScheme->signURI($uri, $keyPair);
 ```
 
-**Do not pass signature to generateSignTransactionURI — use signURI() instead:**
+**Do not pass signature to generateSignTransactionURI. Use signURI() instead:**
 
 ```php
 // WRONG: manually computing and passing signature to generateSignTransactionURI()
 $uri = $uriScheme->generateSignTransactionURI(
     transactionEnvelopeXdrBase64: $xdrBase64,
     originDomain: 'example.com',
-    signature: $myComputedSignature  // incorrect — will produce wrong payload
+    signature: $myComputedSignature  // incorrect: will produce wrong payload
 );
 
 // CORRECT: generate URI first, then sign with signURI()
@@ -624,7 +624,7 @@ $uri = $uriScheme->generateSignTransactionURI(
 $signedUri = $uriScheme->signURI($uri, $keyPair); // handles payload construction internally
 ```
 
-**getParameterValue() parameter order — name first, URL second:**
+**getParameterValue() parameter order, name first, URL second:**
 
 ```php
 // WRONG: URL first
@@ -641,7 +641,7 @@ $value = $uriScheme->getParameterValue(URIScheme::xdrParameterName, $uri);
 ```php
 // WRONG: omitting network for testnet transactions
 $response = $uriScheme->signAndSubmitTransaction($uri, $keyPair);
-// Submits to PUBLIC network — transactions will fail with tx_bad_seq or be lost
+// Submits to PUBLIC network: transactions will fail with tx_bad_seq or be lost
 
 // CORRECT: always pass the network explicitly
 $response = $uriScheme->signAndSubmitTransaction($uri, $keyPair, Network::testnet());

@@ -2496,18 +2496,18 @@ try {
 #### Common Result Codes
 
 **Transaction-level codes:**
-- `tx_success` — Transaction succeeded
-- `tx_failed` — One or more operations failed
-- `tx_bad_seq` — Sequence number mismatch (reload account and retry)
-- `tx_insufficient_fee` — Fee too low for current network load
-- `tx_insufficient_balance` — Not enough XLM to cover fee + reserves
+- `tx_success`: Transaction succeeded
+- `tx_failed`: One or more operations failed
+- `tx_bad_seq`: Sequence number mismatch (reload account and retry)
+- `tx_insufficient_fee`: Fee too low for current network load
+- `tx_insufficient_balance`: Not enough XLM to cover fee + reserves
 
 **Operation-level codes:**
-- `op_success` — Operation succeeded
-- `op_underfunded` — Not enough balance for payment
-- `op_no_trust` — Destination missing trustline for asset
-- `op_line_full` — Destination trustline limit exceeded
-- `op_low_reserve` — Would leave account below minimum reserve
+- `op_success`: Operation succeeded
+- `op_underfunded`: Not enough balance for payment
+- `op_no_trust`: Destination missing trustline for asset
+- `op_line_full`: Destination trustline limit exceeded
+- `op_low_reserve`: Would leave account below minimum reserve
 
 ### Message Signing (SEP-53)
 
@@ -2741,24 +2741,24 @@ echo "Sequence: " . $account->getSequenceNumber() . "\n";
 
 The [Soroban Guide](soroban.md) covers:
 
-- **SorobanServer** — Direct RPC communication, contract data queries
-- **SorobanClient** — High-level contract interaction API
-- **Installing & Deploying** — WASM installation and contract deployment
-- **AssembledTransaction** — Transaction lifecycle with simulation
-- **Authorization** — Signing auth entries for contract calls
-- **Type Conversions** — XdrSCVal creation and parsing
-- **Events** — Reading contract events
-- **Error Handling** — Simulation and submission errors
+- **SorobanServer**: Direct RPC communication, contract data queries
+- **SorobanClient**: High-level contract interaction API
+- **Installing & Deploying**: WASM installation and contract deployment
+- **AssembledTransaction**: Transaction lifecycle with simulation
+- **Authorization**: Signing auth entries for contract calls
+- **Type Conversions**: XdrSCVal creation and parsing
+- **Events**: Reading contract events
+- **Error Handling**: Simulation and submission errors
 
 ---
 
 ## Further Reading
 
-- [Quick Start Guide](quick-start.md) — First transaction in 15 minutes
-- [Getting Started](getting-started.md) — Installation and fundamentals
-- [Soroban Guide](soroban.md) — Smart contract development
-- [SEP Protocols](sep/README.md) — Stellar Ecosystem Proposals
-- [PHPDoc Reference](https://soneso.github.io/stellar-php-sdk/) — Full API documentation
+- [Quick Start Guide](quick-start.md): First transaction in 15 minutes
+- [Getting Started](getting-started.md): Installation and fundamentals
+- [Soroban Guide](soroban.md): Smart contract development
+- [SEP Protocols](sep/README.md): Stellar Ecosystem Proposals
+- [PHPDoc Reference](https://soneso.github.io/stellar-php-sdk/): Full API documentation
 
 ---
 

@@ -11,7 +11,7 @@ SEP-29 prevents lost funds by allowing accounts to require incoming payments inc
 
 ## Quick Example
 
-The submit methods check the destinations of a transaction that carries no memo. If a destination requires one, the submit call throws `AccountRequiresMemoException` and nothing is sent to the network. Catch it, rebuild the transaction with a memo, and submit again:
+The submit methods check the destinations of a transaction that carries no memo. If a destination requires one, the submit call throws `AccountRequiresMemoException` and the transaction is not submitted. Catch it, rebuild the transaction with a memo, and submit again:
 
 ```php
 <?php
@@ -68,14 +68,14 @@ Accounts signal memo requirement by setting a data entry with key `config.memo_r
 - A transaction that already carries a memo passes without any request to Horizon. Every memo type other than `Memo::none()` counts as a memo present, including an id memo of `0`.
 - Destinations are collected in operation order. Multiplexed destinations (M-addresses) are skipped, since the multiplexing id already identifies the customer.
 - Each distinct destination is looked up once, in the order the operations name them, and the walk stops at the first account whose `config.memo_required` entry holds `1`.
-- A destination Horizon does not know is skipped. The network reports the missing account when the transaction is submitted.
+- A destination Horizon does not know is skipped; the network decides the outcome when the transaction is submitted (see the notes under Error Handling).
 - The first hit throws `AccountRequiresMemoException`. `getAccountId()` returns the destination account id, `getOperationIndex()` the zero-based index of the first payment, path payment or account merge operation that names it as a non-multiplexed destination, counted over all operations of the checked transaction.
 
 **Checked operation types:** `PaymentOperation`, `PathPaymentStrictSendOperation`, `PathPaymentStrictReceiveOperation`, `AccountMergeOperation`
 
 All four submit methods run the check: `submitTransaction()`, `submitAsyncTransaction()`, `submitTransactionEnvelopeXdrBase64()` and `submitAsyncTransactionEnvelopeXdrBase64()`. The envelope variants decode the base64 string first; an envelope string the SDK's XDR decoder rejects is submitted unchecked, so that Horizon reports it. Each method takes `skipMemoRequiredCheck` as its last parameter; passing `true` submits without the check.
 
-`checkMemoRequired()` runs the same walk without submitting anything. It returns the account id of the first destination requiring a memo, or `false` when the transaction satisfies SEP-29. Use it when you want to know about a memo requirement before building or signing.
+`checkMemoRequired()` runs the same walk without submitting anything. It returns the account id of the first destination requiring a memo, or `false` when the transaction satisfies SEP-29. Use it when you want to know about a memo requirement before signing, or without submitting.
 
 ## Detailed Usage
 
@@ -428,9 +428,9 @@ try {
 
 ## Related SEPs
 
-- **[SEP-10](sep-10.md)** — Web authentication (often used by exchanges that require memos)
-- **[SEP-24](sep-24.md)** — Interactive deposit/withdrawal (anchors provide deposit memos)
-- **[SEP-31](sep-31.md)** — Cross-border payments (uses memos for transaction tracking)
+- **[SEP-10](sep-10.md)**: Web authentication (often used by exchanges that require memos)
+- **[SEP-24](sep-24.md)**: Interactive deposit/withdrawal (anchors provide deposit memos)
+- **[SEP-31](sep-31.md)**: Cross-border payments (uses memos for transaction tracking)
 
 ---
 
