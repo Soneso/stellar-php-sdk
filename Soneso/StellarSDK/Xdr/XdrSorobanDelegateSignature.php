@@ -131,6 +131,10 @@ class XdrSorobanDelegateSignature {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $this->address->toTxRep($prefix . '.address', $lines);
         $this->signature->toTxRep($prefix . '.signature', $lines);

@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK\Xdr;
 
 use InvalidArgumentException;
+use JsonException;
 
 /**
  * Primitive SEP-51 (XDR-JSON) helper methods.

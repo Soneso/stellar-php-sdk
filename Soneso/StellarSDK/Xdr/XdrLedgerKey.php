@@ -8,6 +8,9 @@ namespace Soneso\StellarSDK\Xdr;
 
 use Soneso\StellarSDK\Crypto\StrKey;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class XdrLedgerKey extends XdrLedgerKeyBase
 {
     // Backward-compatible field: hex-encoded pool ID (base uses XdrLedgerKeyLiquidityPool with raw binary)

@@ -138,6 +138,10 @@ class XdrManageBuyOfferOperation {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.selling'] = TxRepHelper::formatAsset($this->selling);
         $lines[$prefix . '.buying'] = TxRepHelper::formatAsset($this->buying);

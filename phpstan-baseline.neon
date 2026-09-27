@@ -3697,12 +3697,6 @@ parameters:
 			path: Soneso/StellarSDK/SEP/TransferServerService/TransferServerService.php
 
 		-
-			message: '#^Parameter &\$lines by\-ref type of method Soneso\\StellarSDK\\SEP\\TxRep\\TxRep\:\:transactionToLines\(\) expects array\<string, string\>, array given\.$#'
-			identifier: parameterByRef.type
-			count: 7
-			path: Soneso/StellarSDK/SEP/TxRep/TxRep.php
-
-		-
 			message: '#^Method Soneso\\StellarSDK\\SEP\\URIScheme\\URIScheme\:\:setMockHandlerStack\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1

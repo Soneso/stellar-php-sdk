@@ -8,6 +8,9 @@ namespace Soneso\StellarSDK\Xdr;
 
 use Soneso\StellarSDK\Constants\StellarConstants;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class XdrTransaction extends XdrTransactionBase
 {
 
@@ -98,12 +101,10 @@ class XdrTransaction extends XdrTransactionBase
      */
     public function getTimeBounds(): ?XdrTimeBounds
     {
-        if ($this->preconditions !== null) {
-            if ($this->preconditions->getType()->getValue() == XdrPreconditionType::TIME) {
-               return $this->preconditions->getTimeBounds();
-            } else if ($this->preconditions->getType()->getValue() == XdrPreconditionType::V2 && $this->preconditions->getV2() !== null) {
-                return $this->preconditions->getV2()->getTimeBounds();
-            }
+        if ($this->preconditions->getType()->getValue() == XdrPreconditionType::TIME) {
+            return $this->preconditions->getTimeBounds();
+        } else if ($this->preconditions->getType()->getValue() == XdrPreconditionType::V2 && $this->preconditions->getV2() !== null) {
+            return $this->preconditions->getV2()->getTimeBounds();
         }
         return null;
     }

@@ -94,7 +94,7 @@ class XdrDecoder
     }
 
     /**
-     * @param $xdr
+     * @param string $xdr
      * @return string
      */
     public static function string($xdr): string
@@ -105,8 +105,8 @@ class XdrDecoder
     /**
      * Reads a fixed opaque value and returns it as a string
      *
-     * @param $xdr
-     * @param $length
+     * @param string $xdr
+     * @param int $length
      * @return string
      */
     public static function opaqueFixedString($xdr, $length) : string
@@ -118,8 +118,8 @@ class XdrDecoder
     }
 
     /**
-     * @param $xdr
-     * @param $length
+     * @param string $xdr
+     * @param int $length
      * @return string
      */
     public static function opaqueFixed($xdr, $length): string
@@ -128,7 +128,7 @@ class XdrDecoder
     }
 
     /**
-     * @param $xdr
+     * @param string $xdr
      * @return string
      */
     public static function opaqueVariable($xdr): string

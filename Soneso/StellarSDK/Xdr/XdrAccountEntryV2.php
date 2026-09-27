@@ -45,7 +45,7 @@ class XdrAccountEntryV2 {
         $signerSponsoringIDs = [];
         $signerSponsoringIDsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $signerSponsoringIDsSize; $i++) {
-            if ($xdr->readInteger32() !== 0) {
+            if ($xdr->readOptionalPresence('XdrAccountEntryV2.signerSponsoringIDs')) {
                 $signerSponsoringIDs[] = XdrAccountID::decode($xdr);
             } else {
                 $signerSponsoringIDs[] = null;

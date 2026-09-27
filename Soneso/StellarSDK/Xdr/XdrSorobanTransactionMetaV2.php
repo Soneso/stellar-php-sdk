@@ -32,7 +32,7 @@ class XdrSorobanTransactionMetaV2 {
     public static function decode(XdrBuffer $xdr): XdrSorobanTransactionMetaV2 {
         $ext = XdrSorobanTransactionMetaExt::decode($xdr);
         $returnValue = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrSorobanTransactionMetaV2.returnValue')) {
             $returnValue = XdrSCVal::decode($xdr);
         }
         return new XdrSorobanTransactionMetaV2($ext, $returnValue);

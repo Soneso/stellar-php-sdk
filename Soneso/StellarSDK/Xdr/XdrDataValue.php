@@ -9,7 +9,11 @@ namespace Soneso\StellarSDK\Xdr;
 
 use InvalidArgumentException;
 use JsonException;
+use TypeError;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class XdrDataValue
 {
     private ?string $value = null;
@@ -40,7 +44,7 @@ class XdrDataValue
 
     public static function decode(XdrBuffer $xdr) :  XdrDataValue {
         $value = null;
-        if ($xdr->readBoolean()) {
+        if ($xdr->readOptionalPresence('XdrDataValue.value')) {
             $value = $xdr->readOpaqueVariable(64);
         }
         return new XdrDataValue($value);
@@ -57,7 +61,16 @@ class XdrDataValue
         if ($decoded === false) {
             throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
-        return static::decode(new XdrBuffer($decoded));
+        $result = static::decode(new XdrBuffer($decoded));
+        if (!$result instanceof static) {
+            throw new TypeError(sprintf(
+                '%s::fromBase64Xdr() needs a decode() override that returns %s, got %s',
+                static::class,
+                static::class,
+                get_class($result)
+            ));
+        }
+        return $result;
     }
 
     /**

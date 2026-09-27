@@ -82,7 +82,7 @@ class XdrClaimPredicate {
                 }
                 break;
             case XdrClaimPredicateType::NOT:
-                if ($xdr->readInteger32() !== 0) {
+                if ($xdr->readOptionalPresence('XdrClaimPredicate.notPredicate')) {
                     $result->notPredicate = XdrClaimPredicate::decode($xdr);
                 }
                 break;
@@ -207,6 +207,10 @@ class XdrClaimPredicate {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $this->type->toTxRep($prefix . '.type', $lines);
         switch ($this->type->getValue()) {

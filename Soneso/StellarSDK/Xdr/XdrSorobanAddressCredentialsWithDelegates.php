@@ -113,6 +113,10 @@ class XdrSorobanAddressCredentialsWithDelegates {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $this->addressCredentials->toTxRep($prefix . '.addressCredentials', $lines);
         $lines[$prefix . '.delegates.len'] = (string)count($this->delegates);

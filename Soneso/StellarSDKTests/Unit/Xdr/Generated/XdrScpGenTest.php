@@ -512,6 +512,36 @@ class XdrScpGenTest extends TestCase
         }
     }
 
+    public function testXdrSCPStatementPreparePreparedPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0);
+        $present->prepared = new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32)));
+        $absent = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0);
+        $absent->prepared = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrSCPStatementPrepare.prepared presence flag must be 0 or 1, got 2');
+        XdrSCPStatementPrepare::fromBase64Xdr(base64_encode($patched));
+    }
+
+    public function testXdrSCPStatementPreparePreparedPrimePresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0);
+        $present->preparedPrime = new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32)));
+        $absent = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0);
+        $absent->preparedPrime = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrSCPStatementPrepare.preparedPrime presence flag must be 0 or 1, got 2');
+        XdrSCPStatementPrepare::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrSCPStatementPrepareGettersSetters(): void
     {
         $obj = new XdrSCPStatementPrepare(str_repeat("\0", 32), new XdrSCPBallot(42, new XdrValue(str_repeat("\xAB", 32))), 0, 0);

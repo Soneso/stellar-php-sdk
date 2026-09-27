@@ -36,7 +36,7 @@ class XdrSCContractInstance {
     public static function decode(XdrBuffer $xdr): XdrSCContractInstance {
         $executable = XdrContractExecutable::decode($xdr);
         $storage = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrSCContractInstance.storage')) {
             $storage = [];
             $storageSize = $xdr->readArrayLength();
             for ($i = 0; $i < $storageSize; $i++) {
@@ -124,6 +124,10 @@ class XdrSCContractInstance {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $this->executable->toTxRep($prefix . '.executable', $lines);
         if ($this->storage !== null) {

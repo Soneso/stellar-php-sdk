@@ -64,7 +64,7 @@ class XdrAccountEntry {
         $seqNum = XdrSequenceNumber::decode($xdr);
         $numSubEntries = $xdr->readUnsignedInteger32();
         $inflationDest = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrAccountEntry.inflationDest')) {
             $inflationDest = XdrAccountID::decode($xdr);
         }
         $flags = $xdr->readUnsignedInteger32();

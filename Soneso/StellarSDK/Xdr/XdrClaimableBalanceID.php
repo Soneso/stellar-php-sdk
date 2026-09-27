@@ -13,6 +13,8 @@ use Soneso\StellarSDK\Crypto\StrKey;
  * ClaimableBalanceID union override that stores $hash as hexadecimal rather than
  * as the raw bytes the generated base expects, and accepts more than one
  * hexadecimal spelling of it; see getCanonicalHashHex().
+ *
+ * @phpstan-consistent-constructor
  */
 class XdrClaimableBalanceID extends XdrClaimableBalanceIDBase
 {

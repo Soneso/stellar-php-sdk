@@ -98,6 +98,10 @@ class XdrContractIDPreimageFromAddress {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $this->address->toTxRep($prefix . '.address', $lines);
         $lines[$prefix . '.salt'] = TxRepHelper::bytesToHex($this->salt);

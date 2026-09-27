@@ -1588,6 +1588,21 @@ class XdrLedgerGenTest extends TestCase
         }
     }
 
+    public function testXdrParallelTxsComponentBaseFeePresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrParallelTxsComponent([]);
+        $present->baseFee = 42;
+        $absent = new XdrParallelTxsComponent([]);
+        $absent->baseFee = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrParallelTxsComponent.baseFee presence flag must be 0 or 1, got 2');
+        XdrParallelTxsComponent::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrParallelTxsComponentGettersSetters(): void
     {
         $obj = new XdrParallelTxsComponent([]);
@@ -1736,6 +1751,21 @@ class XdrLedgerGenTest extends TestCase
             else { $wrong[$k] = []; }
             $assertRejects($wrong, 'wrong type for field ' . $k);
         }
+    }
+
+    public function testXdrTxSetComponentTxsMaybeDiscountedFeeBaseFeePresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrTxSetComponentTxsMaybeDiscountedFee([]);
+        $present->baseFee = 42;
+        $absent = new XdrTxSetComponentTxsMaybeDiscountedFee([]);
+        $absent->baseFee = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrTxSetComponentTxsMaybeDiscountedFee.baseFee presence flag must be 0 or 1, got 2');
+        XdrTxSetComponentTxsMaybeDiscountedFee::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrTxSetComponentTxsMaybeDiscountedFeeGettersSetters(): void
@@ -3456,6 +3486,21 @@ class XdrLedgerGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 optionals-present roundtrip failed for XdrContractEvent');
     }
 
+    public function testXdrContractEventHashPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrContractEvent(new XdrExtensionPoint(0), new XdrContractEventType(XdrContractEventType::CONTRACT_EVENT_TYPE_SYSTEM), (function() { $b = new XdrContractEventBody(0); $b->v0 = new XdrContractEventBodyV0([], new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))); return $b; })(), null);
+        $present->hash = str_repeat("\xAB", 32);
+        $absent = new XdrContractEvent(new XdrExtensionPoint(0), new XdrContractEventType(XdrContractEventType::CONTRACT_EVENT_TYPE_SYSTEM), (function() { $b = new XdrContractEventBody(0); $b->v0 = new XdrContractEventBodyV0([], new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))); return $b; })(), null);
+        $absent->hash = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrContractEvent.hash presence flag must be 0 or 1, got 2');
+        XdrContractEvent::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrContractEventGettersSetters(): void
     {
         $obj = new XdrContractEvent(new XdrExtensionPoint(0), new XdrContractEventType(XdrContractEventType::CONTRACT_EVENT_TYPE_SYSTEM), (function() { $b = new XdrContractEventBody(0); $b->v0 = new XdrContractEventBodyV0([], new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))); return $b; })(), null);
@@ -4087,6 +4132,21 @@ class XdrLedgerGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 arrays roundtrip failed for XdrTransactionMetaV3');
     }
 
+    public function testXdrTransactionMetaV3SorobanMetaPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrTransactionMetaV3(new XdrExtensionPoint(0), [], [], [], null);
+        $present->sorobanMeta = new XdrSorobanTransactionMeta(new XdrSorobanTransactionMetaExt(0), [], new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID)), []);
+        $absent = new XdrTransactionMetaV3(new XdrExtensionPoint(0), [], [], [], null);
+        $absent->sorobanMeta = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrTransactionMetaV3.sorobanMeta presence flag must be 0 or 1, got 2');
+        XdrTransactionMetaV3::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrTransactionMetaV3GettersSetters(): void
     {
         $obj = new XdrTransactionMetaV3(new XdrExtensionPoint(0), [], [], [], null);
@@ -4262,6 +4322,21 @@ class XdrLedgerGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Optionals-present roundtrip failed for XdrSorobanTransactionMetaV2');
         $b64Decoded = XdrSorobanTransactionMetaV2::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 optionals-present roundtrip failed for XdrSorobanTransactionMetaV2');
+    }
+
+    public function testXdrSorobanTransactionMetaV2ReturnValuePresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrSorobanTransactionMetaV2(new XdrSorobanTransactionMetaExt(0), null);
+        $present->returnValue = new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID));
+        $absent = new XdrSorobanTransactionMetaV2(new XdrSorobanTransactionMetaExt(0), null);
+        $absent->returnValue = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrSorobanTransactionMetaV2.returnValue presence flag must be 0 or 1, got 2');
+        XdrSorobanTransactionMetaV2::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrSorobanTransactionMetaV2GettersSetters(): void
@@ -4490,6 +4565,21 @@ class XdrLedgerGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Arrays roundtrip failed for XdrTransactionMetaV4');
         $b64Decoded = XdrTransactionMetaV4::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 arrays roundtrip failed for XdrTransactionMetaV4');
+    }
+
+    public function testXdrTransactionMetaV4SorobanMetaPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrTransactionMetaV4(new XdrExtensionPoint(0), [], [], [], [], [], null);
+        $present->sorobanMeta = new XdrSorobanTransactionMetaV2(new XdrSorobanTransactionMetaExt(0), null);
+        $absent = new XdrTransactionMetaV4(new XdrExtensionPoint(0), [], [], [], [], [], null);
+        $absent->sorobanMeta = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrTransactionMetaV4.sorobanMeta presence flag must be 0 or 1, got 2');
+        XdrTransactionMetaV4::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrTransactionMetaV4GettersSetters(): void

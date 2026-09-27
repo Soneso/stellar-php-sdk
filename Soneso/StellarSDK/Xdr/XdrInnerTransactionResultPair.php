@@ -2,6 +2,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class XdrInnerTransactionResultPair extends XdrInnerTransactionResultPairBase
 {
     public function encode(): string {

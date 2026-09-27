@@ -126,6 +126,10 @@ class XdrCreateContractArgsV2 {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $this->contractIDPreimage->toTxRep($prefix . '.contractIDPreimage', $lines);
         $this->executable->toTxRep($prefix . '.executable', $lines);

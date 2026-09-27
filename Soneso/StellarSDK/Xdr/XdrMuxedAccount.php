@@ -10,6 +10,9 @@ use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class XdrMuxedAccount extends XdrMuxedAccountBase
 {
     /**

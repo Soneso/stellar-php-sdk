@@ -98,6 +98,10 @@ class XdrLedgerKeyTrustLine {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.accountID'] = TxRepHelper::formatAccountId($this->accountID);
         $this->asset->toTxRep($prefix . '.asset', $lines);

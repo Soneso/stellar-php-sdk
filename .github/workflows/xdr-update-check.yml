@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   check-xdr-updates:
+    if: github.repository == 'Soneso/stellar-php-sdk'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

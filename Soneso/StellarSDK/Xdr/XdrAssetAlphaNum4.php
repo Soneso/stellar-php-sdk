@@ -2,6 +2,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class XdrAssetAlphaNum4 extends XdrAssetAlphaNum4Base
 {
     public function encode(): string {

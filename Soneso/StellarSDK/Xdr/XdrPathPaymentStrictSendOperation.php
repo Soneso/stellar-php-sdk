@@ -166,6 +166,10 @@ class XdrPathPaymentStrictSendOperation {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.sendAsset'] = TxRepHelper::formatAsset($this->sendAsset);
         $lines[$prefix . '.sendAmount'] = $this->sendAmount->toString();

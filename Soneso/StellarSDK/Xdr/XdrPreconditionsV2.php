@@ -57,15 +57,15 @@ class XdrPreconditionsV2 {
 
     public static function decode(XdrBuffer $xdr): XdrPreconditionsV2 {
         $timeBounds = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrPreconditionsV2.timeBounds')) {
             $timeBounds = XdrTimeBounds::decode($xdr);
         }
         $ledgerBounds = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrPreconditionsV2.ledgerBounds')) {
             $ledgerBounds = XdrLedgerBounds::decode($xdr);
         }
         $minSeqNum = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrPreconditionsV2.minSeqNum')) {
             $minSeqNum = XdrSequenceNumber::decode($xdr);
         }
         $minSeqAge = $xdr->readUnsignedInteger64();
@@ -198,6 +198,10 @@ class XdrPreconditionsV2 {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         if ($this->timeBounds !== null) {
             $lines[$prefix . '.timeBounds._present'] = 'true';

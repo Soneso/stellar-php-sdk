@@ -1194,6 +1194,21 @@ class XdrLedgerEntriesGenTest extends TestCase
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 arrays roundtrip failed for XdrAccountEntryV2');
     }
 
+    public function testXdrAccountEntryV2SignerSponsoringIDsPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrAccountEntryV2(42, 42, [], new XdrAccountEntryV2Ext(0));
+        $present->signerSponsoringIDs = [XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H')];
+        $absent = new XdrAccountEntryV2(42, 42, [], new XdrAccountEntryV2Ext(0));
+        $absent->signerSponsoringIDs = [null];
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrAccountEntryV2.signerSponsoringIDs presence flag must be 0 or 1, got 2');
+        XdrAccountEntryV2::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrAccountEntryV2EdgeCaseZeroRoundTrip(): void
     {
         $original = new XdrAccountEntryV2(0, 42, [], new XdrAccountEntryV2Ext(0));
@@ -1594,6 +1609,21 @@ class XdrLedgerEntriesGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Arrays roundtrip failed for XdrAccountEntry');
         $b64Decoded = XdrAccountEntry::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 arrays roundtrip failed for XdrAccountEntry');
+    }
+
+    public function testXdrAccountEntryInflationDestPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrAccountEntry(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new BigInteger('123456789'), new XdrSequenceNumber(new BigInteger('123456789')), 42, 42, 'test_string', str_repeat("\xAB", 4), [], new XdrAccountEntryExt(0), null);
+        $present->inflationDest = XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        $absent = new XdrAccountEntry(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), new BigInteger('123456789'), new XdrSequenceNumber(new BigInteger('123456789')), 42, 42, 'test_string', str_repeat("\xAB", 4), [], new XdrAccountEntryExt(0), null);
+        $absent->inflationDest = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrAccountEntry.inflationDest presence flag must be 0 or 1, got 2');
+        XdrAccountEntry::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrAccountEntryEdgeCaseZeroRoundTrip(): void
@@ -3095,6 +3125,21 @@ class XdrLedgerEntriesGenTest extends TestCase
         $decoded = XdrClaimPredicate::decode(new XdrBuffer($encoded));
         $this->assertEquals($original->type->getValue(), $decoded->type->getValue());
         $this->assertEquals($encoded, $decoded->encode());
+    }
+
+    public function testXdrClaimPredicateNotPredicatePresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::NOT));
+        $present->notPredicate = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::UNCONDITIONAL));
+        $absent = new XdrClaimPredicate(new XdrClaimPredicateType(XdrClaimPredicateType::NOT));
+        $absent->notPredicate = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrClaimPredicate.notPredicate presence flag must be 0 or 1, got 2');
+        XdrClaimPredicate::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrClaimPredicateUnionJsonRoundTrip(): void
@@ -4786,6 +4831,21 @@ class XdrLedgerEntriesGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Optionals-present roundtrip failed for XdrLedgerEntryV1');
         $b64Decoded = XdrLedgerEntryV1::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 optionals-present roundtrip failed for XdrLedgerEntryV1');
+    }
+
+    public function testXdrLedgerEntryV1SponsoringIDPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrLedgerEntryV1(new XdrLedgerEntryV1Ext(0), null);
+        $present->sponsoringID = XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+        $absent = new XdrLedgerEntryV1(new XdrLedgerEntryV1Ext(0), null);
+        $absent->sponsoringID = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrLedgerEntryV1.sponsoringID presence flag must be 0 or 1, got 2');
+        XdrLedgerEntryV1::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrLedgerEntryV1GettersSetters(): void
