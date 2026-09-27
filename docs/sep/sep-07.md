@@ -343,7 +343,7 @@ try {
 
 ## Signing and submitting transactions
 
-Use `signAndSubmitTransaction()` to sign a transaction from a URI and submit it. The method handles submission to either a callback URL or directly to the Stellar network.
+Use `signAndSubmitTransaction()` to sign a transaction from a URI and submit it. The method handles submission to either a callback URL or directly to the Stellar network. When the method submits directly to the network, it runs the SEP-29 memo requirement check and throws `AccountRequiresMemoException` if a destination of the transaction requires a memo the transaction does not carry (see the [SEP-29 guide](sep-29.md)).
 
 ```php
 <?php

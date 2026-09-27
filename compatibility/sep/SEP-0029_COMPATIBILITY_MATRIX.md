@@ -1,8 +1,8 @@
 # SEP-29: Account Memo Requirements
 
 **Status:** ✅ Supported  
-**SDK Version:** 1.14.0  
-**Generated:** 2026-09-23 03:59 UTC  
+**SDK Version:** 1.15.0  
+**Generated:** 2026-09-27 21:44 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md)
 
 ## Overall Coverage
