@@ -113,6 +113,10 @@ class XdrSorobanAuthorizedInvocation {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $this->function->toTxRep($prefix . '.function', $lines);
         $lines[$prefix . '.subInvocations.len'] = (string)count($this->subInvocations);

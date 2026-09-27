@@ -31,7 +31,7 @@ class XdrOperation {
 
     public static function decode(XdrBuffer $xdr): XdrOperation {
         $sourceAccount = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrOperation.sourceAccount')) {
             $sourceAccount = XdrMuxedAccount::decode($xdr);
         }
         $body = XdrOperationBody::decode($xdr);
@@ -109,6 +109,10 @@ class XdrOperation {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         if ($this->sourceAccount !== null) {
             $lines[$prefix . '.sourceAccount._present'] = 'true';

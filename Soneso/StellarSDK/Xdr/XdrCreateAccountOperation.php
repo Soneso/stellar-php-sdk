@@ -99,6 +99,10 @@ class XdrCreateAccountOperation {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.destination'] = TxRepHelper::formatAccountId($this->destination);
         $lines[$prefix . '.startingBalance'] = $this->startingBalance->toString();

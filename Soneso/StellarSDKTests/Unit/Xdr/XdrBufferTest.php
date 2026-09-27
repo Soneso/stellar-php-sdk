@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 
 /**
- * Tests for the array count and extension point reads of XdrBuffer.
+ * Tests for the array count, extension point and optional presence reads of XdrBuffer.
  */
 class XdrBufferTest extends TestCase
 {
@@ -110,5 +110,58 @@ class XdrBufferTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('XdrExample extension point must be 0, got -1');
         $buffer->readExtensionPoint('XdrExample');
+    }
+
+    public function testReadOptionalPresenceReturnsFalseForZero(): void
+    {
+        $buffer = new XdrBuffer(pack('N', 0) . pack('N', 5));
+
+        $this->assertFalse($buffer->readOptionalPresence('XdrExample.field'));
+        $this->assertSame(5, $buffer->readInteger32());
+    }
+
+    public function testReadOptionalPresenceReturnsTrueForOne(): void
+    {
+        $buffer = new XdrBuffer(pack('N', 1) . pack('N', 5));
+
+        $this->assertTrue($buffer->readOptionalPresence('XdrExample.field'));
+        $this->assertSame(5, $buffer->readInteger32());
+    }
+
+    public function testReadOptionalPresenceRejectsTwo(): void
+    {
+        $this->assertOptionalPresenceRejected(
+            pack('N', 2),
+            'XdrExample.field presence flag must be 0 or 1, got 2'
+        );
+    }
+
+    public function testReadOptionalPresenceRejectsNegative(): void
+    {
+        // 0xffffffff is -1 as a signed int32.
+        $this->assertOptionalPresenceRejected(
+            "\xff\xff\xff\xff",
+            'XdrExample.field presence flag must be 0 or 1, got -1'
+        );
+    }
+
+    public function testReadOptionalPresenceRejectsTruncatedWord(): void
+    {
+        $this->assertOptionalPresenceRejected("\x00\x00\x00", 'Unexpected end of XDR data');
+    }
+
+    /**
+     * Reads a presence flag from the given bytes and asserts the exact exception message.
+     */
+    private function assertOptionalPresenceRejected(string $bytes, string $message): void
+    {
+        $buffer = new XdrBuffer($bytes);
+        try {
+            $buffer->readOptionalPresence('XdrExample.field');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame($message, $e->getMessage());
+            return;
+        }
+        $this->fail('readOptionalPresence accepted ' . bin2hex($bytes));
     }
 }

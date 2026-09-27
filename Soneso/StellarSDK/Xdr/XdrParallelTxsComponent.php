@@ -35,7 +35,7 @@ class XdrParallelTxsComponent {
 
     public static function decode(XdrBuffer $xdr): XdrParallelTxsComponent {
         $baseFee = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrParallelTxsComponent.baseFee')) {
             $baseFee = $xdr->readInteger64();
         }
         $executionStages = [];

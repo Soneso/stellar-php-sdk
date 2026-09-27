@@ -132,12 +132,20 @@ class XdrSCVal extends XdrSCValBase
         return $result;
     }
 
+    /**
+     * @param array<XdrSCVal> $vec
+     * @return XdrSCVal
+     */
     public static function forVec(array $vec) : XdrSCVal {
         $result = new XdrSCVal(XdrSCValType::VEC());
         $result->vec = $vec;
         return $result;
     }
 
+    /**
+     * @param array<XdrSCMapEntry> $map
+     * @return XdrSCVal
+     */
     public static function forMap(array $map) : XdrSCVal {
         $result = new XdrSCVal(XdrSCValType::MAP());
         $result->map = $map;
@@ -461,7 +469,7 @@ class XdrSCVal extends XdrSCValBase
      * @return GMP
      */
     private static function normalizeToBigInt($value) : GMP {
-        if (is_object($value) && $value instanceof GMP) {
+        if ($value instanceof GMP) {
             return $value;
         }
         // gmp_init always returns a GMP object in PHP 8+
@@ -471,7 +479,7 @@ class XdrSCVal extends XdrSCValBase
     /**
      * Splits a BigInt into 128-bit hi/lo 64-bit parts.
      * @param GMP $value
-     * @return array [hi, lo] as integers
+     * @return array{int, int} [hi, lo] as integers
      */
     private static function bigInt128Parts(GMP $value) : array {
         $isNegative = gmp_cmp($value, 0) < 0;
@@ -513,7 +521,7 @@ class XdrSCVal extends XdrSCValBase
     /**
      * Splits a BigInt into 256-bit hihi/hilo/lohi/lolo 64-bit parts.
      * @param GMP $value
-     * @return array [hihi, hilo, lohi, lolo] as integers
+     * @return array{int, int, int, int} [hihi, hilo, lohi, lolo] as integers
      */
     private static function bigInt256Parts(GMP $value) : array {
         $isNegative = gmp_cmp($value, 0) < 0;

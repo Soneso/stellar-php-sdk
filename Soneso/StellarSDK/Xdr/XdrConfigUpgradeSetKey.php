@@ -2,6 +2,9 @@
 
 namespace Soneso\StellarSDK\Xdr;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class XdrConfigUpgradeSetKey extends XdrConfigUpgradeSetKeyBase
 {
     public function encode(): string {

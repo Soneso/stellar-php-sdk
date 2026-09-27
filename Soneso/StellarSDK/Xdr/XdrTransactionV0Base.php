@@ -53,7 +53,7 @@ class XdrTransactionV0Base {
         $fee = $xdr->readUnsignedInteger32();
         $seqNum = XdrSequenceNumber::decode($xdr);
         $timeBounds = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrTransactionV0.timeBounds')) {
             $timeBounds = XdrTimeBounds::decode($xdr);
         }
         $memo = XdrMemo::decode($xdr);
@@ -173,6 +173,10 @@ class XdrTransactionV0Base {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.sourceAccountEd25519'] = TxRepHelper::bytesToHex($this->sourceAccountEd25519);
         $lines[$prefix . '.fee'] = (string)$this->fee;

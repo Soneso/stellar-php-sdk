@@ -21,7 +21,7 @@ class XdrEncoder
     /**
      * @param string $value
      * @param int|null $expectedLength in bytes
-     * @param false $padUnexpectedLength If true, an unexpected length is padded instead of throwing an exception
+     * @param bool $padUnexpectedLength If true, an unexpected length is padded instead of throwing an exception
      * @return string
      */
     public static function opaqueFixed(string $value, ?int $expectedLength = null, bool $padUnexpectedLength = false): string
@@ -62,6 +62,10 @@ class XdrEncoder
         return $bytes;
     }
 
+    /**
+     * @param int $value
+     * @return string
+     */
     public static function integer32($value): string
     {
         // pack() does not support a signed 32-byte int, so work around this with
@@ -69,12 +73,20 @@ class XdrEncoder
         return (self::nativeIsBigEndian()) ? pack('l', $value) : strrev(pack('l', $value));
     }
 
+    /**
+     * @param int $value
+     * @return string
+     */
     public static function unsignedInteger32($value): string
     {
         // unsigned 32-bit big-endian
         return pack('N', $value);
     }
 
+    /**
+     * @param int $value
+     * @return string
+     */
     public static function integer64($value): string
     {
         // pack() does not support a signed 64-byte int, so work around this with
@@ -155,7 +167,7 @@ class XdrEncoder
      *
      * This value will be padded up to 8 bytes
      *
-     * @param $value
+     * @param string $value
      * @return string
      */
     public static function integer64RawBytes($value) : string
@@ -165,6 +177,10 @@ class XdrEncoder
         return self::applyPadding($value, 8, false);
     }
 
+    /**
+     * @param int $value
+     * @return string
+     */
     public static function unsignedInteger64($value): string
     {
         if ($value > PHP_INT_MAX) throw new InvalidArgumentException('value is greater than PHP_INT_MAX');
@@ -173,21 +189,37 @@ class XdrEncoder
         return pack('J', $value);
     }
 
+    /**
+     * @param int $value
+     * @return string
+     */
     public static function hyper($value): string
     {
         return self::integer64($value);
     }
 
+    /**
+     * @param int $value
+     * @return string
+     */
     public static function unsignedHyper($value): string
     {
         return self::unsignedInteger64($value);
     }
 
+    /**
+     * @param string $value
+     * @return string
+     */
     public static function unsignedInteger256($value): string
     {
         return self::opaqueFixed($value, (256/8));
     }
 
+    /**
+     * @param bool $value
+     * @return string
+     */
     public static function boolean($value) : string
     {
         // Equivalent to 1 or 0 uint32
@@ -221,7 +253,7 @@ class XdrEncoder
     }
 
     /**
-     * @param $value
+     * @param int|null $value
      * @return string
      */
     public static function optionalUnsignedInteger($value): string
@@ -240,7 +272,8 @@ class XdrEncoder
     }
 
     /**
-     * @param $value
+     * @param string|null $value
+     * @param int|null $maximumLength
      * @return string
      */
     public static function optionalString(?string $value, $maximumLength): string

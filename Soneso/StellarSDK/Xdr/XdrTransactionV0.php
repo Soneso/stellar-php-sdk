@@ -8,6 +8,9 @@ namespace Soneso\StellarSDK\Xdr;
 
 use Soneso\StellarSDK\Constants\StellarConstants;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class XdrTransactionV0 extends XdrTransactionV0Base
 {
     /**
@@ -45,7 +48,7 @@ class XdrTransactionV0 extends XdrTransactionV0Base
         $fee = $xdr->readUnsignedInteger32();
         $seqNum = XdrSequenceNumber::decode($xdr);
         $timeBounds = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrTransactionV0.timeBounds')) {
             $timeBounds = XdrTimeBounds::decode($xdr);
         }
         $memo = XdrMemo::decode($xdr);

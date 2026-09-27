@@ -1420,6 +1420,21 @@ class XdrContractGenTest extends TestCase
         }
     }
 
+    public function testXdrSCContractInstanceStoragePresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrSCContractInstance(new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), null);
+        $present->storage = [];
+        $absent = new XdrSCContractInstance(new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), null);
+        $absent->storage = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrSCContractInstance.storage presence flag must be 0 or 1, got 2');
+        XdrSCContractInstance::fromBase64Xdr(base64_encode($patched));
+    }
+
     public function testXdrSCContractInstanceGettersSetters(): void
     {
         $obj = new XdrSCContractInstance(new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), null);
@@ -1438,6 +1453,36 @@ class XdrContractGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSCVal');
         $b64Decoded = XdrSCVal::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSCVal');
+    }
+
+    public function testXdrSCValVecPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrSCValBase(new XdrSCValType(XdrSCValType::SCV_VEC));
+        $present->vec = [];
+        $absent = new XdrSCValBase(new XdrSCValType(XdrSCValType::SCV_VEC));
+        $absent->vec = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrSCVal.vec presence flag must be 0 or 1, got 2');
+        XdrSCValBase::fromBase64Xdr(base64_encode($patched));
+    }
+
+    public function testXdrSCValMapPresenceFlagOtherThanZeroOrOneThrows(): void
+    {
+        $present = new XdrSCValBase(new XdrSCValType(XdrSCValType::SCV_MAP));
+        $present->map = [];
+        $absent = new XdrSCValBase(new XdrSCValType(XdrSCValType::SCV_MAP));
+        $absent->map = null;
+        $encoded = $present->encode();
+        $flagOffset = strspn($encoded ^ $absent->encode(), "\0") - 3;
+        $this->assertSame("\x00\x00\x00\x01", substr($encoded, $flagOffset, 4));
+        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrSCVal.map presence flag must be 0 or 1, got 2');
+        XdrSCValBase::fromBase64Xdr(base64_encode($patched));
     }
 
     public function testXdrSCValUnionJsonRoundTrip(): void

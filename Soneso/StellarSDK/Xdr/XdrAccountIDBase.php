@@ -70,6 +70,10 @@ class XdrAccountIDBase {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $this->accountID->toTxRep($prefix, $lines);
     }

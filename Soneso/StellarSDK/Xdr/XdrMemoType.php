@@ -166,6 +166,10 @@ class XdrMemoType {
         }
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix] = $this->enumName();
     }

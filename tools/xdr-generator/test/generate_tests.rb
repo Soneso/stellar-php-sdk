@@ -564,12 +564,11 @@ def analyze_struct_fields(php_name, struct_defn)
   end
 end
 
-def generate_struct_value(php_name, struct_defn, depth)
+# class_name is the class to construct; it defaults to php_name, the wrapper
+# class for BASE_WRAPPER_TYPES.
+def generate_struct_value(php_name, struct_defn, depth, class_name = php_name)
   return nil if depth > MAX_DEPTH
   return FALLBACK_VALUES[php_name] if FALLBACK_VALUES.key?(php_name)
-
-  # Use wrapper class name for BASE_WRAPPER_TYPES
-  class_name = php_name
 
   # Collect fields using shared helper
   fields = analyze_struct_fields(php_name, struct_defn)
@@ -828,6 +827,7 @@ def generate_test_file(source, definitions, output_dir)
         unknown_disc_test = generate_union_unknown_discriminant_test(php_name, defn)
         tests << unknown_disc_test if unknown_disc_test
       end
+      tests.concat(generate_optional_presence_tests(php_name, defn))
       next
     end
 
@@ -868,6 +868,8 @@ def generate_test_file(source, definitions, output_dir)
       # Step 3: Non-empty arrays
       arr_test = generate_struct_with_arrays_test(php_name, defn)
       tests << arr_test if arr_test
+      # Presence flag other than 0 or 1
+      tests.concat(generate_optional_presence_tests(php_name, defn))
       # Step 5: Edge cases
       edge_tests = generate_struct_edge_case_tests(php_name, defn)
       tests.concat(edge_tests) if edge_tests
@@ -883,6 +885,8 @@ def generate_test_file(source, definitions, output_dir)
       # Discriminant without a matching arm
       unknown_disc_test = generate_union_unknown_discriminant_test(php_name, defn)
       tests << unknown_disc_test if unknown_disc_test
+      # Presence flag other than 0 or 1
+      tests.concat(generate_optional_presence_tests(php_name, defn))
       # JSON (SEP-51) per-arm round-trip
       union_json_test = generate_union_json_test(php_name, defn)
       tests << union_json_test if union_json_test
@@ -1470,7 +1474,7 @@ def generate_union_unknown_discriminant_test(php_name, union_defn)
     return nil
   end
 
-  decode_class = union_construct_class(php_name)
+  decode_class = generated_class_for(php_name)
   disc_read = disc_info[:kind] == :enum ? "$original->#{disc_info[:field_name]}->getValue()" : "$original->#{disc_info[:field_name]}"
 
   imports = collect_imports_from_expr(value_expr)
@@ -1492,6 +1496,118 @@ def generate_union_unknown_discriminant_test(php_name, union_defn)
 end
 
 # ---------------------------------------------------------------------------
+# Optional presence flag other than 0 or 1
+#
+# XDR encodes an optional value as a bool presence flag followed by the value,
+# and a bool is 0 or 1. For every optional struct field, every array field whose
+# elements are optional and every optional union arm, the test encodes one
+# instance with the value present and one with it absent. The two encodings
+# share every byte before the flag, and the flag is 00 00 00 01 in the first
+# and 00 00 00 00 in the second, so the first byte that differs is the last byte
+# of the flag. The test checks the four bytes at that offset, replaces them with
+# 2 and expects the generated decoder to reject the flag, naming the field.
+# ---------------------------------------------------------------------------
+
+def generate_optional_presence_tests(php_name, defn)
+  case defn
+  when AST::Definitions::Struct then struct_optional_presence_tests(php_name, defn)
+  when AST::Definitions::Union then union_optional_presence_tests(php_name, defn)
+  else []
+  end
+end
+
+def struct_optional_presence_tests(php_name, struct_defn)
+  fields = analyze_struct_fields(php_name, struct_defn)
+  targets = fields.select { |f| f[:is_optional] || f[:elements_optional] }
+  return [] if targets.empty?
+
+  decode_class = generated_class_for(php_name)
+  instance_expr = generate_struct_value(php_name, struct_defn, 1, decode_class)
+  unless instance_expr
+    puts "  SKIP presence flag tests for #{php_name}: no constructible value"
+    return []
+  end
+
+  targets.filter_map do |f|
+    if f[:elements_optional]
+      element = test_value_for_type(array_element_php_type(f), array_element_typespec(f), nil, 1)
+      present_value = element && "[#{element}]"
+      absent_value = "[null]"
+    elsif f[:is_array]
+      present_value = "[]"
+      absent_value = "null"
+    else
+      typespec = f[:decl].respond_to?(:type) ? f[:decl].type : nil
+      present_value = test_value_for_type(f[:php_type], typespec, f[:decl], 1)
+      absent_value = "null"
+    end
+    unless present_value
+      puts "  SKIP presence flag test for #{php_name}.#{f[:name]}: no constructible value"
+      next
+    end
+
+    optional_presence_test(php_name, f[:name], decode_class, instance_expr, present_value, absent_value)
+  end
+end
+
+def union_optional_presence_tests(php_name, union_defn)
+  construct_class = generated_class_for(php_name)
+  disc_info = resolve_discriminant_info_test(union_defn, php_name)
+
+  union_defn.normal_arms.filter_map do |arm|
+    next if arm.void?
+    decl = arm.declaration
+    next unless decl.is_a?(AST::Declarations::Optional)
+
+    field_name = resolve_field_name(php_name, arm.name)
+    arm_php_type = if FIELD_TYPE_OVERRIDES.key?(php_name) && FIELD_TYPE_OVERRIDES[php_name].key?(field_name)
+                     FIELD_TYPE_OVERRIDES[php_name][field_name]
+                   else
+                     php_type_string(decl)
+                   end
+    present_value = if ARM_VALUE_OVERRIDES.key?([php_name, field_name])
+                      ARM_VALUE_OVERRIDES[[php_name, field_name]]
+                    elsif arm_php_type == "array"
+                      "[]"
+                    else
+                      test_value_for_type(arm_php_type, decl.type, decl, 1)
+                    end
+    unless present_value
+      puts "  SKIP presence flag test for #{php_name}.#{field_name}: no constructible value"
+      next
+    end
+
+    instance_expr = "new #{construct_class}(#{arm_discriminant_expr(arm.cases.first.value, disc_info)})"
+    optional_presence_test(php_name, field_name, construct_class, instance_expr, present_value, "null")
+  end
+end
+
+def optional_presence_test(php_name, field_name, decode_class, instance_expr, present_value, absent_value)
+  imports = collect_imports_from_expr(instance_expr)
+  imports.merge(collect_imports_from_expr(present_value))
+  imports.add(decode_class)
+
+  method_field = field_name[0].upcase + field_name[1..]
+  lines = []
+  lines << "    public function test#{php_name}#{method_field}PresenceFlagOtherThanZeroOrOneThrows(): void"
+  lines << "    {"
+  lines << "        $present = #{instance_expr};"
+  lines << "        $present->#{field_name} = #{present_value};"
+  lines << "        $absent = #{instance_expr};"
+  lines << "        $absent->#{field_name} = #{absent_value};"
+  lines << "        $encoded = $present->encode();"
+  lines << "        $flagOffset = strspn($encoded ^ $absent->encode(), \"\\0\") - 3;"
+  lines << "        $this->assertSame(\"\\x00\\x00\\x00\\x01\", substr($encoded, $flagOffset, 4));"
+  lines << "        $patched = substr_replace($encoded, XdrEncoder::integer32(2), $flagOffset, 4);"
+  lines << "        $this->expectException(\\InvalidArgumentException::class);"
+  lines << "        $this->expectExceptionMessage('#{php_name}.#{field_name} presence flag must be 0 or 1, got 2');"
+  lines << "        #{decode_class}::fromBase64Xdr(base64_encode($patched));"
+  lines << "    }"
+
+  { lines: lines, imports: imports }
+end
+
+# ---------------------------------------------------------------------------
 # Slice 2: Union per-arm JSON round-trips
 #
 # Exercises every reconstructible match-arm of fromJsonValue. For each arm we
@@ -1505,10 +1621,12 @@ end
 # single fallback instance and therefore only touch one arm.
 # ---------------------------------------------------------------------------
 
-# Returns the class used to *construct* per-arm union instances. The Base class
-# (when present) always has a discriminant-only constructor, so per-arm field
-# assignment works uniformly even for wrapper types with custom constructors.
-def union_construct_class(php_name)
+# Returns the generated class for php_name: the *Base class of a wrapper type
+# (when present), otherwise php_name itself. Its constructor has the generated
+# signature (discriminant-only for unions), so per-arm and per-field assignment
+# works uniformly even for wrapper types with custom constructors, and its
+# decoder is the generated one.
+def generated_class_for(php_name)
   if BASE_WRAPPER_TYPES.include?(php_name)
     base_file = File.join("Soneso", "StellarSDK", "Xdr", "#{php_name}Base.php")
     return "#{php_name}Base" if File.exist?(base_file)
@@ -1595,7 +1713,7 @@ def generate_union_json_test(php_name, union_defn)
   json_class = json_class_for(php_name)
   return nil unless json_class
 
-  construct_class = union_construct_class(php_name)
+  construct_class = generated_class_for(php_name)
   instances = union_arm_json_instances(php_name, union_defn, construct_class)
   return nil if instances.empty?
 
@@ -1754,7 +1872,7 @@ def generate_union_negative_json_test(php_name, union_defn)
   json_class = json_class_for(php_name)
   return nil unless json_class
 
-  construct_class = union_construct_class(php_name)
+  construct_class = generated_class_for(php_name)
   instances = union_arm_json_instances(php_name, union_defn, construct_class)
   return nil if instances.empty?
 

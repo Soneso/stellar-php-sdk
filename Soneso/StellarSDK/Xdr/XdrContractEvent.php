@@ -39,7 +39,7 @@ class XdrContractEvent {
     public static function decode(XdrBuffer $xdr): XdrContractEvent {
         $ext = XdrExtensionPoint::decode($xdr);
         $hash = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrContractEvent.hash')) {
             $hash = $xdr->readOpaqueFixed(32);
         }
         $type = XdrContractEventType::decode($xdr);

@@ -92,39 +92,39 @@ class XdrSetOptionsOperation {
 
     public static function decode(XdrBuffer $xdr): XdrSetOptionsOperation {
         $inflationDest = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrSetOptionsOperation.inflationDest')) {
             $inflationDest = XdrAccountID::decode($xdr);
         }
         $clearFlags = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrSetOptionsOperation.clearFlags')) {
             $clearFlags = $xdr->readUnsignedInteger32();
         }
         $setFlags = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrSetOptionsOperation.setFlags')) {
             $setFlags = $xdr->readUnsignedInteger32();
         }
         $masterWeight = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrSetOptionsOperation.masterWeight')) {
             $masterWeight = $xdr->readUnsignedInteger32();
         }
         $lowThreshold = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrSetOptionsOperation.lowThreshold')) {
             $lowThreshold = $xdr->readUnsignedInteger32();
         }
         $medThreshold = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrSetOptionsOperation.medThreshold')) {
             $medThreshold = $xdr->readUnsignedInteger32();
         }
         $highThreshold = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrSetOptionsOperation.highThreshold')) {
             $highThreshold = $xdr->readUnsignedInteger32();
         }
         $homeDomain = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrSetOptionsOperation.homeDomain')) {
             $homeDomain = $xdr->readString();
         }
         $signer = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrSetOptionsOperation.signer')) {
             $signer = XdrSigner::decode($xdr);
         }
         return new XdrSetOptionsOperation($inflationDest, $clearFlags, $setFlags, $masterWeight, $lowThreshold, $medThreshold, $highThreshold, $homeDomain, $signer);
@@ -288,6 +288,10 @@ class XdrSetOptionsOperation {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         if ($this->inflationDest !== null) {
             $lines[$prefix . '.inflationDest._present'] = 'true';

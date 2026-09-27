@@ -100,6 +100,10 @@ class XdrSorobanResourcesExtV0 {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.archivedSorobanEntries.len'] = (string)count($this->archivedSorobanEntries);
         for ($i = 0; $i < count($this->archivedSorobanEntries); $i++) {

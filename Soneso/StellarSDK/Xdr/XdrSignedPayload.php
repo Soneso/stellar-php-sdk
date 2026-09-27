@@ -94,6 +94,10 @@ class XdrSignedPayload {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.ed25519'] = TxRepHelper::bytesToHex($this->ed25519);
         $lines[$prefix . '.payload'] = TxRepHelper::bytesToHex($this->payload);

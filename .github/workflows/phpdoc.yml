@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.repository == 'Soneso/stellar-php-sdk'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -41,6 +42,7 @@ jobs:
           path: ./docs/api
 
   deploy:
+    if: github.repository == 'Soneso/stellar-php-sdk'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

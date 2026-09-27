@@ -126,6 +126,10 @@ class XdrInvokeContractArgs {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $this->contractAddress->toTxRep($prefix . '.contractAddress', $lines);
         $lines[$prefix . '.functionName'] = TxRepHelper::escapeString($this->functionName);

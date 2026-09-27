@@ -29,7 +29,7 @@ bundle install
 bundle exec ruby generate.rb
 ```
 
-Output goes to `Soneso/StellarSDK/Xdr/`.
+Output goes to `Soneso/StellarSDK/Xdr/`. Each run also rewrites `phpstan-generated.neon`, the list of generated files that `phpstan.neon.dist` excludes from static analysis, so the hand-written classes in the same directory are still analysed. The XDR Generator workflow regenerates and diffs it with the generated classes.
 
 ### Update to a new XDR spec version
 

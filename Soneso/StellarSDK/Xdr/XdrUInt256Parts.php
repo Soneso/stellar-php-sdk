@@ -102,6 +102,10 @@ class XdrUInt256Parts {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.hi_hi'] = (string)$this->hiHi;
         $lines[$prefix . '.hi_lo'] = (string)$this->hiLo;

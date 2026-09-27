@@ -32,7 +32,7 @@ class XdrManageDataOperationBase {
     public static function decode(XdrBuffer $xdr): static {
         $dataName = $xdr->readString();
         $dataValue = null;
-        if ($xdr->readInteger32() !== 0) {
+        if ($xdr->readOptionalPresence('XdrManageDataOperation.dataValue')) {
             $dataValue = $xdr->readOpaqueVariable();
         }
         return new static($dataName, $dataValue);
@@ -120,6 +120,10 @@ class XdrManageDataOperationBase {
         return static::fromJsonValue(XdrJsonHelper::decodeText($json));
     }
 
+    /**
+     * @param string $prefix
+     * @param array<string, string> $lines
+     */
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.dataName'] = TxRepHelper::escapeString($this->dataName);
         if ($this->dataValue !== null) {

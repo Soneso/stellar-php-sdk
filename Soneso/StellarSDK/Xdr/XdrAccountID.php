@@ -9,6 +9,9 @@ namespace Soneso\StellarSDK\Xdr;
 use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\StrKey;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class XdrAccountID extends XdrAccountIDBase
 {
     /**
