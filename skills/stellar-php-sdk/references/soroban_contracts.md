@@ -748,6 +748,11 @@ $info->udtEnums    // XdrSCSpecUDTEnumV0 objects
 
 // Events
 $info->events      // XdrSCSpecEventV0 objects
+
+// Contract meta (SEP-46): key-value pairs, and the SEP numbers the
+// contract declares in its `sep` entry (SEP-47), as strings such as "41"
+$info->metaEntries   // string => string
+$info->supportedSeps // string[]
 ```
 
 ### Enumerating Functions and Parameters

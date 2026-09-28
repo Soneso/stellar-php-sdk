@@ -4,16 +4,16 @@ description: Guides Stellar blockchain development in PHP with the soneso/stella
 license: Apache 2.0
 compatibility: Requires PHP 8.0+, ext-bcmath, ext-gmp, ext-mbstring, ext-sodium, and Composer
 metadata:
-  version: "1.6.0"
+  version: "1.7.0"
   sdk_version: "1.15.0"
-  last_updated: "2026-09-27"
+  last_updated: "2026-09-28"
 ---
 
 # Stellar SDK for PHP
 
 ## Overview
 
-The `soneso/stellar-php-sdk` is a PHP 8.0+ library for the Stellar blockchain network. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), 30/30 streaming endpoints, and 20 SEP implementations. All HTTP operations are synchronous using Guzzle 7. The root namespace is `Soneso\StellarSDK`.
+The `soneso/stellar-php-sdk` is a PHP 8.0+ library for the Stellar blockchain network. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), 30/30 streaming endpoints, and 23 SEP implementations. All HTTP operations are synchronous using Guzzle 7. The root namespace is `Soneso\StellarSDK`.
 
 ## Installation
 
@@ -423,7 +423,7 @@ For complete security patterns including input validation, transaction verificat
 
 ## 10. SEP Implementations
 
-The PHP SDK implements 20 Stellar Ecosystem Proposals (SEPs). Most commonly used: SEP-01 (Stellar TOML discovery), SEP-02 (Federation address resolution), SEP-05 (BIP-39 mnemonic key derivation), SEP-10 (Web Authentication for account ownership proof), SEP-24 (Interactive deposit/withdrawal flows), SEP-51 (XDR-JSON encoding for human-readable interchange of Stellar XDR types). Most SEP classes are under the `Soneso\StellarSDK\SEP\` namespace. SEP-23 (StrKey) and SEP-53 (KeyPair message signing) live under `Soneso\StellarSDK\Crypto\`, and SEP-51 lives under `Soneso\StellarSDK\Xdr\` because it operates on XDR types directly.
+The PHP SDK implements 23 Stellar Ecosystem Proposals (SEPs). Most commonly used: SEP-01 (Stellar TOML discovery), SEP-02 (Federation address resolution), SEP-05 (BIP-39 mnemonic key derivation), SEP-10 (Web Authentication for account ownership proof), SEP-24 (Interactive deposit/withdrawal flows), SEP-51 (XDR-JSON encoding for human-readable interchange of Stellar XDR types). Most SEP classes are under the `Soneso\StellarSDK\SEP\` namespace. SEP-23 (StrKey) and SEP-53 (KeyPair message signing) live under `Soneso\StellarSDK\Crypto\`, SEP-51 lives under `Soneso\StellarSDK\Xdr\` because it operates on XDR types directly, and SEP-46, SEP-47, and SEP-48 (contract Wasm parsing via `SorobanContractParser`) live under `Soneso\StellarSDK\Soroban\`.
 
 For all SEP examples and the complete implementation table:
 [SEP Reference](./references/sep.md)

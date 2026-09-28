@@ -26,8 +26,9 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$senderKeyPair = KeyPair::fromSeed('SCT2SAMWPIMPCEPAXIAX2YBK7N3RECO5WC6AW27WA64ILQ3SNGKR7SC3');
-$destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY";
+// $senderSecretSeed: string for your funded sender account, loaded from secure storage
+// $destinationId: string for an existing account with config.memo_required set to 1
+$senderKeyPair = KeyPair::fromSeed($senderSecretSeed);
 
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 
@@ -93,7 +94,8 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$exchangeKeyPair = KeyPair::fromSeed("SBMSVD4KKELKGZXHBUQTIROWUAPQASDX7KEJITARP4VMZ6KLUHOGPTYW");
+// $exchangeSecretSeed: string for your funded exchange account, loaded from secure storage
+$exchangeKeyPair = KeyPair::fromSeed($exchangeSecretSeed);
 $exchangeAccount = $sdk->requestAccount($exchangeKeyPair->getAccountId());
 
 // Set memo_required flag
@@ -135,17 +137,18 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$senderKeyPair = KeyPair::fromSeed('SCT2SAMWPIMPCEPAXIAX2YBK7N3RECO5WC6AW27WA64ILQ3SNGKR7SC3');
+// $senderSecretSeed: string for your funded sender account, loaded from secure storage
+// $exchangeId: string for an existing account with config.memo_required set to 1
+// $walletId: string for an existing account without a config.memo_required entry
+$senderKeyPair = KeyPair::fromSeed($senderSecretSeed);
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 
 // Batch payment to multiple recipients
 $transaction = (new TransactionBuilder($senderAccount))
     ->addOperation((new PaymentOperationBuilder(
-        "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY",
-        Asset::native(), "100.0"))->build())
+        $exchangeId, Asset::native(), "100.0"))->build())
     ->addOperation((new PaymentOperationBuilder(
-        "GCKUD4BHIYSBER7DI6TPMYQ4KNDEUKVMN44VKSUQGEFXWLNTHIIQF22Z",
-        Asset::native(), "50.0"))->build())
+        $walletId, Asset::native(), "50.0"))->build())
     ->build();
 $transaction->sign($senderKeyPair, Network::testnet());
 
@@ -176,8 +179,9 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$sourceKeyPair = KeyPair::fromSeed('SCT2SAMWPIMPCEPAXIAX2YBK7N3RECO5WC6AW27WA64ILQ3SNGKR7SC3');
-$destinationId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY";
+// $sourceSecretSeed: string for the funded account to merge, loaded from secure storage
+// $destinationId: string for an existing account with config.memo_required set to 1
+$sourceKeyPair = KeyPair::fromSeed($sourceSecretSeed);
 
 $sourceAccount = $sdk->requestAccount($sourceKeyPair->getAccountId());
 
@@ -218,11 +222,12 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$senderKeyPair = KeyPair::fromSeed('SCT2SAMWPIMPCEPAXIAX2YBK7N3RECO5WC6AW27WA64ILQ3SNGKR7SC3');
+// $senderSecretSeed: string for your funded sender account, loaded from secure storage
+// $baseAccountId: string for an existing account with config.memo_required set to 1
+$senderKeyPair = KeyPair::fromSeed($senderSecretSeed);
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 
 // Create a muxed destination with user ID embedded
-$baseAccountId = "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY";
 $muxedDestination = new MuxedAccount($baseAccountId, 12345);
 
 $paymentOp = (PaymentOperationBuilder::forMuxedDestinationAccount(
@@ -255,14 +260,16 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$innerKeyPair = KeyPair::fromSeed('SCT2SAMWPIMPCEPAXIAX2YBK7N3RECO5WC6AW27WA64ILQ3SNGKR7SC3');
-$feePayerKeyPair = KeyPair::fromSeed("SBMSVD4KKELKGZXHBUQTIROWUAPQASDX7KEJITARP4VMZ6KLUHOGPTYW");
+// $innerSecretSeed: string for the funded account that signs the inner transaction, loaded from secure storage
+// $feePayerSecretSeed: string for the funded account that pays the fee, loaded from secure storage
+// $destinationId: string for an existing account with config.memo_required set to 1
+$innerKeyPair = KeyPair::fromSeed($innerSecretSeed);
+$feePayerKeyPair = KeyPair::fromSeed($feePayerSecretSeed);
 
 $innerAccount = $sdk->requestAccount($innerKeyPair->getAccountId());
 
-$paymentOp = (new PaymentOperationBuilder(
-    "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY",
-    Asset::native(), "100.0"))->build();
+$paymentOp = (new PaymentOperationBuilder($destinationId, Asset::native(), "100.0"))
+    ->build();
 
 $innerTx = (new TransactionBuilder($innerAccount))
     ->addOperation($paymentOp)
@@ -299,11 +306,10 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$senderKeyPair = KeyPair::fromSeed('SCT2SAMWPIMPCEPAXIAX2YBK7N3RECO5WC6AW27WA64ILQ3SNGKR7SC3');
+// $senderSecretSeed: string for your funded sender account, loaded from secure storage
+// $ownWalletId: string for your own hot wallet; you control its data entries and set no memo requirement
+$senderKeyPair = KeyPair::fromSeed($senderSecretSeed);
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
-
-// Own hot wallet: we control its data entries and set no memo requirement
-$ownWalletId = "GCKUD4BHIYSBER7DI6TPMYQ4KNDEUKVMN44VKSUQGEFXWLNTHIIQF22Z";
 
 $transaction = (new TransactionBuilder($senderAccount))
     ->addOperation((new PaymentOperationBuilder(
@@ -401,12 +407,13 @@ use Soneso\StellarSDK\StellarSDK;
 use Soneso\StellarSDK\TransactionBuilder;
 
 $sdk = StellarSDK::getTestNetInstance();
-$senderKeyPair = KeyPair::fromSeed('SCT2SAMWPIMPCEPAXIAX2YBK7N3RECO5WC6AW27WA64ILQ3SNGKR7SC3');
+// $senderSecretSeed: string for your funded sender account, loaded from secure storage
+// $destinationId: string for the account to pay
+$senderKeyPair = KeyPair::fromSeed($senderSecretSeed);
 $senderAccount = $sdk->requestAccount($senderKeyPair->getAccountId());
 
-$paymentOp = (new PaymentOperationBuilder(
-    "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOUJ3UBEZ3ENPLAY",
-    Asset::native(), "50.0"))->build();
+$paymentOp = (new PaymentOperationBuilder($destinationId, Asset::native(), "50.0"))
+    ->build();
 
 $transaction = (new TransactionBuilder($senderAccount))
     ->addOperation($paymentOp)

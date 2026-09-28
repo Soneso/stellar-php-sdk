@@ -30,6 +30,9 @@ Think of SEPs as the "rules of the road" that let different Stellar applications
 | SEP-35 | Operation IDs | [sep-35.md](sep-35.md) |
 | SEP-38 | Anchor RFQ API | [sep-38.md](sep-38.md) |
 | SEP-45 | Contract Account Authentication | [sep-45.md](sep-45.md) |
+| SEP-46 | Contract Meta | [Contract Parser](../soroban.md#contract-parser); [Compatibility matrix](../../compatibility/sep/SEP-0046_COMPATIBILITY_MATRIX.md) |
+| SEP-47 | Contract Interface Discovery | [Contract Parser](../soroban.md#contract-parser); [Compatibility matrix](../../compatibility/sep/SEP-0047_COMPATIBILITY_MATRIX.md) |
+| SEP-48 | Contract Interface Specification | [Contract Parser](../soroban.md#contract-parser); [Compatibility matrix](../../compatibility/sep/SEP-0048_COMPATIBILITY_MATRIX.md) |
 | SEP-51 | XDR-JSON Encoding | [sep-51.md](sep-51.md) |
 | SEP-53 | Message Signing | [sep-53.md](sep-53.md) |
 
@@ -69,6 +72,7 @@ The issuer's approval server reviews each transaction and either approves, rejec
 | Require memo on incoming payments | SEP-29 |
 | Account recovery via custodians | SEP-30 |
 | Compute and decode operation IDs consistent with Horizon | SEP-35 |
+| Read contract metadata, declared SEPs, and interface specifications from Wasm bytecode | SEP-46, SEP-47, SEP-48 |
 | Serialise or deserialise Stellar XDR types as JSON for human-readable interchange, logging, or hand-editing | SEP-51 |
 | Message signing and verification | SEP-53 |
 

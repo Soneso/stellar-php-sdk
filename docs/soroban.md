@@ -1570,7 +1570,7 @@ $transaction->setSorobanAuth($auth);
 
 ## Contract Parser
 
-Parse contract bytecode to access specifications, metadata, and environment information without deploying.
+Parse contract bytecode to access specifications (SEP-48), metadata (SEP-46), the SEPs a contract declares (SEP-47), and environment information without deploying.
 
 ### Parse from Bytecode
 
@@ -1594,6 +1594,9 @@ foreach ($contractInfo->specEntries as $entry) {
 
 // Contract meta (arbitrary metadata as key-value pairs)
 $meta = $contractInfo->metaEntries;
+
+// SEP numbers the contract declares in its `sep` meta entry
+$declaredSeps = $contractInfo->supportedSeps;
 ```
 
 ### Parse from Network

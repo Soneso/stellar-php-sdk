@@ -1,6 +1,6 @@
 # SEP Implementations
 
-The PHP SDK implements 20 Stellar Ecosystem Proposals (SEPs) that cover authentication, asset transfers, identity verification, and other standardized protocols for integrating with anchors and other Stellar services.
+The PHP SDK implements 23 Stellar Ecosystem Proposals (SEPs) that cover authentication, asset transfers, identity verification, and other standardized protocols for integrating with anchors and other Stellar services.
 
 ## SEP Reference Table
 
@@ -24,6 +24,9 @@ The PHP SDK implements 20 Stellar Ecosystem Proposals (SEPs) that cover authenti
 | SEP-35 | Operation IDs | Compute and decode Horizon's operation IDs (TOIDs) | [Details](sep-35.md) |
 | SEP-38 | Anchor RFQ API | Get exchange quotes for asset conversions | [Details](sep-38.md) |
 | SEP-45 | Web Auth for Contracts | Authenticate Soroban contract accounts | [Details](sep-45.md) |
+| SEP-46 | Contract Meta | Read key-value metadata embedded in contract WASM | [Details](soroban_contracts.md#contract-introspection) |
+| SEP-47 | Contract Interface Discovery | List the SEPs a contract declares in its `sep` meta entries | [Details](soroban_contracts.md#contract-introspection) |
+| SEP-48 | Contract Interface Specification | Parse function, type, and event specs from contract WASM | [Details](soroban_contracts.md#contract-introspection) |
 | SEP-51 | XDR-JSON Encoding | Convert Stellar XDR types to and from a canonical JSON form | [Details](sep-51.md) |
 | SEP-53 | Sign/Verify Messages | Sign and verify arbitrary messages with keypairs | [Details](sep-53.md) |
 
@@ -71,5 +74,6 @@ The following SEPs depend on other SEPs:
 - **SEP-31 (Cross-Border Payments)** → Requires SEP-10 for authentication; often paired with SEP-12 and SEP-38
 - **SEP-38 (Anchor RFQ API)** → Requires SEP-10 for authentication; used with SEP-06, SEP-24, or SEP-31
 - **SEP-45 (Web Auth for Contracts)** → Requires SEP-01 to discover web auth endpoint for contract accounts
+- **SEP-47 (Contract Interface Discovery)** → Reads the `sep` entries of SEP-46 contract meta
 
-No dependencies: SEP-02, SEP-05, SEP-07, SEP-08, SEP-09, SEP-11, SEP-23, SEP-29, SEP-35, SEP-51, SEP-53
+No dependencies: SEP-02, SEP-05, SEP-07, SEP-08, SEP-09, SEP-11, SEP-23, SEP-29, SEP-35, SEP-46, SEP-48, SEP-51, SEP-53
