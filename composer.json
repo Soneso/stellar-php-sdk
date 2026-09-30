@@ -36,9 +36,14 @@
 	],
 	"require-dev" : {
 		"phpunit/phpunit" : "~10.0",
-		"phpdocumentor/phpdocumentor": "^3.9",
+		"phpdocumentor/shim": "^3.10",
 		"league/uri": "7.5.1",
 		"phpstan/phpstan": "^2.2"
+	},
+	"config": {
+		"allow-plugins": {
+			"phpdocumentor/shim": true
+		}
 	},
 	"scripts": {
 		"analyse": "phpstan analyse --memory-limit=2G",
