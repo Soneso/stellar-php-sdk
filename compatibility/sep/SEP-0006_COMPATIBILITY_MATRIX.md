@@ -1,8 +1,10 @@
 # SEP-06: Deposit and Withdrawal API
 
 **Status:** ✅ Supported  
+**SEP Version:** 4.3.0  
+**SEP Status:** Active (Interactive components are deprecated in favor of SEP-24)  
 **SDK Version:** 1.15.0  
-**Generated:** 2026-09-27 21:44 UTC  
+**Generated:** 2026-09-29 21:52 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
 
 ## Overall Coverage

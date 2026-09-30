@@ -16,13 +16,13 @@ Usage:
 import json
 import re
 import sys
-import urllib.request
-import urllib.error
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Optional
+
+from rpc_releases import STELLAR_RPC_REPO, Release, get_github_token, resolve_release
 
 
 # ---------------------------------------------------------------------------
@@ -34,14 +34,6 @@ class SupportStatus(Enum):
     FULLY_SUPPORTED = "Full"
     PARTIALLY_SUPPORTED = "Partial"
     NOT_SUPPORTED = "Missing"
-
-
-@dataclass
-class RPCVersionInfo:
-    """RPC version information from GitHub."""
-    version: str
-    release_date: str
-    html_url: str
 
 
 @dataclass
@@ -172,46 +164,20 @@ METHOD_NOTES: dict[str, str] = {
 
 
 # ---------------------------------------------------------------------------
-# Helper: fetch RPC version info from GitHub
+# Helper: SDK version
 # ---------------------------------------------------------------------------
 
-def fetch_rpc_version() -> RPCVersionInfo:
-    """Fetch the latest stellar-rpc release version from GitHub."""
-    url = "https://api.github.com/repos/stellar/stellar-rpc/releases"
-    try:
-        req = urllib.request.Request(url)
-        req.add_header("User-Agent", "stellar-php-sdk-matrix-generator/1.0")
-        with urllib.request.urlopen(req, timeout=10) as response:
-            releases = json.loads(response.read().decode("utf-8"))
-            for release in releases:
-                tag = release.get("tag_name", "")
-                if tag.startswith("v") and not tag.startswith("rpcclient"):
-                    published = release.get("published_at", "")[:10]
-                    return RPCVersionInfo(
-                        version=tag,
-                        release_date=published,
-                        html_url=release.get("html_url", ""),
-                    )
-    except (urllib.error.URLError, json.JSONDecodeError) as e:
-        print(f"Warning: Could not fetch RPC version from GitHub: {e}")
-
-    # Fallback
-    return RPCVersionInfo(
-        version="v25.0.0",
-        release_date="2025-12-12",
-        html_url="https://github.com/stellar/stellar-rpc/releases/tag/v25.0.0",
-    )
-
-
 def get_sdk_version(sdk_root: Path) -> str:
-    """Read VERSION_NR from Soneso/StellarSDK/StellarSDK.php."""
+    """Read VERSION_NR from Soneso/StellarSDK/StellarSDK.php; raise when it cannot be read."""
     sdk_php = sdk_root / "Soneso" / "StellarSDK" / "StellarSDK.php"
-    if sdk_php.exists():
+    try:
         content = sdk_php.read_text(encoding="utf-8")
-        match = re.search(r"VERSION_NR\s*=\s*['\"]([^'\"]+)['\"]", content)
-        if match:
-            return match.group(1)
-    return "Unknown"
+    except OSError as e:
+        raise RuntimeError(f"Cannot read the SDK version file {sdk_php}: {e}") from e
+    match = re.search(r"VERSION_NR\s*=\s*['\"]([^'\"]+)['\"]", content)
+    if not match:
+        raise RuntimeError(f"No VERSION_NR constant in {sdk_php}")
+    return match.group(1)
 
 
 # ---------------------------------------------------------------------------
@@ -334,14 +300,14 @@ class RPCMatrixGenerator:
         self.sdk_root = sdk_root
         self.rpc_methods_file = rpc_methods_file
         self.verbose = verbose
-        self.rpc_data: dict[str, Any] = {}
-        self.rpc_version = fetch_rpc_version()
         self.sdk_version = get_sdk_version(sdk_root)
+        self.rpc_data = self._load_rpc_data()
+        self.rpc_release = self._fetch_recorded_release()
         self.analyzer = PHPSorobanAnalyzer(sdk_root, verbose=verbose)
         self.comparisons: list[MethodComparison] = []
 
-    def analyze(self) -> None:
-        """Load RPC data and analyze PHP SDK against it."""
+    def _load_rpc_data(self) -> dict[str, Any]:
+        """Load the extractor output."""
         if self.verbose:
             print(f"  Loading RPC methods from: {self.rpc_methods_file.name}")
 
@@ -349,19 +315,22 @@ class RPCMatrixGenerator:
             raise FileNotFoundError(f"RPC methods file not found: {self.rpc_methods_file}")
 
         with open(self.rpc_methods_file, encoding="utf-8") as f:
-            self.rpc_data = json.load(f)
+            return json.load(f)
 
-        # Override version tag from JSON metadata if present (keep release_date
-        # and html_url from the GitHub API — extracted_date is the extraction run
-        # date, not the actual release date)
-        metadata = self.rpc_data.get("metadata", {})
-        if metadata.get("version"):
-            self.rpc_version = RPCVersionInfo(
-                version=metadata.get("version", self.rpc_version.version),
-                release_date=self.rpc_version.release_date,
-                html_url=self.rpc_version.html_url,
-            )
+    def _fetch_recorded_release(self) -> Release:
+        """Return the stellar-rpc release record of the version the extractor recorded.
 
+        Version, released date and source URL all come from this one record, so a
+        header never cites two releases. A version missing from the release list,
+        or a draft, raises.
+        """
+        version = self.rpc_data.get("metadata", {}).get("version")
+        if not isinstance(version, str) or not version:
+            raise ValueError(f"No metadata.version in {self.rpc_methods_file}")
+        return resolve_release(STELLAR_RPC_REPO, version, get_github_token())
+
+    def analyze(self) -> None:
+        """Analyze the PHP SDK against the loaded RPC data."""
         if self.verbose:
             print("  Parsing PHP source files...")
 
@@ -564,8 +533,8 @@ class RPCMatrixGenerator:
         lines = [
             "# Soroban RPC vs PHP SDK Compatibility Matrix",
             "",
-            f"**RPC Version:** {self.rpc_version.version} (released {self.rpc_version.release_date}){br}",
-            f"**RPC Source:** [{self.rpc_version.version}]({self.rpc_version.html_url}){br}",
+            f"**RPC Version:** {self.rpc_release.tag} (released {self.rpc_release.published_date}){br}",
+            f"**RPC Source:** [{self.rpc_release.tag}]({self.rpc_release.html_url}){br}",
             f"**SDK Version:** {self.sdk_version}{br}",
             f"**Generated:** {generated_at}",
             "",
@@ -741,8 +710,8 @@ def main() -> int:
         print()
 
         print("Loading RPC version information...")
-        print(f"  RPC Version:  {generator.rpc_version.version}")
-        print(f"  Release Date: {generator.rpc_version.release_date}")
+        print(f"  RPC Version:  {generator.rpc_release.tag}")
+        print(f"  Release Date: {generator.rpc_release.published_date}")
         print(f"  SDK Version:  {generator.sdk_version}")
         print()
 
@@ -763,7 +732,7 @@ def main() -> int:
         print("=" * 70)
         print("SUMMARY")
         print("=" * 70)
-        print(f"RPC Version:       {generator.rpc_version.version}")
+        print(f"RPC Version:       {generator.rpc_release.tag}")
         print(f"SDK Version:       {generator.sdk_version}")
         print(f"Total Methods:     {total}")
         if total > 0:

@@ -12,11 +12,17 @@ There are three independent generators, one per domain:
 | **RPC** | SDK SorobanServer class vs. Stellar RPC JSON-RPC methods | `compatibility/rpc/RPC_COMPATIBILITY_MATRIX.md` |
 | **SEP** | SDK implementations vs. 22 Stellar Ecosystem Proposals | `compatibility/sep/SEP-XXXX_COMPATIBILITY_MATRIX.md` (one per SEP) |
 
-Each generator reads the SDK source tree, fetches the latest upstream specification from GitHub (Horizon router, RPC handler code, or SEP documents), and produces a coverage percentage with a detailed breakdown.
+Each generator reads the SDK source tree, fetches the upstream specification from GitHub (Horizon router, RPC handler code, or SEP documents), and produces a coverage percentage with a detailed breakdown. The SEP checklists are part of the generator; from each SEP document it reads the preamble `Version` and `Status`, printed as `SEP Version` and `SEP Status` in the matrix header.
+
+Every script exits non-zero and writes no file when an upstream fetch fails. The same applies to:
+
+- a SEP preamble without a `Status` line (SEP generator)
+- an RPC method without a response definition (RPC extractor)
+- an unreadable SDK version (RPC and SEP generators)
 
 ## Requirements
 
-Python 3.10+ (standard library only, no third-party packages).
+Python 3.10+. The generators use the standard library only; `rpc/extract_rpc_methods.py` also needs the `requests` package.
 
 ## Usage
 
@@ -38,21 +44,23 @@ Options:
 The RPC generator has a two-step workflow:
 
 ```bash
-# 1. Extract method specs from the stellar-rpc repo (updates rpc_methods.json)
+# 1. Extract method specs from the stellar-rpc repo (writes rpc/data/rpc_methods.json)
 python tools/matrix-generator/rpc/extract_rpc_methods.py
 
 # 2. Generate the matrix
 python tools/matrix-generator/rpc/generate_rpc_matrix.py
 ```
 
+By default the extractor uses the newest stable stellar-rpc release: the highest `vX.Y.Z` tag by semver among releases that are neither drafts nor prereleases. It reads the request and response definitions from the newest stable go-stellar-sdk release, selected by the same rule. The generator cites the release the extractor recorded, with its published date and URL.
+
 `extract_rpc_methods.py` options:
-- `--rpc-version VERSION` -- extract from a specific stellar-rpc release
+- `--rpc-version VERSION` -- extract from a specific stellar-rpc release tagged `vX.Y.Z` or `vX.Y.Z-suffix`; it must exist and must not be a draft (a prerelease is accepted)
 - `--token TOKEN` -- GitHub token for higher rate limits
 - `--output PATH` -- custom output path for the JSON spec
 - `--verbose` -- enable verbose output
 
 `generate_rpc_matrix.py` options:
-- `--rpc-data PATH` -- path to `rpc_methods.json` (default: `rpc/rpc_methods.json`)
+- `--rpc-data PATH` -- path to `rpc_methods.json` (default: `rpc/data/rpc_methods.json`)
 - `--output PATH` -- custom output file path
 - `--verbose` -- enable verbose output
 
@@ -93,8 +101,10 @@ tools/matrix-generator/
   rpc/
     extract_rpc_methods.py       # Extracts RPC specs from GitHub
     generate_rpc_matrix.py       # RPC method comparator
+    rpc_releases.py              # stellar-rpc and go-stellar-sdk release lookup
   sep/
     generate_sep_matrix.py       # SEP analyzers (all 22 in one file)
+  tests/                         # unittest suite, no network access
 ```
 
 Output goes to:
@@ -112,6 +122,12 @@ compatibility/
 2. **Upstream specs** are fetched from GitHub (Horizon router files, RPC handler source, SEP Markdown documents).
 3. **SDK source** is scanned using regex pattern matching against the PHP files under `Soneso/StellarSDK/`.
 4. **Coverage** is computed per endpoint/method/feature and rendered into Markdown tables.
+
+## Tests
+
+```bash
+python3 -m unittest discover -s tools/matrix-generator/tests
+```
 
 ## When to Regenerate
 

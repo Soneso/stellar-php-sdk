@@ -1,8 +1,10 @@
 # SEP-51: XDR-JSON
 
 **Status:** ✅ Supported  
+**SEP Version:** 2.0.1  
+**SEP Status:** Draft  
 **SDK Version:** 1.15.0  
-**Generated:** 2026-09-27 21:44 UTC  
+**Generated:** 2026-09-29 21:52 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md)
 
 ## Overall Coverage

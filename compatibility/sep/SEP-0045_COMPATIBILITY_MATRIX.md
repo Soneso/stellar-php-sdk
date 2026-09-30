@@ -1,8 +1,10 @@
 # SEP-45: Stellar Web Authentication for Contract Accounts
 
 **Status:** ✅ Supported  
+**SEP Version:** 0.1.1  
+**SEP Status:** Draft  
 **SDK Version:** 1.15.0  
-**Generated:** 2026-09-27 21:44 UTC  
+**Generated:** 2026-09-29 21:52 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md)
 
 ## Overall Coverage
