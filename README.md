@@ -3,7 +3,7 @@
 [![Latest Stable Version](https://img.shields.io/packagist/v/soneso/stellar-php-sdk.svg)](https://packagist.org/packages/soneso/stellar-php-sdk)
 [![Total Downloads](https://img.shields.io/packagist/dt/soneso/stellar-php-sdk.svg)](https://packagist.org/packages/soneso/stellar-php-sdk)
 [![codecov](https://codecov.io/gh/Soneso/stellar-php-sdk/branch/main/graph/badge.svg)](https://codecov.io/gh/Soneso/stellar-php-sdk)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar-php-sdk)
+[![Ask DeepWiki](https://img.shields.io/badge/Ask-DeepWiki-blue)](https://deepwiki.com/Soneso/stellar-php-sdk)
 
 Build and sign Stellar transactions, query [Horizon](https://developers.stellar.org/docs/data/apis/horizon), and interact with [Soroban](https://developers.stellar.org/docs/build/smart-contracts/overview) smart contracts via RPC. Communicate with anchors and external services using built-in support for 23 SEPs.
 
