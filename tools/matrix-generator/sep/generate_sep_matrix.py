@@ -29,22 +29,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-
-# ---------------------------------------------------------------------------
-# Version detection
-# ---------------------------------------------------------------------------
-
-def get_sdk_version(sdk_root: Path) -> str:
-    """Read VERSION_NR from StellarSDK.php; raise when it cannot be read."""
-    sdk_file = sdk_root / "Soneso" / "StellarSDK" / "StellarSDK.php"
-    try:
-        content = sdk_file.read_text(encoding="utf-8")
-    except OSError as exc:
-        raise RuntimeError(f"Cannot read the SDK version file {sdk_file}: {exc}") from exc
-    m = re.search(r'VERSION_NR\s*=\s*["\']([^"\']+)["\']', content)
-    if m is None:
-        raise RuntimeError(f"No VERSION_NR constant in {sdk_file}")
-    return m.group(1)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from sdk_version import get_sdk_version  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -175,7 +161,6 @@ class CompatibilityMatrix:
     overall_status: SupportStatus = SupportStatus.UNKNOWN
     sdk_version: str = ""
     generated_at: str = ""
-    notes: str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -190,18 +175,6 @@ class SDKAnalyzer:
         self.stellarsdk_path = sdk_root / "Soneso" / "StellarSDK"
         self._class_path_cache: dict[str, Optional[Path]] = {}
         self._members_cache: dict[str, dict[str, str]] = {}
-
-    def search_files(self, pattern: str, file_extension: str = "php") -> set[Path]:
-        """Return all files whose content matches *pattern*."""
-        matched: set[Path] = set()
-        regex = re.compile(pattern)
-        for php_file in self.stellarsdk_path.rglob(f"*.{file_extension}"):
-            try:
-                if regex.search(php_file.read_text(encoding="utf-8")):
-                    matched.add(php_file)
-            except OSError:
-                pass
-        return matched
 
     def find_class(self, name: str) -> Optional[Path]:
         """Return the path of the file defining PHP class *name*, or None."""
@@ -265,41 +238,9 @@ class SDKAnalyzer:
         members = self.get_class_members(class_name)
         return member_name in members
 
-    def has_property(self, class_name: str, prop_name: str) -> bool:
-        members = self.get_class_members(class_name)
-        return members.get(prop_name) == "property"
-
     def has_method(self, class_name: str, method_name: str) -> bool:
         members = self.get_class_members(class_name)
         return members.get(method_name) == "method"
-
-    def count_classes_in_dir(self, relative_dir: str) -> int:
-        """Count PHP class definitions inside a sub-directory of the SDK."""
-        dir_path = self.stellarsdk_path / relative_dir
-        if not dir_path.exists():
-            return 0
-        count = 0
-        for php_file in dir_path.rglob("*.php"):
-            try:
-                if re.search(r"\bclass\s+\w+", php_file.read_text(encoding="utf-8")):
-                    count += 1
-            except OSError:
-                pass
-        return count
-
-    def list_classes_in_dir(self, relative_dir: str) -> list[str]:
-        """Return names of PHP classes defined inside a sub-directory."""
-        dir_path = self.stellarsdk_path / relative_dir
-        if not dir_path.exists():
-            return []
-        names: list[str] = []
-        for php_file in dir_path.rglob("*.php"):
-            try:
-                for m in re.finditer(r"\bclass\s+(\w+)", php_file.read_text(encoding="utf-8")):
-                    names.append(m.group(1))
-            except OSError:
-                pass
-        return names
 
 
 # ---------------------------------------------------------------------------
@@ -318,9 +259,8 @@ class SEPAnalyzerBase:
         self.document = document
 
     def analyze(self) -> CompatibilityMatrix:
-        raise NotImplementedError
-
-    def _make_matrix(self) -> CompatibilityMatrix:
+        """Return the matrix of the sections that _sections() checks."""
+        sections = self._sections()
         return CompatibilityMatrix(
             sep_info=SEPInfo(
                 number=self.sep_number,
@@ -329,9 +269,15 @@ class SEPAnalyzerBase:
                 status=self.document.preamble.status,
                 version=self.document.preamble.version,
             ),
+            sections=sections,
+            overall_status=self._overall(sections),
             sdk_version=get_sdk_version(self.sdk.sdk_root),
             generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         )
+
+    def _sections(self) -> list[SEPSection]:
+        """Return the SEP's sections, every field checked against the SDK."""
+        raise NotImplementedError
 
     def _overall(self, sections: list[SEPSection]) -> SupportStatus:
         """Compute overall status from section fields."""
@@ -365,14 +311,6 @@ class SEPAnalyzerBase:
             sdk_class=sdk_class,
         )
 
-    def _na(self, name: str, description: str, notes: str = "") -> SEPField:
-        return SEPField(
-            name=name,
-            description=description,
-            status=SupportStatus.NOT_APPLICABLE,
-            notes=notes,
-        )
-
     def _check_properties(
         self,
         class_name: str,
@@ -400,16 +338,7 @@ class SEP01Analyzer(SEPAnalyzerBase):
     sep_title = "Stellar Info File"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
-
-        toml_exists = self.sdk.class_exists("StellarToml")
-        general_exists = self.sdk.class_exists("GeneralInformation")
-        docs_exists = self.sdk.class_exists("Documentation")
-        poc_exists = self.sdk.class_exists("PointOfContact")
-        currency_exists = self.sdk.class_exists("Currency")
-        validator_exists = self.sdk.class_exists("Validator")
-
+    def _sections(self) -> list[SEPSection]:
         # --- Fetch section ---
         fetch_section = SEPSection(
             name="Fetching",
@@ -454,7 +383,7 @@ class SEP01Analyzer(SEPAnalyzerBase):
         for prop, desc in general_fields:
             general_section.fields.append(self._field(
                 f"GeneralInformation.{prop}", desc,
-                general_exists and self.sdk.has_member("GeneralInformation", prop),
+                self.sdk.has_member("GeneralInformation", prop),
                 sdk_class="GeneralInformation",
             ))
 
@@ -485,7 +414,7 @@ class SEP01Analyzer(SEPAnalyzerBase):
         for prop, desc in doc_fields:
             docs_section.fields.append(self._field(
                 f"Documentation.{prop}", desc,
-                docs_exists and self.sdk.has_member("Documentation", prop),
+                self.sdk.has_member("Documentation", prop),
                 sdk_class="Documentation",
             ))
 
@@ -507,7 +436,7 @@ class SEP01Analyzer(SEPAnalyzerBase):
         for prop, desc in poc_fields:
             poc_section.fields.append(self._field(
                 f"PointOfContact.{prop}", desc,
-                poc_exists and self.sdk.has_member("PointOfContact", prop),
+                self.sdk.has_member("PointOfContact", prop),
                 sdk_class="PointOfContact",
             ))
 
@@ -545,7 +474,7 @@ class SEP01Analyzer(SEPAnalyzerBase):
         for prop, desc in currency_fields:
             currency_section.fields.append(self._field(
                 f"Currency.{prop}", desc,
-                currency_exists and self.sdk.has_member("Currency", prop),
+                self.sdk.has_member("Currency", prop),
                 sdk_class="Currency",
             ))
 
@@ -564,17 +493,14 @@ class SEP01Analyzer(SEPAnalyzerBase):
         for prop, desc in validator_fields:
             validator_section.fields.append(self._field(
                 f"Validator.{prop}", desc,
-                validator_exists and self.sdk.has_member("Validator", prop),
+                self.sdk.has_member("Validator", prop),
                 sdk_class="Validator",
             ))
 
-        sections = [
+        return [
             fetch_section, general_section, docs_section,
             poc_section, currency_section, validator_section,
         ]
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
 
 
 # ===========================================================================
@@ -586,12 +512,7 @@ class SEP02Analyzer(SEPAnalyzerBase):
     sep_title = "Federation Protocol"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
-
-        fed_exists = self.sdk.class_exists("Federation")
-        resp_exists = self.sdk.class_exists("FederationResponse")
-
+    def _sections(self) -> list[SEPSection]:
         lookup_section = SEPSection(
             name="Lookup",
             description="Federation address lookup methods",
@@ -599,19 +520,19 @@ class SEP02Analyzer(SEPAnalyzerBase):
         lookup_section.fields.extend([
             self._field("Federation.resolveStellarAddress",
                         "Resolve stellar address (name*domain) to account ID",
-                        fed_exists and self.sdk.has_method("Federation", "resolveStellarAddress"),
+                        self.sdk.has_method("Federation", "resolveStellarAddress"),
                         sdk_class="Federation"),
             self._field("Federation.resolveStellarAccountId",
                         "Resolve account ID to federation info",
-                        fed_exists and self.sdk.has_method("Federation", "resolveStellarAccountId"),
+                        self.sdk.has_method("Federation", "resolveStellarAccountId"),
                         sdk_class="Federation"),
             self._field("Federation.resolveStellarTransactionId",
                         "Resolve transaction ID to federation info",
-                        fed_exists and self.sdk.has_method("Federation", "resolveStellarTransactionId"),
+                        self.sdk.has_method("Federation", "resolveStellarTransactionId"),
                         sdk_class="Federation"),
             self._field("Federation.resolveForward",
                         "Forward-type federation lookup",
-                        fed_exists and self.sdk.has_method("Federation", "resolveForward"),
+                        self.sdk.has_method("Federation", "resolveForward"),
                         sdk_class="Federation"),
         ])
 
@@ -628,14 +549,11 @@ class SEP02Analyzer(SEPAnalyzerBase):
         for method, desc in response_fields:
             response_section.fields.append(self._field(
                 f"FederationResponse.{method}", desc,
-                resp_exists and self.sdk.has_method("FederationResponse", method),
+                self.sdk.has_method("FederationResponse", method),
                 sdk_class="FederationResponse",
             ))
 
-        sections = [lookup_section, response_section]
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return [lookup_section, response_section]
 
 
 # ===========================================================================
@@ -647,12 +565,7 @@ class SEP05Analyzer(SEPAnalyzerBase):
     sep_title = "Key Derivation Methods for Stellar Keys"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
-
-        mnemonic_exists = self.sdk.class_exists("Mnemonic")
-        hdnode_exists = self.sdk.class_exists("HDNode")
-
+    def _sections(self) -> list[SEPSection]:
         # --- BIP-39 Mnemonic ---
         mnemonic_section = SEPSection(
             name="BIP-39 Mnemonic Features",
@@ -661,27 +574,27 @@ class SEP05Analyzer(SEPAnalyzerBase):
         mnemonic_section.fields.extend([
             self._field("generate12WordsMnemonic",
                         "Generate 12-word BIP-39 mnemonic phrase",
-                        mnemonic_exists and self.sdk.has_method("Mnemonic", "generate12WordsMnemonic"),
+                        self.sdk.has_method("Mnemonic", "generate12WordsMnemonic"),
                         sdk_class="Mnemonic.generate12WordsMnemonic()"),
             self._field("generate15WordsMnemonic",
                         "Generate 15-word BIP-39 mnemonic phrase",
-                        mnemonic_exists and self.sdk.has_method("Mnemonic", "generate15WordsMnemonic"),
+                        self.sdk.has_method("Mnemonic", "generate15WordsMnemonic"),
                         sdk_class="Mnemonic.generate15WordsMnemonic()"),
             self._field("generate24WordsMnemonic",
                         "Generate 24-word BIP-39 mnemonic phrase",
-                        mnemonic_exists and self.sdk.has_method("Mnemonic", "generate24WordsMnemonic"),
+                        self.sdk.has_method("Mnemonic", "generate24WordsMnemonic"),
                         sdk_class="Mnemonic.generate24WordsMnemonic()"),
             self._field("mnemonicFromWords",
                         "Validate BIP-39 mnemonic phrase (word list and checksum)",
-                        mnemonic_exists and self.sdk.has_method("Mnemonic", "mnemonicFromWords"),
+                        self.sdk.has_method("Mnemonic", "mnemonicFromWords"),
                         sdk_class="Mnemonic.mnemonicFromWords()"),
             self._field("generateSeed",
                         "Convert BIP-39 mnemonic to seed using PBKDF2",
-                        mnemonic_exists and self.sdk.has_method("Mnemonic", "generateSeed"),
+                        self.sdk.has_method("Mnemonic", "generateSeed"),
                         sdk_class="Mnemonic.generateSeed()"),
             self._field("passphrase_support",
                         "Support optional BIP-39 passphrase (25th word)",
-                        mnemonic_exists and self.sdk.has_method("Mnemonic", "generateSeed"),
+                        self.sdk.has_method("Mnemonic", "generateSeed"),
                         sdk_class="Mnemonic.generateSeed($passphrase)"),
         ])
 
@@ -693,19 +606,19 @@ class SEP05Analyzer(SEPAnalyzerBase):
         hd_section.fields.extend([
             self._field("master_key_generation",
                         "Generate master key from seed (Ed25519 curve)",
-                        hdnode_exists and self.sdk.has_method("HDNode", "newMasterNode"),
+                        self.sdk.has_method("HDNode", "newMasterNode"),
                         sdk_class="HDNode.newMasterNode()"),
             self._field("child_key_derivation",
                         "Derive child keys from parent keys",
-                        hdnode_exists and self.sdk.has_method("HDNode", "derive"),
+                        self.sdk.has_method("HDNode", "derive"),
                         sdk_class="HDNode.derive()"),
             self._field("path_derivation",
                         "Derive key at BIP-44 path string",
-                        hdnode_exists and self.sdk.has_method("HDNode", "derivePath"),
+                        self.sdk.has_method("HDNode", "derivePath"),
                         sdk_class="HDNode.derivePath()"),
             self._field("stellar_derivation_path",
                         "Stellar BIP-44 path m/44'/148'/account'",
-                        mnemonic_exists and self.sdk.has_method("Mnemonic", "m44148keyHex"),
+                        self.sdk.has_method("Mnemonic", "m44148keyHex"),
                         sdk_class="Mnemonic.m44148keyHex()"),
         ])
 
@@ -735,10 +648,7 @@ class SEP05Analyzer(SEPAnalyzerBase):
                 sdk_class=f"{lang_file}.txt",
             ))
 
-        sections = [mnemonic_section, hd_section, wordlist_section]
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return [mnemonic_section, hd_section, wordlist_section]
 
 
 # ===========================================================================
@@ -750,8 +660,7 @@ class SEP06Analyzer(SEPAnalyzerBase):
     sep_title = "Deposit and Withdrawal API"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
+    def _sections(self) -> list[SEPSection]:
         sections: list[SEPSection] = []
 
         # -- Deposit Endpoints --
@@ -923,9 +832,7 @@ class SEP06Analyzer(SEPAnalyzerBase):
         ])
         sections.append(tx_fields)
 
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return sections
 
 
 # ===========================================================================
@@ -937,11 +844,8 @@ class SEP07Analyzer(SEPAnalyzerBase):
     sep_title = "URI Scheme to facilitate delegated signing"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
-
-        uri_exists = self.sdk.class_exists("URIScheme")
-        members = self.sdk.get_class_members("URIScheme") if uri_exists else set()
+    def _sections(self) -> list[SEPSection]:
+        members = self.sdk.get_class_members("URIScheme")
 
         def _has(name: str) -> bool:
             return name in members
@@ -1031,10 +935,7 @@ class SEP07Analyzer(SEPAnalyzerBase):
                         sdk_class="URIScheme.signAndSubmitTransaction()"),
         ])
 
-        sections = [ops_section, tx_section, pay_section, common_section, sig_section]
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return [ops_section, tx_section, pay_section, common_section, sig_section]
 
 
 # ===========================================================================
@@ -1046,8 +947,7 @@ class SEP08Analyzer(SEPAnalyzerBase):
     sep_title = "Regulated Assets"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
+    def _sections(self) -> list[SEPSection]:
         sections: list[SEPSection] = []
 
         # -- Service Methods --
@@ -1132,9 +1032,7 @@ class SEP08Analyzer(SEPAnalyzerBase):
         ])
         sections.append(next_url_section)
 
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return sections
 
 
 # ===========================================================================
@@ -1146,14 +1044,7 @@ class SEP09Analyzer(SEPAnalyzerBase):
     sep_title = "Standard KYC Fields"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
-
-        natural_exists = self.sdk.class_exists("NaturalPersonKYCFields")
-        org_exists = self.sdk.class_exists("OrganizationKYCFields")
-        financial_exists = self.sdk.class_exists("FinancialAccountKYCFields")
-        card_exists = self.sdk.class_exists("CardKYCFields")
-
+    def _sections(self) -> list[SEPSection]:
         natural_section = SEPSection(
             name="Natural Person Fields",
             description="Natural person KYC field coverage",
@@ -1197,7 +1088,7 @@ class SEP09Analyzer(SEPAnalyzerBase):
         for prop, desc in natural_fields:
             natural_section.fields.append(self._field(
                 f"NaturalPersonKYCFields.{prop}", desc,
-                natural_exists and self.sdk.has_member("NaturalPersonKYCFields", prop),
+                self.sdk.has_member("NaturalPersonKYCFields", prop),
                 sdk_class="NaturalPersonKYCFields",
             ))
 
@@ -1227,7 +1118,7 @@ class SEP09Analyzer(SEPAnalyzerBase):
         for prop, desc in org_fields:
             org_section.fields.append(self._field(
                 f"OrganizationKYCFields.{prop}", desc,
-                org_exists and self.sdk.has_member("OrganizationKYCFields", prop),
+                self.sdk.has_member("OrganizationKYCFields", prop),
                 sdk_class="OrganizationKYCFields",
             ))
 
@@ -1254,7 +1145,7 @@ class SEP09Analyzer(SEPAnalyzerBase):
         for prop, desc in financial_fields:
             financial_section.fields.append(self._field(
                 f"FinancialAccountKYCFields.{prop}", desc,
-                financial_exists and self.sdk.has_member("FinancialAccountKYCFields", prop),
+                self.sdk.has_member("FinancialAccountKYCFields", prop),
                 sdk_class="FinancialAccountKYCFields",
             ))
 
@@ -1278,14 +1169,11 @@ class SEP09Analyzer(SEPAnalyzerBase):
         for prop, desc in card_fields:
             card_section.fields.append(self._field(
                 f"CardKYCFields.{prop}", desc,
-                card_exists and self.sdk.has_member("CardKYCFields", prop),
+                self.sdk.has_member("CardKYCFields", prop),
                 sdk_class="CardKYCFields",
             ))
 
-        sections = [natural_section, org_section, financial_section, card_section]
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return [natural_section, org_section, financial_section, card_section]
 
 
 # ===========================================================================
@@ -1297,11 +1185,7 @@ class SEP10Analyzer(SEPAnalyzerBase):
     sep_title = "Stellar Web Authentication"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
-
-        auth_exists = self.sdk.class_exists("WebAuth")
-
+    def _sections(self) -> list[SEPSection]:
         # --- Authentication Flow ---
         flow_section = SEPSection(
             name="Authentication Flow",
@@ -1310,15 +1194,15 @@ class SEP10Analyzer(SEPAnalyzerBase):
         flow_section.fields.extend([
             self._field("fromDomain",
                         "Construct WebAuth from domain (discovers auth endpoint via stellar.toml)",
-                        auth_exists and self.sdk.has_method("WebAuth", "fromDomain"),
+                        self.sdk.has_method("WebAuth", "fromDomain"),
                         sdk_class="WebAuth.fromDomain()"),
             self._field("jwtToken",
                         "Complete challenge/sign/submit flow returning JWT token",
-                        auth_exists and self.sdk.has_method("WebAuth", "jwtToken"),
+                        self.sdk.has_method("WebAuth", "jwtToken"),
                         sdk_class="WebAuth.jwtToken()"),
             self._field("setGracePeriod",
                         "Configure acceptable clock drift for timebounds validation",
-                        auth_exists and self.sdk.has_method("WebAuth", "setGracePeriod"),
+                        self.sdk.has_method("WebAuth", "setGracePeriod"),
                         sdk_class="WebAuth.setGracePeriod()"),
         ])
 
@@ -1331,19 +1215,19 @@ class SEP10Analyzer(SEPAnalyzerBase):
         features_section.fields.extend([
             self._field("memo_support",
                         "Memo support for shared/omnibus accounts",
-                        auth_exists and self.sdk.has_method("WebAuth", "jwtToken"),
+                        self.sdk.has_method("WebAuth", "jwtToken"),
                         sdk_class="WebAuth.jwtToken($memo)"),
             self._field("home_domain",
                         "Home domain parameter for multi-tenant auth servers",
-                        auth_exists and self.sdk.has_method("WebAuth", "jwtToken"),
+                        self.sdk.has_method("WebAuth", "jwtToken"),
                         sdk_class="WebAuth.jwtToken($homeDomain)"),
             self._field("client_domain",
                         "Client domain support for wallet identification",
-                        auth_exists and self.sdk.has_method("WebAuth", "jwtToken"),
+                        self.sdk.has_method("WebAuth", "jwtToken"),
                         sdk_class="WebAuth.jwtToken($clientDomain)"),
             self._field("client_domain_signing",
                         "Client domain signing via keypair or callback",
-                        auth_exists and self.sdk.has_method("WebAuth", "jwtToken"),
+                        self.sdk.has_method("WebAuth", "jwtToken"),
                         sdk_class="WebAuth.jwtToken($clientDomainKeyPair, $clientDomainSigningCallback)"),
         ])
 
@@ -1397,10 +1281,7 @@ class SEP10Analyzer(SEPAnalyzerBase):
                         sdk_class="SubmitCompletedChallengeResponse"),
         ])
 
-        sections = [flow_section, features_section, validation_section, response_section]
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return [flow_section, features_section, validation_section, response_section]
 
 
 # ===========================================================================
@@ -1412,9 +1293,7 @@ class SEP11Analyzer(SEPAnalyzerBase):
     sep_title = "Txrep: human-readable low-level representation of Stellar transactions"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
-
+    def _sections(self) -> list[SEPSection]:
         txrep_exists = self.sdk.class_exists("TxRep")
 
         txrep_section = SEPSection(
@@ -1425,18 +1304,15 @@ class SEP11Analyzer(SEPAnalyzerBase):
             self._field("TxRep (class)", "TxRep class exists", txrep_exists, sdk_class="TxRep"),
             self._field("TxRep.fromTransactionEnvelopeXdrBase64",
                         "Convert XDR Base64 envelope to txrep string",
-                        txrep_exists and self.sdk.has_method("TxRep", "fromTransactionEnvelopeXdrBase64"),
+                        self.sdk.has_method("TxRep", "fromTransactionEnvelopeXdrBase64"),
                         sdk_class="TxRep"),
             self._field("TxRep.transactionEnvelopeXdrBase64FromTxRep",
                         "Convert txrep string to XDR Base64 envelope",
-                        txrep_exists and self.sdk.has_method("TxRep", "transactionEnvelopeXdrBase64FromTxRep"),
+                        self.sdk.has_method("TxRep", "transactionEnvelopeXdrBase64FromTxRep"),
                         sdk_class="TxRep"),
         ])
 
-        sections = [txrep_section]
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return [txrep_section]
 
 
 # ===========================================================================
@@ -1448,8 +1324,7 @@ class SEP12Analyzer(SEPAnalyzerBase):
     sep_title = "KYC API"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
+    def _sections(self) -> list[SEPSection]:
         sections: list[SEPSection] = []
 
         # -- Service Endpoints --
@@ -1583,9 +1458,7 @@ class SEP12Analyzer(SEPAnalyzerBase):
         ])
         sections.append(files_resp)
 
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return sections
 
 
 # ===========================================================================
@@ -1801,15 +1674,11 @@ class SEP23Analyzer(SEPAnalyzerBase):
         "STRKEY_CLAIMABLE_BALANCE": ("CLAIMABLE_BALANCE_ID", "encodeClaimableBalanceId", "decodeClaimableBalanceId"),
     }
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
+    def _sections(self) -> list[SEPSection]:
         key_types = parse_sep23_key_types(self.document.text, self.document.url)
         vectors = parse_sep23_test_vectors(self.document.text, self.document.url)
 
-        sections = [self._key_type_section(key_types), self._test_vector_section(vectors)]
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return [self._key_type_section(key_types), self._test_vector_section(vectors)]
 
     def _read(self, relative_path: str) -> str:
         """Return the text of the SDK file at *relative_path*; an unreadable file raises."""
@@ -1906,8 +1775,7 @@ class SEP24Analyzer(SEPAnalyzerBase):
     sep_title = "Hosted Deposit and Withdrawal"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
+    def _sections(self) -> list[SEPSection]:
         sections: list[SEPSection] = []
 
         # -- Service Endpoints --
@@ -2043,9 +1911,7 @@ class SEP24Analyzer(SEPAnalyzerBase):
         ])
         sections.append(tx_fields)
 
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return sections
 
 
 # ===========================================================================
@@ -2057,8 +1923,7 @@ class SEP29Analyzer(SEPAnalyzerBase):
     sep_title = "Account Memo Requirements"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
+    def _sections(self) -> list[SEPSection]:
         sections: list[SEPSection] = []
 
         sdk_members = self.sdk.get_class_members("StellarSDK")
@@ -2164,9 +2029,7 @@ class SEP29Analyzer(SEPAnalyzerBase):
         submit_section.fields = submit_fields
         sections.append(submit_section)
 
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return sections
 
 
 # ===========================================================================
@@ -2178,8 +2041,7 @@ class SEP30Analyzer(SEPAnalyzerBase):
     sep_title = "Account Recovery: multi-party recovery of Stellar accounts"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
+    def _sections(self) -> list[SEPSection]:
         sections: list[SEPSection] = []
 
         # -- Service Endpoints --
@@ -2265,9 +2127,7 @@ class SEP30Analyzer(SEPAnalyzerBase):
         ])
         sections.append(accts_resp)
 
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return sections
 
 
 # ===========================================================================
@@ -2279,8 +2139,7 @@ class SEP31Analyzer(SEPAnalyzerBase):
     sep_title = "Cross-Border Payments API"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0031.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
+    def _sections(self) -> list[SEPSection]:
         sections: list[SEPSection] = []
 
         # -- Service Endpoints --
@@ -2428,9 +2287,7 @@ class SEP31Analyzer(SEPAnalyzerBase):
         ])
         sections.append(fee_breakdown)
 
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return sections
 
 
 # ===========================================================================
@@ -2442,9 +2299,7 @@ class SEP35Analyzer(SEPAnalyzerBase):
     sep_title = "Operation IDs"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0035.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
-
+    def _sections(self) -> list[SEPSection]:
         toid_members = self.sdk.get_class_members("TOID")
 
         # Read TOID source to verify range-boundary behavior
@@ -2488,10 +2343,7 @@ class SEP35Analyzer(SEPAnalyzerBase):
                         sdk_class="TOIDRange"),
         ]
 
-        sections = [encoding_section, cursor_section]
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return [encoding_section, cursor_section]
 
 
 # ===========================================================================
@@ -2503,8 +2355,7 @@ class SEP38Analyzer(SEPAnalyzerBase):
     sep_title = "Anchor RFQ API"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
+    def _sections(self) -> list[SEPSection]:
         sections: list[SEPSection] = []
 
         # -- Service Endpoints --
@@ -2645,9 +2496,7 @@ class SEP38Analyzer(SEPAnalyzerBase):
         ])
         sections.append(buy_dm)
 
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return sections
 
 
 # ===========================================================================
@@ -2659,9 +2508,7 @@ class SEP45Analyzer(SEPAnalyzerBase):
     sep_title = "Stellar Web Authentication for Contract Accounts"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
-
+    def _sections(self) -> list[SEPSection]:
         svc = "WebAuthForContracts"
         svc_members = self.sdk.get_class_members(svc)
 
@@ -2767,10 +2614,7 @@ class SEP45Analyzer(SEPAnalyzerBase):
                         sdk_class="SubmitContractChallengeResponse"),
         ]
 
-        sections = [auth_section, challenge_section, validation_section, response_section]
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return [auth_section, challenge_section, validation_section, response_section]
 
 
 # ===========================================================================
@@ -2782,11 +2626,8 @@ class SEP46Analyzer(SEPAnalyzerBase):
     sep_title = "Contract Meta"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0046.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
-
+    def _sections(self) -> list[SEPSection]:
         parser_exists = self.sdk.class_exists("SorobanContractParser")
-        info_exists = self.sdk.class_exists("SorobanContractInfo")
 
         meta_section = SEPSection(
             name="Contract Metadata",
@@ -2798,30 +2639,27 @@ class SEP46Analyzer(SEPAnalyzerBase):
                         parser_exists, sdk_class="SorobanContractParser"),
             self._field("SorobanContractParser.parseContractByteCode",
                         "Parse WASM bytecode to extract metadata",
-                        parser_exists and self.sdk.has_method("SorobanContractParser", "parseContractByteCode"),
+                        self.sdk.has_method("SorobanContractParser", "parseContractByteCode"),
                         sdk_class="SorobanContractParser"),
             self._field("SorobanContractInfo.metaEntries",
                         "Access contract meta entries (key-value pairs)",
-                        info_exists and self.sdk.has_member("SorobanContractInfo", "metaEntries"),
+                        self.sdk.has_member("SorobanContractInfo", "metaEntries"),
                         sdk_class="SorobanContractInfo"),
             self._field("SorobanContractInfo.supportedSeps",
                         "Read supported SEPs from metadata",
-                        info_exists and self.sdk.has_member("SorobanContractInfo", "supportedSeps"),
+                        self.sdk.has_member("SorobanContractInfo", "supportedSeps"),
                         sdk_class="SorobanContractInfo"),
             self._field("SorobanContractInfo.envMetaProtocol",
                         "Environment metadata protocol version",
-                        info_exists and self.sdk.has_member("SorobanContractInfo", "envMetaProtocol"),
+                        self.sdk.has_member("SorobanContractInfo", "envMetaProtocol"),
                         sdk_class="SorobanContractInfo"),
             self._field("SorobanContractInfo.envMetaPreRelease",
                         "Environment metadata pre-release version",
-                        info_exists and self.sdk.has_member("SorobanContractInfo", "envMetaPreRelease"),
+                        self.sdk.has_member("SorobanContractInfo", "envMetaPreRelease"),
                         sdk_class="SorobanContractInfo"),
         ])
 
-        sections = [meta_section]
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return [meta_section]
 
 
 # ===========================================================================
@@ -2833,12 +2671,7 @@ class SEP47Analyzer(SEPAnalyzerBase):
     sep_title = "Contract Interface Discovery"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0047.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
-
-        parser_exists = self.sdk.class_exists("SorobanContractParser")
-        info_exists = self.sdk.class_exists("SorobanContractInfo")
-
+    def _sections(self) -> list[SEPSection]:
         discovery_section = SEPSection(
             name="SEP Discovery",
             description="Discovering which SEPs a contract implements via metadata",
@@ -2846,22 +2679,19 @@ class SEP47Analyzer(SEPAnalyzerBase):
         discovery_section.fields = [
             self._field("SorobanContractParser.parseContractByteCode",
                         "Parse WASM bytecode to extract metadata including supported SEPs",
-                        parser_exists and self.sdk.has_method("SorobanContractParser", "parseContractByteCode"),
+                        self.sdk.has_method("SorobanContractParser", "parseContractByteCode"),
                         sdk_class="SorobanContractParser.parseContractByteCode()"),
             self._field("SorobanContractInfo.supportedSeps",
                         "List of SEP numbers the contract declares support for",
-                        info_exists and self.sdk.has_member("SorobanContractInfo", "supportedSeps"),
+                        self.sdk.has_member("SorobanContractInfo", "supportedSeps"),
                         sdk_class="SorobanContractInfo.$supportedSeps"),
             self._field("SorobanContractInfo.metaEntries",
                         "Raw meta entries containing sep key-value declarations",
-                        info_exists and self.sdk.has_member("SorobanContractInfo", "metaEntries"),
+                        self.sdk.has_member("SorobanContractInfo", "metaEntries"),
                         sdk_class="SorobanContractInfo.$metaEntries"),
         ]
 
-        sections = [discovery_section]
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return [discovery_section]
 
 
 # ===========================================================================
@@ -2873,9 +2703,7 @@ class SEP48Analyzer(SEPAnalyzerBase):
     sep_title = "Contract Interface Specification"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0048.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
-
+    def _sections(self) -> list[SEPSection]:
         info_members = self.sdk.get_class_members("SorobanContractInfo")
         spec_members = self.sdk.get_class_members("ContractSpec")
         parser_members = self.sdk.get_class_members("SorobanContractParser")
@@ -2943,10 +2771,7 @@ class SEP48Analyzer(SEPAnalyzerBase):
                         sdk_class="ContractSpec.findEntry()"),
         ]
 
-        sections = [parsing_section, entry_section, type_section]
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return [parsing_section, entry_section, type_section]
 
 
 # ===========================================================================
@@ -2958,9 +2783,7 @@ class SEP53Analyzer(SEPAnalyzerBase):
     sep_title = "Sign and Verify Messages"
     sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md"
 
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
-
+    def _sections(self) -> list[SEPSection]:
         kp_members = self.sdk.get_class_members("KeyPair")
 
         # Read KeyPair source to verify payload construction details
@@ -2995,10 +2818,7 @@ class SEP53Analyzer(SEPAnalyzerBase):
                         sdk_class="KeyPair.calculateMessageHash()"),
         ]
 
-        sections = [signing_section, payload_section]
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+        return [signing_section, payload_section]
 
 
 # ===========================================================================
@@ -3009,11 +2829,14 @@ class SEP51Analyzer(SEPAnalyzerBase):
     """Analyzes SEP-51 (XDR-JSON) support in the Stellar PHP SDK.
 
     Evidence sources:
-    - XdrJsonHelper.php — primitive encode/decode helpers
-    - *Base.php generated files — enum/struct/union round-trip emission
-    - tools/xdr-generator/generator/generator.rb — $schema strip emission
-    - tools/xdr-generator/generator/json_helpers.rb — prefix-strip / snake_case logic
-    - Soneso/StellarSDK/Crypto/StrKey.php — Stellar-specific address encoding
+    - XdrJsonHelper.php: primitive encode/decode helpers
+    - *Base.php generated files: enum/struct/union round-trip emission
+    - tools/xdr-generator/generator/generator.rb: $schema strip emission
+    - tools/xdr-generator/generator/json_helpers.rb: prefix-strip / snake_case logic
+    - Soneso/StellarSDK/Crypto/StrKey.php: Stellar-specific address encoding
+
+    Each note cites the first line of an evidence file that matches a pattern. An
+    unreadable file or a pattern that matches no line raises.
     """
 
     sep_number = 51
@@ -3026,56 +2849,28 @@ class SEP51Analyzer(SEPAnalyzerBase):
     _JSON_HELPERS_RB = "tools/xdr-generator/generator/json_helpers.rb"
     _STRKEY_PATH = "Soneso/StellarSDK/Crypto/StrKey.php"
 
-    def _cite(self, rel_path: str, line: int) -> str:
-        """Return a Markdown inline-code citation string."""
-        return f"`{rel_path}:{line}`"
-
-    def _file_exists(self, rel_path: str) -> bool:
-        return (self.sdk.sdk_root / rel_path).exists()
-
-    def _line_exists(self, rel_path: str, line: int) -> bool:
-        p = self.sdk.sdk_root / rel_path
-        if not p.exists():
-            return False
-        lines = p.read_text(encoding="utf-8").splitlines()
-        return 1 <= line <= len(lines)
-
-    def _grep_line(self, rel_path: str, pattern: str) -> Optional[int]:
-        """Return the first line number (1-based) matching *pattern*, or None."""
-        p = self.sdk.sdk_root / rel_path
-        if not p.exists():
-            return None
+    def _cite_first(self, rel_path: str, pattern: str) -> str:
+        """Return a Markdown inline-code citation of the first line of *rel_path* matching *pattern*."""
+        try:
+            lines = (self.sdk.sdk_root / rel_path).read_text(encoding="utf-8").splitlines()
+        except OSError as exc:
+            raise RuntimeError(f"SEP-51 evidence file {rel_path} cannot be read: {exc}") from exc
         regex = re.compile(pattern)
-        for i, line in enumerate(p.read_text(encoding="utf-8").splitlines(), start=1):
+        for number, line in enumerate(lines, start=1):
             if regex.search(line):
-                return i
-        return None
+                return f"`{rel_path}:{number}`"
+        raise RuntimeError(f"SEP-51 evidence pattern {pattern!r} matches no line of {rel_path}")
 
-    def _make_field(
-        self,
-        name: str,
-        description: str,
-        status: SupportStatus,
-        notes: str = "",
-    ) -> SEPField:
-        return SEPField(name=name, description=description, status=status, notes=notes)
-
-    def analyze(self) -> CompatibilityMatrix:
-        matrix = self._make_matrix()
-        sdk_root = self.sdk.sdk_root
-
-        sections: list[SEPSection] = []
-        sections.append(self._section_a_xdr_types())
-        sections.append(self._section_b_stellar_types())
-        sections.append(self._section_c_schema())
-        sections.append(self._section_d_backward_compat())
-
-        matrix.sections = sections
-        matrix.overall_status = self._overall(sections)
-        return matrix
+    def _sections(self) -> list[SEPSection]:
+        return [
+            self._section_a_xdr_types(),
+            self._section_b_stellar_types(),
+            self._section_c_schema(),
+            self._section_d_backward_compat(),
+        ]
 
     # ------------------------------------------------------------------
-    # Section A — XDR Data Types
+    # Section A: XDR Data Types
     # ------------------------------------------------------------------
 
     def _section_a_xdr_types(self) -> SEPSection:
@@ -3097,11 +2892,9 @@ class SEP51Analyzer(SEPAnalyzerBase):
         # intval/cast without any XdrJsonHelper helper because native PHP int
         # maps exactly. Evidence: generator emits toJsonValue returning array
         # with plain int values for uint32/int32 struct fields.
-        gen_struct_line = self._grep_line(gen_rb, r"fromJsonValue.*mixed.*value.*static")
-        int32_line = self._grep_line(gen_rb, r"'Expected object for")
-        struct_evidence = self._cite(gen_rb, int32_line) if int32_line else self._cite(gen_rb, 2775)
+        struct_evidence = self._cite_first(gen_rb, r"'Expected object for")
 
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="Integer (32-bit)",
             description="XDR int maps to JSON number (RFC 4506 §4.1)",
             status=SupportStatus.SUPPORTED,
@@ -3113,7 +2906,7 @@ class SEP51Analyzer(SEPAnalyzerBase):
         ))
 
         # -- Unsigned Integer (32-bit) --
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="Unsigned Integer (32-bit)",
             description="XDR unsigned int maps to JSON number (RFC 4506 §4.2)",
             status=SupportStatus.SUPPORTED,
@@ -3125,15 +2918,13 @@ class SEP51Analyzer(SEPAnalyzerBase):
         ))
 
         # -- Hyper Integer (64-bit) --
-        int64_line = self._grep_line(helper, r"public static function int64ToString")
-        sint64_line = self._grep_line(helper, r"public static function stringToInt64")
         hyper_note = (
             "JSON string (base-10). "
             + "JSON number accepted on input for backward compatibility. "
-            + (self._cite(helper, int64_line) if int64_line else "")
-            + " " + (self._cite(helper, sint64_line) if sint64_line else "")
+            + self._cite_first(helper, r"public static function int64ToString")
+            + " " + self._cite_first(helper, r"public static function stringToInt64")
         )
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="Hyper Integer (64-bit)",
             description="XDR hyper maps to JSON string; JSON number accepted on input (RFC 4506 §4.5)",
             status=SupportStatus.SUPPORTED,
@@ -3141,15 +2932,13 @@ class SEP51Analyzer(SEPAnalyzerBase):
         ))
 
         # -- Unsigned Hyper Integer (64-bit) --
-        uint64_line = self._grep_line(helper, r"public static function uint64ToString")
-        suint64_line = self._grep_line(helper, r"public static function stringToUint64")
         uhyper_note = (
             "JSON string (base-10). "
             + "JSON number accepted on input for backward compatibility. "
-            + (self._cite(helper, uint64_line) if uint64_line else "")
-            + " " + (self._cite(helper, suint64_line) if suint64_line else "")
+            + self._cite_first(helper, r"public static function uint64ToString")
+            + " " + self._cite_first(helper, r"public static function stringToUint64")
         )
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="Unsigned Hyper Integer (64-bit)",
             description="XDR unsigned hyper maps to JSON string; JSON number accepted on input (RFC 4506 §4.5)",
             status=SupportStatus.SUPPORTED,
@@ -3159,27 +2948,20 @@ class SEP51Analyzer(SEPAnalyzerBase):
         # -- Boolean --
         # PHP bool is natively serialized as JSON true/false by json_encode.
         # Generator emits `(bool)$value` / `is_bool($value)` checks.
-        bool_line = self._grep_line(gen_rb, r"is_bool\b")
-        bool_note = (
-            "JSON true/false via PHP native bool. "
-            + (self._cite(gen_rb, bool_line) if bool_line else self._cite(gen_rb, 2775))
-        )
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="Boolean",
             description="XDR bool maps to JSON true/false (RFC 4506 §4.4)",
             status=SupportStatus.SUPPORTED,
-            notes=bool_note,
+            notes="JSON true/false via PHP native bool. " + self._cite_first(gen_rb, r"is_bool\b"),
         ))
 
         # -- Opaque Fixed Length --
-        b2h_line = self._grep_line(helper, r"public static function bytesToHex")
-        h2b_line = self._grep_line(helper, r"public static function hexToBytes")
         opaque_note = (
             "Lowercase hex string via XdrJsonHelper::bytesToHex/hexToBytes. "
-            + (self._cite(helper, b2h_line) if b2h_line else "")
-            + " " + (self._cite(helper, h2b_line) if h2b_line else "")
+            + self._cite_first(helper, r"public static function bytesToHex")
+            + " " + self._cite_first(helper, r"public static function hexToBytes")
         )
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="Opaque Data (Fixed Length)",
             description="XDR opaque[N] maps to lowercase hex string (RFC 4506 §4.9)",
             status=SupportStatus.SUPPORTED,
@@ -3187,7 +2969,7 @@ class SEP51Analyzer(SEPAnalyzerBase):
         ))
 
         # -- Opaque Variable Length --
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="Opaque Data (Variable Length)",
             description="XDR opaque<> maps to lowercase hex string (RFC 4506 §4.10)",
             status=SupportStatus.SUPPORTED,
@@ -3195,15 +2977,13 @@ class SEP51Analyzer(SEPAnalyzerBase):
         ))
 
         # -- String --
-        esc_line = self._grep_line(helper, r"public static function escapeString")
-        unesc_line = self._grep_line(helper, r"public static function unescapeString")
         string_note = (
             "Escape ladder per SEP-0051 §Strings: NUL->\\0, TAB->\\t, LF->\\n, "
             "CR->\\r, backslash->\\\\, printable ASCII verbatim, others->\\xNN. "
-            + (self._cite(helper, esc_line) if esc_line else "")
-            + " " + (self._cite(helper, unesc_line) if unesc_line else "")
+            + self._cite_first(helper, r"public static function escapeString")
+            + " " + self._cite_first(helper, r"public static function unescapeString")
         )
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="String",
             description="XDR string maps to escaped ASCII string per SEP-0051 §Strings (RFC 4506 §4.11)",
             status=SupportStatus.SUPPORTED,
@@ -3211,50 +2991,45 @@ class SEP51Analyzer(SEPAnalyzerBase):
         ))
 
         # -- Arrays Fixed Length --
-        arr_line = self._grep_line(gen_rb, r"opaqueFixed|readOpaqueFixed")
-        arr_note = (
-            "JSON array; elements encoded according to element type. "
-            + "Generator emits PHP array via foreach/toJsonValue on each element. "
-            + self._cite(gen_rb, arr_line if arr_line else 2775)
-        )
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="Arrays (Fixed Length)",
             description="XDR fixed-length array maps to JSON array (RFC 4506 §4.12)",
             status=SupportStatus.SUPPORTED,
-            notes=arr_note,
+            notes=(
+                "JSON array; elements encoded according to element type. "
+                + "Generator emits PHP array via foreach/toJsonValue on each element. "
+                + self._cite_first(gen_rb, r"opaqueFixed|readOpaqueFixed")
+            ),
         ))
 
         # -- Arrays Variable Length --
-        varr_line = self._grep_line(gen_rb, r"readArray|variable.*array|array_map")
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="Arrays (Variable Length)",
             description="XDR variable-length array maps to JSON array (RFC 4506 §4.13)",
             status=SupportStatus.SUPPORTED,
             notes=(
                 "JSON array; elements encoded according to element type. "
                 + "Same generator path as fixed-length arrays. "
-                + self._cite(gen_rb, varr_line if varr_line else 2775)
+                + self._cite_first(gen_rb, r"readArray|variable.*array|array_map")
             ),
         ))
 
         # -- Enum --
         # json_helpers.rb implements enum_json_names (canonical rule) with
         # heck_words as the word segmenter.
-        names_line = self._grep_line(self._JSON_HELPERS_RB, r"def enum_json_names")
-        words_line = self._grep_line(self._JSON_HELPERS_RB, r"def heck_words")
         enum_note = (
             "snake_case string derived from the original XDR identifiers by the "
             "rs-stellar-xdr rule: byte-wise shared prefix truncated to its last "
             "underscore and stripped, then heck UpperCamelCase + serde snake_case. "
             "Algorithm in "
-            + (self._cite(self._JSON_HELPERS_RB, names_line) if names_line else self._JSON_HELPERS_RB)
+            + self._cite_first(self._JSON_HELPERS_RB, r"def enum_json_names")
             + "; word segmentation in "
-            + (self._cite(self._JSON_HELPERS_RB, words_line) if words_line else self._JSON_HELPERS_RB)
+            + self._cite_first(self._JSON_HELPERS_RB, r"def heck_words")
             + ". Single-member enums emit the full name; digit-leading remainders "
             "prepend the first prefix character. Names emitted by SDK releases up "
             "to 1.11.x are accepted as deprecated fromJson input aliases."
         )
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="Enum",
             description="XDR enum maps to snake_case string with shared-prefix strip (RFC 4506 §4.3)",
             status=SupportStatus.SUPPORTED,
@@ -3262,32 +3037,20 @@ class SEP51Analyzer(SEPAnalyzerBase):
         ))
 
         # -- Struct --
-        struct_from_line = self._grep_line(gen_rb, r"fromJsonValue.*static.*struct\b|struct.*fromJsonValue")
-        # Use the schema-strip line as anchor for struct fromJsonValue emission
-        schema_struct_line = self._grep_line(gen_rb, r"Expected object for.*JSON value")
-        closure_line = self._grep_line(self._HELPER_PATH, r"function rejectUnknownFields")
-        alias_line = self._grep_line(self._HELPER_PATH, r"function normalizeFieldAlias")
+        # The schema-strip line anchors the struct fromJsonValue emission.
         struct_note = (
             "JSON object with snake_case keys; "
             + "generated by xdr-generator for all *Base.php struct files. "
-            + self._cite(gen_rb, schema_struct_line if schema_struct_line else 2775)
+            + self._cite_first(gen_rb, r"Expected object for.*JSON value")
             + ". Decoding is closed over the declared field keys: every one is "
             "required and any other key is rejected, $schema excepted. Closure at "
-            + (
-                self._cite(self._HELPER_PATH, closure_line)
-                if closure_line
-                else self._HELPER_PATH
-            )
+            + self._cite_first(helper, r"function rejectUnknownFields")
             + ". The seven structs declaring a `type` field also accept the `type_` "
             "spelling of that key on input; either spelling counts as the one "
             "declared key and supplying both is rejected. Alias fold at "
-            + (
-                self._cite(self._HELPER_PATH, alias_line)
-                if alias_line
-                else self._HELPER_PATH
-            )
+            + self._cite_first(helper, r"function normalizeFieldAlias")
         )
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="Struct",
             description="XDR struct maps to JSON object with snake_case keys (RFC 4506 §4.14)",
             status=SupportStatus.SUPPORTED,
@@ -3295,19 +3058,18 @@ class SEP51Analyzer(SEPAnalyzerBase):
         ))
 
         # -- Discriminated Union --
-        union_render_line = self._grep_line(gen_rb, r"def render_union_sep51_methods")
-        union_schema_line = self._grep_line(gen_rb, r"is_array.*array_key_exists.*\$schema")
+        union_emitter = self._cite_first(gen_rb, r"def render_union_sep51_methods")
         union_note = (
             "Four sub-arm shapes supported: void arm (JSON string), non-void arm (JSON object), "
             "multi-void (JSON string for each void case), int-cased (discriminant-name + integer). "
             + "Union emitter at "
-            + (self._cite(gen_rb, union_render_line) if union_render_line else self._cite(gen_rb, 3150))
+            + union_emitter
             + "; $schema strip at "
-            + (self._cite(gen_rb, union_schema_line) if union_schema_line else self._cite(gen_rb, 3162))
+            + self._cite_first(gen_rb, r"is_array.*array_key_exists.*\$schema")
             + ". After the strip an object input must carry exactly one key and that "
             "key must name an arm."
         )
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="Discriminated Union",
             description="XDR discriminated union; 4 arm shapes: void, non-void, multi-void, int-cased (RFC 4506 §4.15)",
             status=SupportStatus.SUPPORTED,
@@ -3315,35 +3077,32 @@ class SEP51Analyzer(SEPAnalyzerBase):
         ))
 
         # -- Void --
-        void_note = (
-            "Void union arms render as the discriminant string (JSON string). "
-            "Void in struct context is omitted. "
-            + self._cite(gen_rb, union_render_line if union_render_line else 3150)
-        )
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="Void",
             description="XDR void: JSON string (discriminant) in union; omitted in struct (RFC 4506 §4.16)",
             status=SupportStatus.SUPPORTED,
-            notes=void_note,
+            notes=(
+                "Void union arms render as the discriminant string (JSON string). "
+                "Void in struct context is omitted. "
+                + union_emitter
+            ),
         ))
 
         # -- Optional Data --
-        optional_line = self._grep_line(gen_rb, r"is_null\b.*optional|optional.*is_null\b|is_optional")
-        optional_note = (
-            "JSON null when unset; payload encoded per contained type when set. "
-            + self._cite(gen_rb, optional_line if optional_line else 2775)
-        )
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="Optional Data",
             description="XDR optional maps to JSON null when absent, or contained-type value when present (RFC 4506 §4.19)",
             status=SupportStatus.SUPPORTED,
-            notes=optional_note,
+            notes=(
+                "JSON null when unset; payload encoded per contained type when set. "
+                + self._cite_first(gen_rb, r"is_null\b.*optional|optional.*is_null\b|is_optional")
+            ),
         ))
 
         return section
 
     # ------------------------------------------------------------------
-    # Section B — Stellar-Specific Types
+    # Section B: Stellar-Specific Types
     # ------------------------------------------------------------------
 
     def _section_b_stellar_types(self) -> SEPSection:
@@ -3360,16 +3119,13 @@ class SEP51Analyzer(SEPAnalyzerBase):
 
         # --- Address Types ---
         # G-strkey: AccountID
-        acc_line = self._grep_line(strkey, r"public static function encodeAccountId")
-        scaddr_path = "Soneso/StellarSDK/Xdr/XdrSCAddressBase.php"
-        scaddr_tojson_line = self._grep_line(scaddr_path, r"public function toJsonValue")
         scaddr_note = (
             "G-strkey via StrKey::encodeAccountId. "
-            + (self._cite(strkey, acc_line) if acc_line else "")
+            + self._cite_first(strkey, r"public static function encodeAccountId")
             + "; SCAddress multi-arm dispatch "
-            + (self._cite(scaddr_path, scaddr_tojson_line) if scaddr_tojson_line else "")
+            + self._cite_first("Soneso/StellarSDK/Xdr/XdrSCAddressBase.php", r"public function toJsonValue")
         )
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="AccountID / PublicKey / NodeID (G-strkey)",
             description="G-strkey encoding for AccountID, PublicKey, NodeID (SEP-0051 §Address Types)",
             status=SupportStatus.SUPPORTED,
@@ -3377,104 +3133,86 @@ class SEP51Analyzer(SEPAnalyzerBase):
         ))
 
         # C-strkey: ContractID
-        cont_line = self._grep_line(strkey, r"public static function encodeContractIdHex")
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="ContractID (C-strkey)",
             description="C-strkey encoding for ContractID (SEP-0051 §Address Types)",
             status=SupportStatus.SUPPORTED,
             notes=(
                 "StrKey::encodeContractIdHex used in SCAddress CONTRACT arm and XdrSCAddressBase. "
-                + (self._cite(strkey, cont_line) if cont_line else "")
+                + self._cite_first(strkey, r"public static function encodeContractIdHex")
             ),
         ))
 
         # M-strkey: MuxedAccount / MuxedAccountMed25519
-        mux_line = self._grep_line(strkey, r"public static function encodeMuxedAccountId")
-        muxbase_path = "Soneso/StellarSDK/Xdr/XdrMuxedAccountMed25519Base.php"
-        mux_tojson = self._grep_line(muxbase_path, r"public function toJsonValue")
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="MuxedAccount / MuxedAccountMed25519 (M-strkey)",
             description="M-strkey encoding for muxed accounts (SEP-0051 §Address Types)",
             status=SupportStatus.SUPPORTED,
             notes=(
                 "StrKey::encodeMuxedAccountId. "
-                + (self._cite(strkey, mux_line) if mux_line else "")
+                + self._cite_first(strkey, r"public static function encodeMuxedAccountId")
                 + "; MuxedAccountMed25519Base "
-                + (self._cite(muxbase_path, mux_tojson) if mux_tojson else "")
+                + self._cite_first("Soneso/StellarSDK/Xdr/XdrMuxedAccountMed25519Base.php", r"public function toJsonValue")
             ),
         ))
 
         # B-strkey: ClaimableBalanceID
-        cb_line = self._grep_line(strkey, r"public static function encodeClaimableBalanceIdHex")
-        cbid_path = "Soneso/StellarSDK/Xdr/XdrClaimableBalanceIDBase.php"
-        cbid_tojson = self._grep_line(cbid_path, r"public function toJsonValue")
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="ClaimableBalanceID (B-strkey)",
             description="B-strkey encoding for ClaimableBalanceID (SEP-0051 §Address Types)",
             status=SupportStatus.SUPPORTED,
             notes=(
                 "StrKey::encodeClaimableBalanceIdHex. "
-                + (self._cite(strkey, cb_line) if cb_line else "")
+                + self._cite_first(strkey, r"public static function encodeClaimableBalanceIdHex")
                 + "; XdrClaimableBalanceIDBase "
-                + (self._cite(cbid_path, cbid_tojson) if cbid_tojson else "")
+                + self._cite_first("Soneso/StellarSDK/Xdr/XdrClaimableBalanceIDBase.php", r"public function toJsonValue")
             ),
         ))
 
         # L-strkey: PoolID
-        pool_line = self._grep_line(strkey, r"public static function encodeLiquidityPoolIdHex")
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="PoolID (L-strkey)",
             description="L-strkey encoding for PoolID / LiquidityPoolID (SEP-0051 §Address Types)",
             status=SupportStatus.SUPPORTED,
             notes=(
                 "StrKey::encodeLiquidityPoolIdHex used in SCAddress LIQUIDITY_POOL arm. "
-                + (self._cite(strkey, pool_line) if pool_line else "")
+                + self._cite_first(strkey, r"public static function encodeLiquidityPoolIdHex")
             ),
         ))
 
         # SignerKey (G/T/X/P strkey variants)
-        skbase_path = "Soneso/StellarSDK/Xdr/XdrSignerKeyTypeBase.php"
-        sk_tojson = self._grep_line(skbase_path, r"public function toJsonValue")
-        pt_line = self._grep_line(strkey, r"public static function encodePreAuthTx")
-        sha_line = self._grep_line(strkey, r"public static function encodeSha256Hash")
-        sp_line = self._grep_line(strkey, r"public static function encodeXdrSignedPayload")
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="SignerKey (G/T/X/P strkey)",
             description="SignerKey arms: ED25519=G, PRE_AUTH_TX=T, HASH_X=X, ED25519_SIGNED_PAYLOAD=P (SEP-0051 §Address Types)",
             status=SupportStatus.SUPPORTED,
             notes=(
                 "XdrSignerKeyTypeBase.toJsonValue dispatches to StrKey encode per arm. "
-                + (self._cite(skbase_path, sk_tojson) if sk_tojson else "")
-                + "; PreAuthTx " + (self._cite(strkey, pt_line) if pt_line else "")
-                + "; Sha256Hash " + (self._cite(strkey, sha_line) if sha_line else "")
-                + "; SignedPayload " + (self._cite(strkey, sp_line) if sp_line else "")
+                + self._cite_first("Soneso/StellarSDK/Xdr/XdrSignerKeyTypeBase.php", r"public function toJsonValue")
+                + "; PreAuthTx " + self._cite_first(strkey, r"public static function encodePreAuthTx")
+                + "; Sha256Hash " + self._cite_first(strkey, r"public static function encodeSha256Hash")
+                + "; SignedPayload " + self._cite_first(strkey, r"public static function encodeXdrSignedPayload")
             ),
         ))
 
         # --- Asset Code Types ---
-        alpha4_path = "Soneso/StellarSDK/Xdr/XdrAssetAlphaNum4Base.php"
-        alpha4_tojson = self._grep_line(alpha4_path, r"public function toJsonValue")
-        alpha12_path = "Soneso/StellarSDK/Xdr/XdrAssetAlphaNum12Base.php"
-        alpha12_tojson = self._grep_line(alpha12_path, r"public function toJsonValue")
-
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="AssetCode4",
             description="AssetCode4: trim trailing NUL bytes, encode via String escape (SEP-0051 §Asset Code Types)",
             status=SupportStatus.SUPPORTED,
             notes=(
                 "rtrim NUL then XdrJsonHelper::escapeString. "
-                + (self._cite(alpha4_path, alpha4_tojson) if alpha4_tojson else "")
+                + self._cite_first("Soneso/StellarSDK/Xdr/XdrAssetAlphaNum4Base.php", r"public function toJsonValue")
             ),
         ))
 
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="AssetCode12",
             description="AssetCode12: trim NUL bytes; if result <= 4 bytes pad to 5; encode via String escape (SEP-0051 §Asset Code Types)",
             status=SupportStatus.SUPPORTED,
             notes=(
                 "Trim-and-pad rule per SEP-0051 (all-NUL emits five escaped NULs); "
                 "XdrJsonHelper::escapeString. "
-                + (self._cite(alpha12_path, alpha12_tojson) if alpha12_tojson else "")
+                + self._cite_first("Soneso/StellarSDK/Xdr/XdrAssetAlphaNum12Base.php", r"public function toJsonValue")
                 + ". Intentional input-side strictness: standalone AlphaNum12 "
                 "fields reject codes decoding to fewer than 5 bytes "
                 "(protocol-invalid; rs-stellar-xdr accepts and pads them "
@@ -3482,9 +3220,7 @@ class SEP51Analyzer(SEPAnalyzerBase):
             ),
         ))
 
-        allow_trust_path = "Soneso/StellarSDK/Xdr/XdrAllowTrustOperationAssetBase.php"
-        allow_trust_tojson = self._grep_line(allow_trust_path, r"public function toJsonValue")
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="AssetCode (union)",
             description="AssetCode union: bare length-discriminated string, no arm-key envelope (SEP-0051 §Asset Code Types)",
             status=SupportStatus.SUPPORTED,
@@ -3492,67 +3228,34 @@ class SEP51Analyzer(SEPAnalyzerBase):
                 "Bare length-discriminated string per SEP-0051 §Asset Code Types "
                 "(at most 4 decoded bytes -> AssetCode4, at least 5 -> AssetCode12); "
                 "no arm-key envelope. "
-                + (self._cite(allow_trust_path, allow_trust_tojson) if allow_trust_tojson else allow_trust_path)
+                + self._cite_first(
+                    "Soneso/StellarSDK/Xdr/XdrAllowTrustOperationAssetBase.php", r"public function toJsonValue"
+                )
             ),
         ))
 
         # --- Integer Types (128/256 bit) ---
-        int128_line = self._grep_line(helper, r"public static function int128PartsToString")
-        s_int128_line = self._grep_line(helper, r"public static function stringToInt128Parts")
-        section.fields.append(self._make_field(
-            name="Int128Parts",
-            description="Int128Parts: base-10 decimal string of signed 128-bit integer (SEP-0051 §Integer Types)",
-            status=SupportStatus.SUPPORTED,
-            notes=(
-                "XdrJsonHelper::int128PartsToString / stringToInt128Parts using GMP arithmetic. "
-                + (self._cite(helper, int128_line) if int128_line else "")
-                + " " + (self._cite(helper, s_int128_line) if s_int128_line else "")
-            ),
-        ))
-
-        uint128_line = self._grep_line(helper, r"public static function uint128PartsToString")
-        s_uint128_line = self._grep_line(helper, r"public static function stringToUint128Parts")
-        section.fields.append(self._make_field(
-            name="UInt128Parts",
-            description="UInt128Parts: base-10 decimal string of unsigned 128-bit integer (SEP-0051 §Integer Types)",
-            status=SupportStatus.SUPPORTED,
-            notes=(
-                "XdrJsonHelper::uint128PartsToString / stringToUint128Parts using GMP arithmetic. "
-                + (self._cite(helper, uint128_line) if uint128_line else "")
-                + " " + (self._cite(helper, s_uint128_line) if s_uint128_line else "")
-            ),
-        ))
-
-        int256_line = self._grep_line(helper, r"public static function int256PartsToString")
-        s_int256_line = self._grep_line(helper, r"public static function stringToInt256Parts")
-        section.fields.append(self._make_field(
-            name="Int256Parts",
-            description="Int256Parts: base-10 decimal string of signed 256-bit integer (SEP-0051 §Integer Types)",
-            status=SupportStatus.SUPPORTED,
-            notes=(
-                "XdrJsonHelper::int256PartsToString / stringToInt256Parts using GMP arithmetic. "
-                + (self._cite(helper, int256_line) if int256_line else "")
-                + " " + (self._cite(helper, s_int256_line) if s_int256_line else "")
-            ),
-        ))
-
-        uint256_line = self._grep_line(helper, r"public static function uint256PartsToString")
-        s_uint256_line = self._grep_line(helper, r"public static function stringToUint256Parts")
-        section.fields.append(self._make_field(
-            name="UInt256Parts",
-            description="UInt256Parts: base-10 decimal string of unsigned 256-bit integer (SEP-0051 §Integer Types)",
-            status=SupportStatus.SUPPORTED,
-            notes=(
-                "XdrJsonHelper::uint256PartsToString / stringToUint256Parts using GMP arithmetic. "
-                + (self._cite(helper, uint256_line) if uint256_line else "")
-                + " " + (self._cite(helper, s_uint256_line) if s_uint256_line else "")
-            ),
-        ))
+        for name, kind, to_string, from_string in (
+            ("Int128Parts", "signed 128-bit", "int128PartsToString", "stringToInt128Parts"),
+            ("UInt128Parts", "unsigned 128-bit", "uint128PartsToString", "stringToUint128Parts"),
+            ("Int256Parts", "signed 256-bit", "int256PartsToString", "stringToInt256Parts"),
+            ("UInt256Parts", "unsigned 256-bit", "uint256PartsToString", "stringToUint256Parts"),
+        ):
+            section.fields.append(SEPField(
+                name=name,
+                description=f"{name}: base-10 decimal string of {kind} integer (SEP-0051 §Integer Types)",
+                status=SupportStatus.SUPPORTED,
+                notes=(
+                    f"XdrJsonHelper::{to_string} / {from_string} using GMP arithmetic. "
+                    + self._cite_first(helper, rf"public static function {to_string}")
+                    + " " + self._cite_first(helper, rf"public static function {from_string}")
+                ),
+            ))
 
         return section
 
     # ------------------------------------------------------------------
-    # Section C — JSON Schema ($schema)
+    # Section C: JSON Schema ($schema)
     # ------------------------------------------------------------------
 
     def _section_c_schema(self) -> SEPSection:
@@ -3564,35 +3267,27 @@ class SEP51Analyzer(SEPAnalyzerBase):
             ),
         )
 
-        gen_rb = self._GENERATOR_RB
         helper = self._HELPER_PATH
 
         # Input strip: generator emits $schema removal in fromJsonValue.
-        struct_schema_line = self._grep_line(gen_rb, r"array_key_exists.*'\\\$schema'.*\$value")
-        if struct_schema_line is None:
-            struct_schema_line = self._grep_line(gen_rb, r"'\$schema'")
-        union_schema_line = struct_schema_line
-
-        strip_note = (
-            "fromJsonValue in generated struct and union files strips $schema before dispatch. "
-            + "Emitted by xdr-generator at "
-            + (self._cite(gen_rb, struct_schema_line) if struct_schema_line else self._cite(gen_rb, 2776))
-        )
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="$schema strip on input",
             description="Input JSON objects with $schema property are accepted; the key is stripped before parsing",
             status=SupportStatus.SUPPORTED,
-            notes=strip_note,
+            notes=(
+                "fromJsonValue in generated struct and union files strips $schema before dispatch. "
+                + "Emitted by xdr-generator at "
+                + self._cite_first(self._GENERATOR_RB, r"'\$schema'")
+            ),
         ))
 
         # Output never emits $schema.
-        to_json_line = self._grep_line(helper, r"public static function canonicalJson")
         out_note = (
             "toJsonValue never includes $schema in its output. "
             + "canonicalJson normalisation also does not inject $schema. "
-            + (self._cite(helper, to_json_line) if to_json_line else "")
+            + self._cite_first(helper, r"public static function canonicalJson")
         )
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="$schema never emitted on output",
             description="Output JSON from toJson/toJsonValue never includes a $schema property",
             status=SupportStatus.SUPPORTED,
@@ -3600,17 +3295,15 @@ class SEP51Analyzer(SEPAnalyzerBase):
         ))
 
         # Duplicate object keys are refused at the text entry point.
-        decode_line = self._grep_line(helper, r"public static function decodeText")
-        dup_line = self._grep_line(helper, r"public static function rejectDuplicateKeys")
         dup_note = (
             "A JSON object repeating a key is rejected with an "
             "InvalidArgumentException naming the key. json_decode resolves a "
             "repeat silently to the last value, so the check scans the document "
             "text before parsing. Every fromJson(string) routes through the "
             "shared decode entry at "
-            + (self._cite(helper, decode_line) if decode_line else helper)
+            + self._cite_first(helper, r"public static function decodeText")
             + "; the scan is at "
-            + (self._cite(helper, dup_line) if dup_line else helper)
+            + self._cite_first(helper, r"public static function rejectDuplicateKeys")
             + ". Scope is per object: the same key in sibling or nested objects "
             "is accepted. Keys are compared after JSON escapes are resolved, so "
             "an escaped spelling collides with its literal form, and a repeated "
@@ -3618,7 +3311,7 @@ class SEP51Analyzer(SEPAnalyzerBase):
             "fromJsonValue needs no such check: a PHP array cannot carry the "
             "same string key twice."
         )
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="Duplicate object keys rejected",
             description=(
                 "An object naming the same key twice is refused rather than "
@@ -3631,7 +3324,7 @@ class SEP51Analyzer(SEPAnalyzerBase):
         return section
 
     # ------------------------------------------------------------------
-    # Section D — Backward Compatibility
+    # Section D: Backward Compatibility
     # ------------------------------------------------------------------
 
     def _section_d_backward_compat(self) -> SEPSection:
@@ -3645,27 +3338,23 @@ class SEP51Analyzer(SEPAnalyzerBase):
 
         helper = self._HELPER_PATH
 
-        sint64_line = self._grep_line(helper, r"public static function stringToInt64")
-        suint64_line = self._grep_line(helper, r"public static function stringToUint64")
-        is_int_line = self._grep_line(helper, r"if \(is_int\(\$value\)\)")
-
         back_note = (
             "stringToInt64 and stringToUint64 accept int|string; "
             "a PHP int (decoded from a JSON number) is returned directly without string parsing. "
-            + (self._cite(helper, sint64_line) if sint64_line else "")
-            + " " + (self._cite(helper, suint64_line) if suint64_line else "")
+            + self._cite_first(helper, r"public static function stringToInt64")
+            + " " + self._cite_first(helper, r"public static function stringToUint64")
             + " (is_int branch at "
-            + (self._cite(helper, is_int_line) if is_int_line else self._cite(helper, 242))
+            + self._cite_first(helper, r"if \(is_int\(\$value\)\)")
             + ")"
         )
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="JSON number accepted for Hyper on input",
             description="JSON number accepted as Hyper Integer input for XDR-JSON v1 backward compatibility",
             status=SupportStatus.SUPPORTED,
             notes=back_note.strip(),
         ))
 
-        section.fields.append(self._make_field(
+        section.fields.append(SEPField(
             name="JSON number accepted for Unsigned Hyper on input",
             description="JSON number accepted as Unsigned Hyper Integer input for XDR-JSON v1 backward compatibility",
             status=SupportStatus.SUPPORTED,
@@ -3762,10 +3451,6 @@ class MatrixRenderer:
         lines.append(f"**Spec:** [{sep.url}]({sep.url})")
         lines.append("")
 
-        if matrix.notes:
-            lines.append(f"> {matrix.notes}")
-            lines.append("")
-
         # -- Overall coverage --
         all_fields = [f for s in matrix.sections for f in s.fields
                       if f.status != SupportStatus.NOT_APPLICABLE]
@@ -3827,7 +3512,6 @@ class SEPMatrixGenerator:
     """Orchestrates the full SEP matrix generation."""
 
     def __init__(self, sdk_root: Path, output_dir: Path):
-        self.sdk_root = sdk_root
         self.output_dir = output_dir
         self.sdk_analyzer = SDKAnalyzer(sdk_root)
         self.renderer = MatrixRenderer()
@@ -3875,7 +3559,6 @@ class SEPMatrixGenerator:
             out_path = self.output_dir / filename
             out_path.write_text(self.renderer.render_matrix(matrix), encoding="utf-8")
             print(f"  [WRITE] {out_path}", file=sys.stderr)
-
 
 
 # ===========================================================================
@@ -3928,7 +3611,7 @@ def main() -> None:
         print("Supported SEPs:", ", ".join(str(n) for n in seps))
         return
 
-    print(f"Stellar PHP SDK SEP Compatibility Matrix Generator", file=sys.stderr)
+    print("Stellar PHP SDK SEP Compatibility Matrix Generator", file=sys.stderr)
     print(f"SDK root : {args.sdk_root}", file=sys.stderr)
     print(f"Output   : {args.output}", file=sys.stderr)
 

@@ -2,17 +2,9 @@
 """
 Horizon API Compatibility Matrix Generator for Stellar PHP SDK
 
-This script generates a detailed compatibility matrix comparing the PHP SDK
-implementation against the Horizon API by fetching the latest Horizon release,
-parsing router.go to extract endpoints, analyzing PHP RequestBuilder classes,
-and generating a comprehensive markdown matrix.
-
-Features:
-- Automatic version detection from GitHub releases
-- Go Chi router parsing for endpoint extraction
-- PHP RequestBuilder file analysis for SDK method mapping
-- Detailed coverage statistics and streaming support tracking
-- Production-ready error handling and logging
+Compares the PHP SDK RequestBuilder classes against the Horizon API: fetches
+the latest Horizon release, parses its router.go (Go Chi) for endpoints, and
+writes a Markdown matrix with coverage and streaming statistics.
 
 Usage:
     python generate_horizon_matrix.py
@@ -37,6 +29,9 @@ from urllib.request import Request, urlopen
 
 # Import Horizon parameter definitions
 from horizon_params import HORIZON_PARAMS
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from sdk_version import get_sdk_version  # noqa: E402
 
 # Configure logging
 logging.basicConfig(
@@ -66,17 +61,6 @@ STREAMING_EXCLUDED = {
 }
 
 
-def get_sdk_version(sdk_root: Path) -> str:
-    """Read SDK version from StellarSDK.php VERSION_NR constant."""
-    sdk_php = sdk_root / "Soneso" / "StellarSDK" / "StellarSDK.php"
-    if sdk_php.exists():
-        content = sdk_php.read_text(encoding="utf-8")
-        match = re.search(r"VERSION_NR\s*=\s*['\"]([^'\"]+)['\"]", content)
-        if match:
-            return match.group(1)
-    return "Unknown"
-
-
 def compare_params(
     endpoint: str, method: str
 ) -> Tuple[List[str], List[str], bool]:
@@ -93,8 +77,7 @@ def compare_params(
         - extra_params: Parameters SDK has but Horizon doesn't
         - is_full_match: True if all Horizon params are implemented
     """
-    from horizon_params import HORIZON_PARAMS as HP
-    horizon = set(HP.get((endpoint, method), []))
+    horizon = set(HORIZON_PARAMS.get((endpoint, method), []))
     sdk = set(PHP_SDK_PARAMS.get((endpoint, method), []))
 
     missing = horizon - sdk
@@ -1301,7 +1284,6 @@ class HorizonMatrixGenerator:
         self,
         horizon_version: Optional[str] = None,
         output_path: Optional[str] = None,
-        skip_api: bool = False,
     ) -> int:
         """
         Generate the compatibility matrix.
@@ -1309,23 +1291,15 @@ class HorizonMatrixGenerator:
         Args:
             horizon_version: Specific Horizon version (None for latest).
             output_path: Output file path (None for default).
-            skip_api: Skip GitHub API calls (use with --horizon-version).
 
         Returns:
             Exit code (0 for success, 1 for failure).
         """
         try:
+            sdk_version = get_sdk_version(self.sdk_root)
+
             # Resolve Horizon release
-            if skip_api:
-                version = horizon_version or "v25.0.0"
-                horizon_release = HorizonRelease(
-                    version=version,
-                    tag_name=version,
-                    release_date="unknown",
-                    html_url=f"https://github.com/stellar/stellar-horizon/releases/tag/{version}",
-                )
-                logger.info(f"Using manual version info: {version} (--skip-api mode)")
-            elif horizon_version:
+            if horizon_version:
                 horizon_release = self.fetcher.get_release(horizon_version)
             else:
                 horizon_release = self.fetcher.get_latest_release()
@@ -1340,7 +1314,6 @@ class HorizonMatrixGenerator:
             sdk_methods = self.analyzer.analyze()
 
             # Compare
-            sdk_version = get_sdk_version(self.sdk_root)
             result = self.comparator.compare(
                 horizon_endpoints,
                 sdk_methods,
@@ -1388,9 +1361,6 @@ Examples:
 
   # Verbose mode
   python generate_horizon_matrix.py --verbose
-
-  # Skip GitHub API (useful with explicit version to avoid rate limits)
-  python generate_horizon_matrix.py --horizon-version v25.0.0 --skip-api
         """,
     )
 
@@ -1418,12 +1388,6 @@ Examples:
         help="Enable verbose logging",
     )
 
-    parser.add_argument(
-        "--skip-api",
-        action="store_true",
-        help="Skip GitHub API calls (use with --horizon-version to avoid rate limits)",
-    )
-
     args = parser.parse_args()
 
     # Determine SDK root: explicit arg, or 4 levels up from this script
@@ -1442,7 +1406,6 @@ Examples:
     return generator.generate(
         horizon_version=args.horizon_version,
         output_path=args.output,
-        skip_api=args.skip_api,
     )
 
 

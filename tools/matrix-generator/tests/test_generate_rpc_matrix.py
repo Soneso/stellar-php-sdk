@@ -93,6 +93,10 @@ class GeneratorRunTest(unittest.TestCase):
 
     def test_unreadable_sdk_version_writes_nothing(self):
         self.write_rpc_data({"version": "v28.0.1"})
+        # SDK RPC sources without StellarSDK.php: only the version is unreadable.
+        responses = self.tmp / "Soneso" / "StellarSDK" / "Soroban" / "Responses"
+        responses.mkdir(parents=True)
+        (responses.parent / "SorobanServer.php").write_text("<?php\nclass SorobanServer {}\n", encoding="utf-8")
 
         exit_code = self.run_generator(release_routes(STELLAR_RPC_REPO, RELEASE_PAGES), sdk_root=self.tmp)
 
@@ -100,22 +104,18 @@ class GeneratorRunTest(unittest.TestCase):
         self.assertFalse(self.output.exists())
 
 
-class SdkVersionTest(unittest.TestCase):
-    def test_missing_version_file_raises(self):
+class SdkSourceTest(unittest.TestCase):
+    def test_missing_rpc_client_source_raises_naming_the_path(self):
         with tempfile.TemporaryDirectory() as tmp:
-            with self.assertRaisesRegex(RuntimeError, "Cannot read the SDK version file"):
-                generate_rpc_matrix.get_sdk_version(Path(tmp))
+            soroban = Path(tmp) / "Soneso" / "StellarSDK" / "Soroban"
+            soroban.mkdir(parents=True)
+            analyzer = generate_rpc_matrix.PHPSorobanAnalyzer(Path(tmp))
+            with self.assertRaisesRegex(RuntimeError, "Soroban/SorobanServer.php"):
+                analyzer.analyze()
 
-    def test_version_file_without_constant_raises(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            sdk_file = Path(tmp) / "Soneso" / "StellarSDK" / "StellarSDK.php"
-            sdk_file.parent.mkdir(parents=True)
-            sdk_file.write_text("<?php\nclass StellarSDK {}\n", encoding="utf-8")
-            with self.assertRaisesRegex(RuntimeError, "No VERSION_NR constant"):
-                generate_rpc_matrix.get_sdk_version(Path(tmp))
-
-    def test_reads_version_constant(self):
-        self.assertEqual(generate_rpc_matrix.get_sdk_version(REPO_ROOT), SDK_VERSION)
+            (soroban / "SorobanServer.php").write_text("<?php\nclass SorobanServer {}\n", encoding="utf-8")
+            with self.assertRaisesRegex(RuntimeError, "No SDK RPC response directory at .*Soroban/Responses"):
+                analyzer.analyze()
 
 
 if __name__ == "__main__":
