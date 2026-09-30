@@ -1,8 +1,10 @@
 # SEP-24: Hosted Deposit and Withdrawal
 
 **Status:** ✅ Supported  
+**SEP Version:** 3.8.0  
+**SEP Status:** Active  
 **SDK Version:** 1.15.0  
-**Generated:** 2026-09-27 21:44 UTC  
+**Generated:** 2026-09-29 21:52 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
 
 ## Overall Coverage

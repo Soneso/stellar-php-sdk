@@ -1,8 +1,10 @@
 # SEP-48: Contract Interface Specification
 
 **Status:** ✅ Supported  
+**SEP Version:** 1.1.0  
+**SEP Status:** Active  
 **SDK Version:** 1.15.0  
-**Generated:** 2026-09-27 21:44 UTC  
+**Generated:** 2026-09-29 21:52 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0048.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0048.md)
 
 ## Overall Coverage

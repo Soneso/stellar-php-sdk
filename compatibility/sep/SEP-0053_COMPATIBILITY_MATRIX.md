@@ -1,8 +1,10 @@
 # SEP-53: Sign and Verify Messages
 
 **Status:** ✅ Supported  
+**SEP Version:** 1.0.0  
+**SEP Status:** Final  
 **SDK Version:** 1.15.0  
-**Generated:** 2026-09-27 21:44 UTC  
+**Generated:** 2026-09-29 21:52 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md)
 
 ## Overall Coverage

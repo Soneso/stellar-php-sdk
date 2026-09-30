@@ -2,8 +2,9 @@
 """
 Stellar PHP SDK SEP Compatibility Matrix Generator
 
-Analyzes the Stellar PHP SDK source code and SEP specifications to generate
-a compatibility matrix showing which SEP features are implemented.
+Analyzes the Stellar PHP SDK source code against hand-authored SEP checklists
+and generates a compatibility matrix per SEP. The SEP version and status in each
+matrix header come from the preamble of the upstream SEP document.
 
 Usage:
     python3 generate_sep_matrix.py [--output OUTPUT_DIR] [--sep SEP_NUMBER]
@@ -15,8 +16,11 @@ Requirements:
 from __future__ import annotations
 
 import argparse
+import http.client
 import re
 import sys
+import traceback
+import urllib.request
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
@@ -29,13 +33,87 @@ from typing import Optional
 # ---------------------------------------------------------------------------
 
 def get_sdk_version(sdk_root: Path) -> str:
-    """Read VERSION_NR from StellarSDK.php."""
+    """Read VERSION_NR from StellarSDK.php; raise when it cannot be read."""
     sdk_file = sdk_root / "Soneso" / "StellarSDK" / "StellarSDK.php"
-    if not sdk_file.exists():
-        return "unknown"
-    content = sdk_file.read_text(encoding="utf-8")
+    try:
+        content = sdk_file.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise RuntimeError(f"Cannot read the SDK version file {sdk_file}: {exc}") from exc
     m = re.search(r'VERSION_NR\s*=\s*["\']([^"\']+)["\']', content)
-    return m.group(1) if m else "unknown"
+    if m is None:
+        raise RuntimeError(f"No VERSION_NR constant in {sdk_file}")
+    return m.group(1)
+
+
+# ---------------------------------------------------------------------------
+# Upstream SEP preamble
+# ---------------------------------------------------------------------------
+
+SEP_RAW_URL = "https://raw.githubusercontent.com/stellar/stellar-protocol/master/ecosystem/sep-{number:04d}.md"
+REQUEST_TIMEOUT_SECONDS = 30
+USER_AGENT = "stellar-php-sdk-matrix-generator/1.0"
+# A document without a fenced "## Preamble" block is searched in its opening lines.
+PREAMBLE_FALLBACK_LINES = 40
+
+_PREAMBLE_BLOCK = re.compile(r"^## Preamble[ \t]*\n\s*```[^\n]*\n(.*?)^```", re.MULTILINE | re.DOTALL)
+_STATUS_LINE = re.compile(r"^Status:\s*(.+)$")
+# Upstream writes both "Version: 2.7.0" and "Version 3.8.0".
+_VERSION_LINE = re.compile(r"^Version:?\s+(\S+)$")
+_VERSION_KEY = re.compile(r"^Version[:\s]")
+
+
+@dataclass(frozen=True)
+class SEPPreamble:
+    """Lifecycle fields of an upstream SEP document."""
+    status: str
+    version: Optional[str]  # None when the preamble has no Version line
+
+
+def fetch_text(url: str) -> str:
+    """GET *url* and return the body as UTF-8 text; raise RuntimeError on any failure."""
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS) as response:
+            return response.read().decode("utf-8")
+    except (OSError, http.client.HTTPException, UnicodeDecodeError) as exc:
+        raise RuntimeError(f"GET {url} failed: {exc}") from exc
+
+
+def parse_sep_preamble(document: str, source: str) -> SEPPreamble:
+    """Read Status and Version from the fenced block after ``## Preamble``.
+
+    A document without that block is read from its first PREAMBLE_FALLBACK_LINES
+    lines. Status is required and kept verbatim, parenthetical included. Version is
+    optional (SEP-0005 has none); a Version line in any other shape raises, so an
+    unparsed version never prints as N/A.
+    """
+    block = _PREAMBLE_BLOCK.search(document)
+    lines = block.group(1).splitlines() if block else document.splitlines()[:PREAMBLE_FALLBACK_LINES]
+
+    status: Optional[str] = None
+    version: Optional[str] = None
+    for raw_line in lines:
+        line = raw_line.strip()
+        if status is None:
+            status_match = _STATUS_LINE.match(line)
+            if status_match:
+                status = status_match.group(1)
+                continue
+        if version is None and _VERSION_KEY.match(line):
+            version_match = _VERSION_LINE.match(line)
+            if version_match is None:
+                raise ValueError(f"{source}: unrecognized Version line {line!r}")
+            version = version_match.group(1)
+
+    if status is None:
+        raise ValueError(f"{source}: no Status line in the preamble")
+    return SEPPreamble(status=status, version=version)
+
+
+def fetch_sep_preamble(sep_number: int) -> SEPPreamble:
+    """Fetch the upstream document of *sep_number* from stellar-protocol master and parse its preamble."""
+    url = SEP_RAW_URL.format(number=sep_number)
+    return parse_sep_preamble(fetch_text(url), url)
 
 
 # ---------------------------------------------------------------------------
@@ -70,11 +148,12 @@ class SEPSection:
 
 @dataclass
 class SEPInfo:
-    """Metadata about a SEP."""
+    """Metadata about a SEP; status and version come from the upstream preamble."""
     number: int
     title: str
     url: str
-    status: str = "Active"
+    status: str
+    version: Optional[str]
 
 
 @dataclass
@@ -223,8 +302,9 @@ class SEPAnalyzerBase:
     sep_title: str = ""
     sep_url: str = ""
 
-    def __init__(self, sdk_analyzer: SDKAnalyzer):
+    def __init__(self, sdk_analyzer: SDKAnalyzer, preamble: SEPPreamble):
         self.sdk = sdk_analyzer
+        self.preamble = preamble
 
     def analyze(self) -> CompatibilityMatrix:
         raise NotImplementedError
@@ -235,6 +315,8 @@ class SEPAnalyzerBase:
                 number=self.sep_number,
                 title=self.sep_title,
                 url=self.sep_url,
+                status=self.preamble.status,
+                version=self.preamble.version,
             ),
             sdk_version=get_sdk_version(self.sdk.sdk_root),
             generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
@@ -3310,11 +3392,10 @@ class SEPAnalyzerFactory:
         cls,
         sep_number: int,
         sdk_analyzer: SDKAnalyzer,
-    ) -> Optional[SEPAnalyzerBase]:
-        analyzer_class = cls._ANALYZERS.get(sep_number)
-        if analyzer_class is None:
-            return None
-        return analyzer_class(sdk_analyzer)
+        preamble: SEPPreamble,
+    ) -> SEPAnalyzerBase:
+        """Return the analyzer for *sep_number*, which must be one of supported_seps()."""
+        return cls._ANALYZERS[sep_number](sdk_analyzer, preamble)
 
     @classmethod
     def supported_seps(cls) -> list[int]:
@@ -3353,6 +3434,8 @@ class MatrixRenderer:
         lines.append(f"# SEP-{sep.number:02d}: {sep.title}")
         lines.append("")
         lines.append(f"**Status:** {icon} {label}  ")
+        lines.append(f"**SEP Version:** {sep.version if sep.version is not None else 'N/A'}  ")
+        lines.append(f"**SEP Status:** {sep.status}  ")
         lines.append(f"**SDK Version:** {matrix.sdk_version}  ")
         lines.append(f"**Generated:** {matrix.generated_at}  ")
         lines.append(f"**Spec:** [{sep.url}]({sep.url})")
@@ -3430,25 +3513,35 @@ class SEPMatrixGenerator:
         self.factory = SEPAnalyzerFactory()
 
     def generate(self, sep_numbers: Optional[list[int]] = None) -> list[CompatibilityMatrix]:
-        targets = sep_numbers or self.factory.supported_seps()
-        matrices: list[CompatibilityMatrix] = []
+        """Analyze the selected SEPs.
 
-        for sep_num in targets:
-            analyzer = self.factory.get_analyzer(sep_num, self.sdk_analyzer)
-            if analyzer is None:
+        All preambles are fetched before the first analysis. Any fetch, parse or
+        analyzer error propagates, so write_outputs() only receives a complete set.
+        """
+        supported = self.factory.supported_seps()
+        selected: list[int] = []
+        for sep_num in sep_numbers or supported:
+            if sep_num in supported:
+                selected.append(sep_num)
+            else:
                 print(f"  [SKIP] SEP-{sep_num}: no analyzer registered", file=sys.stderr)
-                continue
+
+        preambles: dict[int, SEPPreamble] = {}
+        for sep_num in selected:
+            print(f"  [FETCH] SEP-{sep_num} preamble", file=sys.stderr)
+            preambles[sep_num] = fetch_sep_preamble(sep_num)
+
+        matrices: list[CompatibilityMatrix] = []
+        for sep_num in selected:
+            analyzer = self.factory.get_analyzer(sep_num, self.sdk_analyzer, preambles[sep_num])
             print(f"  [RUN]  Analyzing SEP-{sep_num}: {analyzer.sep_title} ...", file=sys.stderr)
-            try:
-                matrix = analyzer.analyze()
-                matrices.append(matrix)
-                print(
-                    f"         -> {matrix.overall_status.value}  "
-                    f"({sum(len(s.fields) for s in matrix.sections)} fields)",
-                    file=sys.stderr,
-                )
-            except Exception as exc:
-                print(f"  [ERR]  SEP-{sep_num} failed: {exc}", file=sys.stderr)
+            matrix = analyzer.analyze()
+            matrices.append(matrix)
+            print(
+                f"         -> {matrix.overall_status.value}  "
+                f"({sum(len(s.fields) for s in matrix.sections)} fields)",
+                file=sys.stderr,
+            )
 
         return matrices
 
@@ -3517,24 +3610,26 @@ def main() -> None:
     print(f"Stellar PHP SDK SEP Compatibility Matrix Generator", file=sys.stderr)
     print(f"SDK root : {args.sdk_root}", file=sys.stderr)
     print(f"Output   : {args.output}", file=sys.stderr)
-    print(f"Version  : {get_sdk_version(args.sdk_root)}", file=sys.stderr)
-    print("", file=sys.stderr)
 
-    generator = SEPMatrixGenerator(sdk_root=args.sdk_root, output_dir=args.output)
-    if args.sep:
-        sep_numbers = args.sep
-    else:
-        sep_numbers = None
-    matrices = generator.generate(sep_numbers=sep_numbers)
+    try:
+        print(f"Version  : {get_sdk_version(args.sdk_root)}", file=sys.stderr)
+        print("", file=sys.stderr)
 
-    if matrices:
+        generator = SEPMatrixGenerator(sdk_root=args.sdk_root, output_dir=args.output)
+        matrices = generator.generate(sep_numbers=args.sep)
+
+        if not matrices:
+            print("No matrices generated.", file=sys.stderr)
+            sys.exit(1)
+
         print("", file=sys.stderr)
         print("Writing output files ...", file=sys.stderr)
         generator.write_outputs(matrices)
         print("", file=sys.stderr)
         print(f"Done. {len(matrices)} matrices written to {args.output}", file=sys.stderr)
-    else:
-        print("No matrices generated.", file=sys.stderr)
+    except Exception as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        traceback.print_exc()
         sys.exit(1)
 
 

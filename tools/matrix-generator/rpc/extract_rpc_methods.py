@@ -27,19 +27,20 @@ Authentication:
 """
 
 import json
-import os
 import re
 import sys
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Iterable, Optional
 
 try:
     import requests
 except ImportError:
     print("Error: requests library is required. Install with: pip install requests", file=sys.stderr)
     sys.exit(1)
+
+from rpc_releases import GO_STELLAR_SDK_REPO, STELLAR_RPC_REPO, get_github_token, resolve_release
 
 
 def _go_type_to_json_type(go_type: str) -> str:
@@ -87,12 +88,11 @@ class ResponseStructParser:
         for go_file in self.protocol_path.glob("*.go"):
             try:
                 content = go_file.read_text(encoding="utf-8")
-                self.protocol_cache[go_file.stem] = content
-                if self.verbose:
-                    print(f"  Loaded protocol file: {go_file.name}")
-            except Exception as e:
-                if self.verbose:
-                    print(f"  Warning: Failed to load {go_file.name}: {e}")
+            except (OSError, UnicodeDecodeError) as e:
+                raise RuntimeError(f"Failed to read local protocol file {go_file}: {e}") from e
+            self.protocol_cache[go_file.stem] = content
+            if self.verbose:
+                print(f"  Loaded protocol file: {go_file.name}")
 
     def parse_response_struct(self, method_name: str) -> dict[str, Any]:
         """Parse the response struct for a given RPC method."""
@@ -183,7 +183,6 @@ GITHUB_API_BASE = "https://api.github.com"
 GITHUB_RAW_BASE = "https://raw.githubusercontent.com"
 REPO_OWNER = "stellar"
 REPO_NAME = "stellar-rpc"
-DEFAULT_BRANCH = "main"
 
 # Method handler directories (different in different versions)
 # v21-v22: cmd/soroban-rpc/internal/methods
@@ -192,6 +191,10 @@ METHODS_DIRS = [
     "cmd/stellar-rpc/internal/methods",  # v23+
     "cmd/soroban-rpc/internal/methods",  # v21-v22
 ]
+
+# stellar-rpc directory with request and response structs in releases v22.1.2 to
+# v24.0.0; the other releases keep them in go-stellar-sdk only.
+PROTOCOL_DIR = "protocol"
 
 # Known RPC method list with their file mappings
 KNOWN_METHODS = {
@@ -209,44 +212,20 @@ KNOWN_METHODS = {
     "simulateTransaction": "simulate_transaction.go",
 }
 
-# Cache for GitHub token
-_github_token_cache: Optional[str] = None
-_github_token_checked: bool = False
 
-
-def get_github_token() -> Optional[str]:
-    """Get GitHub token for authenticated API requests.
-
-    Checks in order:
-    1. GITHUB_TOKEN environment variable
-    2. gh CLI config file (~/.config/gh/hosts.yml)
-    """
-    global _github_token_cache, _github_token_checked
-
-    if _github_token_checked:
-        return _github_token_cache
-
-    _github_token_checked = True
-
-    token = os.environ.get('GITHUB_TOKEN')
-    if token:
-        _github_token_cache = token
-        return token
-
-    gh_config_path = Path.home() / '.config' / 'gh' / 'hosts.yml'
-    if gh_config_path.exists():
-        try:
-            content = gh_config_path.read_text()
-            for line in content.split('\n'):
-                if 'oauth_token:' in line:
-                    token = line.split('oauth_token:')[1].strip()
-                    if token:
-                        _github_token_cache = token
-                        return token
-        except (IOError, IndexError):
-            pass
-
-    return None
+def check_method_set(method_names: Iterable[str]) -> None:
+    """Raise unless *method_names* equals the KNOWN_METHODS set, naming every difference."""
+    found = set(method_names)
+    expected = set(KNOWN_METHODS)
+    missing = sorted(expected - found)
+    extra = sorted(found - expected)
+    if missing or extra:
+        differences = []
+        if missing:
+            differences.append(f"missing {', '.join(missing)}")
+        if extra:
+            differences.append(f"extra {', '.join(extra)}")
+        raise RuntimeError(f"Extracted methods differ from KNOWN_METHODS: {'; '.join(differences)}")
 
 
 @dataclass
@@ -306,8 +285,19 @@ class GitHubFetcher:
             print("Authentication: Not configured (60 requests/hour)")
             print("  Tip: Set GITHUB_TOKEN env var for higher rate limits")
 
-    def fetch_go_stellar_sdk_protocol_file(self, method_name: str, ref: Optional[str] = None) -> Optional[str]:
-        """Fetch protocol file from go-stellar-sdk repository."""
+    def _get(self, url: str, allow_missing: bool = False) -> Optional[requests.Response]:
+        """GET *url*. Return None for HTTP 404 when *allow_missing*; raise RuntimeError on every other failure."""
+        try:
+            response = self.session.get(url, timeout=30)
+            if allow_missing and response.status_code == 404:
+                return None
+            response.raise_for_status()
+        except requests.RequestException as e:
+            raise RuntimeError(f"GET {url} failed: {e}") from e
+        return response
+
+    def fetch_go_stellar_sdk_protocol_file(self, method_name: str, ref: str) -> str:
+        """Fetch the protocols/rpc file of *method_name* from go-stellar-sdk at *ref*."""
         protocol_files = {
             "getLedgerEntries": "get_ledger_entries.go",
             "getLedgers": "get_ledgers.go",
@@ -325,99 +315,71 @@ class GitHubFetcher:
 
         protocol_file = protocol_files.get(method_name)
         if not protocol_file:
-            return None
+            raise ValueError(f"No go-stellar-sdk protocol file is mapped for {method_name}")
 
-        version_ref = ref or "main"
-        url = f"{GITHUB_RAW_BASE}/stellar/go-stellar-sdk/{version_ref}/protocols/rpc/{protocol_file}"
+        url = f"{GITHUB_RAW_BASE}/{GO_STELLAR_SDK_REPO}/{ref}/protocols/rpc/{protocol_file}"
 
         if self.verbose:
             print(f"  Fetching protocol file: protocols/rpc/{protocol_file}")
 
-        try:
-            response = self.session.get(url, timeout=30)
-            response.raise_for_status()
-            return response.text
-        except requests.RequestException as e:
-            if self.verbose:
-                print(f"    Warning: Could not fetch protocol file: {e}")
-            return None
+        return self._get(url).text
 
-    def get_latest_release_version(self) -> str:
-        """Fetch the latest release version from GitHub releases."""
-        url = f"{GITHUB_API_BASE}/repos/{REPO_OWNER}/{REPO_NAME}/releases"
-        try:
-            response = self.session.get(url, timeout=30)
-            response.raise_for_status()
-            releases = response.json()
+    def resolve_rpc_version(self, requested: Optional[str]) -> str:
+        """Return the stellar-rpc release tag to extract from.
 
-            for release in releases:
-                tag_name = release.get("tag_name", "")
-                if tag_name.startswith("v") and not tag_name.startswith("v0."):
-                    version = tag_name
-                    if self.verbose:
-                        print(f"Latest stellar-rpc version: {version}")
-                    return version
+        *requested* must be a vX.Y.Z or vX.Y.Z-suffix tag of a non-draft release (a
+        prerelease qualifies); without it, the newest stable vX.Y.Z release by semver
+        is used.
+        """
+        version = resolve_release(STELLAR_RPC_REPO, requested, self.token).tag
+        if self.verbose:
+            print(f"stellar-rpc version: {version}")
+        return version
 
-            if self.verbose:
-                print("Warning: No suitable release found, using latest")
-            return releases[0].get("tag_name", "unknown") if releases else "unknown"
-        except requests.RequestException as e:
-            if self.verbose:
-                print(f"Warning: Failed to fetch release version: {e}")
-            return "unknown"
+    def latest_go_stellar_sdk_version(self) -> str:
+        """Return the newest stable go-stellar-sdk release tag by semver.
 
-    def get_latest_go_stellar_sdk_release(self) -> str:
-        """Fetch the latest go-stellar-sdk release tag (the protocols module is
-        versioned as vX.Y.Z). Protocol param definitions are read from this released
-        ref instead of main, so fields not yet in a released RPC are not measured."""
-        url = f"{GITHUB_API_BASE}/repos/stellar/go-stellar-sdk/releases"
-        try:
-            response = self.session.get(url, timeout=30)
-            response.raise_for_status()
-            releases = response.json()
-            for release in releases:
-                tag_name = release.get("tag_name", "")
-                if re.fullmatch(r"v\d+\.\d+\.\d+", tag_name):
-                    if self.verbose:
-                        print(f"Latest go-stellar-sdk release: {tag_name}")
-                    return tag_name
-            if self.verbose:
-                print("Warning: No go-stellar-sdk release found, falling back to main")
-            return "main"
-        except requests.RequestException as e:
-            if self.verbose:
-                print(f"Warning: Failed to fetch go-stellar-sdk release: {e}")
-            return "main"
+        The protocols module is versioned with the repository (vX.Y.Z); reading the
+        param definitions at a release keeps unreleased fields out of the matrix.
+        """
+        version = resolve_release(GO_STELLAR_SDK_REPO, None, self.token).tag
+        if self.verbose:
+            print(f"go-stellar-sdk version: {version}")
+        return version
 
-    def fetch_file(self, file_path: str, ref: Optional[str] = None) -> str:
-        """Fetch a file from the repository."""
-        version_ref = ref or DEFAULT_BRANCH
-        url = f"{GITHUB_RAW_BASE}/{REPO_OWNER}/{REPO_NAME}/{version_ref}/{file_path}"
-
+    def fetch_file(self, file_path: str, ref: str) -> str:
+        """Fetch a stellar-rpc file at *ref*."""
         if self.verbose:
             print(f"Fetching: {file_path}")
+        return self._get(self._raw_url(file_path, ref)).text
 
-        try:
-            response = self.session.get(url, timeout=30)
-            response.raise_for_status()
-            return response.text
-        except requests.RequestException as e:
-            raise RuntimeError(f"Failed to fetch {file_path}: {e}") from e
+    def fetch_file_if_present(self, file_path: str, ref: str) -> Optional[str]:
+        """Fetch a stellar-rpc file at *ref*; None when the file does not exist there (HTTP 404)."""
+        if self.verbose:
+            print(f"Fetching: {file_path}")
+        response = self._get(self._raw_url(file_path, ref), allow_missing=True)
+        return None if response is None else response.text
 
-    def list_directory(self, dir_path: str, ref: Optional[str] = None) -> list[dict[str, Any]]:
-        """List directory contents via GitHub API."""
-        version_ref = ref or DEFAULT_BRANCH
-        url = f"{GITHUB_API_BASE}/repos/{REPO_OWNER}/{REPO_NAME}/contents/{dir_path}?ref={version_ref}"
+    def list_directory(self, dir_path: str, ref: str) -> Optional[list[dict[str, Any]]]:
+        """List a stellar-rpc directory at *ref*; None when it does not exist there (HTTP 404)."""
+        url = f"{GITHUB_API_BASE}/repos/{REPO_OWNER}/{REPO_NAME}/contents/{dir_path}?ref={ref}"
 
         if self.verbose:
             print(f"Listing directory: {dir_path}")
 
+        response = self._get(url, allow_missing=True)
+        if response is None:
+            return None
         try:
-            response = self.session.get(url, timeout=30)
-            response.raise_for_status()
-            return response.json()
-        except requests.RequestException as e:
-            raise RuntimeError(f"Failed to list directory {dir_path}: {e}") from e
+            entries = response.json()
+        except ValueError as e:
+            raise RuntimeError(f"GET {url} returned invalid JSON: {e}") from e
+        if not isinstance(entries, list):
+            raise RuntimeError(f"GET {url} returned {type(entries).__name__}, expected a directory listing")
+        return entries
+
+    def _raw_url(self, file_path: str, ref: str) -> str:
+        return f"{GITHUB_RAW_BASE}/{REPO_OWNER}/{REPO_NAME}/{ref}/{file_path}"
 
 
 class GoSourceParser:
@@ -470,20 +432,24 @@ class GoSourceParser:
         return f"RPC method: {method_name}"
 
     def _extract_parameters(self, go_source: str, method_name: str) -> dict[str, list[Parameter]]:
-        """Extract method parameters from request struct."""
+        """Extract method parameters from the request struct.
+
+        Parameter-less methods declare an empty struct (`struct{}`); a request struct
+        found in no source raises.
+        """
         parameters: dict[str, list[Parameter]] = {"required": [], "optional": []}
 
         struct_name = self._method_to_struct_name(method_name) + "Request"
-        struct_pattern = rf'type\s+{struct_name}\s+struct\s*\{{([^}}]+)\}}'
+        struct_pattern = rf'type\s+{struct_name}\s+struct\s*\{{([^}}]*)\}}'
         match = re.search(struct_pattern, go_source, re.DOTALL)
 
         if not match and self.protocol_source:
             match = re.search(struct_pattern, self.protocol_source, re.DOTALL)
 
         if not match:
-            if self.verbose:
-                print(f"    No request struct found for {method_name} (this is OK for parameter-less methods)")
-            return parameters
+            raise RuntimeError(
+                f"{method_name}: request struct {struct_name} not found in the handler source or the protocol sources"
+            )
 
         struct_body = match.group(1)
         field_pattern = r'(\w+)\s+([\*\[\]]*[\w\.]+(?:\[[\w\.]+\])?)\s*`json:"([^"]+)"([^`]*)`'
@@ -564,13 +530,14 @@ class GoSourceParser:
         if method_name == "getHealth":
             struct_names.insert(0, "HealthCheckResult")
 
+        struct_name = None
         struct_body = None
 
         for name in struct_names:
             struct_pattern = rf'type\s+{name}\s+struct\s*\{{([^}}]+)\}}'
             match = re.search(struct_pattern, go_source, re.DOTALL)
             if match:
-                struct_body = match.group(1)
+                struct_name, struct_body = name, match.group(1)
                 break
 
         if not struct_body and self.protocol_source:
@@ -578,11 +545,14 @@ class GoSourceParser:
                 struct_pattern = rf'type\s+{name}\s+struct\s*\{{([^}}]+)\}}'
                 match = re.search(struct_pattern, self.protocol_source, re.DOTALL)
                 if match:
-                    struct_body = match.group(1)
+                    struct_name, struct_body = name, match.group(1)
                     break
 
         if not struct_body:
-            return {"type": "object", "fields": []}
+            raise RuntimeError(
+                f"{method_name}: no response struct ({', '.join(struct_names)}) "
+                "in the handler source or the protocol sources"
+            )
 
         fields = []
         field_pattern = r'(\w+)\s+([\w\[\]\.\*]+)\s*`json:"([^"]+)"([^`]*)`'
@@ -601,6 +571,9 @@ class GoSourceParser:
                 "type": _go_type_to_json_type(field_type),
                 "description": f"Field: {json_name}"
             })
+
+        if not fields:
+            raise RuntimeError(f"{method_name}: response struct {struct_name} has no JSON-tagged fields")
 
         return {
             "type": "object",
@@ -625,16 +598,16 @@ class RPCMethodExtractor:
         self.verbose = verbose
 
     def extract(self, rpc_version: Optional[str] = None) -> dict[str, Any]:
-        """Extract all RPC methods and generate JSON structure."""
+        """Extract all RPC methods and generate JSON structure.
+
+        Any fetch or parse failure raises; no method is written without its handler
+        and response definition.
+        """
         if self.verbose:
             print("Starting RPC method extraction...")
 
-        if not rpc_version:
-            rpc_version = self.fetcher.get_latest_release_version()
-
-        # Protocol param definitions live in go-stellar-sdk. Read them from its latest
-        # release (not main) so unreleased fields are not measured against the SDK.
-        go_sdk_version = self.fetcher.get_latest_go_stellar_sdk_release()
+        rpc_version = self.fetcher.resolve_rpc_version(rpc_version)
+        go_sdk_version = self.fetcher.latest_go_stellar_sdk_version()
 
         self._fetch_protocol_files(rpc_version)
 
@@ -642,14 +615,10 @@ class RPCMethodExtractor:
         for method_name, file_names in KNOWN_METHODS.items():
             if isinstance(file_names, str):
                 file_names = [file_names]
+            method_spec = self._extract_method(method_name, file_names, rpc_version, go_sdk_version)
+            methods[method_name] = method_spec.to_dict()
 
-            try:
-                method_spec = self._extract_method(method_name, file_names, rpc_version, go_sdk_version)
-                methods[method_name] = method_spec.to_dict()
-            except Exception as e:
-                if self.verbose:
-                    print(f"  Warning: Failed to extract {method_name}: {e}")
-                methods[method_name] = self._create_placeholder_method(method_name, file_names[0])
+        check_method_set(methods)
 
         output = {
             "metadata": {
@@ -671,90 +640,51 @@ class RPCMethodExtractor:
         return output
 
     def _fetch_protocol_files(self, rpc_version: str):
-        """Fetch protocol files and combine them for the parser."""
-        protocol_dirs = [
-            "protocol",
-            "cmd/stellar-rpc/lib/protocol",
-        ]
+        """Load the Go files of the stellar-rpc PROTOCOL_DIR at *rpc_version*.
 
-        combined_protocol_source = ""
+        A release without the directory (HTTP 404) adds no source here. Any other
+        listing or file fetch error raises.
+        """
+        files = self.fetcher.list_directory(PROTOCOL_DIR, rpc_version)
+        if files is None:
+            return
+        if self.verbose:
+            print(f"Found protocol directory: {PROTOCOL_DIR}")
 
-        for protocol_dir in protocol_dirs:
-            try:
-                files = self.fetcher.list_directory(protocol_dir, rpc_version)
+        sources = []
+        for file_info in files:
+            if file_info.get("type") == "file" and file_info.get("name", "").endswith(".go"):
+                sources.append(self.fetcher.fetch_file(f"{PROTOCOL_DIR}/{file_info['name']}", rpc_version))
                 if self.verbose:
-                    print(f"Found protocol directory: {protocol_dir}")
+                    print(f"  Loaded protocol file: {file_info['name']}")
 
-                for file_info in files:
-                    if file_info.get("type") == "file" and file_info.get("name", "").endswith(".go"):
-                        file_path = f"{protocol_dir}/{file_info['name']}"
-                        try:
-                            source = self.fetcher.fetch_file(file_path, rpc_version)
-                            combined_protocol_source += "\n\n" + source
-                            if self.verbose:
-                                print(f"  Loaded protocol file: {file_info['name']}")
-                        except Exception:
-                            pass
+        if sources:
+            self.parser.set_protocol_source("\n\n".join(sources))
 
-                if combined_protocol_source:
-                    break
-
-            except Exception:
-                continue
-
-        if combined_protocol_source:
-            self.parser.set_protocol_source(combined_protocol_source)
-            if self.verbose:
-                print("Protocol files loaded successfully")
-
-    def _extract_method(self, method_name: str, file_names: list[str], rpc_version: str, go_sdk_version: str = "main") -> MethodSpec:
+    def _extract_method(self, method_name: str, file_names: list[str], rpc_version: str, go_sdk_version: str) -> MethodSpec:
         """Extract a single method specification."""
-        go_source = None
-        handler_file = None
-        last_error = None
+        handler_file, go_source = self._fetch_handler(method_name, file_names, rpc_version)
 
-        for file_name in file_names:
-            for methods_dir in METHODS_DIRS:
-                try:
-                    handler_file = f"{methods_dir}/{file_name}"
-                    go_source = self.fetcher.fetch_file(handler_file, rpc_version)
-                    break
-                except Exception as e:
-                    last_error = e
-                    continue
-            if go_source:
-                break
-
-        if not go_source:
-            raise last_error if last_error else RuntimeError(f"Failed to fetch any of {file_names}")
-
-        protocol_source = self.fetcher.fetch_go_stellar_sdk_protocol_file(method_name, ref=go_sdk_version)
-        if protocol_source:
-            if self.parser.protocol_source:
-                self.parser.protocol_source += "\n\n" + protocol_source
-            else:
-                self.parser.set_protocol_source(protocol_source)
+        protocol_source = self.fetcher.fetch_go_stellar_sdk_protocol_file(method_name, go_sdk_version)
+        if self.parser.protocol_source:
+            self.parser.protocol_source += "\n\n" + protocol_source
+        else:
+            self.parser.set_protocol_source(protocol_source)
 
         return self.parser.parse_method_handler(method_name, go_source, handler_file)
 
-    def _create_placeholder_method(self, method_name: str, file_name: str) -> dict[str, Any]:
-        """Create placeholder method spec when extraction fails."""
-        return {
-            "name": method_name,
-            "description": f"RPC method: {method_name}",
-            "handler_file": f"{METHODS_DIRS[0]}/{file_name}",
-            "parameters": {
-                "required": [],
-                "optional": []
-            },
-            "response": {
-                "type": "object",
-                "fields": []
-            },
-            "introduced_in": "",
-            "last_modified": "",
-            "notes": "Extraction failed - manual update needed"
-        }
+    def _fetch_handler(self, method_name: str, file_names: list[str], rpc_version: str) -> tuple[str, str]:
+        """Return the path and source of the first handler candidate that exists at *rpc_version*.
+
+        Handler files moved between releases (METHODS_DIRS, KNOWN_METHODS), so only
+        HTTP 404 moves on to the next candidate; any other fetch error raises.
+        """
+        candidates = [f"{methods_dir}/{file_name}" for file_name in file_names for methods_dir in METHODS_DIRS]
+        for handler_file in candidates:
+            go_source = self.fetcher.fetch_file_if_present(handler_file, rpc_version)
+            if go_source is not None:
+                return handler_file, go_source
+        raise RuntimeError(f"{method_name}: no handler file at {rpc_version} among {', '.join(candidates)}")
 
 
 def main() -> int:
@@ -774,7 +704,8 @@ def main() -> int:
     parser.add_argument(
         "--rpc-version",
         type=str,
-        help="Specific stellar-rpc version to extract from (default: latest release)"
+        help="stellar-rpc release tag (vX.Y.Z or vX.Y.Z-suffix) to extract from; must be a non-draft "
+             "release, prereleases allowed (default: newest stable vX.Y.Z release by semver)"
     )
     parser.add_argument(
         "--go-sdk-path",
