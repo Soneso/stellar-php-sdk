@@ -10,13 +10,18 @@ There are three independent generators, one per domain:
 |-----------|-----------------|--------|
 | **Horizon** | SDK RequestBuilder classes vs. Horizon REST API endpoints | `compatibility/horizon/COMPATIBILITY_MATRIX.md` |
 | **RPC** | SDK SorobanServer class vs. Stellar RPC JSON-RPC methods | `compatibility/rpc/RPC_COMPATIBILITY_MATRIX.md` |
-| **SEP** | SDK implementations vs. 22 Stellar Ecosystem Proposals | `compatibility/sep/SEP-XXXX_COMPATIBILITY_MATRIX.md` (one per SEP) |
+| **SEP** | SDK implementations vs. 23 Stellar Ecosystem Proposals | `compatibility/sep/SEP-XXXX_COMPATIBILITY_MATRIX.md` (one per SEP) |
 
-Each generator reads the SDK source tree, fetches the upstream specification from GitHub (Horizon router, RPC handler code, or SEP documents), and produces a coverage percentage with a detailed breakdown. The SEP checklists are part of the generator; from each SEP document it reads the preamble `Version` and `Status`, printed as `SEP Version` and `SEP Status` in the matrix header.
+Each generator reads the SDK source tree, fetches the upstream specification from GitHub (Horizon router, RPC handler code, or SEP documents), and produces a coverage percentage with a detailed breakdown. The SEP checklists are part of the generator. The SEP-23 items come from the SEP document: the key types of its version-byte table and its test vectors. From each SEP document the generator reads the preamble `Version` and `Status`, printed as `SEP Version` and `SEP Status` in the matrix header.
 
 Every script exits non-zero and writes no file when an upstream fetch fails. The same applies to:
 
 - a SEP preamble without a `Status` line (SEP generator)
+- a SEP-23 document without a readable version-byte table, `## Tests` section, or valid and invalid test case lists (SEP generator)
+- a SEP-23 key type the analyzer has no PHP names for (SEP generator)
+- a missing `VersionByte` or `StrKey` class, or a mapped constant or method absent from it (SEP generator)
+- a mapped `VersionByte` constant that is not an integer literal or shift expression (SEP generator)
+- an unreadable `VersionByte`, `StrKey` or StrKey unit test file (SEP generator)
 - an RPC method without a response definition (RPC extractor)
 - an unreadable SDK version (RPC and SEP generators)
 
@@ -72,7 +77,7 @@ Generate a single SEP matrix:
 python tools/matrix-generator/sep/generate_sep_matrix.py --sep 10
 ```
 
-Generate all supported SEPs (currently 22 SEP analyzers):
+Generate all supported SEPs (currently 23 SEP analyzers):
 
 ```bash
 python tools/matrix-generator/sep/generate_sep_matrix.py --all
@@ -103,7 +108,7 @@ tools/matrix-generator/
     generate_rpc_matrix.py       # RPC method comparator
     rpc_releases.py              # stellar-rpc and go-stellar-sdk release lookup
   sep/
-    generate_sep_matrix.py       # SEP analyzers (all 22 in one file)
+    generate_sep_matrix.py       # SEP analyzers (all 23 in one file)
   tests/                         # unittest suite, no network access
 ```
 
@@ -113,14 +118,14 @@ Output goes to:
 compatibility/
   horizon/COMPATIBILITY_MATRIX.md
   rpc/RPC_COMPATIBILITY_MATRIX.md
-  sep/SEP-XXXX_COMPATIBILITY_MATRIX.md  (x22)
+  sep/SEP-XXXX_COMPATIBILITY_MATRIX.md  (x23)
 ```
 
 ## How It Works
 
 1. **SDK version** is read from `Soneso/StellarSDK/StellarSDK.php` (`VERSION_NR` constant).
 2. **Upstream specs** are fetched from GitHub (Horizon router files, RPC handler source, SEP Markdown documents).
-3. **SDK source** is scanned using regex pattern matching against the PHP files under `Soneso/StellarSDK/`.
+3. **SDK source** is scanned using regex pattern matching against the PHP files under `Soneso/StellarSDK/`. The SEP-23 analyzer also reads `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php`.
 4. **Coverage** is computed per endpoint/method/feature and rendered into Markdown tables.
 
 ## Tests

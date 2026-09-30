@@ -77,7 +77,7 @@ class FetchTest(unittest.TestCase):
         routes = {raw_url(2): urllib.error.URLError("connection reset")}
         with mock.patch("urllib.request.urlopen", FakeUrlopen(routes)):
             with self.assertRaisesRegex(RuntimeError, r"GET .*/sep-0002\.md failed: .*connection reset"):
-                sep.fetch_sep_preamble(2)
+                sep.fetch_sep_document(2)
 
 
 class HeaderLinesTest(unittest.TestCase):
