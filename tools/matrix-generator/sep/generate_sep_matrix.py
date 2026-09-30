@@ -4,7 +4,9 @@ Stellar PHP SDK SEP Compatibility Matrix Generator
 
 Analyzes the Stellar PHP SDK source code against hand-authored SEP checklists
 and generates a compatibility matrix per SEP. The SEP version and status in each
-matrix header come from the preamble of the upstream SEP document.
+matrix header come from the preamble of the upstream SEP document. The SEP-23
+checklist is read from the upstream document: its version-byte table and its
+test vectors.
 
 Usage:
     python3 generate_sep_matrix.py [--output OUTPUT_DIR] [--sep SEP_NUMBER]
@@ -46,7 +48,7 @@ def get_sdk_version(sdk_root: Path) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Upstream SEP preamble
+# Upstream SEP documents
 # ---------------------------------------------------------------------------
 
 SEP_RAW_URL = "https://raw.githubusercontent.com/stellar/stellar-protocol/master/ecosystem/sep-{number:04d}.md"
@@ -110,10 +112,19 @@ def parse_sep_preamble(document: str, source: str) -> SEPPreamble:
     return SEPPreamble(status=status, version=version)
 
 
-def fetch_sep_preamble(sep_number: int) -> SEPPreamble:
+@dataclass(frozen=True)
+class SEPDocument:
+    """An upstream SEP document: its URL, its Markdown text and its parsed preamble."""
+    url: str
+    text: str
+    preamble: SEPPreamble
+
+
+def fetch_sep_document(sep_number: int) -> SEPDocument:
     """Fetch the upstream document of *sep_number* from stellar-protocol master and parse its preamble."""
     url = SEP_RAW_URL.format(number=sep_number)
-    return parse_sep_preamble(fetch_text(url), url)
+    text = fetch_text(url)
+    return SEPDocument(url=url, text=text, preamble=parse_sep_preamble(text, url))
 
 
 # ---------------------------------------------------------------------------
@@ -302,9 +313,9 @@ class SEPAnalyzerBase:
     sep_title: str = ""
     sep_url: str = ""
 
-    def __init__(self, sdk_analyzer: SDKAnalyzer, preamble: SEPPreamble):
+    def __init__(self, sdk_analyzer: SDKAnalyzer, document: SEPDocument):
         self.sdk = sdk_analyzer
-        self.preamble = preamble
+        self.document = document
 
     def analyze(self) -> CompatibilityMatrix:
         raise NotImplementedError
@@ -315,8 +326,8 @@ class SEPAnalyzerBase:
                 number=self.sep_number,
                 title=self.sep_title,
                 url=self.sep_url,
-                status=self.preamble.status,
-                version=self.preamble.version,
+                status=self.document.preamble.status,
+                version=self.document.preamble.version,
             ),
             sdk_version=get_sdk_version(self.sdk.sdk_root),
             generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
@@ -1575,6 +1586,315 @@ class SEP12Analyzer(SEPAnalyzerBase):
         matrix.sections = sections
         matrix.overall_status = self._overall(sections)
         return matrix
+
+
+# ===========================================================================
+# SEP-23: Strkeys
+# ===========================================================================
+
+@dataclass(frozen=True)
+class StrkeyKeyType:
+    """A row of the SEP-23 version-byte table."""
+    name: str             # key type as printed, e.g. STRKEY_PUBKEY
+    base_expression: str  # base value as printed, e.g. "6 << 3"
+    base_value: int
+    first_char: str
+
+
+@dataclass(frozen=True)
+class StrkeyTestVector:
+    """A numbered SEP-23 test case, named valid_NN or invalid_NN in document order."""
+    name: str
+    title: str
+    strkey: str
+
+
+# A PHP integer literal: 0x hex, 0b binary, 0o or legacy 0-prefixed octal, or decimal,
+# with "_" allowed between digits.
+_INTEGER_LITERAL = (
+    r"0[xX][0-9a-fA-F](?:_?[0-9a-fA-F])*|0[bB][01](?:_?[01])*|0[oO][0-7](?:_?[0-7])*"
+    r"|0(?:_?[0-7])*|[1-9](?:_?[0-9])*"
+)
+# An integer literal, optionally shifted left by another: "6 << 3", "48", "0x30".
+_SHIFT_EXPRESSION = re.compile(rf"({_INTEGER_LITERAL})(?:\s*<<\s*({_INTEGER_LITERAL}))?")
+_TABLE_SEPARATOR_CELL = re.compile(r":?-+:?")
+_KEY_TYPE_COLUMNS = ("Key type", "Base value", "First char")
+_PUBLIC_METHOD = re.compile(r"\bpublic\s+(?:static\s+)?function\s+(\w+)\s*\(")
+# Test cases are numbered list items at column 0; the lines inside a case are indented.
+_TEST_CASE_START = re.compile(r"^\d+\.\s", re.MULTILINE)
+_BLANK_LINE = re.compile(r"\n[ \t]*\n")
+# The strkey is backticked on the "- Strkey" line or on the line after "- Strkey:".
+_STRKEY_ENTRY = re.compile(r"- Strkey:?\s*\n?\s*`([^`]+)`")
+# The paragraph after the last invalid case introduces a C array that repeats the invalid keys.
+_INVALID_CASES_END = re.compile(r"^You can paste", re.MULTILINE)
+
+
+def _integer_literal_value(literal: str) -> int:
+    """Return the value of a literal in the _INTEGER_LITERAL form."""
+    digits = literal.replace("_", "")
+    if len(digits) > 1 and digits[0] == "0" and digits[1] in "01234567":
+        return int(digits, 8)
+    return int(digits, 0)
+
+
+def _evaluate_shift_expression(expression: str) -> Optional[int]:
+    """Return the value of *expression* in the _SHIFT_EXPRESSION form, or None for any other form."""
+    match = _SHIFT_EXPRESSION.fullmatch(expression.strip())
+    if match is None:
+        return None
+    value = _integer_literal_value(match.group(1))
+    return value << _integer_literal_value(match.group(2)) if match.group(2) else value
+
+
+def _quoted_literal_present(source_text: str, value: str) -> bool:
+    """True when *value* is the complete content of a single- or double-quoted literal in *source_text*."""
+    return re.search(rf"(['\"]){re.escape(value)}\1", source_text) is not None
+
+
+def _class_body(source_text: str, class_name: str) -> str:
+    """Return the text between the braces of class *class_name* by plain brace counting, or "" when absent."""
+    declaration = re.search(rf"\bclass\s+{re.escape(class_name)}\b[^{{]*\{{", source_text)
+    if declaration is None:
+        return ""
+    depth = 1
+    for brace in re.finditer(r"[{}]", source_text[declaration.end():]):
+        depth += 1 if brace.group() == "{" else -1
+        if depth == 0:
+            return source_text[declaration.end():declaration.end() + brace.start()]
+    return source_text[declaration.end():]
+
+
+def _markdown_section(text: str, heading: str, source: str) -> str:
+    """Return the text below the line *heading* up to the next heading of the same or a higher level.
+
+    *heading* includes its hashes, for example ``## Tests``. A missing heading raises.
+    """
+    level = len(heading) - len(heading.lstrip("#"))
+    start = re.search(rf"^{re.escape(heading)}[ \t]*$", text, re.MULTILINE)
+    if start is None:
+        raise ValueError(f"SEP-23 {source}: no '{heading}' section")
+    end = re.compile(rf"^#{{1,{level}}}[ \t]", re.MULTILINE).search(text, start.end())
+    return text[start.end():end.start() if end else len(text)]
+
+
+def _markdown_tables(text: str) -> list[list[list[str]]]:
+    """Return the pipe tables in *text* as lists of rows of stripped cells, without separator rows."""
+    tables: list[list[list[str]]] = []
+    rows: list[list[str]] = []
+    for line in text.splitlines() + [""]:
+        stripped = line.strip()
+        if stripped.startswith("|"):
+            cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+            if not all(_TABLE_SEPARATOR_CELL.fullmatch(cell) for cell in cells):
+                rows.append(cells)
+        elif rows:
+            tables.append(rows)
+            rows = []
+    return tables
+
+
+def parse_sep23_key_types(document: str, source: str) -> list[StrkeyKeyType]:
+    """Read the version-byte table of ``## Specification``, one key type per row.
+
+    The table is the one whose header has the Key type, Base value and First char
+    columns; the algorithm tables below it are not read. Base values are evaluated to
+    integers. No such table, more than one, a table without rows, a row whose cell
+    count differs from the header or a base value in another form raises.
+    """
+    specification = _markdown_section(document, "## Specification", source)
+    tables = [
+        table for table in _markdown_tables(specification)
+        if all(column in table[0] for column in _KEY_TYPE_COLUMNS)
+    ]
+    if len(tables) != 1:
+        raise ValueError(
+            f"SEP-23 {source}: expected one version-byte table with the columns "
+            f"{', '.join(_KEY_TYPE_COLUMNS)} in '## Specification', found {len(tables)}"
+        )
+    header, *rows = tables[0]
+    if not rows:
+        raise ValueError(f"SEP-23 {source}: the version-byte table has no rows")
+    name_column, base_column, char_column = (header.index(column) for column in _KEY_TYPE_COLUMNS)
+
+    key_types: list[StrkeyKeyType] = []
+    for row in rows:
+        if len(row) != len(header):
+            raise ValueError(
+                f"SEP-23 {source}: version-byte table row {row} has {len(row)} cells, the header has {len(header)}"
+            )
+        base_value = _evaluate_shift_expression(row[base_column])
+        if base_value is None:
+            raise ValueError(f"SEP-23 {source}: cannot evaluate the base value {row[base_column]!r} of {row[name_column]}")
+        key_types.append(StrkeyKeyType(
+            name=row[name_column],
+            base_expression=row[base_column],
+            base_value=base_value,
+            first_char=row[char_column],
+        ))
+    return key_types
+
+
+def parse_sep23_test_vectors(document: str, source: str) -> list[StrkeyTestVector]:
+    """Read the numbered cases of ``### Valid test cases`` and ``### Invalid test cases`` in ``## Tests``.
+
+    The invalid list ends at the paragraph starting ``You can paste``. A missing
+    section, an empty list or a case without exactly one ``- Strkey`` entry raises.
+    """
+    tests = _markdown_section(document, "## Tests", source)
+    valid = _markdown_section(tests, "### Valid test cases", source)
+    invalid = _markdown_section(tests, "### Invalid test cases", source)
+    invalid_end = _INVALID_CASES_END.search(invalid)
+    if invalid_end:
+        invalid = invalid[:invalid_end.start()]
+    return _sep23_test_cases(valid, "valid", source) + _sep23_test_cases(invalid, "invalid", source)
+
+
+def _sep23_test_cases(text: str, kind: str, source: str) -> list[StrkeyTestVector]:
+    """Return the numbered cases of one test case list, named *kind*_NN.
+
+    The title is the text after the list marker up to the first blank line, with line
+    breaks and indentation collapsed to single spaces.
+    """
+    starts = list(_TEST_CASE_START.finditer(text))
+    if not starts:
+        raise ValueError(f"SEP-23 {source}: no {kind} test cases")
+    vectors: list[StrkeyTestVector] = []
+    for number, start in enumerate(starts, start=1):
+        end = starts[number].start() if number < len(starts) else len(text)
+        case = text[start.end():end]
+        title = " ".join(_BLANK_LINE.split(case, maxsplit=1)[0].split())
+        strkeys = _STRKEY_ENTRY.findall(case)
+        if len(strkeys) != 1:
+            raise ValueError(
+                f"SEP-23 {source}: {kind} test case {number} ({title!r}) has {len(strkeys)} Strkey entries, expected 1"
+            )
+        vectors.append(StrkeyTestVector(name=f"{kind}_{number:02d}", title=title, strkey=strkeys[0]))
+    return vectors
+
+
+class SEP23Analyzer(SEPAnalyzerBase):
+    """Checks the key types and test vectors read from the fetched SEP-23 document.
+
+    One item per row of the version-byte table and one per valid and invalid test
+    case, so the totals follow the upstream text. The SDK source is read as written:
+    a missing class, an absent mapped constant or method, or a constant value in a
+    form the reader does not know raises, so a rename or reformat fails the run.
+    """
+
+    sep_number = 23
+    sep_title = "Strkeys"
+    sep_url = "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md"
+
+    STRKEY_TEST_FILE = "Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php"
+
+    # Specification key type -> (VersionByte constant, StrKey encode method, StrKey decode method),
+    # or None for a key type the SDK does not implement.
+    PHP_NAMES: dict[str, Optional[tuple[str, str, str]]] = {
+        "STRKEY_PUBKEY": ("ACCOUNT_ID", "encodeAccountId", "decodeAccountId"),
+        "STRKEY_MUXED": ("MUXED_ACCOUNT_ID", "encodeMuxedAccountId", "decodeMuxedAccountId"),
+        "STRKEY_PRIVKEY": ("SEED", "encodeSeed", "decodeSeed"),
+        "STRKEY_PRE_AUTH_TX": ("PRE_AUTH_TX", "encodePreAuthTx", "decodePreAuthTx"),
+        "STRKEY_HASH_X": ("SHA256_HASH", "encodeSha256Hash", "decodeSha256Hash"),
+        "STRKEY_SIGNED_PAYLOAD": ("SIGNED_PAYLOAD", "encodeSignedPayload", "decodeSignedPayload"),
+        "STRKEY_CONTRACT": ("CONTRACT_ID", "encodeContractId", "decodeContractId"),
+        "STRKEY_LIQUIDITY_POOL": ("LIQUIDITY_POOL_ID", "encodeLiquidityPoolId", "decodeLiquidityPoolId"),
+        "STRKEY_CLAIMABLE_BALANCE": ("CLAIMABLE_BALANCE_ID", "encodeClaimableBalanceId", "decodeClaimableBalanceId"),
+    }
+
+    def analyze(self) -> CompatibilityMatrix:
+        matrix = self._make_matrix()
+        key_types = parse_sep23_key_types(self.document.text, self.document.url)
+        vectors = parse_sep23_test_vectors(self.document.text, self.document.url)
+
+        sections = [self._key_type_section(key_types), self._test_vector_section(vectors)]
+        matrix.sections = sections
+        matrix.overall_status = self._overall(sections)
+        return matrix
+
+    def _read(self, relative_path: str) -> str:
+        """Return the text of the SDK file at *relative_path*; an unreadable file raises."""
+        try:
+            return (self.sdk.sdk_root / relative_path).read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            raise RuntimeError(f"SEP-23 cannot read {relative_path}: {exc}") from exc
+
+    def _class_file(self, class_name: str) -> tuple[str, str]:
+        """Return the SDK-relative path and the text of the file declaring *class_name*; none raises."""
+        path = self.sdk.find_class(class_name)
+        if path is None:
+            raise ValueError(f"SEP-23 class {class_name} not found in Soneso/StellarSDK")
+        relative_path = path.relative_to(self.sdk.sdk_root).as_posix()
+        return relative_path, self._read(relative_path)
+
+    def _key_type_section(self, key_types: list[StrkeyKeyType]) -> SEPSection:
+        section = SEPSection(
+            name="Key types",
+            description=(
+                "Version-byte table of the specification. A key type is implemented when `VersionByte` "
+                "defines its base value and `StrKey` has an encode and a decode method for it."
+            ),
+        )
+        version_byte_path, version_byte_text = self._class_file("VersionByte")
+        strkey_path, strkey_text = self._class_file("StrKey")
+        version_bytes = _class_body(version_byte_text, "VersionByte")
+        methods = set(_PUBLIC_METHOD.findall(strkey_text))
+
+        for key_type in key_types:
+            if key_type.name not in self.PHP_NAMES:
+                raise ValueError(f"SEP-23 key type {key_type.name} has no entry in SEP23Analyzer.PHP_NAMES")
+            names = self.PHP_NAMES[key_type.name]
+            description = (
+                f"Base value {key_type.base_expression} ({key_type.base_value}), "
+                f"first character {key_type.first_char}"
+            )
+            if names is None:
+                section.fields.append(self._field(key_type.name, description, False, notes="Not implemented in the SDK"))
+                continue
+            constant, encode, decode = names
+            for method in (encode, decode):
+                if method not in methods:
+                    raise ValueError(f"SEP-23 StrKey::{method}() not found in {strkey_path}")
+            # An optional type precedes the name in a typed constant (PHP 8.3): const int ACCOUNT_ID = ...
+            declaration = re.search(rf"\bconst\s+(?:\w+\s+)?{re.escape(constant)}\s*=\s*([^;]+);", version_bytes)
+            if declaration is None:
+                raise ValueError(f"SEP-23 VersionByte::{constant} not found in {version_byte_path}")
+            value = _evaluate_shift_expression(declaration.group(1))
+            if value is None:
+                raise ValueError(
+                    f"SEP-23 cannot evaluate VersionByte::{constant} = {declaration.group(1).strip()!r} "
+                    f"in {version_byte_path}"
+                )
+            # VersionByte holds the base values: the algorithm specifiers of the
+            # specification, ED25519 and SHA256, are both 0.
+            if value != key_type.base_value:
+                section.fields.append(self._field(
+                    key_type.name, description, False,
+                    notes=f"VersionByte::{constant} is {value}, the specification requires {key_type.base_value}",
+                ))
+            else:
+                section.fields.append(self._field(
+                    key_type.name, description, True,
+                    sdk_class=f"VersionByte::{constant}, StrKey::{encode}() / {decode}()",
+                ))
+        return section
+
+    def _test_vector_section(self, vectors: list[StrkeyTestVector]) -> SEPSection:
+        test_source = self._read(self.STRKEY_TEST_FILE)
+        section = SEPSection(
+            name="Test vectors quoted in the StrKey unit test files",
+            description=(
+                "Valid and invalid test cases of the specification. A vector counts when it is the complete "
+                f"content of a quoted string literal in `{self.STRKEY_TEST_FILE}`."
+            ),
+        )
+        for vector in vectors:
+            # MatrixRenderer prints a field's sdk_class and notes, never its description,
+            # so the description doubles as the notes.
+            description = f"{vector.title.removesuffix('.')}, quoted in `{self.STRKEY_TEST_FILE}`"
+            section.fields.append(self._field(
+                vector.name, description, _quoted_literal_present(test_source, vector.strkey), notes=description,
+            ))
+        return section
 
 
 # ===========================================================================
@@ -3373,6 +3693,7 @@ class SEPAnalyzerFactory:
         10: SEP10Analyzer,
         11: SEP11Analyzer,
         12: SEP12Analyzer,
+        23: SEP23Analyzer,
         24: SEP24Analyzer,
         29: SEP29Analyzer,
         30: SEP30Analyzer,
@@ -3392,10 +3713,10 @@ class SEPAnalyzerFactory:
         cls,
         sep_number: int,
         sdk_analyzer: SDKAnalyzer,
-        preamble: SEPPreamble,
+        document: SEPDocument,
     ) -> SEPAnalyzerBase:
         """Return the analyzer for *sep_number*, which must be one of supported_seps()."""
-        return cls._ANALYZERS[sep_number](sdk_analyzer, preamble)
+        return cls._ANALYZERS[sep_number](sdk_analyzer, document)
 
     @classmethod
     def supported_seps(cls) -> list[int]:
@@ -3515,7 +3836,7 @@ class SEPMatrixGenerator:
     def generate(self, sep_numbers: Optional[list[int]] = None) -> list[CompatibilityMatrix]:
         """Analyze the selected SEPs.
 
-        All preambles are fetched before the first analysis. Any fetch, parse or
+        All documents are fetched before the first analysis. Any fetch, parse or
         analyzer error propagates, so write_outputs() only receives a complete set.
         """
         supported = self.factory.supported_seps()
@@ -3526,14 +3847,14 @@ class SEPMatrixGenerator:
             else:
                 print(f"  [SKIP] SEP-{sep_num}: no analyzer registered", file=sys.stderr)
 
-        preambles: dict[int, SEPPreamble] = {}
+        documents: dict[int, SEPDocument] = {}
         for sep_num in selected:
-            print(f"  [FETCH] SEP-{sep_num} preamble", file=sys.stderr)
-            preambles[sep_num] = fetch_sep_preamble(sep_num)
+            print(f"  [FETCH] SEP-{sep_num} document", file=sys.stderr)
+            documents[sep_num] = fetch_sep_document(sep_num)
 
         matrices: list[CompatibilityMatrix] = []
         for sep_num in selected:
-            analyzer = self.factory.get_analyzer(sep_num, self.sdk_analyzer, preambles[sep_num])
+            analyzer = self.factory.get_analyzer(sep_num, self.sdk_analyzer, documents[sep_num])
             print(f"  [RUN]  Analyzing SEP-{sep_num}: {analyzer.sep_title} ...", file=sys.stderr)
             matrix = analyzer.analyze()
             matrices.append(matrix)
