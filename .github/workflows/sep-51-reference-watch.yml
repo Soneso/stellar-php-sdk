@@ -1,0 +1,379 @@
+name: SEP-51 reference watch
+
+# The SEP-0051 conformance corpus holds the output of a pinned build of the XDR-JSON
+# reference CLI for every fixture. CorpusSnapshotTest checks the SDK against it on every pull
+# request. This workflow re-emits the whole seed catalogue through the SDK on a schedule and
+# diffs it against the corpus, which also catches fixtures added to the seed without a
+# regeneration. Drift is never fixed here: a regeneration needs the pinned reference build.
+#
+# The same job then watches upstream for a new release of the reference crate and a new
+# revision of the specification. A new release is compiled and compared against the committed
+# corpus in advisory mode, which reports and writes nothing, so the answer to "is this pin
+# bump routine or does it change our output?" is in hand before anyone bumps the pin.
+
+on:
+  schedule:
+    # Mondays at 04:45 UTC
+    - cron: '45 4 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run without creating an issue (for testing)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: sep-51-reference-watch
+  cancel-in-progress: false
+
+jobs:
+  check-against-reference:
+    if: github.repository == 'Soneso/stellar-php-sdk'
+    name: Corpus and upstream
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PIN_FILE: tools/sep-51-test-fixtures/oracle-pin.json
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, ctype, json, bcmath, gmp, pcntl, sodium
+          tools: composer:v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-vendor-${{ hashFiles('composer.json') }}
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.x'
+
+      - name: Read the pinned reference build
+        id: pin
+        run: |
+          VERSION=$(jq -er '.version' "$PIN_FILE") || {
+            echo "::error::No reference version recorded in $PIN_FILE"
+            exit 1
+          }
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Pinned reference build: stellar-xdr $VERSION"
+
+      - name: Check the SDK against the committed corpus
+        id: corpus
+        run: |
+          set +e
+          bash tools/sep-51-test-fixtures/refresh_corpus.sh > /tmp/corpus_check.log 2>&1
+          status=$?
+          set -e
+          cat /tmp/corpus_check.log
+          if [ "$status" -ne 0 ] && [ "$status" -ne 1 ]; then
+            echo "::error::refresh_corpus.sh did not complete (exit $status). This is a broken job, not corpus drift. Check the PHP and Python setup above."
+            exit 1
+          fi
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+
+      - name: Write the drift report
+        id: summary
+        env:
+          PINNED: ${{ steps.pin.outputs.version }}
+          CORPUS_STATUS: ${{ steps.corpus.outputs.status }}
+        run: |
+          if [ "$CORPUS_STATUS" = "0" ]; then
+            echo "The SDK's SEP-0051 output matches the committed corpus."
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "drift=true" >> "$GITHUB_OUTPUT"
+          {
+            cat <<EOF
+          The SDK's SEP-0051 output differs from the committed corpus.
+
+          **Reference build:** stellar-xdr \`$PINNED\`
+
+          ## Corpus
+
+          \`tools/sep-51-test-fixtures/corpus.json\` differs from a fresh re-emission of every seed fixture through the SDK's \`toJson()\`. The corpus holds the reference CLI's output, so a changed entry is an SDK emission that diverges from the reference implementation, and an added or missing entry is a seed fixture without a matching regeneration.
+
+          \`\`\`diff
+          EOF
+            head -c 40000 /tmp/corpus_check.log
+            cat <<EOF
+
+          \`\`\`
+
+          ## Required actions
+
+          1. Reproduce locally: \`bash tools/sep-51-test-fixtures/refresh_corpus.sh\`
+          2. For a changed entry, fix the emission so it matches the reference again and run \`vendor/bin/phpunit --filter Sep51\`.
+          3. For an added or missing entry, regenerate the corpus with the pinned build: \`cargo install stellar-xdr --features cli --version $PINNED --locked\`, then \`python3 tools/sep-51-test-fixtures/generate_corpus.py\`. Review the diff before committing; a changed rendering is a wire-format change and belongs in the release notes.
+          EOF
+          } > /tmp/report.md
+          FINGERPRINT=$(sha256sum /tmp/report.md | cut -c1-16)
+          printf '\n<!-- drift-fingerprint: %s -->\n\n---\n*Reported by the [SEP-51 reference watch](.github/workflows/sep-51-reference-watch.yml).*\n' "$FINGERPRINT" >> /tmp/report.md
+          echo "fingerprint=$FINGERPRINT" >> "$GITHUB_OUTPUT"
+          echo "::warning::The SDK's SEP-0051 output drifted from the committed corpus."
+          cat /tmp/report.md
+
+      - name: File or update the drift issue
+        if: steps.summary.outputs.drift == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          FINGERPRINT: ${{ steps.summary.outputs.fingerprint }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "::notice::Dry run: this run files no issue."
+            exit 0
+          fi
+          number=$(gh issue list --label "sep-51-corpus-drift" --state open --json number --jq '.[0].number // empty')
+          if [ -z "$number" ]; then
+            gh label create "sep-51-corpus-drift" --color "5319e7" \
+              --description "The SDK's SEP-0051 output differs from the committed reference corpus" 2>/dev/null || true
+            gh issue create --title "SEP-51: SDK output drifted from the committed reference corpus" \
+              --label "sep-51-corpus-drift" --body-file /tmp/report.md
+            exit 0
+          fi
+          # Comment only when the fingerprint is absent from the issue thread.
+          thread=$(gh issue view "$number" --json body,comments --jq '.body + "\n" + ([.comments[].body] | join("\n"))')
+          if grep -qF "drift-fingerprint: $FINGERPRINT" <<< "$thread"; then
+            echo "Issue #$number already reports this drift."
+            exit 0
+          fi
+          gh issue comment "$number" --body-file /tmp/report.md
+
+      # --- Upstream watch --------------------------------------------------------------
+      #
+      # Everything below reports on upstream movement. It never writes a committed artefact
+      # and never changes what the drift check concluded.
+
+      - name: Check for a newer reference release
+        id: release
+        env:
+          PINNED: ${{ steps.pin.outputs.version }}
+        run: |
+          # crates.io requires a User-Agent that identifies the caller.
+          RESPONSE=$(curl -sS --fail --max-time 30 \
+            -H "User-Agent: stellar-php-sdk SEP-51 release watcher (https://github.com/Soneso/stellar-php-sdk)" \
+            "https://crates.io/api/v1/crates/stellar-xdr") || {
+              echo "::warning::Could not reach crates.io; skipping the release check."
+              exit 0
+            }
+          LATEST=$(jq -er '.crate.max_stable_version // .crate.max_version' <<< "$RESPONSE") || {
+            echo "::warning::crates.io returned no version; skipping the release check."
+            exit 0
+          }
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
+          if [ "$LATEST" = "$PINNED" ]; then
+            echo "Reference crate is at the pinned version ($PINNED)."
+            echo "newer=false" >> "$GITHUB_OUTPUT"
+          elif [ "$(printf '%s\n%s\n' "$PINNED" "$LATEST" | sort -V | tail -n 1)" = "$LATEST" ]; then
+            echo "Reference crate has a newer release: pinned $PINNED, latest $LATEST"
+            echo "newer=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::crates.io reports $LATEST, below the pin $PINNED; nothing to do."
+            echo "newer=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check the published specification revision
+        id: spec
+        run: |
+          WANT_VERSION=$(jq -r '.sep_spec.version' "$PIN_FILE")
+          WANT_STATUS=$(jq -r '.sep_spec.status' "$PIN_FILE")
+          SPEC=$(curl -sS --fail --max-time 30 "$(jq -r '.sep_spec.source' "$PIN_FILE")") || {
+            echo "::warning::Could not fetch the specification; skipping the revision check."
+            exit 0
+          }
+          # The preamble is a fenced block of "Key: value" lines at the top of the document.
+          GOT_VERSION=$(awk '/^Version:/ {print $2; exit}' <<< "$SPEC")
+          GOT_STATUS=$(awk '/^Status:/ {print $2; exit}' <<< "$SPEC")
+          if [ -z "$GOT_VERSION" ]; then
+            echo "::warning::No Version field in the specification preamble; skipping."
+            exit 0
+          fi
+          echo "version=$GOT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "status=$GOT_STATUS" >> "$GITHUB_OUTPUT"
+          if [ "$GOT_VERSION" = "$WANT_VERSION" ] && [ "$GOT_STATUS" = "$WANT_STATUS" ]; then
+            echo "Specification is at the recorded revision ($WANT_VERSION, $WANT_STATUS)."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Specification has moved: recorded $WANT_VERSION/$WANT_STATUS, published $GOT_VERSION/$GOT_STATUS"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Cache the latest reference CLI
+        if: steps.release.outputs.newer == 'true'
+        id: latest-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/stellar-xdr-latest
+          key: stellar-xdr-cli-${{ runner.os }}-${{ steps.release.outputs.latest }}
+
+      - name: Install the latest reference CLI
+        if: steps.release.outputs.newer == 'true' && steps.latest-cache.outputs.cache-hit != 'true'
+        env:
+          LATEST: ${{ steps.release.outputs.latest }}
+          LATEST_ROOT: ${{ runner.temp }}/stellar-xdr-latest
+        run: cargo install stellar-xdr --features cli --version "$LATEST" --locked --root "$LATEST_ROOT"
+
+      - name: Compare the corpus against the latest release
+        if: steps.release.outputs.newer == 'true'
+        id: advisory
+        env:
+          LATEST_ROOT: ${{ runner.temp }}/stellar-xdr-latest
+        run: |
+          set +e
+          bash tools/sep-51-test-fixtures/refresh_corpus.sh \
+            --oracle-bin "$LATEST_ROOT/bin/stellar-xdr" > /tmp/advisory.log 2>&1
+          status=$?
+          set -e
+          cat /tmp/advisory.log
+          if [ "$status" -ne 0 ] && [ "$status" -ne 1 ]; then
+            echo "::error::The advisory comparison did not complete (exit $status). This is a broken job, not a behaviour change."
+            exit 1
+          fi
+          # Advisory comparisons must leave corpus.json and oracle-pin.json unchanged.
+          CHANGED=$(git status --porcelain -- tools/sep-51-test-fixtures/corpus.json "$PIN_FILE")
+          if [ -n "$CHANGED" ]; then
+            echo "::error::The advisory comparison modified committed artefacts:"
+            echo "$CHANGED"
+            exit 1
+          fi
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+
+      - name: Write the upstream-watch report
+        id: watch
+        env:
+          PINNED: ${{ steps.pin.outputs.version }}
+          LATEST: ${{ steps.release.outputs.latest }}
+          SPEC_VERSION: ${{ steps.spec.outputs.version }}
+          SPEC_STATUS: ${{ steps.spec.outputs.status }}
+          NEWER: ${{ steps.release.outputs.newer }}
+          SPEC_CHANGED: ${{ steps.spec.outputs.changed }}
+          ADVISORY_STATUS: ${{ steps.advisory.outputs.status }}
+          DRIFT: ${{ steps.summary.outputs.drift }}
+        run: |
+          if [ "$NEWER" != "true" ] && [ "$SPEC_CHANGED" != "true" ]; then
+            if [ "$NEWER" = "false" ] && [ "$SPEC_CHANGED" = "false" ]; then
+              echo "Upstream is where this implementation expects it."
+            else
+              echo "Upstream watch incomplete; see the fetch warnings above."
+            fi
+            echo "report=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "report=true" >> "$GITHUB_OUTPUT"
+          {
+            if [ "$NEWER" = "true" ]; then
+              cat <<EOF
+          ## Reference release
+
+          The XDR-JSON reference crate has a release newer than the pin.
+
+          | | Version |
+          |---|---|
+          | Pinned | \`$PINNED\` |
+          | Latest | \`$LATEST\` |
+
+          EOF
+              if [ "$ADVISORY_STATUS" = "0" ]; then
+                cat <<EOF
+          **Verdict: behaviour unchanged, routine pin bump.**
+
+          Every corpus rendering is identical under the new build. Adopting it is a pin change and a regeneration, with no wire-format consequence.
+
+          1. Install the new build: \`cargo install stellar-xdr --features cli --version $LATEST --locked\`
+          2. Update \`tools/sep-51-test-fixtures/oracle-pin.json\`: \`version\`, \`tool_commit\` and \`xdr_commit\` from \`stellar-xdr version\`, and the version inside \`install\`, which the generator prints as the remedy when the pinned build is missing.
+          3. Regenerate the corpus with the pinned build: \`python3 tools/sep-51-test-fixtures/generate_corpus.py\`
+          4. Run the SEP-51 tests: \`vendor/bin/phpunit --filter Sep51\`
+
+          EOF
+              else
+                cat <<EOF
+          **Verdict: behaviour changed.**
+
+          The new build does not render every fixture the way the pinned one does. Each difference below is a decision: follow the new reference behaviour, or keep the current rendering because SEP-0051 specifies it. Nothing has been changed.
+
+          ### Renderings that differ
+
+          \`\`\`diff
+          EOF
+                head -c 20000 /tmp/advisory.log
+                printf '\n```\n\n'
+                if [ "$DRIFT" = "true" ]; then
+                  printf '> The drift check in this run also reported drift. A difference listed here may come from the SDK being out of step with the committed corpus rather than from the new release. Resolve that first.\n\n'
+                fi
+              fi
+            fi
+            if [ "$SPEC_CHANGED" = "true" ]; then
+              cat <<EOF
+          ## Specification revision
+
+          SEP-0051 has been revised since the revision this implementation records.
+
+          | | Version | Status |
+          |---|---|---|
+          | Recorded | \`$(jq -r '.sep_spec.version' "$PIN_FILE")\` | $(jq -r '.sep_spec.status' "$PIN_FILE") |
+          | Published | \`$SPEC_VERSION\` | $SPEC_STATUS |
+
+          Read the change, bring the SDK's emission in line with the revised text where it differs, then update \`sep_spec\` in \`tools/sep-51-test-fixtures/oracle-pin.json\`.
+
+          EOF
+            fi
+          } > /tmp/watch.md
+          FINGERPRINT=$(sha256sum /tmp/watch.md | cut -c1-16)
+          printf '\n<!-- watch-fingerprint: %s -->\n\n---\n*Reported by the [SEP-51 reference watch](.github/workflows/sep-51-reference-watch.yml).*\n' "$FINGERPRINT" >> /tmp/watch.md
+          echo "fingerprint=$FINGERPRINT" >> "$GITHUB_OUTPUT"
+          if [ "$NEWER" = "true" ] && [ "$SPEC_CHANGED" = "true" ]; then
+            echo "title=SEP-51: new reference release and specification revision" >> "$GITHUB_OUTPUT"
+          elif [ "$NEWER" = "true" ]; then
+            echo "title=SEP-51: reference release $LATEST is newer than the pin" >> "$GITHUB_OUTPUT"
+          else
+            echo "title=SEP-51: specification revised to $SPEC_VERSION" >> "$GITHUB_OUTPUT"
+          fi
+          echo "::notice::Upstream moved; see the report."
+          cat /tmp/watch.md
+
+      - name: File or update the upstream-watch issue
+        if: steps.watch.outputs.report == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          FINGERPRINT: ${{ steps.watch.outputs.fingerprint }}
+          TITLE: ${{ steps.watch.outputs.title }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "::notice::Dry run: this run files no issue."
+            exit 0
+          fi
+          number=$(gh issue list --label "sep-51-reference-release" --state open --json number --jq '.[0].number // empty')
+          if [ -z "$number" ]; then
+            gh label create "sep-51-reference-release" --color "0e8a16" \
+              --description "A newer XDR-JSON reference release or specification revision is available" 2>/dev/null || true
+            gh issue create --title "$TITLE" --label "sep-51-reference-release" --body-file /tmp/watch.md
+            exit 0
+          fi
+          # The same upstream state comes back every week until a maintainer acts on it, so only
+          # a report whose content differs from everything already in the thread is a comment.
+          thread=$(gh issue view "$number" --json body,comments --jq '.body + "\n" + ([.comments[].body] | join("\n"))')
+          if grep -qF "watch-fingerprint: $FINGERPRINT" <<< "$thread"; then
+            echo "Issue #$number already reports this upstream state."
+            exit 0
+          fi
+          gh issue comment "$number" --body-file /tmp/watch.md
