@@ -20,7 +20,8 @@ class TransactionInfo
     const STATUS_FAILED = "FAILED";
 
     /**
-     * @var array<string>|null Base64-encoded slice of xdr.DiagnosticEvent (deprecated, only present if ENABLE_SOROBAN_DIAGNOSTIC_EVENTS is enabled in stellar-core config)
+     * @var array<string>|null (optional) A base64 encoded slice of xdr.DiagnosticEvent.
+     * This is only present if the ENABLE_SOROBAN_DIAGNOSTIC_EVENTS has been enabled in the stellar-core config.
      */
     public ?array $diagnosticEventsXdr = null;
 
@@ -39,7 +40,7 @@ class TransactionInfo
      * @param int $ledger The sequence number of the ledger which included the transaction
      * @param int $createdAt Unix timestamp of when the transaction was included in the ledger
      * @param string|null $txHash Hex-encoded transaction hash string (only available for protocol version >= 22)
-     * @param array<string>|null $diagnosticEventsXdr Base64-encoded slice of xdr.DiagnosticEvent (deprecated)
+     * @param array<string>|null $diagnosticEventsXdr (optional) A base64 encoded slice of xdr.DiagnosticEvent.
      * @param TransactionEvents|null $events Events for the transaction (only available for protocol version >= 23)
      */
     public function __construct(
@@ -73,9 +74,9 @@ class TransactionInfo
          * @var array<string>|null $diagnosticEventsXdr
          */
         $diagnosticEventsXdr = null;
-        if (isset($json["diagnostic_events"])) {
+        if (isset($json["diagnosticEventsXdr"])) {
             $diagnosticEventsXdr = array();
-            foreach ($json["diagnostic_events"] as $val) {
+            foreach ($json["diagnosticEventsXdr"] as $val) {
                 $diagnosticEventsXdr[] = $val;
             }
         }

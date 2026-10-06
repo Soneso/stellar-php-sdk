@@ -1072,7 +1072,7 @@ class SorobanResponseTest extends TestCase
             'ledger' => 12345,
             'createdAt' => '1705752000',
             'txHash' => 'transactionhash',
-            'diagnostic_events' => ['diag1', 'diag2'],
+            'diagnosticEventsXdr' => ['diag1', 'diag2'],
             'events' => [
                 'transactionEventsXdr' => ['txevent'],
                 'contractEventsXdr' => [['contractevent']]
@@ -1091,8 +1091,7 @@ class SorobanResponseTest extends TestCase
         $this->assertEquals(12345, $info->ledger);
         $this->assertEquals(1705752000, $info->createdAt);
         $this->assertEquals('transactionhash', $info->txHash);
-        $this->assertIsArray($info->diagnosticEventsXdr);
-        $this->assertCount(2, $info->diagnosticEventsXdr);
+        $this->assertEquals(['diag1', 'diag2'], $info->diagnosticEventsXdr);
         $this->assertInstanceOf(TransactionEvents::class, $info->events);
     }
 
