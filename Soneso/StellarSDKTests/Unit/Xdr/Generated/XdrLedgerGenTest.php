@@ -60,7 +60,9 @@ use Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaExtV1;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaV2;
 use Soneso\StellarSDK\Xdr\XdrStellarValue;
 use Soneso\StellarSDK\Xdr\XdrStellarValueExt;
+use Soneso\StellarSDK\Xdr\XdrStellarValueProposedMsValue;
 use Soneso\StellarSDK\Xdr\XdrStellarValueProposedValue;
+use Soneso\StellarSDK\Xdr\XdrStellarValueSignedMsValue;
 use Soneso\StellarSDK\Xdr\XdrStellarValueType;
 use Soneso\StellarSDK\Xdr\XdrTransactionEvent;
 use Soneso\StellarSDK\Xdr\XdrTransactionEventStage;
@@ -123,7 +125,7 @@ class XdrLedgerGenTest extends TestCase
 
     public function testXdrStellarValueTypeEnumRoundTrip(): void
     {
-        $values = [XdrStellarValueType::STELLAR_VALUE_BASIC, XdrStellarValueType::STELLAR_VALUE_SIGNED, XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET];
+        $values = [XdrStellarValueType::STELLAR_VALUE_BASIC, XdrStellarValueType::STELLAR_VALUE_SIGNED, XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET, XdrStellarValueType::STELLAR_VALUE_SIGNED_MS, XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET_MS];
         foreach ($values as $v) {
             $original = new XdrStellarValueType($v);
             $encoded = $original->encode();
@@ -146,11 +148,13 @@ class XdrLedgerGenTest extends TestCase
         $this->assertNotNull(XdrStellarValueType::STELLAR_VALUE_BASIC());
         $this->assertNotNull(XdrStellarValueType::STELLAR_VALUE_SIGNED());
         $this->assertNotNull(XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET());
+        $this->assertNotNull(XdrStellarValueType::STELLAR_VALUE_SIGNED_MS());
+        $this->assertNotNull(XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET_MS());
     }
 
     public function testXdrStellarValueTypeEnumJsonRoundTrip(): void
     {
-        $values = [XdrStellarValueType::STELLAR_VALUE_BASIC, XdrStellarValueType::STELLAR_VALUE_SIGNED, XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET];
+        $values = [XdrStellarValueType::STELLAR_VALUE_BASIC, XdrStellarValueType::STELLAR_VALUE_SIGNED, XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET, XdrStellarValueType::STELLAR_VALUE_SIGNED_MS, XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET_MS];
         foreach ($values as $v) {
             $original = new XdrStellarValueType($v);
             $j1 = $original->toJsonValue();
@@ -415,6 +419,8 @@ class XdrLedgerGenTest extends TestCase
         $this->assertNotNull($obj->getV());
         $obj->getLcValueSignature();
         $obj->getProposedValue();
+        $obj->getSignedMsValue();
+        $obj->getProposedMsValue();
     }
 
     public function testXdrStellarValueProposedValueStructRoundTrip(): void
@@ -489,6 +495,182 @@ class XdrLedgerGenTest extends TestCase
     public function testXdrStellarValueProposedValueGettersSetters(): void
     {
         $obj = new XdrStellarValueProposedValue(str_repeat("\xAB", 32), str_repeat("\xAB", 32), 42, new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04"));
+        $this->assertNotNull($obj->getTxSetHash());
+        $newVal = str_repeat("\xAB", 32);
+        $obj->setTxSetHash($newVal);
+        $this->assertSame($newVal, $obj->getTxSetHash());
+        $this->assertNotNull($obj->getPreviousLedgerHash());
+        $newVal = str_repeat("\xAB", 32);
+        $obj->setPreviousLedgerHash($newVal);
+        $this->assertSame($newVal, $obj->getPreviousLedgerHash());
+        $this->assertNotNull($obj->getPreviousLedgerVersion());
+        $newVal = 42;
+        $obj->setPreviousLedgerVersion($newVal);
+        $this->assertSame($newVal, $obj->getPreviousLedgerVersion());
+        $this->assertNotNull($obj->getLcValueSignature());
+        $newVal = new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04");
+        $obj->setLcValueSignature($newVal);
+        $this->assertSame($newVal, $obj->getLcValueSignature());
+    }
+
+    public function testXdrStellarValueSignedMsValueStructRoundTrip(): void
+    {
+        $original = new XdrStellarValueSignedMsValue(42, new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04"));
+        $encoded = $original->encode();
+        $decoded = XdrStellarValueSignedMsValue::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrStellarValueSignedMsValue');
+        $b64Decoded = XdrStellarValueSignedMsValue::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrStellarValueSignedMsValue');
+    }
+
+    public function testXdrStellarValueSignedMsValueStructJsonRoundTrip(): void
+    {
+        $original = new XdrStellarValueSignedMsValue(42, new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04"));
+        $j1 = $original->toJsonValue();
+        $back = XdrStellarValueSignedMsValue::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarValueSignedMsValue');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarValueSignedMsValue');
+        $back2 = XdrStellarValueSignedMsValue::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarValueSignedMsValue');
+    }
+
+    public function testXdrStellarValueSignedMsValueStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrStellarValueSignedMsValue(42, new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04"));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrStellarValueSignedMsValue::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrStellarValueSignedMsValueEdgeCaseZeroRoundTrip(): void
+    {
+        $original = new XdrStellarValueSignedMsValue(0, new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04"));
+        $encoded = $original->encode();
+        $decoded = XdrStellarValueSignedMsValue::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrStellarValueSignedMsValue');
+    }
+
+    public function testXdrStellarValueSignedMsValueGettersSetters(): void
+    {
+        $obj = new XdrStellarValueSignedMsValue(42, new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04"));
+        $this->assertNotNull($obj->getCloseTimeMs());
+        $newVal = 42;
+        $obj->setCloseTimeMs($newVal);
+        $this->assertSame($newVal, $obj->getCloseTimeMs());
+        $this->assertNotNull($obj->getLcValueSignature());
+        $newVal = new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04");
+        $obj->setLcValueSignature($newVal);
+        $this->assertSame($newVal, $obj->getLcValueSignature());
+    }
+
+    public function testXdrStellarValueProposedMsValueStructRoundTrip(): void
+    {
+        $original = new XdrStellarValueProposedMsValue(42, str_repeat("\xAB", 32), str_repeat("\xAB", 32), 42, new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04"));
+        $encoded = $original->encode();
+        $decoded = XdrStellarValueProposedMsValue::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrStellarValueProposedMsValue');
+        $b64Decoded = XdrStellarValueProposedMsValue::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrStellarValueProposedMsValue');
+    }
+
+    public function testXdrStellarValueProposedMsValueStructJsonRoundTrip(): void
+    {
+        $original = new XdrStellarValueProposedMsValue(42, str_repeat("\xAB", 32), str_repeat("\xAB", 32), 42, new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04"));
+        $j1 = $original->toJsonValue();
+        $back = XdrStellarValueProposedMsValue::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarValueProposedMsValue');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarValueProposedMsValue');
+        $back2 = XdrStellarValueProposedMsValue::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarValueProposedMsValue');
+    }
+
+    public function testXdrStellarValueProposedMsValueStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrStellarValueProposedMsValue(42, str_repeat("\xAB", 32), str_repeat("\xAB", 32), 42, new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04"));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrStellarValueProposedMsValue::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrStellarValueProposedMsValueEdgeCaseZeroRoundTrip(): void
+    {
+        $original = new XdrStellarValueProposedMsValue(0, str_repeat("\xAB", 32), str_repeat("\xAB", 32), 42, new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04"));
+        $encoded = $original->encode();
+        $decoded = XdrStellarValueProposedMsValue::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrStellarValueProposedMsValue');
+    }
+
+    public function testXdrStellarValueProposedMsValueGettersSetters(): void
+    {
+        $obj = new XdrStellarValueProposedMsValue(42, str_repeat("\xAB", 32), str_repeat("\xAB", 32), 42, new XdrLedgerCloseValueSignature(new XdrNodeID((function() { $pk = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519)); $pk->ed25519 = str_repeat("\xAB", 32); return $pk; })()), "\x01\x02\x03\x04"));
+        $this->assertNotNull($obj->getCloseTimeMs());
+        $newVal = 42;
+        $obj->setCloseTimeMs($newVal);
+        $this->assertSame($newVal, $obj->getCloseTimeMs());
         $this->assertNotNull($obj->getTxSetHash());
         $newVal = str_repeat("\xAB", 32);
         $obj->setTxSetHash($newVal);

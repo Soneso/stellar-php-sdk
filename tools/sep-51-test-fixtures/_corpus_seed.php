@@ -96,6 +96,7 @@ use Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaExt;
 use Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaV0;
 use Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaV1;
 use Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaV2;
+use Soneso\StellarSDK\Xdr\XdrLedgerCloseValueSignature;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntry;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryData;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryExt;
@@ -116,6 +117,7 @@ use Soneso\StellarSDK\Xdr\XdrMemo;
 use Soneso\StellarSDK\Xdr\XdrMemoType;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccountMed25519;
+use Soneso\StellarSDK\Xdr\XdrNodeID;
 use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationResult;
@@ -128,6 +130,8 @@ use Soneso\StellarSDK\Xdr\XdrPaymentOperation;
 use Soneso\StellarSDK\Xdr\XdrPeerAddress;
 use Soneso\StellarSDK\Xdr\XdrPeerAddressIp;
 use Soneso\StellarSDK\Xdr\XdrPrice;
+use Soneso\StellarSDK\Xdr\XdrPublicKey;
+use Soneso\StellarSDK\Xdr\XdrPublicKeyType;
 use Soneso\StellarSDK\Xdr\XdrRestoreFootprintOp;
 use Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipOperation;
 use Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipType;
@@ -162,6 +166,8 @@ use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
 use Soneso\StellarSDK\Xdr\XdrStellarValue;
 use Soneso\StellarSDK\Xdr\XdrStellarValueExt;
+use Soneso\StellarSDK\Xdr\XdrStellarValueProposedMsValue;
+use Soneso\StellarSDK\Xdr\XdrStellarValueSignedMsValue;
 use Soneso\StellarSDK\Xdr\XdrStellarValueType;
 use Soneso\StellarSDK\Xdr\XdrStoredDebugTransactionSet;
 use Soneso\StellarSDK\Xdr\XdrStoredTransactionSet;
@@ -1282,6 +1288,34 @@ add($fixtures, 'stored_debug_transaction_set_v0', 'StoredDebugTransactionSet',
     new XdrStoredDebugTransactionSet($storedTxSet, 42, $storedScpValue),
     'SEP-0051 §Stellar-Specific Types > StoredDebugTransactionSet',
     'wraps an empty v0 StoredTransactionSet');
+
+// StellarValue signed arm and millisecond close-time arms (closeTime ==
+// closeTimeMs / 1000). The reference-anchored signed arm pins the
+// lc_value_signature rendering that the millisecond arms share.
+$closeValueNodeKey = new XdrPublicKey(new XdrPublicKeyType(XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519));
+$closeValueNodeKey->ed25519 = str_repeat("\x01", 32);
+$closeValueSignature = new XdrLedgerCloseValueSignature(new XdrNodeID($closeValueNodeKey), "\x0a\x14\x1e\x28");
+$stellarValueAnchor = 'SEP-0051 §Discriminated Union; §Struct; §Unsigned Hyper Integer (64-bit)';
+$signedExt = new XdrStellarValueExt(XdrStellarValueType::STELLAR_VALUE_SIGNED());
+$signedExt->lcValueSignature = $closeValueSignature;
+add($fixtures, 'stellar_value_signed', 'StellarValue',
+    new XdrStellarValue(str_repeat("\x88", 32), 1700000000, [], $signedExt),
+    $stellarValueAnchor,
+    'signed arm: close-value signature with a G-strkey node id and hex signature');
+$signedMsExt = new XdrStellarValueExt(XdrStellarValueType::STELLAR_VALUE_SIGNED_MS());
+$signedMsExt->signedMsValue = new XdrStellarValueSignedMsValue(1700000000123, $closeValueSignature);
+add($fixtures, 'stellar_value_signed_ms', 'StellarValue',
+    new XdrStellarValue(str_repeat("\x88", 32), 1700000000, [], $signedMsExt),
+    $stellarValueAnchor,
+    'signed_ms arm: close time in milliseconds plus the close-value signature');
+$proposedMsExt = new XdrStellarValueExt(XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET_MS());
+$proposedMsExt->proposedMsValue = new XdrStellarValueProposedMsValue(
+    1700000000456, str_repeat("\x33", 32), str_repeat("\x44", 32), 29, $closeValueSignature
+);
+add($fixtures, 'stellar_value_empty_tx_set_ms', 'StellarValue',
+    new XdrStellarValue(str_repeat("\x88", 32), 1700000000, [], $proposedMsExt),
+    $stellarValueAnchor,
+    'empty_tx_set_ms arm: close time in milliseconds, both hashes, previous ledger version, signature');
 
 // TransactionResultMeta / TransactionResultMetaV1 — both wrap a
 // TransactionResultPair plus a TransactionMeta. TransactionMeta v0 with

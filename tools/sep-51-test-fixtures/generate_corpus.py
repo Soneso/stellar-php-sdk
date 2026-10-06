@@ -69,18 +69,28 @@ TYPE_NAME_OVERRIDES = {
     "SignedPayload": "SignerKeyEd25519SignedPayload",
 }
 
-# Entries whose XDR bytes do not correspond to any standalone CLI type, so no
-# oracle output exists for them. Their spec_reference_json is populated from
-# the PHP SDK's own output and the entry carries an `oracle_incomparable`
-# marker: CorpusSnapshotTest still pins them against unintended drift, but
-# they are not reference-anchored. Keep this list enumerated and justified;
-# never skip an entry silently.
+# Entries without a usable oracle output: XDR bytes that do not correspond to
+# any standalone CLI type, renderings that diverge from the spec text, or
+# members newer than the XDR revision the pinned build vendors (oracle-pin.json
+# xdr_commit). Their spec_reference_json is populated from the PHP SDK's own
+# output and the entry carries an `oracle_incomparable` marker:
+# CorpusSnapshotTest still pins them against unintended drift, but they are
+# not reference-anchored. Keep this list enumerated and justified; never skip
+# an entry silently.
 _INLINE_OPAQUE_REASON = (
     "SEP-0051 §Opaque Data (Fixed Length) mandates a hexadecimal string for "
     "opaque[N]; rs-stellar-xdr serialises fixed opaque declared INLINE in "
     "the .x (rather than through a named typedef) as a JSON array of "
     "numbers, diverging from the spec text. The SDK follows the spec (hex "
     "string)."
+)
+
+# Drop the entries carrying this reason once the pinned build vendors these members.
+_NEWER_THAN_PIN_REASON = (
+    "StellarValueType members STELLAR_VALUE_SIGNED_MS and "
+    "STELLAR_VALUE_EMPTY_TX_SET_MS are newer than the XDR revision the pinned "
+    "rs-stellar-xdr build vendors, which rejects these bytes as an invalid XDR "
+    "value. XdrLedgerTest pins the spec-derived JSON of both arms."
 )
 
 ORACLE_INCOMPARABLE_ENTRIES = {
@@ -103,6 +113,8 @@ ORACLE_INCOMPARABLE_ENTRIES = {
         "form (presence flag 0) has no standalone CLI equivalent and the "
         "SDK emits JSON null where a bare empty DataValue would emit \"\"."
     ),
+    "stellar_value_signed_ms": _NEWER_THAN_PIN_REASON,
+    "stellar_value_empty_tx_set_ms": _NEWER_THAN_PIN_REASON,
 }
 
 

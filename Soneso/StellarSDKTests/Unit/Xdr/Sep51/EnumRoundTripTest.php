@@ -10506,6 +10506,44 @@ class EnumRoundTripTest extends TestCase
         $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
+    public function testRoundTrip_XdrStellarValueType_STELLAR_VALUE_SIGNED_MS(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrStellarValueType(\Soneso\StellarSDK\Xdr\XdrStellarValueType::STELLAR_VALUE_SIGNED_MS);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrStellarValueType::STELLAR_VALUE_SIGNED_MS round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(3, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
+    public function testRoundTrip_XdrStellarValueType_STELLAR_VALUE_EMPTY_TX_SET_MS(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrStellarValueType(\Soneso\StellarSDK\Xdr\XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET_MS);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET_MS round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(4, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrStellarValueType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
     public function testRoundTrip_XdrSurveyMessageCommandType_TIME_SLICED_SURVEY_TOPOLOGY(): void
     {
         $instance = new \Soneso\StellarSDK\Xdr\XdrSurveyMessageCommandType(\Soneso\StellarSDK\Xdr\XdrSurveyMessageCommandType::TIME_SLICED_SURVEY_TOPOLOGY);

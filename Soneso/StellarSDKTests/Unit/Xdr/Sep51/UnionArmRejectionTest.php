@@ -1671,6 +1671,25 @@ public function testRejectsBareStringFor_XdrStellarValueExt_empty_tx_set(): void
     }
 }
 
+public function testRejectsBareStringFor_XdrStellarValueExt_empty_tx_set_ms(): void
+{
+    // Per-non-void-arm rejection: round-trip tests pass valid
+    // payloads only, so the per-arm rejection throw inside
+    // fromJsonValue stays uncovered. This test exercises that
+    // branch directly by passing a bare string for an arm that
+    // requires a single-key object payload, then asserts the
+    // resulting message contains both the arm token and the
+    // canonical "non-void" phrase to prove the per-arm branch
+    // fired (not the catch-all default arm).
+    try {
+        \Soneso\StellarSDK\Xdr\XdrStellarValueExt::fromJson('"empty_tx_set_ms"');
+        $this->fail('Expected InvalidArgumentException for bare string "empty_tx_set_ms" on XdrStellarValueExt');
+    } catch (\InvalidArgumentException $e) {
+        $this->assertStringContainsString('empty_tx_set_ms', $e->getMessage());
+        $this->assertStringContainsString('non-void', $e->getMessage());
+    }
+}
+
 public function testRejectsBareStringFor_XdrStellarValueExt_signed(): void
 {
     // Per-non-void-arm rejection: round-trip tests pass valid
@@ -1686,6 +1705,25 @@ public function testRejectsBareStringFor_XdrStellarValueExt_signed(): void
         $this->fail('Expected InvalidArgumentException for bare string "signed" on XdrStellarValueExt');
     } catch (\InvalidArgumentException $e) {
         $this->assertStringContainsString('signed', $e->getMessage());
+        $this->assertStringContainsString('non-void', $e->getMessage());
+    }
+}
+
+public function testRejectsBareStringFor_XdrStellarValueExt_signed_ms(): void
+{
+    // Per-non-void-arm rejection: round-trip tests pass valid
+    // payloads only, so the per-arm rejection throw inside
+    // fromJsonValue stays uncovered. This test exercises that
+    // branch directly by passing a bare string for an arm that
+    // requires a single-key object payload, then asserts the
+    // resulting message contains both the arm token and the
+    // canonical "non-void" phrase to prove the per-arm branch
+    // fired (not the catch-all default arm).
+    try {
+        \Soneso\StellarSDK\Xdr\XdrStellarValueExt::fromJson('"signed_ms"');
+        $this->fail('Expected InvalidArgumentException for bare string "signed_ms" on XdrStellarValueExt');
+    } catch (\InvalidArgumentException $e) {
+        $this->assertStringContainsString('signed_ms', $e->getMessage());
         $this->assertStringContainsString('non-void', $e->getMessage());
     }
 }

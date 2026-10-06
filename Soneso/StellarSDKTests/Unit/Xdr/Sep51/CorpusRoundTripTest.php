@@ -24,9 +24,7 @@ public function testRoundTrip_XdrAccountID_corpus_account_id_g(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrAccountID::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAccountID::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[account_id_g] toJsonValue not deterministic across decodes');
@@ -51,9 +49,7 @@ public function testRoundTrip_XdrAccountID_corpus_account_id_g_alt(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrAccountID::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAccountID::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[account_id_g_alt] toJsonValue not deterministic across decodes');
@@ -78,9 +74,7 @@ public function testRoundTrip_XdrAllowTrustOperation_corpus_allow_trust_operatio
     $instance = \Soneso\StellarSDK\Xdr\XdrAllowTrustOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAllowTrustOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[allow_trust_operation_alphanum12] toJsonValue not deterministic across decodes');
@@ -105,9 +99,7 @@ public function testRoundTrip_XdrAsset_corpus_asset_alphanum12_11byte(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[asset_alphanum12_11byte] toJsonValue not deterministic across decodes');
@@ -132,9 +124,7 @@ public function testRoundTrip_XdrAsset_corpus_asset_alphanum12_3byte_padded(): v
     $instance = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[asset_alphanum12_3byte_padded] toJsonValue not deterministic across decodes');
@@ -159,9 +149,7 @@ public function testRoundTrip_XdrAsset_corpus_asset_alphanum12_5byte(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[asset_alphanum12_5byte] toJsonValue not deterministic across decodes');
@@ -186,9 +174,7 @@ public function testRoundTrip_XdrAsset_corpus_asset_alphanum12_6byte(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[asset_alphanum12_6byte] toJsonValue not deterministic across decodes');
@@ -213,9 +199,7 @@ public function testRoundTrip_XdrAsset_corpus_asset_alphanum4_1byte(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[asset_alphanum4_1byte] toJsonValue not deterministic across decodes');
@@ -240,9 +224,7 @@ public function testRoundTrip_XdrAsset_corpus_asset_alphanum4_3byte(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[asset_alphanum4_3byte] toJsonValue not deterministic across decodes');
@@ -267,9 +249,7 @@ public function testRoundTrip_XdrAsset_corpus_asset_alphanum4_4byte(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[asset_alphanum4_4byte] toJsonValue not deterministic across decodes');
@@ -294,9 +274,7 @@ public function testRoundTrip_XdrAsset_corpus_asset_alphanum4_jpy(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[asset_alphanum4_jpy] toJsonValue not deterministic across decodes');
@@ -321,9 +299,7 @@ public function testRoundTrip_XdrAsset_corpus_asset_alphanum4_non_ascii(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[asset_alphanum4_non_ascii] toJsonValue not deterministic across decodes');
@@ -348,9 +324,7 @@ public function testRoundTrip_XdrAsset_corpus_asset_native(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAsset::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[asset_native] toJsonValue not deterministic across decodes');
@@ -375,9 +349,7 @@ public function testRoundTrip_XdrAssetAlphaNum12_corpus_asset_alpha_num12_all_nu
     $instance = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[asset_alpha_num12_all_nul] toJsonValue not deterministic across decodes');
@@ -402,9 +374,7 @@ public function testRoundTrip_XdrAssetAlphaNum12_corpus_asset_alphanum12_standal
     $instance = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum12::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[asset_alphanum12_standalone] toJsonValue not deterministic across decodes');
@@ -429,9 +399,7 @@ public function testRoundTrip_XdrAssetAlphaNum4_corpus_asset_alphanum4_standalon
     $instance = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[asset_alphanum4_standalone] toJsonValue not deterministic across decodes');
@@ -456,9 +424,7 @@ public function testRoundTrip_XdrBinaryFuseFilterType_corpus_binary_fuse_filter_
     $instance = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[binary_fuse_filter_type_16bit] toJsonValue not deterministic across decodes');
@@ -483,9 +449,7 @@ public function testRoundTrip_XdrBinaryFuseFilterType_corpus_binary_fuse_filter_
     $instance = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[binary_fuse_filter_type_32bit] toJsonValue not deterministic across decodes');
@@ -510,9 +474,7 @@ public function testRoundTrip_XdrBinaryFuseFilterType_corpus_binary_fuse_filter_
     $instance = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrBinaryFuseFilterType::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[binary_fuse_filter_type_8bit] toJsonValue not deterministic across decodes');
@@ -537,9 +499,7 @@ public function testRoundTrip_XdrBucketEntry_corpus_bucket_entry_deadentry(): vo
     $instance = \Soneso\StellarSDK\Xdr\XdrBucketEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrBucketEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[bucket_entry_deadentry] toJsonValue not deterministic across decodes');
@@ -564,9 +524,7 @@ public function testRoundTrip_XdrBucketEntry_corpus_bucket_entry_initentry_accou
     $instance = \Soneso\StellarSDK\Xdr\XdrBucketEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrBucketEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[bucket_entry_initentry_account] toJsonValue not deterministic across decodes');
@@ -591,9 +549,7 @@ public function testRoundTrip_XdrBucketEntry_corpus_bucket_entry_liveentry_accou
     $instance = \Soneso\StellarSDK\Xdr\XdrBucketEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrBucketEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[bucket_entry_liveentry_account] toJsonValue not deterministic across decodes');
@@ -618,9 +574,7 @@ public function testRoundTrip_XdrBucketEntry_corpus_bucket_entry_metaentry(): vo
     $instance = \Soneso\StellarSDK\Xdr\XdrBucketEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrBucketEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[bucket_entry_metaentry] toJsonValue not deterministic across decodes');
@@ -645,9 +599,7 @@ public function testRoundTrip_XdrClaimClaimableBalanceOperation_corpus_claim_cla
     $instance = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimClaimableBalanceOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[claim_claimable_balance_operation_standalone] toJsonValue not deterministic across decodes');
@@ -672,9 +624,7 @@ public function testRoundTrip_XdrClaimableBalanceEntry_corpus_claimable_balance_
     $instance = \Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimableBalanceEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[claimable_balance_entry_native_no_claimants] toJsonValue not deterministic across decodes');
@@ -699,9 +649,7 @@ public function testRoundTrip_XdrClaimableBalanceID_corpus_claimable_balance_id_
     $instance = \Soneso\StellarSDK\Xdr\XdrClaimableBalanceID::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimableBalanceID::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[claimable_balance_id_v0] toJsonValue not deterministic across decodes');
@@ -726,9 +674,7 @@ public function testRoundTrip_XdrClaimantType_corpus_claimant_type_v0_standalone
     $instance = \Soneso\StellarSDK\Xdr\XdrClaimantType::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClaimantType::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[claimant_type_v0_standalone] toJsonValue not deterministic across decodes');
@@ -753,9 +699,7 @@ public function testRoundTrip_XdrClawbackClaimableBalanceOperation_corpus_clawba
     $instance = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackClaimableBalanceOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[clawback_claimable_balance_operation_standalone] toJsonValue not deterministic across decodes');
@@ -780,9 +724,7 @@ public function testRoundTrip_XdrClawbackResult_corpus_clawback_result_not_clawb
     $instance = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrClawbackResult::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[clawback_result_not_clawback_enabled] toJsonValue not deterministic across decodes');
@@ -807,9 +749,7 @@ public function testRoundTrip_XdrConfigSettingEntry_corpus_config_setting_entry_
     $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[config_setting_entry_bandwidth_v0] toJsonValue not deterministic across decodes');
@@ -834,9 +774,7 @@ public function testRoundTrip_XdrConfigSettingEntry_corpus_config_setting_entry_
     $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[config_setting_entry_compute_v0] toJsonValue not deterministic across decodes');
@@ -861,9 +799,7 @@ public function testRoundTrip_XdrConfigSettingEntry_corpus_config_setting_entry_
     $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[config_setting_entry_data_entry_size] toJsonValue not deterministic across decodes');
@@ -888,9 +824,7 @@ public function testRoundTrip_XdrConfigSettingEntry_corpus_config_setting_entry_
     $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[config_setting_entry_data_key_size] toJsonValue not deterministic across decodes');
@@ -915,9 +849,7 @@ public function testRoundTrip_XdrConfigSettingEntry_corpus_config_setting_entry_
     $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[config_setting_entry_events_v0] toJsonValue not deterministic across decodes');
@@ -942,9 +874,7 @@ public function testRoundTrip_XdrConfigSettingEntry_corpus_config_setting_entry_
     $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[config_setting_entry_execution_lanes] toJsonValue not deterministic across decodes');
@@ -969,9 +899,7 @@ public function testRoundTrip_XdrConfigSettingEntry_corpus_config_setting_entry_
     $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[config_setting_entry_historical_data_v0] toJsonValue not deterministic across decodes');
@@ -996,9 +924,7 @@ public function testRoundTrip_XdrConfigSettingEntry_corpus_config_setting_entry_
     $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[config_setting_entry_ledger_cost_v0] toJsonValue not deterministic across decodes');
@@ -1023,9 +949,7 @@ public function testRoundTrip_XdrConfigSettingEntry_corpus_config_setting_entry_
     $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[config_setting_entry_max_size_bytes] toJsonValue not deterministic across decodes');
@@ -1050,9 +974,7 @@ public function testRoundTrip_XdrConfigSettingEntry_corpus_config_setting_entry_
     $instance = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrConfigSettingEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[config_setting_entry_state_size_window] toJsonValue not deterministic across decodes');
@@ -1077,9 +999,7 @@ public function testRoundTrip_XdrContractCostType_corpus_contract_cost_type_wasm
     $instance = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[contract_cost_type_wasm_insn_exec] toJsonValue not deterministic across decodes');
@@ -1104,9 +1024,7 @@ public function testRoundTrip_XdrContractEvent_corpus_contract_event_no_contract
     $instance = \Soneso\StellarSDK\Xdr\XdrContractEvent::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrContractEvent::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[contract_event_no_contract_id] toJsonValue not deterministic across decodes');
@@ -1131,9 +1049,7 @@ public function testRoundTrip_XdrContractEvent_corpus_contract_event_with_contra
     $instance = \Soneso\StellarSDK\Xdr\XdrContractEvent::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrContractEvent::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[contract_event_with_contract_id] toJsonValue not deterministic across decodes');
@@ -1158,9 +1074,7 @@ public function testRoundTrip_XdrCreateAccountResult_corpus_create_account_resul
     $instance = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrCreateAccountResult::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[create_account_result_already_exist] toJsonValue not deterministic across decodes');
@@ -1185,9 +1099,7 @@ public function testRoundTrip_XdrCurve25519Public_corpus_curve25519_public_stand
     $instance = \Soneso\StellarSDK\Xdr\XdrCurve25519Public::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrCurve25519Public::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[curve25519_public_standalone] toJsonValue not deterministic across decodes');
@@ -1212,9 +1124,7 @@ public function testRoundTrip_XdrCurve25519Secret_corpus_curve25519_secret_stand
     $instance = \Soneso\StellarSDK\Xdr\XdrCurve25519Secret::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrCurve25519Secret::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[curve25519_secret_standalone] toJsonValue not deterministic across decodes');
@@ -1239,9 +1149,7 @@ public function testRoundTrip_XdrDataValue_corpus_data_value_absent(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrDataValue::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrDataValue::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[data_value_absent] toJsonValue not deterministic across decodes');
@@ -1266,9 +1174,7 @@ public function testRoundTrip_XdrDataValue_corpus_data_value_present(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrDataValue::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrDataValue::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[data_value_present] toJsonValue not deterministic across decodes');
@@ -1293,9 +1199,7 @@ public function testRoundTrip_XdrDecoratedSignature_corpus_decorated_signature()
     $instance = \Soneso\StellarSDK\Xdr\XdrDecoratedSignature::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrDecoratedSignature::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[decorated_signature] toJsonValue not deterministic across decodes');
@@ -1320,9 +1224,7 @@ public function testRoundTrip_XdrDiagnosticEvent_corpus_diagnostic_event_in_succ
     $instance = \Soneso\StellarSDK\Xdr\XdrDiagnosticEvent::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrDiagnosticEvent::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[diagnostic_event_in_successful_call] toJsonValue not deterministic across decodes');
@@ -1347,9 +1249,7 @@ public function testRoundTrip_XdrHmacSha256Key_corpus_hmac_sha256_key_standalone
     $instance = \Soneso\StellarSDK\Xdr\XdrHmacSha256Key::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrHmacSha256Key::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[hmac_sha256_key_standalone] toJsonValue not deterministic across decodes');
@@ -1374,9 +1274,7 @@ public function testRoundTrip_XdrHmacSha256Mac_corpus_hmac_sha256_mac_standalone
     $instance = \Soneso\StellarSDK\Xdr\XdrHmacSha256Mac::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrHmacSha256Mac::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[hmac_sha256_mac_standalone] toJsonValue not deterministic across decodes');
@@ -1401,9 +1299,7 @@ public function testRoundTrip_XdrHotArchiveBucketEntry_corpus_hot_archive_bucket
     $instance = \Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[hot_archive_bucket_entry_archived] toJsonValue not deterministic across decodes');
@@ -1428,9 +1324,7 @@ public function testRoundTrip_XdrHotArchiveBucketEntry_corpus_hot_archive_bucket
     $instance = \Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[hot_archive_bucket_entry_live] toJsonValue not deterministic across decodes');
@@ -1455,9 +1349,7 @@ public function testRoundTrip_XdrHotArchiveBucketEntry_corpus_hot_archive_bucket
     $instance = \Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrHotArchiveBucketEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[hot_archive_bucket_entry_metaentry] toJsonValue not deterministic across decodes');
@@ -1482,9 +1374,7 @@ public function testRoundTrip_XdrIPAddrType_corpus_ip_addr_type_v4(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[ip_addr_type_v4] toJsonValue not deterministic across decodes');
@@ -1509,9 +1399,7 @@ public function testRoundTrip_XdrIPAddrType_corpus_ip_addr_type_v6(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrIPAddrType::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[ip_addr_type_v6] toJsonValue not deterministic across decodes');
@@ -1536,9 +1424,7 @@ public function testRoundTrip_XdrInt128Parts_corpus_int128_negative_one(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrInt128Parts::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInt128Parts::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[int128_negative_one] toJsonValue not deterministic across decodes');
@@ -1563,9 +1449,7 @@ public function testRoundTrip_XdrInt128Parts_corpus_int128_zero(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrInt128Parts::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInt128Parts::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[int128_zero] toJsonValue not deterministic across decodes');
@@ -1590,9 +1474,7 @@ public function testRoundTrip_XdrInt256Parts_corpus_int256_zero(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrInt256Parts::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrInt256Parts::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[int256_zero] toJsonValue not deterministic across decodes');
@@ -1617,9 +1499,7 @@ public function testRoundTrip_XdrLedgerBounds_corpus_ledger_bounds_typical(): vo
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerBounds::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerBounds::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[ledger_bounds_typical] toJsonValue not deterministic across decodes');
@@ -1644,9 +1524,7 @@ public function testRoundTrip_XdrLedgerBounds_corpus_ledger_bounds_zero(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerBounds::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerBounds::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[ledger_bounds_zero] toJsonValue not deterministic across decodes');
@@ -1671,9 +1549,7 @@ public function testRoundTrip_XdrLedgerCloseMeta_corpus_ledger_close_meta_v0(): 
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerCloseMeta::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerCloseMeta::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[ledger_close_meta_v0] toJsonValue not deterministic across decodes');
@@ -1698,9 +1574,7 @@ public function testRoundTrip_XdrLedgerCloseMeta_corpus_ledger_close_meta_v1(): 
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerCloseMeta::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerCloseMeta::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[ledger_close_meta_v1] toJsonValue not deterministic across decodes');
@@ -1725,9 +1599,7 @@ public function testRoundTrip_XdrLedgerCloseMeta_corpus_ledger_close_meta_v2(): 
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerCloseMeta::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerCloseMeta::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[ledger_close_meta_v2] toJsonValue not deterministic across decodes');
@@ -1752,9 +1624,7 @@ public function testRoundTrip_XdrLedgerCloseMetaV1_corpus_ledger_close_meta_v1_s
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaV1::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaV1::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[ledger_close_meta_v1_standalone] toJsonValue not deterministic across decodes');
@@ -1779,9 +1649,7 @@ public function testRoundTrip_XdrLedgerCloseMetaV2_corpus_ledger_close_meta_v2_s
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaV2::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerCloseMetaV2::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[ledger_close_meta_v2_standalone] toJsonValue not deterministic across decodes');
@@ -1806,9 +1674,7 @@ public function testRoundTrip_XdrLedgerHeader_corpus_ledger_header_standalone():
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerHeader::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerHeader::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[ledger_header_standalone] toJsonValue not deterministic across decodes');
@@ -1833,9 +1699,7 @@ public function testRoundTrip_XdrLedgerHeaderHistoryEntry_corpus_ledger_header_h
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerHeaderHistoryEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerHeaderHistoryEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[ledger_header_history_entry_standalone] toJsonValue not deterministic across decodes');
@@ -1860,9 +1724,7 @@ public function testRoundTrip_XdrLedgerKey_corpus_ledger_key_account(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerKey::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerKey::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[ledger_key_account] toJsonValue not deterministic across decodes');
@@ -1887,9 +1749,7 @@ public function testRoundTrip_XdrLedgerKeyClaimableBalance_corpus_ledger_key_cla
     $instance = \Soneso\StellarSDK\Xdr\XdrLedgerKeyClaimableBalance::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrLedgerKeyClaimableBalance::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[ledger_key_claimable_balance_standalone] toJsonValue not deterministic across decodes');
@@ -1914,9 +1774,7 @@ public function testRoundTrip_XdrMemo_corpus_memo_hash(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrMemo::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrMemo::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[memo_hash] toJsonValue not deterministic across decodes');
@@ -1941,9 +1799,7 @@ public function testRoundTrip_XdrMemo_corpus_memo_id(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrMemo::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrMemo::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[memo_id] toJsonValue not deterministic across decodes');
@@ -1968,9 +1824,7 @@ public function testRoundTrip_XdrMemo_corpus_memo_none(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrMemo::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrMemo::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[memo_none] toJsonValue not deterministic across decodes');
@@ -1995,9 +1849,7 @@ public function testRoundTrip_XdrMemo_corpus_memo_return(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrMemo::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrMemo::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[memo_return] toJsonValue not deterministic across decodes');
@@ -2022,9 +1874,7 @@ public function testRoundTrip_XdrMemo_corpus_memo_text(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrMemo::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrMemo::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[memo_text] toJsonValue not deterministic across decodes');
@@ -2049,9 +1899,7 @@ public function testRoundTrip_XdrMemo_corpus_memo_text_non_ascii(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrMemo::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrMemo::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[memo_text_non_ascii] toJsonValue not deterministic across decodes');
@@ -2076,9 +1924,7 @@ public function testRoundTrip_XdrMuxedAccount_corpus_muxed_account_ed25519(): vo
     $instance = \Soneso\StellarSDK\Xdr\XdrMuxedAccount::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrMuxedAccount::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[muxed_account_ed25519] toJsonValue not deterministic across decodes');
@@ -2103,9 +1949,7 @@ public function testRoundTrip_XdrMuxedAccount_corpus_muxed_account_med25519(): v
     $instance = \Soneso\StellarSDK\Xdr\XdrMuxedAccount::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrMuxedAccount::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[muxed_account_med25519] toJsonValue not deterministic across decodes');
@@ -2130,9 +1974,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_account_merge(): voi
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_account_merge] toJsonValue not deterministic across decodes');
@@ -2157,9 +1999,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_allow_trust(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_allow_trust] toJsonValue not deterministic across decodes');
@@ -2184,9 +2024,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_begin_sponsoring_fut
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_begin_sponsoring_future_reserves] toJsonValue not deterministic across decodes');
@@ -2211,9 +2049,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_bump_sequence(): voi
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_bump_sequence] toJsonValue not deterministic across decodes');
@@ -2238,9 +2074,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_change_trust(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_change_trust] toJsonValue not deterministic across decodes');
@@ -2265,9 +2099,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_claim_claimable_bala
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_claim_claimable_balance] toJsonValue not deterministic across decodes');
@@ -2292,9 +2124,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_clawback(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_clawback] toJsonValue not deterministic across decodes');
@@ -2319,9 +2149,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_clawback_claimable_b
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_clawback_claimable_balance] toJsonValue not deterministic across decodes');
@@ -2346,9 +2174,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_create_account(): vo
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_create_account] toJsonValue not deterministic across decodes');
@@ -2373,9 +2199,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_create_claimable_bal
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_create_claimable_balance] toJsonValue not deterministic across decodes');
@@ -2400,9 +2224,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_create_passive_sell_
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_create_passive_sell_offer] toJsonValue not deterministic across decodes');
@@ -2427,9 +2249,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_end_sponsoring_futur
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_end_sponsoring_future_reserves] toJsonValue not deterministic across decodes');
@@ -2454,9 +2274,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_extend_footprint_ttl
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_extend_footprint_ttl] toJsonValue not deterministic across decodes');
@@ -2481,9 +2299,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_inflation(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_inflation] toJsonValue not deterministic across decodes');
@@ -2508,9 +2324,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_invoke_host_function
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_invoke_host_function_upload] toJsonValue not deterministic across decodes');
@@ -2535,9 +2349,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_liquidity_pool_depos
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_liquidity_pool_deposit] toJsonValue not deterministic across decodes');
@@ -2562,9 +2374,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_liquidity_pool_withd
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_liquidity_pool_withdraw] toJsonValue not deterministic across decodes');
@@ -2589,9 +2399,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_manage_buy_offer(): 
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_manage_buy_offer] toJsonValue not deterministic across decodes');
@@ -2616,9 +2424,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_manage_data(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_manage_data] toJsonValue not deterministic across decodes');
@@ -2643,9 +2449,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_manage_sell_offer():
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_manage_sell_offer] toJsonValue not deterministic across decodes');
@@ -2670,9 +2474,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_path_payment_strict_
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_path_payment_strict_receive] toJsonValue not deterministic across decodes');
@@ -2697,9 +2499,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_path_payment_strict_
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_path_payment_strict_send] toJsonValue not deterministic across decodes');
@@ -2724,9 +2524,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_payment(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_payment] toJsonValue not deterministic across decodes');
@@ -2751,9 +2549,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_restore_footprint():
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_restore_footprint] toJsonValue not deterministic across decodes');
@@ -2778,9 +2574,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_revoke_sponsorship_l
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_revoke_sponsorship_ledger_entry] toJsonValue not deterministic across decodes');
@@ -2805,9 +2599,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_set_options_minimal(
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_set_options_minimal] toJsonValue not deterministic across decodes');
@@ -2832,9 +2624,7 @@ public function testRoundTrip_XdrOperation_corpus_operation_set_trust_line_flags
     $instance = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperation::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_set_trust_line_flags] toJsonValue not deterministic across decodes');
@@ -2859,9 +2649,7 @@ public function testRoundTrip_XdrOperationResult_corpus_operation_result_bad_aut
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_result_bad_auth] toJsonValue not deterministic across decodes');
@@ -2886,9 +2674,7 @@ public function testRoundTrip_XdrOperationResult_corpus_operation_result_inner_c
     $instance = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrOperationResult::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[operation_result_inner_create_account] toJsonValue not deterministic across decodes');
@@ -2913,9 +2699,7 @@ public function testRoundTrip_XdrPeerAddress_corpus_peer_address_ipv4_loopback()
     $instance = \Soneso\StellarSDK\Xdr\XdrPeerAddress::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPeerAddress::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[peer_address_ipv4_loopback] toJsonValue not deterministic across decodes');
@@ -2940,9 +2724,7 @@ public function testRoundTrip_XdrPeerAddressIp_corpus_peer_address_ip_ipv4(): vo
     $instance = \Soneso\StellarSDK\Xdr\XdrPeerAddressIp::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPeerAddressIp::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[peer_address_ip_ipv4] toJsonValue not deterministic across decodes');
@@ -2967,9 +2749,7 @@ public function testRoundTrip_XdrPeerAddressIp_corpus_peer_address_ip_ipv6(): vo
     $instance = \Soneso\StellarSDK\Xdr\XdrPeerAddressIp::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrPeerAddressIp::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[peer_address_ip_ipv6] toJsonValue not deterministic across decodes');
@@ -2994,9 +2774,7 @@ public function testRoundTrip_XdrSCSpecEntry_corpus_sc_spec_entry_function_v0():
     $instance = \Soneso\StellarSDK\Xdr\XdrSCSpecEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCSpecEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[sc_spec_entry_function_v0] toJsonValue not deterministic across decodes');
@@ -3021,9 +2799,7 @@ public function testRoundTrip_XdrSCSpecEntry_corpus_sc_spec_entry_udt_enum_v0():
     $instance = \Soneso\StellarSDK\Xdr\XdrSCSpecEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCSpecEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[sc_spec_entry_udt_enum_v0] toJsonValue not deterministic across decodes');
@@ -3048,9 +2824,7 @@ public function testRoundTrip_XdrSCSpecEntry_corpus_sc_spec_entry_udt_error_enum
     $instance = \Soneso\StellarSDK\Xdr\XdrSCSpecEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCSpecEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[sc_spec_entry_udt_error_enum_v0] toJsonValue not deterministic across decodes');
@@ -3075,9 +2849,7 @@ public function testRoundTrip_XdrSCSpecEntry_corpus_sc_spec_entry_udt_struct_v0(
     $instance = \Soneso\StellarSDK\Xdr\XdrSCSpecEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCSpecEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[sc_spec_entry_udt_struct_v0] toJsonValue not deterministic across decodes');
@@ -3102,9 +2874,7 @@ public function testRoundTrip_XdrSCSpecEntry_corpus_sc_spec_entry_udt_union_v0()
     $instance = \Soneso\StellarSDK\Xdr\XdrSCSpecEntry::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCSpecEntry::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[sc_spec_entry_udt_union_v0] toJsonValue not deterministic across decodes');
@@ -3129,9 +2899,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_address_account(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_address_account] toJsonValue not deterministic across decodes');
@@ -3156,9 +2924,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_address_claimable_balance():
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_address_claimable_balance] toJsonValue not deterministic across decodes');
@@ -3183,9 +2949,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_address_contract(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_address_contract] toJsonValue not deterministic across decodes');
@@ -3210,9 +2974,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_address_liquidity_pool(): vo
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_address_liquidity_pool] toJsonValue not deterministic across decodes');
@@ -3237,9 +2999,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_address_muxed(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_address_muxed] toJsonValue not deterministic across decodes');
@@ -3264,9 +3024,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bool_false(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bool_false] toJsonValue not deterministic across decodes');
@@ -3291,9 +3049,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bool_true(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bool_true] toJsonValue not deterministic across decodes');
@@ -3318,9 +3074,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_256(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_256] toJsonValue not deterministic across decodes');
@@ -3345,9 +3099,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_64(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_64] toJsonValue not deterministic across decodes');
@@ -3372,9 +3124,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_empty(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_empty] toJsonValue not deterministic across decodes');
@@ -3399,9 +3149,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_iter_0(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_iter_0] toJsonValue not deterministic across decodes');
@@ -3426,9 +3174,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_iter_1(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_iter_1] toJsonValue not deterministic across decodes');
@@ -3453,9 +3199,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_iter_2(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_iter_2] toJsonValue not deterministic across decodes');
@@ -3480,9 +3224,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_iter_3(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_iter_3] toJsonValue not deterministic across decodes');
@@ -3507,9 +3249,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_iter_4(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_iter_4] toJsonValue not deterministic across decodes');
@@ -3534,9 +3274,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_iter_5(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_iter_5] toJsonValue not deterministic across decodes');
@@ -3561,9 +3299,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_iter_6(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_iter_6] toJsonValue not deterministic across decodes');
@@ -3588,9 +3324,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_iter_7(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_iter_7] toJsonValue not deterministic across decodes');
@@ -3615,9 +3349,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_iter_8(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_iter_8] toJsonValue not deterministic across decodes');
@@ -3642,9 +3374,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_iter_9(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_iter_9] toJsonValue not deterministic across decodes');
@@ -3669,9 +3399,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_non_ascii(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_non_ascii] toJsonValue not deterministic across decodes');
@@ -3696,9 +3424,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_single_ff(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_single_ff] toJsonValue not deterministic across decodes');
@@ -3723,9 +3449,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_single_zero(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_single_zero] toJsonValue not deterministic across decodes');
@@ -3750,9 +3474,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_bytes_typical(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_bytes_typical] toJsonValue not deterministic across decodes');
@@ -3777,9 +3499,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_contract_instance_stellar_as
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_contract_instance_stellar_asset] toJsonValue not deterministic across decodes');
@@ -3804,9 +3524,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_contract_instance_wasm(): vo
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_contract_instance_wasm] toJsonValue not deterministic across decodes');
@@ -3831,9 +3549,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_duration_typical(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_duration_typical] toJsonValue not deterministic across decodes');
@@ -3858,9 +3574,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_duration_zero(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_duration_zero] toJsonValue not deterministic across decodes');
@@ -3885,9 +3599,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_error_contract(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_error_contract] toJsonValue not deterministic across decodes');
@@ -3912,9 +3624,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i128_negative_one(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i128_negative_one] toJsonValue not deterministic across decodes');
@@ -3939,9 +3649,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i128_zero(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i128_zero] toJsonValue not deterministic across decodes');
@@ -3966,9 +3674,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i256_one(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i256_one] toJsonValue not deterministic across decodes');
@@ -3993,9 +3699,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i256_zero(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i256_zero] toJsonValue not deterministic across decodes');
@@ -4020,9 +3724,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i32_iter_0(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i32_iter_0] toJsonValue not deterministic across decodes');
@@ -4047,9 +3749,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i32_iter_1(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i32_iter_1] toJsonValue not deterministic across decodes');
@@ -4074,9 +3774,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i32_iter_2(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i32_iter_2] toJsonValue not deterministic across decodes');
@@ -4101,9 +3799,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i32_iter_3(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i32_iter_3] toJsonValue not deterministic across decodes');
@@ -4128,9 +3824,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i32_iter_4(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i32_iter_4] toJsonValue not deterministic across decodes');
@@ -4155,9 +3849,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i32_iter_5(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i32_iter_5] toJsonValue not deterministic across decodes');
@@ -4182,9 +3874,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i32_iter_6(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i32_iter_6] toJsonValue not deterministic across decodes');
@@ -4209,9 +3899,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i32_iter_7(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i32_iter_7] toJsonValue not deterministic across decodes');
@@ -4236,9 +3924,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i32_iter_8(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i32_iter_8] toJsonValue not deterministic across decodes');
@@ -4263,9 +3949,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i32_iter_9(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i32_iter_9] toJsonValue not deterministic across decodes');
@@ -4290,9 +3974,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i32_max(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i32_max] toJsonValue not deterministic across decodes');
@@ -4317,9 +3999,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i32_min(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i32_min] toJsonValue not deterministic across decodes');
@@ -4344,9 +4024,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i32_negative_one(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i32_negative_one] toJsonValue not deterministic across decodes');
@@ -4371,9 +4049,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i32_zero(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i32_zero] toJsonValue not deterministic across decodes');
@@ -4398,9 +4074,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i64_max(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i64_max] toJsonValue not deterministic across decodes');
@@ -4425,9 +4099,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i64_min(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i64_min] toJsonValue not deterministic across decodes');
@@ -4452,9 +4124,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i64_negative_one(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i64_negative_one] toJsonValue not deterministic across decodes');
@@ -4479,9 +4149,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_i64_zero(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_i64_zero] toJsonValue not deterministic across decodes');
@@ -4506,9 +4174,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_ledger_key_contract_instance
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_ledger_key_contract_instance] toJsonValue not deterministic across decodes');
@@ -4533,9 +4199,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_ledger_key_nonce(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_ledger_key_nonce] toJsonValue not deterministic across decodes');
@@ -4560,9 +4224,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_map_empty(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_map_empty] toJsonValue not deterministic across decodes');
@@ -4587,9 +4249,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_string_empty(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_string_empty] toJsonValue not deterministic across decodes');
@@ -4614,9 +4274,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_string_iter_0(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_string_iter_0] toJsonValue not deterministic across decodes');
@@ -4641,9 +4299,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_string_iter_1(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_string_iter_1] toJsonValue not deterministic across decodes');
@@ -4668,9 +4324,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_string_iter_2(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_string_iter_2] toJsonValue not deterministic across decodes');
@@ -4695,9 +4349,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_string_iter_3(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_string_iter_3] toJsonValue not deterministic across decodes');
@@ -4722,9 +4374,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_string_iter_4(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_string_iter_4] toJsonValue not deterministic across decodes');
@@ -4749,9 +4399,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_string_iter_5(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_string_iter_5] toJsonValue not deterministic across decodes');
@@ -4776,9 +4424,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_string_iter_6(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_string_iter_6] toJsonValue not deterministic across decodes');
@@ -4803,9 +4449,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_string_iter_7(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_string_iter_7] toJsonValue not deterministic across decodes');
@@ -4830,9 +4474,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_string_iter_8(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_string_iter_8] toJsonValue not deterministic across decodes');
@@ -4857,9 +4499,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_string_iter_9(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_string_iter_9] toJsonValue not deterministic across decodes');
@@ -4884,9 +4524,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_string_long(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_string_long] toJsonValue not deterministic across decodes');
@@ -4911,9 +4549,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_string_non_ascii(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_string_non_ascii] toJsonValue not deterministic across decodes');
@@ -4938,9 +4574,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_string_typical(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_string_typical] toJsonValue not deterministic across decodes');
@@ -4965,9 +4599,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_string_with_special_chars():
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_string_with_special_chars] toJsonValue not deterministic across decodes');
@@ -4992,9 +4624,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_symbol_32(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_symbol_32] toJsonValue not deterministic across decodes');
@@ -5019,9 +4649,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_symbol_empty(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_symbol_empty] toJsonValue not deterministic across decodes');
@@ -5046,9 +4674,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_symbol_iter_0(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_symbol_iter_0] toJsonValue not deterministic across decodes');
@@ -5073,9 +4699,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_symbol_iter_1(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_symbol_iter_1] toJsonValue not deterministic across decodes');
@@ -5100,9 +4724,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_symbol_iter_2(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_symbol_iter_2] toJsonValue not deterministic across decodes');
@@ -5127,9 +4749,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_symbol_iter_3(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_symbol_iter_3] toJsonValue not deterministic across decodes');
@@ -5154,9 +4774,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_symbol_iter_4(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_symbol_iter_4] toJsonValue not deterministic across decodes');
@@ -5181,9 +4799,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_symbol_iter_5(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_symbol_iter_5] toJsonValue not deterministic across decodes');
@@ -5208,9 +4824,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_symbol_iter_6(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_symbol_iter_6] toJsonValue not deterministic across decodes');
@@ -5235,9 +4849,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_symbol_iter_7(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_symbol_iter_7] toJsonValue not deterministic across decodes');
@@ -5262,9 +4874,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_symbol_iter_8(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_symbol_iter_8] toJsonValue not deterministic across decodes');
@@ -5289,9 +4899,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_symbol_iter_9(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_symbol_iter_9] toJsonValue not deterministic across decodes');
@@ -5316,9 +4924,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_symbol_typical(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_symbol_typical] toJsonValue not deterministic across decodes');
@@ -5343,9 +4949,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_symbol_with_underscores(): v
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_symbol_with_underscores] toJsonValue not deterministic across decodes');
@@ -5370,9 +4974,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_timepoint_epoch(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_timepoint_epoch] toJsonValue not deterministic across decodes');
@@ -5397,9 +4999,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_timepoint_typical(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_timepoint_typical] toJsonValue not deterministic across decodes');
@@ -5424,9 +5024,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u128_one_lo(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u128_one_lo] toJsonValue not deterministic across decodes');
@@ -5451,9 +5049,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u128_typical(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u128_typical] toJsonValue not deterministic across decodes');
@@ -5478,9 +5074,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u128_zero(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u128_zero] toJsonValue not deterministic across decodes');
@@ -5505,9 +5099,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u256_one(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u256_one] toJsonValue not deterministic across decodes');
@@ -5532,9 +5124,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u256_zero(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u256_zero] toJsonValue not deterministic across decodes');
@@ -5559,9 +5149,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u32_iter_0(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u32_iter_0] toJsonValue not deterministic across decodes');
@@ -5586,9 +5174,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u32_iter_1(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u32_iter_1] toJsonValue not deterministic across decodes');
@@ -5613,9 +5199,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u32_iter_2(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u32_iter_2] toJsonValue not deterministic across decodes');
@@ -5640,9 +5224,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u32_iter_3(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u32_iter_3] toJsonValue not deterministic across decodes');
@@ -5667,9 +5249,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u32_iter_4(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u32_iter_4] toJsonValue not deterministic across decodes');
@@ -5694,9 +5274,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u32_iter_5(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u32_iter_5] toJsonValue not deterministic across decodes');
@@ -5721,9 +5299,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u32_iter_6(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u32_iter_6] toJsonValue not deterministic across decodes');
@@ -5748,9 +5324,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u32_iter_7(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u32_iter_7] toJsonValue not deterministic across decodes');
@@ -5775,9 +5349,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u32_iter_8(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u32_iter_8] toJsonValue not deterministic across decodes');
@@ -5802,9 +5374,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u32_iter_9(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u32_iter_9] toJsonValue not deterministic across decodes');
@@ -5829,9 +5399,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u32_max(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u32_max] toJsonValue not deterministic across decodes');
@@ -5856,9 +5424,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u32_typical(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u32_typical] toJsonValue not deterministic across decodes');
@@ -5883,9 +5449,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u32_zero(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u32_zero] toJsonValue not deterministic across decodes');
@@ -5910,9 +5474,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u64_iter_0(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u64_iter_0] toJsonValue not deterministic across decodes');
@@ -5937,9 +5499,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u64_iter_1(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u64_iter_1] toJsonValue not deterministic across decodes');
@@ -5964,9 +5524,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u64_iter_2(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u64_iter_2] toJsonValue not deterministic across decodes');
@@ -5991,9 +5549,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u64_iter_3(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u64_iter_3] toJsonValue not deterministic across decodes');
@@ -6018,9 +5574,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u64_iter_4(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u64_iter_4] toJsonValue not deterministic across decodes');
@@ -6045,9 +5599,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u64_iter_5(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u64_iter_5] toJsonValue not deterministic across decodes');
@@ -6072,9 +5624,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u64_iter_6(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u64_iter_6] toJsonValue not deterministic across decodes');
@@ -6099,9 +5649,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u64_iter_7(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u64_iter_7] toJsonValue not deterministic across decodes');
@@ -6126,9 +5674,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u64_iter_8(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u64_iter_8] toJsonValue not deterministic across decodes');
@@ -6153,9 +5699,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u64_iter_9(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u64_iter_9] toJsonValue not deterministic across decodes');
@@ -6180,9 +5724,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u64_max_safe(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u64_max_safe] toJsonValue not deterministic across decodes');
@@ -6207,9 +5749,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u64_one(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u64_one] toJsonValue not deterministic across decodes');
@@ -6234,9 +5774,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u64_typical(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u64_typical] toJsonValue not deterministic across decodes');
@@ -6261,9 +5799,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_u64_zero(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_u64_zero] toJsonValue not deterministic across decodes');
@@ -6288,9 +5824,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_vec_address(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_vec_address] toJsonValue not deterministic across decodes');
@@ -6315,9 +5849,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_vec_empty(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_vec_empty] toJsonValue not deterministic across decodes');
@@ -6342,9 +5874,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_vec_mixed(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_vec_mixed] toJsonValue not deterministic across decodes');
@@ -6369,9 +5899,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_vec_nested(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_vec_nested] toJsonValue not deterministic across decodes');
@@ -6396,9 +5924,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_vec_single(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_vec_single] toJsonValue not deterministic across decodes');
@@ -6423,9 +5949,7 @@ public function testRoundTrip_XdrSCVal_corpus_scval_void(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSCVal::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[scval_void] toJsonValue not deterministic across decodes');
@@ -6450,9 +5974,7 @@ public function testRoundTrip_XdrSerializedBinaryFuseFilter_corpus_serialized_bi
     $instance = \Soneso\StellarSDK\Xdr\XdrSerializedBinaryFuseFilter::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSerializedBinaryFuseFilter::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[serialized_binary_fuse_filter] toJsonValue not deterministic across decodes');
@@ -6477,9 +5999,7 @@ public function testRoundTrip_XdrShortHashSeed_corpus_short_hash_seed_standalone
     $instance = \Soneso\StellarSDK\Xdr\XdrShortHashSeed::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrShortHashSeed::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[short_hash_seed_standalone] toJsonValue not deterministic across decodes');
@@ -6504,9 +6024,7 @@ public function testRoundTrip_XdrSignedPayload_corpus_signed_payload_standalone(
     $instance = \Soneso\StellarSDK\Xdr\XdrSignedPayload::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSignedPayload::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[signed_payload_standalone] toJsonValue not deterministic across decodes');
@@ -6531,9 +6049,7 @@ public function testRoundTrip_XdrSignerKey_corpus_signer_key_ed25519(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSignerKey::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSignerKey::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[signer_key_ed25519] toJsonValue not deterministic across decodes');
@@ -6558,9 +6074,7 @@ public function testRoundTrip_XdrSignerKey_corpus_signer_key_ed25519_signed_payl
     $instance = \Soneso\StellarSDK\Xdr\XdrSignerKey::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSignerKey::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[signer_key_ed25519_signed_payload] toJsonValue not deterministic across decodes');
@@ -6585,9 +6099,7 @@ public function testRoundTrip_XdrSignerKey_corpus_signer_key_hash_x(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSignerKey::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSignerKey::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[signer_key_hash_x] toJsonValue not deterministic across decodes');
@@ -6612,9 +6124,7 @@ public function testRoundTrip_XdrSignerKey_corpus_signer_key_pre_auth_tx(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrSignerKey::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrSignerKey::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[signer_key_pre_auth_tx] toJsonValue not deterministic across decodes');
@@ -6633,15 +6143,88 @@ public function testRoundTrip_XdrSignerKey_corpus_signer_key_pre_auth_tx(): void
         'corpus[signer_key_pre_auth_tx] XDR-JSON-XDR round trip diverged');
 }
 
+public function testRoundTrip_XdrStellarValue_corpus_stellar_value_empty_tx_set_ms(): void
+{
+    $base64 = 'iIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIgAAAAAZVPxAAAAAAAAAAAEAAABi8/lacgzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0REREREREREREREREREREREREREREREREREREREREREAAAAHQAAAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQAAAAQKFB4o';
+    $instance = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // Independent decodes must produce identical JSON values.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[stellar_value_empty_tx_set_ms] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[stellar_value_empty_tx_set_ms] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[stellar_value_empty_tx_set_ms] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[stellar_value_empty_tx_set_ms] XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrStellarValue_corpus_stellar_value_signed(): void
+{
+    $base64 = 'iIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIgAAAAAZVPxAAAAAAAAAAABAAAAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAAAABAoUHig=';
+    $instance = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // Independent decodes must produce identical JSON values.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[stellar_value_signed] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[stellar_value_signed] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[stellar_value_signed] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[stellar_value_signed] XDR-JSON-XDR round trip diverged');
+}
+
+public function testRoundTrip_XdrStellarValue_corpus_stellar_value_signed_ms(): void
+{
+    $base64 = 'iIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIgAAAAAZVPxAAAAAAAAAAADAAABi8/laHsAAAAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEAAAAEChQeKA==';
+    $instance = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromBase64Xdr($base64);
+    $jsonValue = $instance->toJsonValue();
+    $json = $instance->toJson();
+    // Independent decodes must produce identical JSON values.
+    $instance2 = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromBase64Xdr($base64);
+    $this->assertSame($jsonValue, $instance2->toJsonValue(),
+        'corpus[stellar_value_signed_ms] toJsonValue not deterministic across decodes');
+    $decoded = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromJsonValue($jsonValue);
+    $this->assertSame(
+        $jsonValue,
+        $decoded->toJsonValue(),
+        'corpus[stellar_value_signed_ms] toJsonValue idempotence broken'
+    );
+    $reparsed = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromJson($json);
+    $this->assertSame($json, $reparsed->toJson(),
+        'corpus[stellar_value_signed_ms] toJson idempotence broken');
+    $reEncodedXdr = $decoded->toBase64Xdr();
+    $reInstance = \Soneso\StellarSDK\Xdr\XdrStellarValue::fromBase64Xdr($reEncodedXdr);
+    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
+        'corpus[stellar_value_signed_ms] XDR-JSON-XDR round trip diverged');
+}
+
 public function testRoundTrip_XdrStoredDebugTransactionSet_corpus_stored_debug_transaction_set_v0(): void
 {
     $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABlU/EAAAAAAAAAAAA=';
     $instance = \Soneso\StellarSDK\Xdr\XdrStoredDebugTransactionSet::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrStoredDebugTransactionSet::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[stored_debug_transaction_set_v0] toJsonValue not deterministic across decodes');
@@ -6666,9 +6249,7 @@ public function testRoundTrip_XdrTimeBounds_corpus_time_bounds_typical(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrTimeBounds::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTimeBounds::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[time_bounds_typical] toJsonValue not deterministic across decodes');
@@ -6693,9 +6274,7 @@ public function testRoundTrip_XdrTimeBounds_corpus_time_bounds_zero(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrTimeBounds::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTimeBounds::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[time_bounds_zero] toJsonValue not deterministic across decodes');
@@ -6720,9 +6299,7 @@ public function testRoundTrip_XdrTransactionEnvelope_corpus_transaction_envelope
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionEnvelope::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionEnvelope::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[transaction_envelope_canonical] toJsonValue not deterministic across decodes');
@@ -6747,9 +6324,7 @@ public function testRoundTrip_XdrTransactionEvent_corpus_transaction_event_after
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionEvent::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionEvent::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[transaction_event_after_tx] toJsonValue not deterministic across decodes');
@@ -6774,9 +6349,7 @@ public function testRoundTrip_XdrTransactionResultMeta_corpus_transaction_result
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultMeta::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultMeta::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[transaction_result_meta_success] toJsonValue not deterministic across decodes');
@@ -6801,9 +6374,7 @@ public function testRoundTrip_XdrTransactionResultMetaV1_corpus_transaction_resu
     $instance = \Soneso\StellarSDK\Xdr\XdrTransactionResultMetaV1::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrTransactionResultMetaV1::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[transaction_result_meta_v1_success] toJsonValue not deterministic across decodes');
@@ -6828,9 +6399,7 @@ public function testRoundTrip_XdrUInt128Parts_corpus_uint128_one(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrUInt128Parts::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrUInt128Parts::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[uint128_one] toJsonValue not deterministic across decodes');
@@ -6855,9 +6424,7 @@ public function testRoundTrip_XdrUInt128Parts_corpus_uint128_typical(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrUInt128Parts::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrUInt128Parts::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[uint128_typical] toJsonValue not deterministic across decodes');
@@ -6882,9 +6449,7 @@ public function testRoundTrip_XdrUInt128Parts_corpus_uint128_zero(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrUInt128Parts::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrUInt128Parts::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[uint128_zero] toJsonValue not deterministic across decodes');
@@ -6909,9 +6474,7 @@ public function testRoundTrip_XdrUInt256Parts_corpus_uint256_one(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrUInt256Parts::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrUInt256Parts::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[uint256_one] toJsonValue not deterministic across decodes');
@@ -6936,9 +6499,7 @@ public function testRoundTrip_XdrUInt256Parts_corpus_uint256_zero(): void
     $instance = \Soneso\StellarSDK\Xdr\XdrUInt256Parts::fromBase64Xdr($base64);
     $jsonValue = $instance->toJsonValue();
     $json = $instance->toJson();
-    // toJsonValue stability across two independent decodes of the
-    // same XDR base64 — catches non-determinism in the toJsonValue
-    // path.
+    // Independent decodes must produce identical JSON values.
     $instance2 = \Soneso\StellarSDK\Xdr\XdrUInt256Parts::fromBase64Xdr($base64);
     $this->assertSame($jsonValue, $instance2->toJsonValue(),
         'corpus[uint256_zero] toJsonValue not deterministic across decodes');

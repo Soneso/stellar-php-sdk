@@ -1,7 +1,7 @@
 # SEP-51 Test Fixtures
 
 Correctness baseline for the SDK's SEP-51 (XDR-JSON) emission. The committed
-`corpus.json` holds 257 XDR base64 fixtures; for each fixture, the decode
+`corpus.json` holds 259 XDR base64 fixtures; for each fixture, the decode
 output of the rs-stellar-xdr CLI oracle (the SEP-0051 reference
 implementation, at the build pinned in `oracle-pin.json`) is stored as
 `spec_reference_json`.
@@ -10,9 +10,11 @@ SDK's `toJson` output against every entry on each test run, so a divergence
 from the reference implementation fails fast - the corpus detects error, not
 merely drift.
 
-Entries whose XDR bytes have no standalone CLI-oracle equivalent carry an
-`oracle_incomparable` field with a justification; their reference JSON is the
-SDK's own output and pins them against unintended drift only.
+Some entries have no usable oracle output: XDR bytes with no standalone
+CLI-oracle equivalent, CLI renderings that diverge from the spec text, or
+members newer than the XDR revision the pinned build vendors. These entries
+carry an `oracle_incomparable` field with a justification; their reference
+JSON is the SDK's own output and pins them against unintended drift only.
 
 ## Files
 

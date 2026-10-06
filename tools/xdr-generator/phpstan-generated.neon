@@ -380,7 +380,9 @@ parameters:
         - ../../Soneso/StellarSDK/Xdr/XdrStellarMessage.php
         - ../../Soneso/StellarSDK/Xdr/XdrStellarValue.php
         - ../../Soneso/StellarSDK/Xdr/XdrStellarValueExt.php
+        - ../../Soneso/StellarSDK/Xdr/XdrStellarValueProposedMsValue.php
         - ../../Soneso/StellarSDK/Xdr/XdrStellarValueProposedValue.php
+        - ../../Soneso/StellarSDK/Xdr/XdrStellarValueSignedMsValue.php
         - ../../Soneso/StellarSDK/Xdr/XdrStellarValueType.php
         - ../../Soneso/StellarSDK/Xdr/XdrStoredDebugTransactionSet.php
         - ../../Soneso/StellarSDK/Xdr/XdrStoredTransactionSet.php
