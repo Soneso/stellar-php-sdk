@@ -74,7 +74,8 @@ use Soneso\StellarSDK\Xdr\XdrUInt256Parts;
  * byte-for-byte after canonicalJson normalisation on both sides.
  *
  * The committed corpus is generated from the rs-stellar-xdr CLI oracle (the
- * SEP-0051 reference implementation, >= 28.0.0) by
+ * SEP-0051 reference implementation, at the build pinned in
+ * tools/sep-51-test-fixtures/oracle-pin.json) by
  * tools/sep-51-test-fixtures/generate_corpus.py, so a failure here means the
  * SDK's emission diverges from the reference implementation: fix the
  * emission, do not regenerate the corpus from PHP output to make the test

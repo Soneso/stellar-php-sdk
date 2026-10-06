@@ -14,9 +14,13 @@ Pipeline:
      seed validates each fixture's base64 round-trips through the PHP SDK's
      XDR codec.
   2. Populate each entry's `spec_reference_json`:
-       --source oracle (default): decode the base64 with the stellar-xdr CLI
-         (requires >= 28.0.0; earlier versions emit `type_` instead of `type`
-         for six ScSpec types). Used to (re)generate the vendored corpus.
+       --source oracle (default): decode the base64 with the stellar-xdr CLI.
+         Writing the committed corpus.json requires the build pinned in
+         oracle-pin.json, because key spellings changed between releases.
+         Any other --output (an advisory comparison of a newer release)
+         requires only >= 28.0.0, the first release that emits `type`
+         instead of `type_` for six ScSpec types. `_meta.oracle` records
+         the build that ran.
        --source php: decode and re-emit via the PHP SDK's own toJson()
          (_corpus_to_json.php). Used by refresh_corpus.sh to diff the SDK's
          current output against the vendored oracle baseline without needing
@@ -45,6 +49,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 COMMITTED_OUTPUT = REPO_ROOT / "tools" / "sep-51-test-fixtures" / "corpus.json"
 SEED_SCRIPT = REPO_ROOT / "tools" / "sep-51-test-fixtures" / "_corpus_seed.php"
 TO_JSON_SCRIPT = REPO_ROOT / "tools" / "sep-51-test-fixtures" / "_corpus_to_json.php"
+PIN_FILE = REPO_ROOT / "tools" / "sep-51-test-fixtures" / "oracle-pin.json"
 
 MIN_ORACLE_VERSION = (28, 0, 0)
 
@@ -149,31 +154,42 @@ def populate_via_php(seed_stdout: bytes) -> list[dict[str, Any]]:
     return json.loads(populated.stdout.decode("utf-8"))
 
 
-def oracle_version_info(oracle_bin: str) -> dict[str, str]:
-    """Return {'version': ..., 'xdr_commit': ...}; exit if below the minimum."""
+def read_pin() -> dict[str, Any]:
+    try:
+        return json.loads(PIN_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise SystemExit(f"cannot read the oracle pin {PIN_FILE}: {exc}")
+
+
+def oracle_version_info(oracle_bin: str, install: str) -> dict[str, str]:
+    """Return {'version': <token as printed>, 'xdr_commit': ...}.
+
+    The version keeps any prerelease or build suffix, so the pin comparison
+    distinguishes such builds; the minimum applies to the numeric triple.
+    """
     try:
         out = subprocess.run(
             [oracle_bin, "version"], check=True, capture_output=True, text=True
         ).stdout
     except (OSError, subprocess.CalledProcessError) as exc:
         raise SystemExit(
-            f"oracle binary {oracle_bin!r} not runnable: {exc}. Install with: "
-            "cargo install --locked stellar-xdr --features cli"
+            f"oracle binary {oracle_bin!r} not runnable: {exc}. Install with: {install}"
         )
-    version_match = re.search(r"stellar-xdr\s+(\d+)\.(\d+)\.(\d+)", out)
+    version_match = re.search(r"stellar-xdr\s+((\d+)\.(\d+)\.(\d+)\S*)", out)
     commit_match = re.search(r"xdr:\s*([0-9a-f]{40})", out)
     if not version_match:
         raise SystemExit(f"cannot parse oracle version from: {out!r}")
-    version = tuple(int(g) for g in version_match.groups())
-    if version < MIN_ORACLE_VERSION:
+    version = version_match.group(1)
+    triple = tuple(int(g) for g in version_match.groups()[1:])
+    if triple < MIN_ORACLE_VERSION:
         raise SystemExit(
-            f"oracle {'.'.join(map(str, version))} is older than the required "
+            f"oracle {version} is older than the required "
             f"{'.'.join(map(str, MIN_ORACLE_VERSION))}: pre-28 releases emit "
             "the Rust keyword escape `type_` for six ScSpec types and would "
             "bake the wrong key into the corpus."
         )
     return {
-        "version": ".".join(map(str, version)),
+        "version": version,
         "xdr_commit": commit_match.group(1) if commit_match else "unknown",
     }
 
@@ -281,8 +297,8 @@ def main() -> int:
     parser.add_argument("--oracle-bin", default="stellar-xdr")
     args = parser.parse_args()
 
-    if (args.source == "php"
-            and Path(args.output).resolve() == COMMITTED_OUTPUT.resolve()):
+    writes_committed = Path(args.output).resolve() == COMMITTED_OUTPUT.resolve()
+    if args.source == "php" and writes_committed:
         raise SystemExit(
             "--source php would overwrite the committed oracle baseline with "
             "the SDK's own output, silently removing the reference anchor. "
@@ -293,7 +309,14 @@ def main() -> int:
     seed_stdout = run_seed()
     oracle_info: dict[str, str] | None = None
     if args.source == "oracle":
-        oracle_info = oracle_version_info(args.oracle_bin)
+        pin = read_pin()
+        oracle_info = oracle_version_info(args.oracle_bin, pin["install"])
+        if writes_committed and oracle_info["version"] != pin["version"]:
+            raise SystemExit(
+                f"oracle {oracle_info['version']} is not the pinned build "
+                f"{pin['version']} recorded in {PIN_FILE}; the committed corpus "
+                f"is generated only from the pin. Install it with: {pin['install']}"
+            )
         fixtures = populate_via_oracle(seed_stdout, args.oracle_bin)
     else:
         fixtures = populate_via_php(seed_stdout)
