@@ -437,6 +437,32 @@ class SorobanTest extends TestCase
             print("[" . $vec[0]->sym . ", " . $vec[1]->sym . "]" . PHP_EOL);
         }
 
+        // get transactions lists the invocation with its diagnostic events.
+        // A page holds at most 200 transactions, so the loop pages on when the
+        // start ledger holds more than one page.
+        $invokeTxInfo = null;
+        $getTransactionsRequest = new GetTransactionsRequest(
+            startLedger: $statusResponse->ledger,
+            paginationOptions: new PaginationOptions(limit: 200),
+        );
+        for ($page = 0; $page < 5 && $invokeTxInfo === null; $page++) {
+            $getTransactionsResponse = $this->server->getTransactions($getTransactionsRequest);
+            $this->assertNotNull($getTransactionsResponse->transactions);
+            foreach ($getTransactionsResponse->transactions as $txInfo) {
+                if ($txInfo->txHash === $sendResponse->hash) {
+                    $invokeTxInfo = $txInfo;
+                }
+            }
+            $getTransactionsRequest = new GetTransactionsRequest(
+                paginationOptions: new PaginationOptions(cursor: $getTransactionsResponse->cursor, limit: 200),
+            );
+        }
+        $this->assertNotNull($invokeTxInfo);
+        $this->assertNotEmpty($invokeTxInfo->diagnosticEventsXdr);
+        foreach ($invokeTxInfo->diagnosticEventsXdr as $eventXdr) {
+            XdrDiagnosticEvent::fromBase64Xdr($eventXdr);
+        }
+
         sleep(5);
         // check horizon response decoding.
         $transactionResponse = $this->sdk->requestTransaction($sendResponse->hash);
