@@ -1488,9 +1488,7 @@ class RoundTripEmitter
               $instance = \\#{fqcn}::fromBase64Xdr($base64);
               $jsonValue = $instance->toJsonValue();
               $json = $instance->toJson();
-              // toJsonValue stability across two independent decodes of the
-              // same XDR base64 — catches non-determinism in the toJsonValue
-              // path.
+              // Independent decodes must produce identical JSON values.
               $instance2 = \\#{fqcn}::fromBase64Xdr($base64);
               $this->assertSame($jsonValue, $instance2->toJsonValue(),
                   'corpus[#{fixture_id}] toJsonValue not deterministic across decodes');

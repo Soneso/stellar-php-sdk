@@ -28,14 +28,20 @@ use Soneso\StellarSDK\Xdr\XdrPublicKeyType;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
+use Soneso\StellarSDK\Xdr\XdrStellarValue;
 use Soneso\StellarSDK\Xdr\XdrStellarValueExt;
+use Soneso\StellarSDK\Xdr\XdrStellarValueProposedMsValue;
 use Soneso\StellarSDK\Xdr\XdrStellarValueProposedValue;
+use Soneso\StellarSDK\Xdr\XdrStellarValueSignedMsValue;
 use Soneso\StellarSDK\Xdr\XdrStellarValueType;
 
 class XdrLedgerTest extends TestCase
 {
     private const TEST_ACCOUNT_ID = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
     private const TEST_ACCOUNT_ID_2 = 'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ';
+    // XDR-JSON of createTestLcValueSignature(): node id as G-strkey, signature as hex.
+    private const TEST_LC_VALUE_SIGNATURE_JSON = '"lc_value_signature":{"node_id":'
+        . '"GCV2XK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2WIHP","signature":"01020304"}';
 
     public function testXdrLedgerEntryTypeStaticMethods(): void
     {
@@ -337,5 +343,79 @@ class XdrLedgerTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid base64-encoded XDR');
         XdrStellarValueProposedValue::fromBase64Xdr('%%%not-base64%%%');
+    }
+
+    private function createTestStellarValue(XdrStellarValueExt $ext): XdrStellarValue
+    {
+        return new XdrStellarValue(str_repeat("\x88", 32), 1700000000, [], $ext);
+    }
+
+    /**
+     * Decodes the value from its XDR bytes and from its XDR-JSON; the JSON
+     * decoding must encode to the same bytes.
+     *
+     * @return array<int, XdrStellarValue>
+     */
+    private function decodeFromBytesAndJson(XdrStellarValue $value): array
+    {
+        $fromJson = XdrStellarValue::fromJson($value->toJson());
+        $this->assertSame($value->toBase64Xdr(), $fromJson->toBase64Xdr());
+        return [XdrStellarValue::fromBase64Xdr($value->toBase64Xdr()), $fromJson];
+    }
+
+    // The millisecond arms carry the close time as a uint64 count of
+    // milliseconds, which XDR-JSON renders as a decimal string; the expected
+    // documents follow the SEP-0051 rules.
+    public function testXdrStellarValueSignedMsRoundtrip(): void
+    {
+        $ext = new XdrStellarValueExt(XdrStellarValueType::STELLAR_VALUE_SIGNED_MS());
+        $ext->setSignedMsValue(new XdrStellarValueSignedMsValue(1700000000123, $this->createTestLcValueSignature()));
+        $value = $this->createTestStellarValue($ext);
+
+        $this->assertSame(
+            '{"tx_set_hash":"' . str_repeat('88', 32) . '","close_time":"1700000000","upgrades":[],'
+            . '"ext":{"signed_ms":{"close_time_ms":"1700000000123",' . self::TEST_LC_VALUE_SIGNATURE_JSON . '}}}',
+            $value->toJson()
+        );
+        foreach ($this->decodeFromBytesAndJson($value) as $decoded) {
+            $this->assertSame(XdrStellarValueType::STELLAR_VALUE_SIGNED_MS, $decoded->getExt()->getV()->getValue());
+            $arm = $decoded->getExt()->getSignedMsValue();
+            $this->assertNotNull($arm);
+            $this->assertSame(1700000000123, $arm->getCloseTimeMs());
+            $this->assertSame(str_repeat("\xab", 32), $arm->getLcValueSignature()->getNodeID()->nodeID->getEd25519());
+            $this->assertSame("\x01\x02\x03\x04", $arm->getLcValueSignature()->getSignature());
+        }
+    }
+
+    public function testXdrStellarValueEmptyTxSetMsRoundtrip(): void
+    {
+        $ext = new XdrStellarValueExt(XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET_MS());
+        $ext->setProposedMsValue(new XdrStellarValueProposedMsValue(
+            1700000000456,
+            str_repeat("\x33", 32),
+            str_repeat("\x44", 32),
+            29,
+            $this->createTestLcValueSignature()
+        ));
+        $value = $this->createTestStellarValue($ext);
+
+        $this->assertSame(
+            '{"tx_set_hash":"' . str_repeat('88', 32) . '","close_time":"1700000000","upgrades":[],'
+            . '"ext":{"empty_tx_set_ms":{"close_time_ms":"1700000000456",'
+            . '"tx_set_hash":"' . str_repeat('33', 32) . '","previous_ledger_hash":"' . str_repeat('44', 32) . '",'
+            . '"previous_ledger_version":29,' . self::TEST_LC_VALUE_SIGNATURE_JSON . '}}}',
+            $value->toJson()
+        );
+        foreach ($this->decodeFromBytesAndJson($value) as $decoded) {
+            $this->assertSame(XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET_MS, $decoded->getExt()->getV()->getValue());
+            $arm = $decoded->getExt()->getProposedMsValue();
+            $this->assertNotNull($arm);
+            $this->assertSame(1700000000456, $arm->getCloseTimeMs());
+            $this->assertSame(str_repeat("\x33", 32), $arm->getTxSetHash());
+            $this->assertSame(str_repeat("\x44", 32), $arm->getPreviousLedgerHash());
+            $this->assertSame(29, $arm->getPreviousLedgerVersion());
+            $this->assertSame(str_repeat("\xab", 32), $arm->getLcValueSignature()->getNodeID()->nodeID->getEd25519());
+            $this->assertSame("\x01\x02\x03\x04", $arm->getLcValueSignature()->getSignature());
+        }
     }
 }

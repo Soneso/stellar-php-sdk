@@ -56,6 +56,7 @@ use Soneso\StellarSDK\Xdr\XdrSerializedBinaryFuseFilter;
 use Soneso\StellarSDK\Xdr\XdrShortHashSeed;
 use Soneso\StellarSDK\Xdr\XdrSignedPayload;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
+use Soneso\StellarSDK\Xdr\XdrStellarValue;
 use Soneso\StellarSDK\Xdr\XdrStoredDebugTransactionSet;
 use Soneso\StellarSDK\Xdr\XdrTimeBounds;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
@@ -172,6 +173,7 @@ class CorpusSnapshotTest extends TestCase
             'ShortHashSeed' => XdrShortHashSeed::class,
             'SignedPayload' => XdrSignedPayload::class,
             'SignerKey' => XdrSignerKey::class,
+            'StellarValue' => XdrStellarValue::class,
             'StoredDebugTransactionSet' => XdrStoredDebugTransactionSet::class,
             'TimeBounds' => XdrTimeBounds::class,
             'TransactionEnvelope' => XdrTransactionEnvelope::class,

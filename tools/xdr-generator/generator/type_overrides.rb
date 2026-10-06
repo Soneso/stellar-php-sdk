@@ -30,6 +30,7 @@ TYPE_OVERRIDES = {
   "XdrInt64" => "int",
   "XdrUint64" => "int",
   "XdrTimePoint" => "int",
+  "XdrTimePointMs" => "int",
   "XdrDuration" => "int",
 
   # Fixed-opaque typedefs — SDK uses string (binary)

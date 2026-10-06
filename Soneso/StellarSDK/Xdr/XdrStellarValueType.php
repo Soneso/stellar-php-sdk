@@ -14,6 +14,8 @@ class XdrStellarValueType {
     const STELLAR_VALUE_BASIC = 0;
     const STELLAR_VALUE_SIGNED = 1;
     const STELLAR_VALUE_EMPTY_TX_SET = 2;
+    const STELLAR_VALUE_SIGNED_MS = 3;
+    const STELLAR_VALUE_EMPTY_TX_SET_MS = 4;
 
     public function __construct(int $value) {
         $this->value = $value;
@@ -35,6 +37,14 @@ class XdrStellarValueType {
         return new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET);
     }
 
+    public static function STELLAR_VALUE_SIGNED_MS(): XdrStellarValueType {
+        return new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_SIGNED_MS);
+    }
+
+    public static function STELLAR_VALUE_EMPTY_TX_SET_MS(): XdrStellarValueType {
+        return new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET_MS);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }
@@ -45,6 +55,8 @@ class XdrStellarValueType {
             case 0:
             case 1:
             case 2:
+            case 3:
+            case 4:
                 return new XdrStellarValueType($value);
             default:
                 throw new InvalidArgumentException("Unknown enum value: $value");
@@ -68,6 +80,8 @@ class XdrStellarValueType {
             self::STELLAR_VALUE_BASIC => 'basic',
             self::STELLAR_VALUE_SIGNED => 'signed',
             self::STELLAR_VALUE_EMPTY_TX_SET => 'empty_tx_set',
+            self::STELLAR_VALUE_SIGNED_MS => 'signed_ms',
+            self::STELLAR_VALUE_EMPTY_TX_SET_MS => 'empty_tx_set_ms',
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown XdrStellarValueType enum value: ' . $this->value
@@ -86,6 +100,8 @@ class XdrStellarValueType {
             'basic' => new static(self::STELLAR_VALUE_BASIC),
             'signed' => new static(self::STELLAR_VALUE_SIGNED),
             'empty_tx_set' => new static(self::STELLAR_VALUE_EMPTY_TX_SET),
+            'signed_ms' => new static(self::STELLAR_VALUE_SIGNED_MS),
+            'empty_tx_set_ms' => new static(self::STELLAR_VALUE_EMPTY_TX_SET_MS),
             default => throw new InvalidArgumentException(
                 'Unknown XdrStellarValueType JSON value: ' . XdrJsonHelper::safePreview($value)
             ),

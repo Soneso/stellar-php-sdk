@@ -10,7 +10,7 @@
       "xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694"
     }
   },
-  "generated_at": "2026-10-06T00:59:29.838102+00:00",
+  "generated_at": "2026-10-06T15:45:54.661005+00:00",
   "entries": [
     {
       "id": "scval_bool_true",
@@ -1904,6 +1904,32 @@
       "spec_reference_json": "{\"tx_set\":{\"v0\":{\"previous_ledger_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"txs\":[]}},\"ledger_seq\":42,\"scp_value\":{\"tx_set_hash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"close_time\":\"1700000000\",\"upgrades\":[],\"ext\":\"basic\"}}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > StoredDebugTransactionSet",
       "notes": "wraps an empty v0 StoredTransactionSet"
+    },
+    {
+      "id": "stellar_value_signed",
+      "type": "StellarValue",
+      "base64": "iIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIgAAAAAZVPxAAAAAAAAAAABAAAAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAAAABAoUHig=",
+      "spec_reference_json": "{\"tx_set_hash\":\"8888888888888888888888888888888888888888888888888888888888888888\",\"close_time\":\"1700000000\",\"upgrades\":[],\"ext\":{\"signed\":{\"node_id\":\"GAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQDZ7H\",\"signature\":\"0a141e28\"}}}",
+      "spec_anchor": "SEP-0051 \u00a7Discriminated Union; \u00a7Struct; \u00a7Unsigned Hyper Integer (64-bit)",
+      "notes": "signed arm: close-value signature with a G-strkey node id and hex signature"
+    },
+    {
+      "id": "stellar_value_signed_ms",
+      "type": "StellarValue",
+      "base64": "iIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIgAAAAAZVPxAAAAAAAAAAADAAABi8/laHsAAAAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEAAAAEChQeKA==",
+      "spec_reference_json": "{\"tx_set_hash\":\"8888888888888888888888888888888888888888888888888888888888888888\",\"close_time\":\"1700000000\",\"upgrades\":[],\"ext\":{\"signed_ms\":{\"close_time_ms\":\"1700000000123\",\"lc_value_signature\":{\"node_id\":\"GAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQDZ7H\",\"signature\":\"0a141e28\"}}}}",
+      "spec_anchor": "SEP-0051 \u00a7Discriminated Union; \u00a7Struct; \u00a7Unsigned Hyper Integer (64-bit)",
+      "notes": "signed_ms arm: close time in milliseconds plus the close-value signature",
+      "oracle_incomparable": "StellarValueType members STELLAR_VALUE_SIGNED_MS and STELLAR_VALUE_EMPTY_TX_SET_MS are newer than the XDR revision the pinned rs-stellar-xdr build vendors, which rejects these bytes as an invalid XDR value. XdrLedgerTest pins the spec-derived JSON of both arms."
+    },
+    {
+      "id": "stellar_value_empty_tx_set_ms",
+      "type": "StellarValue",
+      "base64": "iIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIgAAAAAZVPxAAAAAAAAAAAEAAABi8/lacgzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM0REREREREREREREREREREREREREREREREREREREREREAAAAHQAAAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQAAAAQKFB4o",
+      "spec_reference_json": "{\"tx_set_hash\":\"8888888888888888888888888888888888888888888888888888888888888888\",\"close_time\":\"1700000000\",\"upgrades\":[],\"ext\":{\"empty_tx_set_ms\":{\"close_time_ms\":\"1700000000456\",\"tx_set_hash\":\"3333333333333333333333333333333333333333333333333333333333333333\",\"previous_ledger_hash\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"previous_ledger_version\":29,\"lc_value_signature\":{\"node_id\":\"GAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQDZ7H\",\"signature\":\"0a141e28\"}}}}",
+      "spec_anchor": "SEP-0051 \u00a7Discriminated Union; \u00a7Struct; \u00a7Unsigned Hyper Integer (64-bit)",
+      "notes": "empty_tx_set_ms arm: close time in milliseconds, both hashes, previous ledger version, signature",
+      "oracle_incomparable": "StellarValueType members STELLAR_VALUE_SIGNED_MS and STELLAR_VALUE_EMPTY_TX_SET_MS are newer than the XDR revision the pinned rs-stellar-xdr build vendors, which rejects these bytes as an invalid XDR value. XdrLedgerTest pins the spec-derived JSON of both arms."
     },
     {
       "id": "transaction_result_meta_success",

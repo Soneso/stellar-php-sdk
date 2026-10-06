@@ -13,6 +13,8 @@ class XdrStellarValueExt {
     public XdrStellarValueType $v;
     public ?XdrLedgerCloseValueSignature $lcValueSignature = null;
     public ?XdrStellarValueProposedValue $proposedValue = null;
+    public ?XdrStellarValueSignedMsValue $signedMsValue = null;
+    public ?XdrStellarValueProposedMsValue $proposedMsValue = null;
 
     public function __construct(?XdrStellarValueType $v = null) {
         if ($v !== null) {
@@ -31,6 +33,12 @@ class XdrStellarValueExt {
             case XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET:
                 $bytes .= $this->proposedValue->encode();
                 break;
+            case XdrStellarValueType::STELLAR_VALUE_SIGNED_MS:
+                $bytes .= $this->signedMsValue->encode();
+                break;
+            case XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET_MS:
+                $bytes .= $this->proposedMsValue->encode();
+                break;
             default:
                 break;
         }
@@ -48,6 +56,12 @@ class XdrStellarValueExt {
             case XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET:
                 $result->proposedValue = XdrStellarValueProposedValue::decode($xdr);
                 break;
+            case XdrStellarValueType::STELLAR_VALUE_SIGNED_MS:
+                $result->signedMsValue = XdrStellarValueSignedMsValue::decode($xdr);
+                break;
+            case XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET_MS:
+                $result->proposedMsValue = XdrStellarValueProposedMsValue::decode($xdr);
+                break;
         }
         return $result;
     }
@@ -58,6 +72,10 @@ class XdrStellarValueExt {
     public function setLcValueSignature(?XdrLedgerCloseValueSignature $lcValueSignature): void { $this->lcValueSignature = $lcValueSignature; }
     public function getProposedValue(): ?XdrStellarValueProposedValue { return $this->proposedValue; }
     public function setProposedValue(?XdrStellarValueProposedValue $proposedValue): void { $this->proposedValue = $proposedValue; }
+    public function getSignedMsValue(): ?XdrStellarValueSignedMsValue { return $this->signedMsValue; }
+    public function setSignedMsValue(?XdrStellarValueSignedMsValue $signedMsValue): void { $this->signedMsValue = $signedMsValue; }
+    public function getProposedMsValue(): ?XdrStellarValueProposedMsValue { return $this->proposedMsValue; }
+    public function setProposedMsValue(?XdrStellarValueProposedMsValue $proposedMsValue): void { $this->proposedMsValue = $proposedMsValue; }
 
     public function toBase64Xdr(): string {
         return base64_encode($this->encode());
@@ -76,6 +94,8 @@ class XdrStellarValueExt {
             XdrStellarValueType::STELLAR_VALUE_BASIC => 'basic',
             XdrStellarValueType::STELLAR_VALUE_SIGNED => ['signed' => $this->lcValueSignature->toJsonValue()],
             XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET => ['empty_tx_set' => $this->proposedValue->toJsonValue()],
+            XdrStellarValueType::STELLAR_VALUE_SIGNED_MS => ['signed_ms' => $this->signedMsValue->toJsonValue()],
+            XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET_MS => ['empty_tx_set_ms' => $this->proposedMsValue->toJsonValue()],
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown discriminant for v on XdrStellarValueType'
@@ -97,6 +117,12 @@ class XdrStellarValueExt {
                 'empty_tx_set' => throw new InvalidArgumentException(
                     "Arm 'empty_tx_set' on XdrStellarValueExt is non-void; supply a single-key object {\"empty_tx_set\": <payload>} instead of a bare string."
                 ),
+                'signed_ms' => throw new InvalidArgumentException(
+                    "Arm 'signed_ms' on XdrStellarValueExt is non-void; supply a single-key object {\"signed_ms\": <payload>} instead of a bare string."
+                ),
+                'empty_tx_set_ms' => throw new InvalidArgumentException(
+                    "Arm 'empty_tx_set_ms' on XdrStellarValueExt is non-void; supply a single-key object {\"empty_tx_set_ms\": <payload>} instead of a bare string."
+                ),
                 default => throw new InvalidArgumentException(
                     'Unknown XdrStellarValueExt void arm string: ' . XdrJsonHelper::safePreview($value)
                 ),
@@ -117,6 +143,8 @@ class XdrStellarValueExt {
         return match ($key) {
             'signed' => (static function () use ($arm) { $r = new static(new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_SIGNED)); $r->lcValueSignature = XdrLedgerCloseValueSignature::fromJsonValue($arm); return $r; })(),
             'empty_tx_set' => (static function () use ($arm) { $r = new static(new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET)); $r->proposedValue = XdrStellarValueProposedValue::fromJsonValue($arm); return $r; })(),
+            'signed_ms' => (static function () use ($arm) { $r = new static(new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_SIGNED_MS)); $r->signedMsValue = XdrStellarValueSignedMsValue::fromJsonValue($arm); return $r; })(),
+            'empty_tx_set_ms' => (static function () use ($arm) { $r = new static(new XdrStellarValueType(XdrStellarValueType::STELLAR_VALUE_EMPTY_TX_SET_MS)); $r->proposedMsValue = XdrStellarValueProposedMsValue::fromJsonValue($arm); return $r; })(),
             default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrStellarValueExt: ' . XdrJsonHelper::safePreview($key)
             ),
