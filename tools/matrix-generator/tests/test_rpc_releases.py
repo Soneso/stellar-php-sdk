@@ -9,7 +9,7 @@ from unittest import mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "rpc"))
 
 import rpc_releases  # noqa: E402
-from rpc_releases import GO_STELLAR_SDK_REPO, STELLAR_RPC_REPO, ReleaseLookupError, resolve_release  # noqa: E402
+from rpc_releases import STELLAR_RPC_REPO, ReleaseLookupError, resolve_release  # noqa: E402
 from support import (  # noqa: E402
     SELECTION_CASES,
     SELECTION_FAILURE_CASES,
@@ -25,14 +25,13 @@ def serve(routes):
     return fake, mock.patch("urllib.request.urlopen", fake)
 
 
-class LatestStableSelectionTest(unittest.TestCase):
+class NewestStableSelectionTest(unittest.TestCase):
     def test_selects_newest_stable_release(self):
-        for repo in (STELLAR_RPC_REPO, GO_STELLAR_SDK_REPO):
-            for description, pages, expected in SELECTION_CASES:
-                with self.subTest(repo=repo, case=description):
-                    _, patch = serve(release_routes(repo, pages))
-                    with patch:
-                        self.assertEqual(resolve_release(repo, None, None).tag, expected)
+        for description, pages, expected in SELECTION_CASES:
+            with self.subTest(case=description):
+                _, patch = serve(release_routes(STELLAR_RPC_REPO, pages))
+                with patch:
+                    self.assertEqual(resolve_release(STELLAR_RPC_REPO, None, None).tag, expected)
 
     def test_raises_when_no_release_qualifies(self):
         for description, pages, pattern in SELECTION_FAILURE_CASES:
@@ -83,7 +82,7 @@ class InvalidResponseTest(unittest.TestCase):
     def test_entry_without_draft_flag(self):
         entry = release("v28.0.1")
         del entry["draft"]
-        self.assert_lookup_fails([entry], "without tag_name, draft and prerelease")
+        self.assert_lookup_fails([entry], "invalid release entry")
 
     def test_request_error(self):
         error = urllib.error.HTTPError(releases_url(STELLAR_RPC_REPO), 403, "rate limit exceeded", None, None)

@@ -24,6 +24,9 @@ from typing import Any, Optional
 
 from rpc_releases import STELLAR_RPC_REPO, Release, get_github_token, resolve_release
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from sdk_version import get_sdk_version  # noqa: E402
+
 
 # ---------------------------------------------------------------------------
 # Data structures
@@ -40,7 +43,6 @@ class SupportStatus(Enum):
 class SDKMethod:
     """A parsed PHP SDK method."""
     name: str
-    rpc_method: str
     parameters: list[str]
     response_class: str
 
@@ -57,7 +59,6 @@ class MethodComparison:
     """Comparison data for a single RPC method."""
     rpc_method: str
     sdk_method: str
-    sdk_params: list[str]
     response_class: str
     status: SupportStatus
     rpc_required_params: list[str]
@@ -123,7 +124,6 @@ REQUEST_OBJECT_PARAMS: dict[tuple[str, str], list[str]] = {
 PARAM_MAPPINGS: dict[str, str] = {
     "base64EncodedKeys": "keys",
     "transactionId": "hash",
-    "transaction": "transaction",
 }
 
 # Response field suffixes to skip (the PHP SDK decodes XDR natively)
@@ -137,11 +137,8 @@ BASE_RESPONSE_FIELDS: set[str] = {"error"}
 # camelCase PHP property -> JSON key remapping where they differ
 # (most PHP properties map directly to their JSON key names via camelCase convention)
 PHP_PROPERTY_TO_JSON_KEY: dict[str, str] = {
-    # getVersionInfo: SDK reads both snake_case (protocol < 22) and camelCase
-    "commitHash": "commitHash",
+    # getVersionInfo: buildTimeStamp is populated from the 'buildTimestamp' JSON key
     "buildTimeStamp": "buildTimestamp",
-    "captiveCoreVersion": "captiveCoreVersion",
-    "protocolVersion": "protocolVersion",
     # sendTransaction: diagnosticEvents is populated from 'diagnosticEventsXdr' JSON key
     "diagnosticEvents": "diagnosticEventsXdr",
 }
@@ -164,23 +161,6 @@ METHOD_NOTES: dict[str, str] = {
 
 
 # ---------------------------------------------------------------------------
-# Helper: SDK version
-# ---------------------------------------------------------------------------
-
-def get_sdk_version(sdk_root: Path) -> str:
-    """Read VERSION_NR from Soneso/StellarSDK/StellarSDK.php; raise when it cannot be read."""
-    sdk_php = sdk_root / "Soneso" / "StellarSDK" / "StellarSDK.php"
-    try:
-        content = sdk_php.read_text(encoding="utf-8")
-    except OSError as e:
-        raise RuntimeError(f"Cannot read the SDK version file {sdk_php}: {e}") from e
-    match = re.search(r"VERSION_NR\s*=\s*['\"]([^'\"]+)['\"]", content)
-    if not match:
-        raise RuntimeError(f"No VERSION_NR constant in {sdk_php}")
-    return match.group(1)
-
-
-# ---------------------------------------------------------------------------
 # PHP source analyzer
 # ---------------------------------------------------------------------------
 
@@ -188,7 +168,6 @@ class PHPSorobanAnalyzer:
     """Analyzes PHP Soroban source files to extract SDK implementation details."""
 
     def __init__(self, sdk_root: Path, verbose: bool = False):
-        self.sdk_root = sdk_root
         self.soroban_path = sdk_root / "Soneso" / "StellarSDK" / "Soroban"
         self.verbose = verbose
         self.methods: dict[str, SDKMethod] = {}
@@ -202,11 +181,10 @@ class PHPSorobanAnalyzer:
     def _parse_soroban_server(self) -> None:
         """Parse SorobanServer.php to extract public RPC-mapped method signatures."""
         server_path = self.soroban_path / "SorobanServer.php"
-        if not server_path.exists():
-            print(f"Warning: SorobanServer.php not found at {server_path}")
-            return
-
-        content = server_path.read_text(encoding="utf-8")
+        try:
+            content = server_path.read_text(encoding="utf-8")
+        except OSError as e:
+            raise RuntimeError(f"Cannot read the SDK RPC client {server_path}: {e}") from e
 
         # Match public function declarations.
         # Pattern: public function methodName(params) : ReturnType
@@ -227,7 +205,6 @@ class PHPSorobanAnalyzer:
 
             self.methods[method_name] = SDKMethod(
                 name=method_name,
-                rpc_method=method_name,
                 parameters=params,
                 response_class=response_class,
             )
@@ -253,9 +230,8 @@ class PHPSorobanAnalyzer:
     def _parse_response_classes(self) -> None:
         """Parse Responses/*.php files to extract public properties."""
         responses_path = self.soroban_path / "Responses"
-        if not responses_path.exists():
-            print(f"Warning: Responses directory not found at {responses_path}")
-            return
+        if not responses_path.is_dir():
+            raise RuntimeError(f"No SDK RPC response directory at {responses_path}")
 
         for php_file in sorted(responses_path.glob("*.php")):
             self._parse_response_file(php_file)
@@ -297,7 +273,6 @@ class RPCMatrixGenerator:
     """Generates the RPC compatibility matrix by comparing rpc_methods.json to PHP source."""
 
     def __init__(self, sdk_root: Path, rpc_methods_file: Path, verbose: bool = False):
-        self.sdk_root = sdk_root
         self.rpc_methods_file = rpc_methods_file
         self.verbose = verbose
         self.sdk_version = get_sdk_version(sdk_root)
@@ -348,46 +323,17 @@ class RPCMatrixGenerator:
             self.comparisons.append(comparison)
 
     def _extract_rpc_fields(self, rpc_def: dict[str, Any]) -> list[str]:
-        """Extract response field names from the RPC definition dict."""
-        field_names = []
-        response_data = rpc_def.get("response", {})
-
-        if isinstance(response_data, dict):
-            for f in response_data.get("fields", []):
-                if isinstance(f, dict):
-                    name = f.get("name") or f.get("json_name", "")
-                else:
-                    name = str(f)
-                if name and not name.endswith(IGNORED_FIELD_SUFFIXES):
-                    field_names.append(name)
-        else:
-            # Fallback for older format
-            for f in rpc_def.get("response_fields", []):
-                name = f.get("json_name", "") if isinstance(f, dict) else str(f)
-                if name and not name.endswith(IGNORED_FIELD_SUFFIXES):
-                    field_names.append(name)
-
-        return field_names
+        """Return the response field names of an extractor method entry, ignored suffixes removed."""
+        return [
+            field["name"] for field in rpc_def["response"]["fields"]
+            if field["name"] and not field["name"].endswith(IGNORED_FIELD_SUFFIXES)
+        ]
 
     def _extract_rpc_params(self, rpc_def: dict[str, Any]) -> tuple[list[str], list[str]]:
-        """Extract required and optional parameter names from the RPC definition dict."""
-        params_data = rpc_def.get("parameters", {})
-
-        if isinstance(params_data, dict) and ("required" in params_data or "optional" in params_data):
-            required = [
-                p.get("name", p) if isinstance(p, dict) else p
-                for p in params_data.get("required", [])
-                if (p.get("name", p) if isinstance(p, dict) else p) not in IGNORED_RPC_PARAMS
-            ]
-            optional = [
-                p.get("name", p) if isinstance(p, dict) else p
-                for p in params_data.get("optional", [])
-                if (p.get("name", p) if isinstance(p, dict) else p) not in IGNORED_RPC_PARAMS
-            ]
-        else:
-            required = [p for p in rpc_def.get("required_params", []) if p not in IGNORED_RPC_PARAMS]
-            optional = [p for p in rpc_def.get("optional_params", []) if p not in IGNORED_RPC_PARAMS]
-
+        """Return the required and optional parameter names of an extractor method entry."""
+        params = rpc_def["parameters"]
+        required = [p["name"] for p in params["required"] if p["name"] not in IGNORED_RPC_PARAMS]
+        optional = [p["name"] for p in params["optional"] if p["name"] not in IGNORED_RPC_PARAMS]
         return required, optional
 
     def _map_sdk_params_to_rpc(self, sdk_params: list[str], rpc_method: str = "") -> set[str]:
@@ -431,7 +377,6 @@ class RPCMatrixGenerator:
             return MethodComparison(
                 rpc_method=rpc_method,
                 sdk_method="-",
-                sdk_params=[],
                 response_class="-",
                 status=SupportStatus.NOT_SUPPORTED,
                 rpc_required_params=rpc_required_list,
@@ -481,7 +426,6 @@ class RPCMatrixGenerator:
         return MethodComparison(
             rpc_method=rpc_method,
             sdk_method=sdk_method_str,
-            sdk_params=sdk_method.parameters,
             response_class=sdk_method.response_class,
             status=status,
             rpc_required_params=rpc_required_list,

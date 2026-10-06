@@ -179,19 +179,24 @@ class GeneratorRunTest(unittest.TestCase):
         self.assertEqual(list(self.output.iterdir()), [])
 
 
-class SdkVersionTest(unittest.TestCase):
-    def test_missing_version_file_raises(self):
+class SEP51EvidenceTest(unittest.TestCase):
+    def test_pattern_matching_no_line_raises_naming_file_and_pattern(self):
         with tempfile.TemporaryDirectory() as tmp:
-            with self.assertRaisesRegex(RuntimeError, "Cannot read the SDK version file"):
-                sep.get_sdk_version(Path(tmp))
+            helper = Path(tmp) / sep.SEP51Analyzer._HELPER_PATH
+            helper.parent.mkdir(parents=True)
+            helper.write_text("<?php\nclass XdrJsonHelper\n{\n    public static function bytesToHex() {}\n}\n",
+                              encoding="utf-8")
+            analyzer = sep.SEP51Analyzer(sep.SDKAnalyzer(Path(tmp)), document=None)
 
-    def test_version_file_without_constant_raises(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            sdk_file = Path(tmp) / "Soneso" / "StellarSDK" / "StellarSDK.php"
-            sdk_file.parent.mkdir(parents=True)
-            sdk_file.write_text("<?php\nclass StellarSDK {}\n", encoding="utf-8")
-            with self.assertRaisesRegex(RuntimeError, "No VERSION_NR constant"):
-                sep.get_sdk_version(Path(tmp))
+            self.assertEqual(
+                analyzer._cite_first(sep.SEP51Analyzer._HELPER_PATH, r"public static function bytesToHex"),
+                "`Soneso/StellarSDK/Xdr/XdrJsonHelper.php:4`",
+            )
+            with self.assertRaisesRegex(
+                RuntimeError,
+                r"'public static function hexToBytes' matches no line of Soneso/StellarSDK/Xdr/XdrJsonHelper\.php",
+            ):
+                analyzer._cite_first(sep.SEP51Analyzer._HELPER_PATH, r"public static function hexToBytes")
 
 
 if __name__ == "__main__":

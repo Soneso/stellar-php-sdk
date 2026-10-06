@@ -6,8 +6,6 @@ packages. Every lookup raises ReleaseLookupError on a request error, an invalid
 response, or when no release qualifies; callers never substitute a default.
 """
 
-from __future__ import annotations
-
 import http.client
 import json
 import os
@@ -19,16 +17,15 @@ from typing import Any, Optional
 
 GITHUB_API_BASE = "https://api.github.com"
 STELLAR_RPC_REPO = "stellar/stellar-rpc"
-GO_STELLAR_SDK_REPO = "stellar/go-stellar-sdk"
 USER_AGENT = "stellar-php-sdk-matrix-generator/1.0"
 REQUEST_TIMEOUT_SECONDS = 30
 RELEASES_PER_PAGE = 100
 
 # Stable release tags: "v28.0.1" qualifies; "v29.0.0-rc.1" and "rpcclient-v24.0.0" do not.
-_STABLE_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
+_STABLE_TAG = re.compile(r"v(\d+)\.(\d+)\.(\d+)")
 # Tags a caller may name: stable or prerelease ("v29.0.0-rc.1"); "rpcclient-v24.0.0" does not qualify.
-_RELEASE_TAG = re.compile(r"^v\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?$")
-_PUBLISHED_AT = re.compile(r"^\d{4}-\d{2}-\d{2}T")
+_RELEASE_TAG = re.compile(r"v\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?")
+_PUBLISHED_AT = re.compile(r"\d{4}-\d{2}-\d{2}T")
 _LINK_ENTRY = re.compile(r'<([^>]+)>\s*;\s*rel="([^"]+)"')
 
 
@@ -69,22 +66,22 @@ def resolve_release(repo: str, tag: Optional[str], token: Optional[str]) -> Rele
 
     With *tag*, find_release() applies: the tag has the form vX.Y.Z or
     vX.Y.Z-suffix, and the release exists and is not a draft; a prerelease
-    qualifies. Without *tag*, select_latest_stable() applies.
+    qualifies. Without *tag*, select_newest_stable() applies.
     """
     releases = fetch_releases(repo, token)
     if tag is None:
-        return select_latest_stable(releases, repo)
+        return select_newest_stable(releases, repo)
     return find_release(releases, repo, tag)
 
 
 def fetch_releases(repo: str, token: Optional[str]) -> list[dict[str, Any]]:
-    """Return every release of *repo*, following Link rel="next" until the last page."""
+    """Return every release of *repo* ("owner/name"), following Link rel="next" until the last page."""
     url: Optional[str] = f"{GITHUB_API_BASE}/repos/{repo}/releases?per_page={RELEASES_PER_PAGE}"
     releases: list[dict[str, Any]] = []
     while url is not None:
         page, link_header = _get_json(url, token)
         if not isinstance(page, list):
-            raise ReleaseLookupError(f"{url} returned {type(page).__name__}, expected a list of releases")
+            raise ReleaseLookupError(f"GET {url} returned {type(page).__name__}, expected a list of releases")
         for entry in page:
             _check_entry(entry, url)
         releases.extend(page)
@@ -92,15 +89,16 @@ def fetch_releases(repo: str, token: Optional[str]) -> list[dict[str, Any]]:
     return releases
 
 
-def select_latest_stable(releases: list[dict[str, Any]], repo: str) -> Release:
+def select_newest_stable(releases: list[dict[str, Any]], repo: str) -> Release:
     """Return the highest vX.Y.Z release by numeric semver that is neither a draft nor a prerelease.
 
-    GitHub lists releases in creation order, so a list position does not identify
-    the newest version. The prerelease flag excludes suffix-less tags too.
+    GitHub lists releases in creation order and its "latest" flag follows creation
+    too, so neither identifies the newest version. The prerelease flag excludes
+    suffix-less tags as well.
     """
     candidates = [
         entry for entry in releases
-        if not entry["draft"] and not entry["prerelease"] and _STABLE_TAG.match(entry["tag_name"])
+        if not entry["draft"] and not entry["prerelease"] and _STABLE_TAG.fullmatch(entry["tag_name"])
     ]
     if not candidates:
         raise ReleaseLookupError(f"{repo} has no stable vX.Y.Z release")
@@ -110,7 +108,7 @@ def select_latest_stable(releases: list[dict[str, Any]], repo: str) -> Release:
 
 def find_release(releases: list[dict[str, Any]], repo: str, tag: str) -> Release:
     """Return the non-draft release tagged *tag* (vX.Y.Z or vX.Y.Z-suffix); prereleases qualify."""
-    if not _RELEASE_TAG.match(tag):
+    if not _RELEASE_TAG.fullmatch(tag):
         raise ReleaseLookupError(f"{tag!r} is not a {repo} release tag of the form vX.Y.Z or vX.Y.Z-suffix")
     tagged = [entry for entry in releases if entry["tag_name"] == tag]
     if not tagged:
@@ -147,10 +145,14 @@ def _check_entry(entry: Any, url: str) -> None:
         and isinstance(entry.get("draft"), bool)
         and isinstance(entry.get("prerelease"), bool)
     ):
-        raise ReleaseLookupError(f"{url} returned a release without tag_name, draft and prerelease: {entry!r}")
+        raise ReleaseLookupError(
+            f"GET {url} returned an invalid release entry "
+            f"(needs string tag_name, boolean draft and prerelease): {entry!r:.200}"
+        )
 
 
 def _next_page_url(link_header: Optional[str]) -> Optional[str]:
+    """Return the target of the first Link entry whose relation types include "next", or None."""
     if not link_header:
         return None
     for target, relations in _LINK_ENTRY.findall(link_header):
@@ -160,7 +162,8 @@ def _next_page_url(link_header: Optional[str]) -> Optional[str]:
 
 
 def _semver_key(tag: str) -> tuple[int, int, int]:
-    major, minor, patch = _STABLE_TAG.match(tag).groups()
+    """Return the numeric (major, minor, patch) of a _STABLE_TAG tag."""
+    major, minor, patch = _STABLE_TAG.fullmatch(tag).groups()
     return int(major), int(minor), int(patch)
 
 
