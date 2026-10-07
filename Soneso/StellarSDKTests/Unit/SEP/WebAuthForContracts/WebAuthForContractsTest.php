@@ -228,7 +228,7 @@ class WebAuthForContractsTest extends TestCase
                 $address,
                 $nonce,
                 $expirationLedger,
-                XdrSCVal::forVec([]) // Empty signature vector
+                XdrSCVal::forVoid()
             )
         );
 

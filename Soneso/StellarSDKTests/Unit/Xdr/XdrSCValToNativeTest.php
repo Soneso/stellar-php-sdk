@@ -175,13 +175,13 @@ class XdrSCValToNativeTest extends TestCase
 
     // Map
 
-    public function testMapSymbolKeysPreserveOrder(): void
+    public function testMapSymbolKeysUseHostOrder(): void
     {
         $val = XdrSCVal::forMap([
             new XdrSCMapEntry(XdrSCVal::forSymbol('name'), XdrSCVal::forString('Alice')),
             new XdrSCMapEntry(XdrSCVal::forSymbol('age'), XdrSCVal::forU32(30)),
         ]);
-        $this->assertSame(['name' => 'Alice', 'age' => 30], $val->toNative());
+        $this->assertSame(['age' => 30, 'name' => 'Alice'], $val->toNative());
     }
 
     public function testMapU32Keys(): void

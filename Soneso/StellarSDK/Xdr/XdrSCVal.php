@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK\Xdr;
 use GMP;
 use InvalidArgumentException;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\ScValHostOrder;
 
 
 class XdrSCVal extends XdrSCValBase
@@ -143,10 +144,18 @@ class XdrSCVal extends XdrSCValBase
     }
 
     /**
+     * Builds a map sorted by Soroban host key order.
+     * @throws InvalidArgumentException if two keys compare equal
      * @param array<XdrSCMapEntry> $map
      * @return XdrSCVal
      */
     public static function forMap(array $map) : XdrSCVal {
+        usort($map, static fn(XdrSCMapEntry $a, XdrSCMapEntry $b): int => ScValHostOrder::compare($a->key, $b->key));
+        for ($i = 1; $i < count($map); $i++) {
+            if (ScValHostOrder::compare($map[$i - 1]->key, $map[$i]->key) === 0) {
+                throw new InvalidArgumentException('Duplicate SCMap key (XDR base64): ' . $map[$i]->key->toBase64Xdr());
+            }
+        }
         $result = new XdrSCVal(XdrSCValType::MAP());
         $result->map = $map;
         return $result;

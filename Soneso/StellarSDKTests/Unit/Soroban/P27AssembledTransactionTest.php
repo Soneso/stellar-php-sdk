@@ -40,6 +40,7 @@ use Soneso\StellarSDK\Soroban\SorobanDelegateSignature;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\TransactionBuilder;
+use Soneso\StellarSDK\Util\Hash;
 use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
@@ -464,6 +465,214 @@ class P27AssembledTransactionTest extends TestCase
         $this->assertCount(1, $delegateResult->signature->vec);
     }
 
+    public function testSequentialSigningPreservesSharedExpirationAndSignatures(): void
+    {
+        $top = KeyPair::fromPrivateKey(str_repeat("\x11", 32));
+        $delegate = KeyPair::fromPrivateKey(str_repeat("\x22", 32));
+        $entry = $this->expirationEntry($top, $delegate);
+        $tx = $this->buildAssembledTransactionWithAuthEntries([$entry], $this->invokerKp);
+        $mock = $this->injectMockedServerResponses($tx, [$this->makeLatestLedgerResponse(1000), $this->makeLatestLedgerResponse(2000)]);
+        $tx->signAuthEntries($top);
+        $tx->signAuthEntries($delegate);
+        $signed = $tx->tx->getOperations()[0]->auth[0];
+        $creds = $signed->credentials->addressWithDelegates;
+        $this->assertSame(1100, $creds->addressCredentials->signatureExpirationLedger);
+        $this->assertCount(1, $mock);
+        $hash = Hash::generate($signed->buildPreimage($this->network)->encode());
+        foreach ([[$top, $creds->addressCredentials->signature], [$delegate, $creds->delegates[0]->signature]] as [$kp, $sig]) {
+            $this->assertTrue($kp->verifySignature($sig->vec[0]->map[1]->val->bytes->getValue(), $hash));
+        }
+    }
+
+    public function testConflictingExpirationLeavesAllAuthEntriesUnchanged(): void
+    {
+        $top = KeyPair::random();
+        $delegate = KeyPair::random();
+        $fresh = $this->expirationEntry($top, $delegate);
+        $partial = $this->expirationEntry($top, $delegate);
+        $partial->sign($top, $this->network, 900);
+        $tx = $this->buildAssembledTransactionWithAuthEntries([$fresh, $partial], $this->invokerKp);
+        $before = $tx->tx->toXdrBase64();
+        $entryBefore = $partial->toBase64Xdr();
+        $calls = 0;
+        try {
+            $tx->signAuthEntries($delegate, function ($entry, $network) use ($delegate, &$calls) {
+                $calls++;
+                $entry->sign($delegate, $network, forAddress: $delegate->getAccountId());
+                return $entry;
+            }, 901);
+            $this->fail('Expected conflicting expiration');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString('900', $e->getMessage());
+            $this->assertStringContainsString('901', $e->getMessage());
+        }
+        $this->assertSame(1, $calls);
+        $this->assertSame($before, $tx->tx->toXdrBase64());
+        $this->assertSame($entryBefore, $partial->toBase64Xdr());
+    }
+
+    public function testEqualExpirationAndFreshDefaults(): void
+    {
+        $top = KeyPair::random();
+        $delegate = KeyPair::random();
+        foreach ([null, 777] as $explicit) {
+            $entries = [$this->expirationEntry($top, $delegate), $this->expirationEntry($top, $delegate)];
+            $tx = $this->buildAssembledTransactionWithAuthEntries($entries, $this->invokerKp);
+            $this->injectMockedServerResponses($tx, $explicit === null ? [$this->makeLatestLedgerResponse(1000)] : []);
+            $tx->signAuthEntries($top, validUntilLedgerSeq: $explicit);
+            $expected = $explicit ?? 1100;
+            $tx->signAuthEntries($delegate, validUntilLedgerSeq: $expected);
+            foreach ($tx->tx->getOperations()[0]->auth as $entry) {
+                $this->assertSame($expected, $entry->credentials->getAddressCredentials()->signatureExpirationLedger);
+                $this->assertCount(1, $entry->credentials->addressWithDelegates->delegates[0]->signature->vec);
+            }
+        }
+    }
+
+    public function testMixedPreservedAndDefaultExpirations(): void
+    {
+        $top = KeyPair::random();
+        $delegate = KeyPair::random();
+        $partial = $this->expirationEntry($top, $delegate);
+        $partial->sign($top, $this->network, 900);
+        $tx = $this->buildAssembledTransactionWithAuthEntries(
+            [$partial, $this->expirationEntry($top, $delegate), $this->expirationEntry($top, $delegate)], $this->invokerKp,
+        );
+        $this->injectMockedServerResponses($tx, [$this->makeLatestLedgerResponse(1000)]);
+        $tx->signAuthEntries($delegate);
+        $entries = $tx->tx->getOperations()[0]->auth;
+        $this->assertSame([900, 1100, 1100], array_map(
+            fn($entry) => $entry->credentials->getAddressCredentials()->signatureExpirationLedger, $entries,
+        ));
+    }
+
+    public function testEntryExpirationGuardIncludesNestedOpaqueSignatures(): void
+    {
+        $top = KeyPair::random();
+        $delegate = KeyPair::random();
+        foreach ([XdrSCVal::forBytes('opaque'), XdrSCVal::forVec([])] as $signature) {
+            $entry = $this->expirationEntry($top, $delegate);
+            $node = $entry->credentials->addressWithDelegates->delegates[0];
+            $node->nestedDelegates = [new SorobanDelegateSignature(XdrSCAddress::forAccountId($delegate->getAccountId()), $signature)];
+            $before = $entry->toBase64Xdr();
+            try {
+                $entry->sign($delegate, $this->network, 901, $delegate->getAccountId());
+                $this->fail('Expected conflicting expiration');
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringContainsString('900', $e->getMessage());
+                $this->assertStringContainsString('901', $e->getMessage());
+            }
+            $this->assertSame($before, $entry->toBase64Xdr());
+            $entry->sign($delegate, $this->network, 900, $delegate->getAccountId());
+            $this->assertCount(1, $node->signature->vec);
+        }
+    }
+
+    public function testEntryExpirationConflictOnSignedTopLevelLeavesXdrUnchanged(): void
+    {
+        $top = KeyPair::random();
+        $delegate = KeyPair::random();
+        $entry = $this->expirationEntry($top, $delegate);
+        $entry->sign($top, $this->network, 800);
+        $before = $entry->toBase64Xdr();
+        try {
+            $entry->sign($top, $this->network, 801);
+            $this->fail('Expected conflicting expiration');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString('800', $e->getMessage());
+            $this->assertStringContainsString('801', $e->getMessage());
+        }
+        $this->assertSame($before, $entry->toBase64Xdr());
+    }
+
+    /** @dataProvider multisigExpirationProvider */
+    public function testMultisigCosignersPreserveExpiration(string $arm, bool $callback, ?int $explicit): void
+    {
+        $account = KeyPair::fromPublicKey(str_repeat("\x33", 32));
+        $signers = [KeyPair::fromPrivateKey(str_repeat("\x11", 32)), KeyPair::fromPrivateKey(str_repeat("\x22", 32))];
+        usort($signers, fn($a, $b) => strcmp($a->getPublicKey(), $b->getPublicKey()));
+        [$k1, $k2] = $signers;
+        $top = new SorobanAddressCredentials(Address::fromAccountId($account->getAccountId()), 1, 100, XdrSCVal::forVoid());
+        $credentials = match ($arm) {
+            'legacy' => SorobanCredentials::forAddressCredentialsLegacy($top),
+            'v2' => SorobanCredentials::forAddressCredentialsV2($top),
+            'delegates' => SorobanCredentials::forAddressWithDelegates(new SorobanAddressCredentialsWithDelegates($top, [])),
+        };
+        $entry = new SorobanAuthorizationEntry($credentials, $this->makeInvocation());
+        $entry->sign($k1, $this->network, 900);
+        if ($callback) {
+            $tx = $this->buildAssembledTransactionWithAuthEntries([$entry], $this->invokerKp);
+            $mock = $this->injectMockedServerResponses($tx, [$this->makeLatestLedgerResponse(2000)]);
+            $calls = 0;
+            $tx->signAuthEntries($account, function ($entry, $network) use ($k2, &$calls) {
+                $calls++;
+                $this->assertSame(900, $entry->credentials->getAddressCredentials()->signatureExpirationLedger);
+                $entry->sign($k2, $network);
+                return $entry;
+            }, $explicit);
+            $this->assertSame(1, $calls);
+            $this->assertCount(1, $mock);
+            $entry = $tx->tx->getOperations()[0]->auth[0];
+        } else {
+            $entry->sign($k2, $this->network, $explicit);
+        }
+        $signed = $entry->credentials->getAddressCredentials();
+        $this->assertSame(900, $signed->signatureExpirationLedger);
+        $this->assertCount(2, $signed->signature->vec);
+        $hash = Hash::generate($entry->buildPreimage($this->network)->encode());
+        foreach ($signers as $i => $signer) {
+            $this->assertTrue($signer->verifySignature($signed->signature->vec[$i]->map[1]->val->bytes->getValue(), $hash));
+        }
+    }
+
+    public static function multisigExpirationProvider(): array
+    {
+        $cases = [];
+        foreach (['legacy', 'v2', 'delegates'] as $arm) {
+            foreach ([false, true] as $callback) {
+                foreach ([null, 900] as $explicit) {
+                    $name = $arm . ($callback ? ' callback ' : ' direct ') . ($explicit ?? 'null');
+                    $cases[$name] = [$arm, $callback, $explicit];
+                }
+            }
+        }
+        return $cases;
+    }
+
+    public function testCallbackFailureKeepsTransactionAndEntriesUnchanged(): void
+    {
+        $top = KeyPair::random();
+        $delegate = KeyPair::random();
+        $tx = $this->buildAssembledTransactionWithAuthEntries(
+            [$this->expirationEntry($top, $delegate), $this->expirationEntry($top, $delegate)], $this->invokerKp,
+        );
+        $before = $tx->tx->toXdrBase64();
+        $calls = 0;
+        try {
+            $tx->signAuthEntries($top, function ($entry, $network) use ($top, &$calls) {
+                $entry->sign($top, $network);
+                if (++$calls === 2) {
+                    throw new \RuntimeException('signing failed');
+                }
+                return $entry;
+            }, 901);
+            $this->fail('Expected callback failure');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('signing failed', $e->getMessage());
+        }
+        $this->assertSame($before, $tx->tx->toXdrBase64());
+    }
+
+    private function expirationEntry(KeyPair $top, KeyPair $delegate): SorobanAuthorizationEntry
+    {
+        $credentials = new SorobanAddressCredentials(Address::fromAccountId($top->getAccountId()), 1, 900, XdrSCVal::forVoid());
+        $node = new SorobanDelegateSignature(XdrSCAddress::forAccountId($delegate->getAccountId()));
+        return new SorobanAuthorizationEntry(
+            SorobanCredentials::forAddressWithDelegates(new SorobanAddressCredentialsWithDelegates($credentials, [$node])),
+            $this->makeInvocation(),
+        );
+    }
+
     // =========================================================================
     // needsNonInvokerSigningBy includeAlreadySigned = true
     // =========================================================================
@@ -712,7 +921,7 @@ class P27AssembledTransactionTest extends TestCase
      *
      * @param array<Response> $responses
      */
-    private function injectMockedServerResponses(AssembledTransaction $tx, array $responses): void
+    private function injectMockedServerResponses(AssembledTransaction $tx, array $responses): MockHandler
     {
         $mock    = new MockHandler($responses);
         $stack   = HandlerStack::create($mock);
@@ -727,6 +936,7 @@ class P27AssembledTransactionTest extends TestCase
         $httpClientProp   = $serverReflection->getProperty('httpClient');
         $httpClientProp->setAccessible(true);
         $httpClientProp->setValue($server, $client);
+        return $mock;
     }
 
     /**
@@ -767,6 +977,7 @@ class P27AssembledTransactionTest extends TestCase
             'result'  => [
                 'id'       => 'abc123',
                 'sequence' => $sequence,
+                'protocolVersion' => 27,
                 'hash'     => str_repeat('a', 64),
             ],
         ]));

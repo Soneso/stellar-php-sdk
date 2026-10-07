@@ -535,7 +535,9 @@ class AssembledTransaction
      *  function you can do that by providing a callback function here! Your function needs to take following arguments: (SorobanAuthorizationEntry $entry, Network $network)
      *  and it must return the signed SorobanAuthorizationEntry.
      * @param int|null $validUntilLedgerSeq When to set each auth entry to expire. Could be any number of blocks in
-     *  the future. Default: current sequence + 100 blocks (about 8.3 minutes from now).
+     *  the future. Defaults to the stored expiration when any node carries a signature,
+     *  otherwise current sequence + 100. A conflicting explicit expiration throws.
+     *  Auth entries are replaced only after every signing step succeeds.
      *
      * @return void
      * @throws GuzzleException If the RPC request fails
@@ -563,14 +565,7 @@ class AssembledTransaction
             throw new Exception("Transaction has not yet been simulated");
         }
 
-        $expirationLedger = $validUntilLedgerSeq;
-        if ($expirationLedger === null) {
-            $getLatestLedgerResponse = $this->server->getLatestLedger();
-            if ($getLatestLedgerResponse->sequence === null) {
-                throw new Exception("Could not fetch latest ledger sequence from server");
-            }
-            $expirationLedger = $getLatestLedgerResponse->sequence + StellarConstants::DEFAULT_LEDGER_EXPIRATION_OFFSET;
-        }
+        $defaultExpirationLedger = null;
 
         $ops = $this->tx->getOperations();
         if(count($ops) ===0) {
@@ -622,10 +617,18 @@ class AssembledTransaction
                     continue;
                 }
 
-                // Stamp expiration on the top-level credentials before signing — the
-                // preimage is built from the current expiration value. This applies to
-                // the callback path too, otherwise a delegated signer would sign over
-                // the simulation default and the host would reject it as expired.
+                $entry = SorobanAuthorizationEntry::fromBase64Xdr($entry->toBase64Xdr());
+                $expirationLedger = $entry->resolveSignatureExpirationLedger($validUntilLedgerSeq);
+                if ($expirationLedger === null) {
+                    if ($defaultExpirationLedger === null) {
+                        $latest = $this->server->getLatestLedger();
+                        if ($latest->sequence === null) {
+                            throw new Exception("Could not fetch latest ledger sequence from server");
+                        }
+                        $defaultExpirationLedger = $latest->sequence + StellarConstants::DEFAULT_LEDGER_EXPIRATION_OFFSET;
+                    }
+                    $expirationLedger = $defaultExpirationLedger;
+                }
                 $topCreds = $entry->credentials->getAddressCredentials();
                 if ($topCreds !== null) {
                     $topCreds->signatureExpirationLedger = $expirationLedger;
