@@ -126,7 +126,7 @@ class P27WebAuthForContractsTest extends TestCase
         int      $credType = XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS,
     ): SorobanAuthorizationEntry {
         $address     = Address::fromAnyId($credentialsAddress);
-        $addrCreds   = new SorobanAddressCredentials($address, $nonce, $expirationLedger, XdrSCVal::forVec([]));
+        $addrCreds   = new SorobanAddressCredentials($address, $nonce, $expirationLedger, XdrSCVal::forVoid());
         $credentials = match ($credType) {
             XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2
                 => SorobanCredentials::forAddressCredentialsV2($addrCreds),

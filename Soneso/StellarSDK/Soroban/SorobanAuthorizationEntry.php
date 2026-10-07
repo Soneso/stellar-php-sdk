@@ -18,6 +18,7 @@ use Soneso\StellarSDK\Xdr\XdrHashIDPreimage;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimageSorobanAuthorization;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimageSorobanAuthorizationWithAddress;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
+use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntry;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 
@@ -41,7 +42,7 @@ use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
  * not sort signatures.
  *
  * For G-address verification the host requires signatures to be in ascending public-key order.
- * The SDK appends in call order — callers must sign in ascending key order for multi-sig nodes.
+ * The SDK appends in call order; callers must sign in ascending key order for multi-sig nodes.
  *
  * @package Soneso\StellarSDK\Soroban
  * @see SorobanCredentials
@@ -223,10 +224,9 @@ class SorobanAuthorizationEntry
      * Applies to all three address arms (ADDRESS, ADDRESS_V2, ADDRESS_WITH_DELEGATES).
      * Source-account credentials throw RuntimeException.
      *
-     * Expiration: when $signatureExpirationLedger is non-null it is applied to the
-     * top-level credentials before the preimage is built. When null, the already-set
-     * value is used unchanged. Set expiration before signing — the network reconstructs
-     * the preimage from the submitted credentials including expiration.
+     * Expiration is shared by all credential nodes. A non-null expiration must
+     * match the stored value when any node carries a non-void signature.
+     * Null keeps the stored value.
      *
      * Routing: when $forAddress is null, the signature is written to the top-level
      * credentials. When non-null (strkey, G- or C-prefixed), the signature is written
@@ -244,7 +244,7 @@ class SorobanAuthorizationEntry
      * @param string|null $forAddress strkey (G- or C-prefixed) routing to a specific address node;
      *                               null signs the top-level credentials
      * @throws RuntimeException if no address credentials are found or the credential arm is unsupported
-     * @throws InvalidArgumentException if $forAddress matches no node, or is a muxed M-address
+     * @throws InvalidArgumentException if expiration conflicts, $forAddress matches no node, or is a muxed M-address
      */
     public function sign(
         KeyPair $signer,
@@ -258,7 +258,7 @@ class SorobanAuthorizationEntry
             throw new RuntimeException('no soroban address credentials found');
         }
 
-        // Reject muxed address routing targets — they are not valid Soroban auth addresses.
+        // Reject muxed address routing targets; they are not valid Soroban auth addresses.
         if ($forAddress !== null && str_starts_with($forAddress, 'M')) {
             throw new InvalidArgumentException(
                 'forAddress must be a G- or C-prefixed strkey; muxed (M-prefixed) addresses are not valid Soroban auth addresses'
@@ -267,6 +267,7 @@ class SorobanAuthorizationEntry
 
         // Apply expiration before building the preimage.
         if ($signatureExpirationLedger !== null) {
+            $signatureExpirationLedger = $this->resolveSignatureExpirationLedger($signatureExpirationLedger);
             $addressCreds = $this->credentials->getAddressCredentials();
             if ($addressCreds !== null) {
                 $addressCreds->signatureExpirationLedger = $signatureExpirationLedger;
@@ -290,6 +291,53 @@ class SorobanAuthorizationEntry
                 );
             }
         }
+    }
+
+    /**
+     * Resolves expiration while preserving every existing signature on the entry.
+     *
+     * Every non-void signature commits to the shared expiration, including signatures
+     * on nodes receiving an additional signature.
+     *
+     * @param int|null $expirationLedger the requested expiration, or null to reuse a committed value
+     * @return int|null the resolved expiration, or null when a default is needed
+     * @throws InvalidArgumentException if the requested and committed expirations differ
+     */
+    public function resolveSignatureExpirationLedger(?int $expirationLedger): ?int
+    {
+        $top = $this->credentials->getAddressCredentials();
+        if ($top === null) {
+            return $expirationLedger;
+        }
+        $signed = $top->signature->type->value !== XdrSCValType::SCV_VOID;
+        $delegates = $this->credentials->addressWithDelegates->delegates ?? [];
+        $signed = $signed || $this->delegatesCarrySignatures($delegates, 0);
+        if (!$signed) {
+            return $expirationLedger;
+        }
+        $stored = $top->signatureExpirationLedger;
+        if ($expirationLedger !== null && $expirationLedger !== $stored) {
+            throw new InvalidArgumentException("Signature expiration ledger {$expirationLedger} conflicts with stored ledger {$stored}");
+        }
+        return $stored;
+    }
+
+    /** @param array<SorobanDelegateSignature> $delegates */
+    private function delegatesCarrySignatures(array $delegates, int $depth): bool
+    {
+        if ($depth > self::DELEGATE_DEPTH_LIMIT) {
+            throw new InvalidArgumentException('Delegate tree traversal depth limit (' . self::DELEGATE_DEPTH_LIMIT . ') exceeded');
+        }
+        foreach ($delegates as $node) {
+            if ($node->signature->type->value !== XdrSCValType::SCV_VOID) {
+                return true;
+            }
+            if ($node->nestedDelegates !== []
+                && $this->delegatesCarrySignatures($node->nestedDelegates, $depth + 1)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -440,7 +488,7 @@ class SorobanAuthorizationEntry
      * - Preserves the rootInvocation from the source entry.
      *
      * Delegate sorting: each array (top-level delegates and every nestedDelegates) is sorted
-     * ascending by the complete XDR-encoded bytes of XdrSCAddress. This is not strkey order —
+     * ascending by the complete XDR-encoded bytes of XdrSCAddress. This is not strkey order;
      * accounts (XdrSCAddressType 0) sort before contracts (XdrSCAddressType 1) in XDR encoding.
      *
      * Duplicate rejection: no two delegates in the same array may share an address. The same

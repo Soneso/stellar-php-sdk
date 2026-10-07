@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDKTests\Unit\Core;
 
 use Exception;
+use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Soneso\StellarSDK\Asset;
@@ -14,6 +15,13 @@ use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
 use Soneso\StellarSDK\AssetTypeNative;
 use Soneso\StellarSDK\AssetTypePoolShare;
+use Soneso\StellarSDK\ChangeTrustOperation;
+use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Xdr\XdrAssetType;
+use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
+use Soneso\StellarSDK\Xdr\XdrChangeTrustOperation;
+use Soneso\StellarSDK\Xdr\XdrLiquidityPoolParameters;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertNotNull;
 use function PHPUnit\Framework\assertNull;
@@ -27,6 +35,40 @@ class AssetTest extends TestCase
     public function setUp(): void
     {
         error_reporting(E_ALL);
+    }
+
+    private const POOL_X = 'GBUACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6CLH';
+    private const POOL_Y = 'GB2ACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB7BZ4';
+    private const POOL_PARAMETERS = 'AAAAAAAAAAFVU0RDAAAAAGgBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fAAAAAVVTREMAAAAAdAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8AAAAe';
+
+    public function testPoolIssuerByteOrderAndId(): void
+    {
+        $x = Asset::createNonNativeAsset('USDC', self::POOL_X);
+        $y = Asset::createNonNativeAsset('USDC', self::POOL_Y);
+        $pool = new AssetTypePoolShare($x, $y);
+        $parameters = $pool->toXdrChangeTrustAsset()->liquidityPool;
+        $this->assertSame(self::POOL_PARAMETERS, $parameters->toBase64Xdr());
+        $hash = hash('sha256', $parameters->encode());
+        $this->assertSame('2c325546b1bf03f8d1b9c0b74974cdef7609c60202d72a30e34f393ccf5eed1c', $hash);
+        $this->assertSame('LAWDEVKGWG7QH6GRXHALOSLUZXXXMCOGAIBNOKRQ4NHTSPGPL3WRYKDA', StrKey::encodeLiquidityPoolIdHex($hash));
+    }
+
+    public function testPoolRejectsTextOrderedIssuers(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('USDC:' . self::POOL_Y . ' and USDC:' . self::POOL_X);
+        new AssetTypePoolShare(Asset::createNonNativeAsset('USDC', self::POOL_Y), Asset::createNonNativeAsset('USDC', self::POOL_X));
+    }
+
+    public function testPoolChangeTrustRoundTrip(): void
+    {
+        $parameters = XdrLiquidityPoolParameters::fromBase64Xdr(self::POOL_PARAMETERS);
+        $asset = new XdrChangeTrustAsset(XdrAssetType::ASSET_TYPE_POOL_SHARE());
+        $asset->liquidityPool = $parameters;
+        $wire = (new XdrChangeTrustOperation($asset, new BigInteger(10000000)))->encode();
+        $decoded = XdrChangeTrustOperation::decode(new XdrBuffer($wire));
+        $op = ChangeTrustOperation::fromXdrOperation($decoded);
+        $this->assertSame($wire, $op->toOperationBody()->changeTrustOp->encode());
     }
 
     public function testNativeAsset()

@@ -1001,7 +1001,7 @@ class XdrSCValTest extends TestCase
         $this->assertEquals(XdrSCValType::SCV_MAP, $decoded->getType()->getValue());
         $this->assertCount(2, $decoded->getMap());
 
-        $vecEntry = $decoded->getMap()[0];
+        $vecEntry = $decoded->getMap()[1];
         $this->assertEquals("vec_key", $vecEntry->getKey()->getSym());
         $this->assertEquals(XdrSCValType::SCV_VEC, $vecEntry->getVal()->getType()->getValue());
         $this->assertCount(4, $vecEntry->getVal()->getVec());
@@ -1012,7 +1012,7 @@ class XdrSCValTest extends TestCase
         $this->assertEquals("inner1", $nestedMap->getMap()[0]->getKey()->getSym());
         $this->assertEquals(100, $nestedMap->getMap()[0]->getVal()->getU32());
 
-        $addressEntry = $decoded->getMap()[1];
+        $addressEntry = $decoded->getMap()[0];
         $this->assertEquals("address_key", $addressEntry->getKey()->getSym());
         $this->assertEquals(XdrSCValType::SCV_ADDRESS, $addressEntry->getVal()->getType()->getValue());
 

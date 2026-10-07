@@ -466,6 +466,46 @@ class P27AuthorizationTest extends TestCase
         $this->assertEquals(self::GOLDEN_LEGACY_SIG_HEX, bin2hex((string)$sigBytes));
     }
 
+    public function testSourceAccountExpirationPassthrough(): void
+    {
+        $entry = new SorobanAuthorizationEntry(SorobanCredentials::forSourceAccount(), $this->makeGoldenInvocation());
+        $this->assertNull($entry->resolveSignatureExpirationLedger(null));
+        $this->assertSame(4242, $entry->resolveSignatureExpirationLedger(4242));
+    }
+
+    public function testExpirationAtDelegateDepthLimit(): void
+    {
+        $limit = (new \ReflectionClass(SorobanAuthorizationEntry::class))->getConstant('DELEGATE_DEPTH_LIMIT');
+        $entry = $this->makeExpirationDelegateChain($limit);
+        $this->assertSame(self::GOLDEN_EXPIRY, $entry->resolveSignatureExpirationLedger(null));
+    }
+
+    public function testExpirationBeyondDelegateDepthLimit(): void
+    {
+        $limit = (new \ReflectionClass(SorobanAuthorizationEntry::class))->getConstant('DELEGATE_DEPTH_LIMIT');
+        $entry = $this->makeExpirationDelegateChain($limit + 1);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Delegate tree traversal depth limit (' . $limit . ') exceeded');
+        $entry->resolveSignatureExpirationLedger(null);
+    }
+
+    private function makeExpirationDelegateChain(int $depth): SorobanAuthorizationEntry
+    {
+        $address = XdrSCAddress::forContractId(StrKey::decodeContractIdHex(self::GOLDEN_CONTRACT));
+        $node = new SorobanDelegateSignature($address, XdrSCVal::forBytes('opaque'));
+        // The outermost delegate is at traversal depth zero.
+        for ($i = 0; $i < $depth; $i++) {
+            $node = new SorobanDelegateSignature($address, nestedDelegates: [$node]);
+        }
+        $top = new SorobanAddressCredentials(
+            Address::fromAccountId(self::GOLDEN_ACCOUNT), self::GOLDEN_NONCE, self::GOLDEN_EXPIRY, XdrSCVal::forVoid(),
+        );
+        return new SorobanAuthorizationEntry(
+            SorobanCredentials::forAddressWithDelegates(new SorobanAddressCredentialsWithDelegates($top, [$node])),
+            $this->makeGoldenInvocation(),
+        );
+    }
+
     /**
      * Regression: signing without setting expiration before building preimage produces a
      * DIFFERENT hash. This test verifies that a different expiry produces a different signature.

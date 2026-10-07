@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDK;
 
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Xdr\XdrAsset;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
@@ -22,7 +23,7 @@ use Soneso\StellarSDK\Xdr\XdrLiquidityPoolType;
  *
  * The pool is defined by two reserve assets (assetA and assetB) which must be
  * provided in a specific canonical order: Native < AlphaNum4 < AlphaNum12,
- * then by code lexicographically, then by issuer lexicographically.
+ * then by code bytes lexicographically, then by raw issuer public key bytes.
  *
  * @package Soneso\StellarSDK
  * @see LiquidityPoolDepositOperation
@@ -52,7 +53,7 @@ class AssetTypePoolShare extends Asset
      * provided in canonical order and pass validation checks:
      * - Neither asset can be a pool share asset
      * - Both assets cannot be native XLM
-     * - Assets must be ordered: Native < AlphaNum4 < AlphaNum12, then by code, then by issuer
+     * - Assets must be ordered: Native < AlphaNum4 < AlphaNum12, then by code bytes, then by raw issuer public key bytes
      *
      * @param Asset $assetA The first reserve asset (in canonical order)
      * @param Asset $assetB The second reserve asset (in canonical order)
@@ -69,19 +70,17 @@ class AssetTypePoolShare extends Asset
         if ($assetA->getType() == $assetB->getType() && Asset::TYPE_NATIVE == $assetA->getType()) {
             throw new \RuntimeException("Assets can not be both of type Asset::TYPE_NATIVE");
         }
-        $sortError = false;
-        if (strlen($assetA->getType()) > strlen($assetB->getType())) {
-            $sortError = true;
-        } else if (strlen($assetA->getType()) == strlen($assetB->getType())) {
-            if($assetA instanceof AssetTypeCreditAlphanum && $assetB instanceof AssetTypeCreditAlphanum) {
-                $codeCompare = strcmp($assetA->getCode(), $assetB->getCode());
-                if ($codeCompare > 0 || ($codeCompare == 0 && strcmp($assetA->getIssuer(), $assetB->getIssuer()) > 0)) {
-                    $sortError = true;
-                }
-            }
+        $types = [Asset::TYPE_NATIVE => 0, Asset::TYPE_CREDIT_ALPHANUM_4 => 1, Asset::TYPE_CREDIT_ALPHANUM_12 => 2];
+        $order = $types[$assetA->getType()] <=> $types[$assetB->getType()];
+        if ($order === 0 && $assetA instanceof AssetTypeCreditAlphanum && $assetB instanceof AssetTypeCreditAlphanum) {
+            $order = strcmp($assetA->getCode(), $assetB->getCode()) ?: strcmp(
+                StrKey::decodeAccountId($assetA->getIssuer()),
+                StrKey::decodeAccountId($assetB->getIssuer()),
+            );
         }
-        if ($sortError) {
-            throw new \RuntimeException("Assets are in wrong order. Sort by: Native < AlphaNum4 < AlphaNum12, then by Code, then by Issuer, using lexicographic ordering.");
+        if ($order > 0) {
+            throw new \RuntimeException("Assets " . Asset::canonicalForm($assetA) . " and " . Asset::canonicalForm($assetB) . " are in wrong order. " .
+                "Sort by type, code bytes, then raw issuer public key bytes.");
         }
 
         $this->assetA = $assetA;
@@ -128,7 +127,7 @@ class AssetTypePoolShare extends Asset
      * can be used in operations that work with liquidity pools.
      *
      * @return XdrAsset The XDR representation of this pool share asset
-     * @throws \RuntimeException Always — pool shares cannot be represented as XdrAsset. Use toXdrChangeTrustAsset() instead.
+     * @throws \RuntimeException Always; pool shares cannot be represented as XdrAsset. Use toXdrChangeTrustAsset() instead.
      */
     public function toXdr(): XdrAsset
     {
