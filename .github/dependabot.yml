@@ -12,6 +12,17 @@ updates:
       composer:
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "guzzlehttp/guzzle"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "christian-riesen/base32"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "phpseclib/phpseclib"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "psr/log"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "yosymfony/toml"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: bundler
     directory: /tools/xdr-generator
     schedule:
