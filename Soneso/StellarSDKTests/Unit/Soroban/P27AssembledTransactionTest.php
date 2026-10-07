@@ -546,6 +546,30 @@ class P27AssembledTransactionTest extends TestCase
         ));
     }
 
+    public function testMissingLedgerSequencePreservesAuthEntries(): void
+    {
+        $top = KeyPair::random();
+        $delegate = KeyPair::random();
+        $partial = $this->expirationEntry($top, $delegate);
+        $partial->sign($top, $this->network, 900);
+        $tx = $this->buildAssembledTransactionWithAuthEntries(
+            [$partial, $this->expirationEntry($top, $delegate)], $this->invokerKp,
+        );
+        $this->injectMockedServerResponses($tx, [new Response(200, [], json_encode([
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'error' => ['code' => -32603, 'message' => 'Latest ledger unavailable'],
+        ]))]);
+        $before = array_map(fn($entry) => $entry->toBase64Xdr(), $tx->tx->getOperations()[0]->auth);
+        try {
+            $tx->signAuthEntries($delegate);
+            $this->fail('Expected missing latest ledger sequence');
+        } catch (Exception $e) {
+            $this->assertSame('Could not fetch latest ledger sequence from server', $e->getMessage());
+        }
+        $this->assertSame($before, array_map(fn($entry) => $entry->toBase64Xdr(), $tx->tx->getOperations()[0]->auth));
+    }
+
     public function testEntryExpirationGuardIncludesNestedOpaqueSignatures(): void
     {
         $top = KeyPair::random();

@@ -16,6 +16,24 @@ use Soneso\StellarSDK\Xdr\XdrSCVal as V;
 
 class ScValHostOrderTest extends TestCase
 {
+    public function testNullVectorsThrow(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        ScValHostOrder::compare(new V(X\XdrSCValType::VEC()), new V(X\XdrSCValType::VEC()));
+    }
+
+    public function testNullMapsThrow(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        ScValHostOrder::compare(new V(X\XdrSCValType::MAP()), new V(X\XdrSCValType::MAP()));
+    }
+
+    public function testUnsupportedTypeThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        ScValHostOrder::compare(new V(new X\XdrSCValType(99)), new V(new X\XdrSCValType(99)));
+    }
+
     private function keys(): array
     {
         $contract1 = new X\XdrSCError(X\XdrSCErrorType::SCE_CONTRACT());
