@@ -15,6 +15,9 @@ jobs:
   unit-tests:
     name: PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -37,7 +40,7 @@ jobs:
 
       - name: Get Composer cache directory
         id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
       - name: Cache Composer dependencies
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -61,7 +64,7 @@ jobs:
         if: matrix.php == '8.4'
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
           files: coverage/clover.xml
-          fail_ci_if_error: false
+          fail_ci_if_error: true
           verbose: true
