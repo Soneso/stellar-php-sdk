@@ -79,6 +79,20 @@ class XdrSCAddress extends XdrSCAddressBase
     }
 
     /**
+     * Accepts a muxed contract id ("W..."): a contract paired with a 64-bit
+     * multiplexing id (SEP-23, CAP-0084).
+     * @param string $muxedContractId "W..."
+     * @return XdrSCAddress
+     * @throws InvalidArgumentException when $muxedContractId is not a valid "W..." strkey
+     */
+    public static function forMuxedContractId(string $muxedContractId) : XdrSCAddress {
+        $res = new XdrSCAddress(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT());
+        // The XDR-JSON form of a MuxedContract is its "W..." strkey.
+        $res->muxedContract = XdrMuxedContract::fromJsonValue($muxedContractId);
+        return $res;
+    }
+
+    /**
      * Returns the StrKey representation of the address.
      * @throws InvalidArgumentException when the address holds an id that has no strkey
      * representation
@@ -98,6 +112,8 @@ class XdrSCAddress extends XdrSCAddressBase
                 );
             case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
                 return StrKey::encodeLiquidityPoolIdHex($this->getCanonicalLiquidityPoolIdHex());
+            case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT:
+                return $this->muxedContract->toJsonValue();
         }
         throw new Exception("unknown address type: " . $this->type->value);
     }

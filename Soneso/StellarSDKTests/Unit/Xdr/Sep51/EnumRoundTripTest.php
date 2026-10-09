@@ -3476,6 +3476,177 @@ class EnumRoundTripTest extends TestCase
         $this->assertSame($jsonValue, $fromXdr->toJsonValue());
     }
 
+    public function testRoundTrip_XdrContractCostType_MlDsa44DecodeVerifyingKey(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrContractCostType(\Soneso\StellarSDK\Xdr\XdrContractCostType::MlDsa44DecodeVerifyingKey);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrContractCostType::MlDsa44DecodeVerifyingKey round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(86, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
+    public function testRoundTrip_XdrContractCostType_MlDsa65DecodeVerifyingKey(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrContractCostType(\Soneso\StellarSDK\Xdr\XdrContractCostType::MlDsa65DecodeVerifyingKey);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrContractCostType::MlDsa65DecodeVerifyingKey round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(87, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
+    public function testRoundTrip_XdrContractCostType_MlDsa87DecodeVerifyingKey(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrContractCostType(\Soneso\StellarSDK\Xdr\XdrContractCostType::MlDsa87DecodeVerifyingKey);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrContractCostType::MlDsa87DecodeVerifyingKey round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(88, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
+    public function testRoundTrip_XdrContractCostType_MlDsa44DecodeSignature(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrContractCostType(\Soneso\StellarSDK\Xdr\XdrContractCostType::MlDsa44DecodeSignature);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrContractCostType::MlDsa44DecodeSignature round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(89, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
+    public function testRoundTrip_XdrContractCostType_MlDsa65DecodeSignature(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrContractCostType(\Soneso\StellarSDK\Xdr\XdrContractCostType::MlDsa65DecodeSignature);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrContractCostType::MlDsa65DecodeSignature round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(90, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
+    public function testRoundTrip_XdrContractCostType_MlDsa87DecodeSignature(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrContractCostType(\Soneso\StellarSDK\Xdr\XdrContractCostType::MlDsa87DecodeSignature);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrContractCostType::MlDsa87DecodeSignature round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(91, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
+    public function testRoundTrip_XdrContractCostType_VerifyMlDsa44Sig(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrContractCostType(\Soneso\StellarSDK\Xdr\XdrContractCostType::VerifyMlDsa44Sig);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrContractCostType::VerifyMlDsa44Sig round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(92, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
+    public function testRoundTrip_XdrContractCostType_VerifyMlDsa65Sig(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrContractCostType(\Soneso\StellarSDK\Xdr\XdrContractCostType::VerifyMlDsa65Sig);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrContractCostType::VerifyMlDsa65Sig round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(93, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
+    public function testRoundTrip_XdrContractCostType_VerifyMlDsa87Sig(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrContractCostType(\Soneso\StellarSDK\Xdr\XdrContractCostType::VerifyMlDsa87Sig);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrContractCostType::VerifyMlDsa87Sig round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(94, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrContractCostType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
     public function testRoundTrip_XdrContractDataDurability_TEMPORARY(): void
     {
         $instance = new \Soneso\StellarSDK\Xdr\XdrContractDataDurability(\Soneso\StellarSDK\Xdr\XdrContractDataDurability::TEMPORARY);
@@ -8145,6 +8316,25 @@ class EnumRoundTripTest extends TestCase
         $back = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromJson($json);
         $this->assertSame($json, $back->toJson());
         $this->assertSame(4, $back->getValue());
+        $xdr = $instance->toBase64Xdr();
+        $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromBase64Xdr($xdr);
+        $this->assertSame($jsonValue, $fromXdr->toJsonValue());
+    }
+
+    public function testRoundTrip_XdrSCAddressType_SC_ADDRESS_TYPE_MUXED_CONTRACT(): void
+    {
+        $instance = new \Soneso\StellarSDK\Xdr\XdrSCAddressType(\Soneso\StellarSDK\Xdr\XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromJsonValue($jsonValue);
+        $this->assertSame(
+            $jsonValue,
+            $decoded->toJsonValue(),
+            'XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT round-trip toJsonValue mismatch'
+        );
+        $json = $instance->toJson();
+        $back = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromJson($json);
+        $this->assertSame($json, $back->toJson());
+        $this->assertSame(5, $back->getValue());
         $xdr = $instance->toBase64Xdr();
         $fromXdr = \Soneso\StellarSDK\Xdr\XdrSCAddressType::fromBase64Xdr($xdr);
         $this->assertSame($jsonValue, $fromXdr->toJsonValue());

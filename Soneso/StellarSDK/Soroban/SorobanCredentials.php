@@ -109,6 +109,7 @@ class SorobanCredentials
      * @param int $signatureExpirationLedger ledger after which the signature expires
      * @param XdrSCVal $signature the signature data
      * @return SorobanCredentials ADDRESS_V2 credentials
+     * @throws InvalidArgumentException if the address is a muxed account (M...) or muxed contract (W...) address
      */
     public static function forAddress(
         Address $address,
@@ -116,10 +117,8 @@ class SorobanCredentials
         int     $signatureExpirationLedger,
         XdrSCVal $signature,
     ): SorobanCredentials {
-        $addressCredentials = new SorobanAddressCredentials($address, $nonce, $signatureExpirationLedger, $signature);
-        return new SorobanCredentials(
-            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
-            $addressCredentials,
+        return self::forAddressCredentialsV2(
+            new SorobanAddressCredentials($address, $nonce, $signatureExpirationLedger, $signature)
         );
     }
 
@@ -134,6 +133,7 @@ class SorobanCredentials
      * @param int $signatureExpirationLedger ledger after which the signature expires
      * @param XdrSCVal $signature the signature data
      * @return SorobanCredentials legacy ADDRESS credentials
+     * @throws InvalidArgumentException if the address is a muxed account (M...) or muxed contract (W...) address
      */
     public static function forAddressLegacy(
         Address $address,
@@ -141,10 +141,8 @@ class SorobanCredentials
         int     $signatureExpirationLedger,
         XdrSCVal $signature,
     ): SorobanCredentials {
-        $addressCredentials = new SorobanAddressCredentials($address, $nonce, $signatureExpirationLedger, $signature);
-        return new SorobanCredentials(
-            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS,
-            $addressCredentials,
+        return self::forAddressCredentialsLegacy(
+            new SorobanAddressCredentials($address, $nonce, $signatureExpirationLedger, $signature)
         );
     }
 
@@ -156,13 +154,11 @@ class SorobanCredentials
      *
      * @param SorobanAddressCredentials $addressCredentials the address credentials
      * @return SorobanCredentials ADDRESS_V2 credentials
+     * @throws InvalidArgumentException if the address is a muxed account (M...) or muxed contract (W...) address
      */
     public static function forAddressCredentials(SorobanAddressCredentials $addressCredentials): SorobanCredentials
     {
-        return new SorobanCredentials(
-            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
-            $addressCredentials,
-        );
+        return self::forAddressCredentialsV2($addressCredentials);
     }
 
     /**
@@ -172,9 +168,11 @@ class SorobanCredentials
      *
      * @param SorobanAddressCredentials $addressCredentials the address credentials
      * @return SorobanCredentials legacy ADDRESS credentials
+     * @throws InvalidArgumentException if the address is a muxed account (M...) or muxed contract (W...) address
      */
     public static function forAddressCredentialsLegacy(SorobanAddressCredentials $addressCredentials): SorobanCredentials
     {
+        SorobanAuthAddressGuard::requireCredentialAddress($addressCredentials->address);
         return new SorobanCredentials(
             XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS,
             $addressCredentials,
@@ -189,9 +187,11 @@ class SorobanCredentials
      *
      * @param SorobanAddressCredentials $addressCredentials the address credentials
      * @return SorobanCredentials ADDRESS_V2 credentials
+     * @throws InvalidArgumentException if the address is a muxed account (M...) or muxed contract (W...) address
      */
     public static function forAddressCredentialsV2(SorobanAddressCredentials $addressCredentials): SorobanCredentials
     {
+        SorobanAuthAddressGuard::requireCredentialAddress($addressCredentials->address);
         return new SorobanCredentials(
             XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
             $addressCredentials,
@@ -206,10 +206,14 @@ class SorobanCredentials
      *
      * @param SorobanAddressCredentialsWithDelegates $addressWithDelegates the credentials-plus-delegates payload
      * @return SorobanCredentials ADDRESS_WITH_DELEGATES credentials
+     * @throws InvalidArgumentException if the top-level address or a delegate address at any depth is a muxed
+     * account (M...) or muxed contract (W...) address
      */
     public static function forAddressWithDelegates(
         SorobanAddressCredentialsWithDelegates $addressWithDelegates,
     ): SorobanCredentials {
+        SorobanAuthAddressGuard::requireCredentialAddress($addressWithDelegates->addressCredentials->address);
+        SorobanAuthAddressGuard::requireDelegateAddresses($addressWithDelegates->delegates);
         return new SorobanCredentials(
             XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
             null,

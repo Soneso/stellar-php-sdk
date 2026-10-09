@@ -23,6 +23,7 @@ namespace Soneso\StellarSDK\Crypto;
  * - C: Contract ID (Soroban smart contract)
  * - L: Liquidity pool ID
  * - B: Claimable balance ID
+ * - W: Muxed contract ID (contract paired with a 64-bit id, CAP-0084)
  *
  * @package Soneso\StellarSDK\Crypto
  * @see StrKey For encoding and decoding operations
@@ -39,4 +40,5 @@ class VersionByte
     const CONTRACT_ID = 2 << 3; // C
     const LIQUIDITY_POOL_ID = 11 << 3; // L
     const CLAIMABLE_BALANCE_ID = 1 << 3; // B
+    const MUXED_CONTRACT_ID = 22 << 3; // W
 }

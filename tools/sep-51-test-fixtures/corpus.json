@@ -10,7 +10,7 @@
       "xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694"
     }
   },
-  "generated_at": "2026-10-06T15:45:54.661005+00:00",
+  "generated_at": "2026-10-08T18:51:24.054683+00:00",
   "entries": [
     {
       "id": "scval_bool_true",
@@ -411,6 +411,24 @@
       "spec_reference_json": "{\"address\":\"BAAMHQ6DYPB4HQ6DYPB4HQ6DYPB4HQ6DYPB4HQ6DYPB4HQ6DYPB4HQYMIY\"}",
       "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > Address Types > B-strkey",
       "notes": null
+    },
+    {
+      "id": "scval_address_muxed_contract",
+      "type": "SCVal",
+      "base64": "AAAAEgAAAAUAAAAAAAHiQDY+qjhnhB+60PTtiMd55P5m5WokcNyYwOycBz0Fx7ED",
+      "spec_reference_json": "{\"address\":\"WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG\"}",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > Address Types; SEP-0023 W-strkey",
+      "notes": "muxed_contract arm: W-strkey of the contract id followed by the big-endian id",
+      "oracle_incomparable": "StellarValueType members STELLAR_VALUE_SIGNED_MS and STELLAR_VALUE_EMPTY_TX_SET_MS, SCAddressType member SC_ADDRESS_TYPE_MUXED_CONTRACT and the MuxedContract struct are newer than the XDR revision the pinned rs-stellar-xdr build vendors, which rejects these bytes as an invalid XDR value or names no such type. XdrLedgerTest pins the spec-derived JSON of both StellarValue arms, XdrSCAddressTest the W-strkey JSON of the muxed contract."
+    },
+    {
+      "id": "muxed_contract",
+      "type": "MuxedContract",
+      "base64": "AAAAAAAB4kA2Pqo4Z4QfutD07YjHeeT+ZuVqJHDcmMDsnAc9BcexAw==",
+      "spec_reference_json": "\"WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG\"",
+      "spec_anchor": "SEP-0051 \u00a7Stellar-Specific Types > Address Types; SEP-0023 W-strkey",
+      "notes": "standalone MuxedContract renders as the same W-strkey",
+      "oracle_incomparable": "StellarValueType members STELLAR_VALUE_SIGNED_MS and STELLAR_VALUE_EMPTY_TX_SET_MS, SCAddressType member SC_ADDRESS_TYPE_MUXED_CONTRACT and the MuxedContract struct are newer than the XDR revision the pinned rs-stellar-xdr build vendors, which rejects these bytes as an invalid XDR value or names no such type. XdrLedgerTest pins the spec-derived JSON of both StellarValue arms, XdrSCAddressTest the W-strkey JSON of the muxed contract."
     },
     {
       "id": "scval_error_contract",
@@ -1920,7 +1938,7 @@
       "spec_reference_json": "{\"tx_set_hash\":\"8888888888888888888888888888888888888888888888888888888888888888\",\"close_time\":\"1700000000\",\"upgrades\":[],\"ext\":{\"signed_ms\":{\"close_time_ms\":\"1700000000123\",\"lc_value_signature\":{\"node_id\":\"GAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQDZ7H\",\"signature\":\"0a141e28\"}}}}",
       "spec_anchor": "SEP-0051 \u00a7Discriminated Union; \u00a7Struct; \u00a7Unsigned Hyper Integer (64-bit)",
       "notes": "signed_ms arm: close time in milliseconds plus the close-value signature",
-      "oracle_incomparable": "StellarValueType members STELLAR_VALUE_SIGNED_MS and STELLAR_VALUE_EMPTY_TX_SET_MS are newer than the XDR revision the pinned rs-stellar-xdr build vendors, which rejects these bytes as an invalid XDR value. XdrLedgerTest pins the spec-derived JSON of both arms."
+      "oracle_incomparable": "StellarValueType members STELLAR_VALUE_SIGNED_MS and STELLAR_VALUE_EMPTY_TX_SET_MS, SCAddressType member SC_ADDRESS_TYPE_MUXED_CONTRACT and the MuxedContract struct are newer than the XDR revision the pinned rs-stellar-xdr build vendors, which rejects these bytes as an invalid XDR value or names no such type. XdrLedgerTest pins the spec-derived JSON of both StellarValue arms, XdrSCAddressTest the W-strkey JSON of the muxed contract."
     },
     {
       "id": "stellar_value_empty_tx_set_ms",
@@ -1929,7 +1947,7 @@
       "spec_reference_json": "{\"tx_set_hash\":\"8888888888888888888888888888888888888888888888888888888888888888\",\"close_time\":\"1700000000\",\"upgrades\":[],\"ext\":{\"empty_tx_set_ms\":{\"close_time_ms\":\"1700000000456\",\"tx_set_hash\":\"3333333333333333333333333333333333333333333333333333333333333333\",\"previous_ledger_hash\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"previous_ledger_version\":29,\"lc_value_signature\":{\"node_id\":\"GAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQDZ7H\",\"signature\":\"0a141e28\"}}}}",
       "spec_anchor": "SEP-0051 \u00a7Discriminated Union; \u00a7Struct; \u00a7Unsigned Hyper Integer (64-bit)",
       "notes": "empty_tx_set_ms arm: close time in milliseconds, both hashes, previous ledger version, signature",
-      "oracle_incomparable": "StellarValueType members STELLAR_VALUE_SIGNED_MS and STELLAR_VALUE_EMPTY_TX_SET_MS are newer than the XDR revision the pinned rs-stellar-xdr build vendors, which rejects these bytes as an invalid XDR value. XdrLedgerTest pins the spec-derived JSON of both arms."
+      "oracle_incomparable": "StellarValueType members STELLAR_VALUE_SIGNED_MS and STELLAR_VALUE_EMPTY_TX_SET_MS, SCAddressType member SC_ADDRESS_TYPE_MUXED_CONTRACT and the MuxedContract struct are newer than the XDR revision the pinned rs-stellar-xdr build vendors, which rejects these bytes as an invalid XDR value or names no such type. XdrLedgerTest pins the spec-derived JSON of both StellarValue arms, XdrSCAddressTest the W-strkey JSON of the muxed contract."
     },
     {
       "id": "transaction_result_meta_success",

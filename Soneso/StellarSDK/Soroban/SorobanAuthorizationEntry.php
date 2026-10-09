@@ -231,8 +231,10 @@ class SorobanAuthorizationEntry
      * Routing: when $forAddress is null, the signature is written to the top-level
      * credentials. When non-null (strkey, G- or C-prefixed), the signature is written
      * to EVERY node (top-level and delegate, depth-first) whose address matches.
-     * If no node matches, InvalidArgumentException is thrown. Muxed M-addresses are
-     * rejected as they are not valid Soroban auth addresses.
+     * If no node matches, InvalidArgumentException is thrown. Muxed account (M...) and
+     * muxed contract (W...) addresses are not valid Soroban auth addresses: such a
+     * $forAddress is rejected, and so is an entry whose credential address is one of them,
+     * before any signing work.
      *
      * Append semantics: the new signature element is appended to the existing signature
      * vector. A void top-level signature is valid and is not rejected. Calling sign()
@@ -244,7 +246,8 @@ class SorobanAuthorizationEntry
      * @param string|null $forAddress strkey (G- or C-prefixed) routing to a specific address node;
      *                               null signs the top-level credentials
      * @throws RuntimeException if no address credentials are found or the credential arm is unsupported
-     * @throws InvalidArgumentException if expiration conflicts, $forAddress matches no node, or is a muxed M-address
+     * @throws InvalidArgumentException if expiration conflicts, $forAddress matches no node, or
+     * $forAddress or the credential address is a muxed account or muxed contract address
      */
     public function sign(
         KeyPair $signer,
@@ -258,11 +261,12 @@ class SorobanAuthorizationEntry
             throw new RuntimeException('no soroban address credentials found');
         }
 
-        // Reject muxed address routing targets; they are not valid Soroban auth addresses.
-        if ($forAddress !== null && str_starts_with($forAddress, 'M')) {
-            throw new InvalidArgumentException(
-                'forAddress must be a G- or C-prefixed strkey; muxed (M-prefixed) addresses are not valid Soroban auth addresses'
-            );
+        $credentialAddressCreds = $this->credentials->getAddressCredentials();
+        if ($credentialAddressCreds !== null) {
+            SorobanAuthAddressGuard::requireCredentialAddress($credentialAddressCreds->address);
+        }
+        if ($forAddress !== null) {
+            SorobanAuthAddressGuard::requireStrKey($forAddress, 'auth addresses');
         }
 
         // Apply expiration before building the preimage.
@@ -498,7 +502,9 @@ class SorobanAuthorizationEntry
      * @param int $signatureExpirationLedger the expiration ledger for the resulting entry
      * @param array<SorobanDelegateDescriptor> $delegates delegate descriptors for top-level delegates
      * @return SorobanAuthorizationEntry the new ADDRESS_WITH_DELEGATES entry
-     * @throws InvalidArgumentException if source is already WITH_DELEGATES, or contains duplicate addresses
+     * @throws InvalidArgumentException if source is already WITH_DELEGATES, contains duplicate addresses,
+     * or the source credential address or a delegate address is a muxed account (M...) or muxed
+     * contract (W...) address
      */
     public static function withDelegates(
         SorobanAuthorizationEntry  $source,
@@ -577,10 +583,11 @@ class SorobanAuthorizationEntry
      *
      * @param string $strkey the strkey to parse
      * @return \Soneso\StellarSDK\Xdr\XdrSCAddress the XDR address
-     * @throws InvalidArgumentException for invalid or muxed strkeys
+     * @throws InvalidArgumentException for invalid, muxed account (M...) or muxed contract (W...) strkeys
      */
     private static function parseAddressStrkey(string $strkey): \Soneso\StellarSDK\Xdr\XdrSCAddress
     {
+        SorobanAuthAddressGuard::requireStrKey($strkey, 'delegate addresses');
         if (StrKey::isValidAccountId($strkey)) {
             return \Soneso\StellarSDK\Xdr\XdrSCAddress::forAccountId($strkey);
         }

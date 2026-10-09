@@ -25,6 +25,7 @@ use Soneso\StellarSDK\Util\Hash;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
+use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentials;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 
@@ -64,6 +65,12 @@ class P27AuthorizationTest extends TestCase
     private const GOLDEN_V2_PREIMAGE_B64      =
         'AAAACs7gMC1ZhE0yvcqRXIID3USzP7t+3BkFHqN6vt8o7NRyAABwSIYPOjgAABCSAAAAAAAAAACye6+nvC/QBGzXlnxEUM9ckp1uevN+fsQL9108vQVKrQAAAAAAAAABNj6qOGeEH7rQ9O2Ix3nk/mblaiRw3JjA7JwHPQXHsQMAAAAFaGVsbG8AAAAAAAABAAAABQAAAAAAAATSAAAAAA==';
     private const GOLDEN_V2_PAYLOAD_HEX       = '252a0d6117840dff37b765839810fb6ecc446198e73062e01bc961e49355b7b9';
+
+    // SEP-23 muxed account and muxed contract vectors, both with id 2^63.
+    private const MUXED_ACCOUNT_ID  = 'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK';
+    private const MUXED_CONTRACT_ID = 'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY';
+    private const MUXED_REJECTION   = 'Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban ';
+    private const USE_UNDERLYING    = '; use the underlying G... or C... address instead';
 
     // ---------------------------------------------------------------------------
     // Helpers
@@ -501,9 +508,28 @@ class P27AuthorizationTest extends TestCase
             Address::fromAccountId(self::GOLDEN_ACCOUNT), self::GOLDEN_NONCE, self::GOLDEN_EXPIRY, XdrSCVal::forVoid(),
         );
         return new SorobanAuthorizationEntry(
-            SorobanCredentials::forAddressWithDelegates(new SorobanAddressCredentialsWithDelegates($top, [$node])),
+            new SorobanCredentials(
+                XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+                null,
+                new SorobanAddressCredentialsWithDelegates($top, [$node]),
+            ),
             $this->makeGoldenInvocation(),
         );
+    }
+
+    public function testForAddressWithDelegatesBoundsTheDelegateTreeDepth(): void
+    {
+        $limit = (new \ReflectionClass(SorobanAuthorizationEntry::class))->getConstant('DELEGATE_DEPTH_LIMIT');
+        $atLimit = $this->makeExpirationDelegateChain($limit)->credentials->addressWithDelegates;
+        $this->assertSame(
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+            SorobanCredentials::forAddressWithDelegates($atLimit)->credentialType
+        );
+
+        $beyondLimit = $this->makeExpirationDelegateChain($limit + 1)->credentials->addressWithDelegates;
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Delegate tree traversal depth limit (' . $limit . ') exceeded');
+        SorobanCredentials::forAddressWithDelegates($beyondLimit);
     }
 
     /**
@@ -715,23 +741,148 @@ class P27AuthorizationTest extends TestCase
         $entry->sign($signer, Network::testnet(), null, $other->getAccountId());
     }
 
-    /**
-     * Muxed M-addresses are rejected as forAddress targets.
-     */
-    public function testForAddressMuxedRejected(): void
+    /** @return array<string, array{0: string}> */
+    public static function muxedStrKeyProvider(): array
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches('/muxed.*not valid|M-prefixed/i');
+        return [
+            'muxed account' => [self::MUXED_ACCOUNT_ID],
+            'muxed contract' => [self::MUXED_CONTRACT_ID],
+        ];
+    }
 
-        $signer  = KeyPair::random();
-        $address = Address::fromAccountId($signer->getAccountId());
-        $creds   = SorobanCredentials::forAddressCredentialsV2(
-            new SorobanAddressCredentials($address, 1, 100, XdrSCVal::forVoid())
+    /**
+     * Asserts that $action throws InvalidArgumentException with exactly the muxed
+     * address rejection ending in $messageTail.
+     */
+    private function assertMuxedRejection(callable $action, string $messageTail, string $case = ''): void
+    {
+        try {
+            $action();
+            $this->fail('accepted a muxed address ' . $case);
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame(self::MUXED_REJECTION . $messageTail, $e->getMessage(), $case);
+        }
+    }
+
+    /**
+     * Muxed account (M...) and muxed contract (W...) addresses are rejected as forAddress targets.
+     * @dataProvider muxedStrKeyProvider
+     */
+    public function testForAddressMuxedRejected(string $muxedStrKey): void
+    {
+        $entry = $this->makeGoldenV2Entry();
+        $this->assertMuxedRejection(
+            fn () => $entry->sign(KeyPair::fromSeed(self::GOLDEN_SEED), Network::testnet(), null, $muxedStrKey),
+            'auth addresses: ' . $muxedStrKey
+        );
+    }
+
+    /** @return array<string, array{0: Address, 1: string}> */
+    public static function muxedCredentialAddressProvider(): array
+    {
+        return [
+            'muxed account' => [Address::fromMuxedAccountId(self::MUXED_ACCOUNT_ID), self::MUXED_ACCOUNT_ID],
+            'muxed account id in an account-typed Address' => [
+                Address::fromAccountId(self::MUXED_ACCOUNT_ID), self::MUXED_ACCOUNT_ID,
+            ],
+            'muxed contract' => [Address::fromMuxedContractId(self::MUXED_CONTRACT_ID), self::MUXED_CONTRACT_ID],
+        ];
+    }
+
+    /**
+     * Signing without forAddress refuses an entry whose credential address encodes to a
+     * muxed arm, before the expiration is written or anything is signed.
+     * @dataProvider muxedCredentialAddressProvider
+     */
+    public function testSignRejectsAMuxedCredentialAddress(Address $address, string $strKey): void
+    {
+        $creds = new SorobanCredentials(
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
+            new SorobanAddressCredentials($address, 1, 100, XdrSCVal::forVoid()),
         );
         $entry = new SorobanAuthorizationEntry($creds, $this->makeGoldenInvocation());
 
-        // Fake an M-address (muxed).
-        $entry->sign($signer, Network::testnet(), null, 'MAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSAAAAAAAAAPCIBVZA');
+        $this->assertMuxedRejection(
+            fn () => $entry->sign(KeyPair::fromSeed(self::GOLDEN_SEED), Network::testnet(), 200),
+            'auth credential addresses: ' . $strKey . self::USE_UNDERLYING
+        );
+        $this->assertSame(100, $entry->credentials->addressCredentials->signatureExpirationLedger);
+        $this->assertSame(XdrSCValType::SCV_VOID, $entry->credentials->addressCredentials->signature->type->value);
+    }
+
+    /**
+     * Every builder of address credentials refuses a muxed credential address. Decoding
+     * keeps one, so that every envelope the network carries stays readable.
+     * @dataProvider muxedStrKeyProvider
+     */
+    public function testCredentialBuildersRejectAMuxedAddress(string $muxedStrKey): void
+    {
+        $address = Address::fromStrKey($muxedStrKey);
+        $addressCreds = new SorobanAddressCredentials($address, 1, 100, XdrSCVal::forVoid());
+        $entry = new SorobanAuthorizationEntry(
+            new SorobanCredentials(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2, $addressCreds),
+            $this->makeGoldenInvocation(),
+        );
+        $builders = [
+            'forAddress' => fn () => SorobanCredentials::forAddress($address, 1, 100, XdrSCVal::forVoid()),
+            'forAddressLegacy' => fn () => SorobanCredentials::forAddressLegacy($address, 1, 100, XdrSCVal::forVoid()),
+            'forAddressCredentials' => fn () => SorobanCredentials::forAddressCredentials($addressCreds),
+            'forAddressCredentialsLegacy' => fn () => SorobanCredentials::forAddressCredentialsLegacy($addressCreds),
+            'forAddressCredentialsV2' => fn () => SorobanCredentials::forAddressCredentialsV2($addressCreds),
+            'forAddressWithDelegates' => fn () => SorobanCredentials::forAddressWithDelegates(
+                new SorobanAddressCredentialsWithDelegates($addressCreds)
+            ),
+            'withDelegates' => fn () => SorobanAuthorizationEntry::withDelegates($entry, self::GOLDEN_EXPIRY),
+        ];
+        foreach ($builders as $name => $builder) {
+            $this->assertMuxedRejection(
+                $builder,
+                'auth credential addresses: ' . $muxedStrKey . self::USE_UNDERLYING,
+                $name
+            );
+        }
+
+        $decoded = SorobanAuthorizationEntry::fromBase64Xdr($entry->toBase64Xdr());
+        $this->assertSame($muxedStrKey, $decoded->credentials->addressCredentials->address->toStrKey());
+    }
+
+    /**
+     * The WITH_DELEGATES factory refuses a muxed delegate node at depth two. Decoding the
+     * same credentials keeps the node.
+     * @dataProvider muxedStrKeyProvider
+     */
+    public function testForAddressWithDelegatesRejectsANestedMuxedDelegate(string $muxedStrKey): void
+    {
+        $nested = new SorobanDelegateSignature(Address::fromStrKey($muxedStrKey)->toXdr());
+        $withDelegates = new SorobanAddressCredentialsWithDelegates(
+            new SorobanAddressCredentials(Address::fromAccountId(self::GOLDEN_ACCOUNT), 1, 100, XdrSCVal::forVoid()),
+            [new SorobanDelegateSignature(XdrSCAddress::forContractId(self::GOLDEN_CONTRACT), XdrSCVal::forVoid(), [$nested])],
+        );
+
+        $this->assertMuxedRejection(
+            fn () => SorobanCredentials::forAddressWithDelegates($withDelegates),
+            'delegate addresses: ' . $muxedStrKey
+        );
+        $decoded = SorobanCredentials::fromXdr(XdrSorobanCredentials::forAddressWithDelegates($withDelegates->toXdr()));
+        $this->assertSame(
+            $muxedStrKey,
+            $decoded->addressWithDelegates->delegates[0]->nestedDelegates[0]->address->toStrKey()
+        );
+    }
+
+    /**
+     * A muxed delegate address is refused at any depth of the delegate tree.
+     * @dataProvider muxedStrKeyProvider
+     */
+    public function testWithDelegatesRejectsAMuxedDelegate(string $muxedStrKey): void
+    {
+        $delegates = [
+            new SorobanDelegateDescriptor(self::GOLDEN_CONTRACT, null, [new SorobanDelegateDescriptor($muxedStrKey)]),
+        ];
+        $this->assertMuxedRejection(
+            fn () => SorobanAuthorizationEntry::withDelegates($this->makeGoldenLegacyEntry(), self::GOLDEN_EXPIRY, $delegates),
+            'delegate addresses: ' . $muxedStrKey
+        );
     }
 
     // ---------------------------------------------------------------------------

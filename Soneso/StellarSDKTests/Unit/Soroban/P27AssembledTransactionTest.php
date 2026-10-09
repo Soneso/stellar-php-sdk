@@ -687,6 +687,45 @@ class P27AssembledTransactionTest extends TestCase
         $this->assertSame($before, $tx->tx->toXdrBase64());
     }
 
+    /**
+     * An entry whose credential address is a muxed contract is refused before its
+     * expiration is written or the signing callback runs, even when the signer matches a
+     * delegate node.
+     */
+    public function testSignAuthEntriesRejectsAMuxedCredentialAddressBeforeTheCallback(): void
+    {
+        $muxedContractId = 'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY';
+        $delegate = KeyPair::random();
+        $credentials = new SorobanAddressCredentials(Address::fromMuxedContractId($muxedContractId), 1, 100, XdrSCVal::forVoid());
+        $node = new SorobanDelegateSignature(XdrSCAddress::forAccountId($delegate->getAccountId()));
+        $entry = new SorobanAuthorizationEntry(
+            new SorobanCredentials(
+                XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+                null,
+                new SorobanAddressCredentialsWithDelegates($credentials, [$node]),
+            ),
+            $this->makeInvocation(),
+        );
+        $tx = $this->buildAssembledTransactionWithAuthEntries([$entry], $this->invokerKp);
+        $before = $tx->tx->toXdrBase64();
+        $calls = 0;
+        try {
+            $tx->signAuthEntries($delegate, function ($entry) use (&$calls) {
+                $calls++;
+                return $entry;
+            }, 200);
+            $this->fail('Expected the muxed credential address to be refused');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame(
+                'Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban auth credential'
+                    . ' addresses: ' . $muxedContractId . '; use the underlying G... or C... address instead',
+                $e->getMessage()
+            );
+        }
+        $this->assertSame(0, $calls);
+        $this->assertSame($before, $tx->tx->toXdrBase64());
+    }
+
     private function expirationEntry(KeyPair $top, KeyPair $delegate): SorobanAuthorizationEntry
     {
         $credentials = new SorobanAddressCredentials(Address::fromAccountId($top->getAccountId()), 1, 900, XdrSCVal::forVoid());

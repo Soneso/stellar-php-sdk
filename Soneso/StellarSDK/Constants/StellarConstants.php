@@ -56,6 +56,17 @@ final class StellarConstants
      */
     public const MUXED_ACCOUNT_DECODED_LENGTH = 40; // 32 + 8 bytes
 
+    /**
+     * Length of decoded muxed contract data in bytes.
+     *
+     * Consists of the contract ID (32 bytes) + muxed ID (8 bytes) = 40 bytes total.
+     * This is the size of the decoded payload for a muxed contract address.
+     *
+     * Reference: CAP-0084 (Muxed Contract Addresses)
+     * @see https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md
+     */
+    public const MUXED_CONTRACT_DECODED_LENGTH = 40; // 32 + 8 bytes
+
     // ============================================================================
     // ASSET CODE LENGTHS
     // ============================================================================

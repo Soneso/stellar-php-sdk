@@ -22,6 +22,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\SorobanServer;
+use Soneso\StellarSDK\Soroban\SorobanAuthAddressGuard;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Util\Hash;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
@@ -600,7 +601,9 @@ class WebAuthForContracts
      * @param string|null $clientDomainAccountId Client domain account ID (required if callback is provided)
      * @return array<SorobanAuthorizationEntry> Signed entries
      * @throws RuntimeException if no address credentials are found in entry
-     * @throws InvalidArgumentException if callback validation fails or client domain entry not found
+     * @throws InvalidArgumentException if callback validation fails, client domain entry not found, or the
+     * client domain entry has a muxed account (M...) or muxed contract (W...) credential address, refused
+     * before its expiration is written or the callback runs
      * @throws Exception if credentials address could not be converted to StrKey representation
      */
     public function signAuthorizationEntries(
@@ -659,9 +662,10 @@ class WebAuthForContracts
             // branches do through sign() — so the remote signer signs over the
             // intended expiration ledger rather than the challenge default.
             $clientDomainEntry = $signedEntries[$clientDomainEntryIndex];
-            if ($signatureExpirationLedger !== null) {
-                $cdCreds = $clientDomainEntry->credentials->getAddressCredentials();
-                if ($cdCreds !== null) {
+            $cdCreds = $clientDomainEntry->credentials->getAddressCredentials();
+            if ($cdCreds !== null) {
+                SorobanAuthAddressGuard::requireCredentialAddress($cdCreds->address);
+                if ($signatureExpirationLedger !== null) {
                     $cdCreds->signatureExpirationLedger = $signatureExpirationLedger;
                     $clientDomainEntry->credentials->writeBackAddressCredentials($cdCreds);
                 }

@@ -96,6 +96,7 @@ TXREP_XDR_NAMES = Set[
   'Memo',
   'MemoType',
   'MuxedAccount',
+  'MuxedContract',
   'MuxedEd25519Account',
   'Operation',
   'OperationBody',
@@ -167,7 +168,7 @@ TXREP_XDR_NAMES = Set[
 
 # ---------------------------------------------------------------------------
 # TXREP_TYPES
-# PHP SDK class names of types that need TxRep serialization (143 types).
+# PHP SDK class names of types that need TxRep serialization (146 types).
 # These are the resolved names after NAME_OVERRIDES are applied.
 # ---------------------------------------------------------------------------
 TXREP_TYPES = Set[
@@ -250,6 +251,7 @@ TXREP_TYPES = Set[
   'XdrMemoType',
   'XdrMuxedAccount',
   'XdrMuxedAccountMed25519',
+  'XdrMuxedContract',
   'XdrOperation',
   'XdrOperationBody',
   'XdrOperationType',

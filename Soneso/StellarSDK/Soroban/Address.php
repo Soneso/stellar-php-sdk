@@ -10,6 +10,7 @@ use Exception;
 use InvalidArgumentException;
 use RuntimeException;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\MuxedContract;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
 use Soneso\StellarSDK\Xdr\XdrContractIDPreimage;
@@ -32,6 +33,7 @@ use Soneso\StellarSDK\Xdr\XdrSCValType;
  * - Muxed Account: Multiplexed accounts (M-prefixed addresses)
  * - Claimable Balance: Claimable balance IDs
  * - Liquidity Pool: AMM liquidity pool IDs
+ * - Muxed Contract: Contracts paired with a 64-bit multiplexing id (W-prefixed addresses, CAP-0084)
  *
  * Addresses are used in authorization entries and as contract function arguments.
  *
@@ -46,10 +48,12 @@ class Address
     public const TYPE_MUXED_ACCOUNT = 2;
     public const TYPE_CLAIMABLE_BALANCE = 3;
     public const TYPE_LIQUIDITY_POOL = 4;
+    public const TYPE_MUXED_CONTRACT = 5;
 
     /**
      * @var int $type type of address. Can be TYPE_ACCOUNT (0), TYPE_CONTRACT (1),
-     * TYPE_MUXED_ACCOUNT (2), TYPE_CLAIMABLE_BALANCE (3), TYPE_LIQUIDITY_POOL (4).
+     * TYPE_MUXED_ACCOUNT (2), TYPE_CLAIMABLE_BALANCE (3), TYPE_LIQUIDITY_POOL (4),
+     * TYPE_MUXED_CONTRACT (5).
      *
      */
     public int $type;
@@ -81,13 +85,20 @@ class Address
     public ?string $liquidityPoolId = null;
 
     /**
+     * @var string|null $muxedContractId ("W...") - only present if type is TYPE_MUXED_CONTRACT (5).
+     */
+    public ?string $muxedContractId = null;
+
+    /**
      * @param int $type type of address. can be one of TYPE_ACCOUNT (0), TYPE_CONTRACT (1),
-     * TYPE_MUXED_ACCOUNT (2), TYPE_CLAIMABLE_BALANCE (3), TYPE_LIQUIDITY_POOL (4).
+     * TYPE_MUXED_ACCOUNT (2), TYPE_CLAIMABLE_BALANCE (3), TYPE_LIQUIDITY_POOL (4),
+     * TYPE_MUXED_CONTRACT (5).
      * @param string|null $accountId required if type is TYPE_ACCOUNT (0), otherwise null
      * @param string|null $contractId hex representation. Required if type is TYPE_CONTRACT (1).
      * @param string|null $muxedAccountId required if type is TYPE_MUXED_ACCOUNT (2), otherwise null
      * @param string|null $claimableBalanceId required if type is TYPE_CLAIMABLE_BALANCE (3), otherwise null
      * @param string|null $liquidityPoolId required if type is TYPE_LIQUIDITY_POOL (4), otherwise null
+     * @param string|null $muxedContractId ("W...") required if type is TYPE_MUXED_CONTRACT (5), otherwise null
      *
      * If you have a StrKey representation of the contract id ("C..."),
      * you can decode it to hex with StrKey::decodeContractIdHex($contractId)
@@ -98,6 +109,7 @@ class Address
                                 ?string $muxedAccountId = null,
                                 ?string $claimableBalanceId = null,
                                 ?string $liquidityPoolId = null,
+                                ?string $muxedContractId = null,
     )
     {
         $this->type = $type;
@@ -106,6 +118,7 @@ class Address
         $this->muxedAccountId = $muxedAccountId;
         $this->claimableBalanceId = $claimableBalanceId;
         $this->liquidityPoolId = $liquidityPoolId;
+        $this->muxedContractId = $muxedContractId;
     }
 
     /**
@@ -179,6 +192,59 @@ class Address
     }
 
     /**
+     * Creates a new instance of Address from the given muxed contract id ("W...", CAP-0084).
+     * @param string $muxedContractId the muxed contract id to create the Address object from ("W...")
+     * @return Address the created Address object.
+     * @throws InvalidArgumentException if the id is not a valid "W..." strkey
+     */
+    public static function fromMuxedContractId(string $muxedContractId) : Address {
+        StrKey::decodeMuxedContractId($muxedContractId);
+        return new Address(Address::TYPE_MUXED_CONTRACT, muxedContractId: $muxedContractId);
+    }
+
+    /**
+     * Creates a new instance of Address that pairs the given contract with a 64-bit
+     * multiplexing id, rendered as a muxed contract id ("W...", CAP-0084).
+     * @param string $contractId the contract as a "C..." strkey or as its 32-byte hash in hexadecimal
+     * @param int $id the multiplexing id; ids above PHP_INT_MAX as negative ints (two's complement)
+     * @return Address the created Address object of type TYPE_MUXED_CONTRACT.
+     * @throws InvalidArgumentException if the contract id is in neither accepted spelling
+     */
+    public static function fromMuxedContract(string $contractId, int $id) : Address {
+        return (new MuxedContract($contractId, $id))->toAddress();
+    }
+
+    /**
+     * Creates a new instance of Address from a strkey of any address kind: account ("G..."),
+     * muxed account ("M..."), contract ("C..."), muxed contract ("W..."), claimable balance
+     * ("B...") or liquidity pool ("L..."). The strkey codec decides the kind.
+     * @param string $strKey the strkey to create the Address object from
+     * @return Address the created Address object.
+     * @throws InvalidArgumentException if $strKey is not a valid strkey of an address kind
+     */
+    public static function fromStrKey(string $strKey) : Address {
+        if (StrKey::isValidAccountId($strKey)) {
+            return Address::fromAccountId($strKey);
+        }
+        if (StrKey::isValidMuxedAccountId($strKey)) {
+            return Address::fromMuxedAccountId($strKey);
+        }
+        if (StrKey::isValidContractId($strKey)) {
+            return Address::fromContractId($strKey);
+        }
+        if (StrKey::isValidMuxedContractId($strKey)) {
+            return Address::fromMuxedContractId($strKey);
+        }
+        if (StrKey::isValidClaimableBalanceId($strKey)) {
+            return Address::fromClaimableBalanceId($strKey);
+        }
+        if (StrKey::isValidLiquidityPoolId($strKey)) {
+            return Address::fromLiquidityPoolId($strKey);
+        }
+        throw new InvalidArgumentException('Not a valid address strkey: ' . $strKey);
+    }
+
+    /**
      * Creates an Address object from the given XdrSCAddress object.
      *
      * Contract and liquidity pool ids are reported in their canonical hex form, a
@@ -203,7 +269,9 @@ class Address
             return new Address(Address::TYPE_CLAIMABLE_BALANCE, claimableBalanceId: $xdrAddress->getClaimableBalanceId()?->getPaddedBalanceIdHex());
         } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL) {
             return new Address(Address::TYPE_LIQUIDITY_POOL, liquidityPoolId: $xdrAddress->getCanonicalLiquidityPoolIdHex());
-        }else {
+        } else if ($xdrAddress->type->value === XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT) {
+            return new Address(Address::TYPE_MUXED_CONTRACT, muxedContractId: $xdrAddress->toStrKey());
+        } else {
             throw new RuntimeException("unknown XdrSCAddress type " . $xdrAddress->type->value);
         }
     }
@@ -224,14 +292,14 @@ class Address
 
     /**
      * Tries to convert a given id to an Address. The given id can be a contract id,
-     * an account id, a muxed account id, a claimable balance id, or a liquidity pool id.
-     * If not, returns null.
+     * an account id, a muxed account id, a muxed contract id, a claimable balance id, or a
+     * liquidity pool id. If not, returns null.
      *
      * A bare 32-byte hash in hexadecimal is not self-describing, so 64 hex characters
      * resolve as a contract id. For a claimable balance, pass the "B..." strkey or the
      * hexadecimal that carries its type discriminant (66 or 72 characters).
      *
-     * @param string $id a contract id, an account id, a muxed account id, a claimable balance id, or a liquidity pool id.
+     * @param string $id a contract id, an account id, a muxed account id, a muxed contract id, a claimable balance id, or a liquidity pool id.
      * @return Address|null The address if could be converted.
      */
     public static function fromAnyId(string $id) : ?Address {
@@ -239,23 +307,9 @@ class Address
         // "B..." or "C..." strkey can be spelled entirely in hexadecimal digits, and
         // no strkey length matches an accepted hexadecimal width, so nothing a
         // strkey reading claims could have meant a hexadecimal id.
-        if (StrKey::isValidAccountId($id)) {
-            return Address::fromAccountId($id);
-        }
-        if (StrKey::isValidMuxedAccountId($id)) {
-            return Address::fromMuxedAccountId($id);
-        }
-        if (StrKey::isValidContractId($id)) {
-            return Address::fromContractId(StrKey::decodeContractIdHex($id));
-        }
-        if (StrKey::isValidClaimableBalanceId($id)) {
-            return Address::fromClaimableBalanceId(
-                XdrClaimableBalanceID::forClaimableBalanceId($id)->getPaddedBalanceIdHex()
-            );
-        }
-        if (StrKey::isValidLiquidityPoolId($id)) {
-            return Address::fromLiquidityPoolId(StrKey::decodeLiquidityPoolIdHex($id));
-        }
+        try {
+            return Address::fromStrKey($id);
+        } catch (InvalidArgumentException $e) {}
         if (ctype_xdigit($id)) { // is hex string
             try {
                 $strKeyContractId = StrKey::encodeContractIdHex($id);
@@ -328,6 +382,12 @@ class Address
             } else {
                 throw new RuntimeException("liquidityPoolId is null");
             }
+        } else if ($this->type == Address::TYPE_MUXED_CONTRACT) {
+            if ($this->muxedContractId !== null) {
+                return XdrSCAddress::forMuxedContractId($this->muxedContractId);
+            } else {
+                throw new RuntimeException("muxedContractId is null");
+            }
         } else {
             throw new RuntimeException("unknown address type " . $this->type);
         }
@@ -344,7 +404,7 @@ class Address
 
     /**
      * Returns the type of address.
-     * @return int the address type (TYPE_ACCOUNT, TYPE_CONTRACT, TYPE_MUXED_ACCOUNT, TYPE_CLAIMABLE_BALANCE, or TYPE_LIQUIDITY_POOL)
+     * @return int the address type (TYPE_ACCOUNT, TYPE_CONTRACT, TYPE_MUXED_ACCOUNT, TYPE_CLAIMABLE_BALANCE, TYPE_LIQUIDITY_POOL, or TYPE_MUXED_CONTRACT)
      */
     public function getType(): int
     {
@@ -353,7 +413,7 @@ class Address
 
     /**
      * Sets the type of address.
-     * @param int $type the address type (TYPE_ACCOUNT, TYPE_CONTRACT, TYPE_MUXED_ACCOUNT, TYPE_CLAIMABLE_BALANCE, or TYPE_LIQUIDITY_POOL)
+     * @param int $type the address type (TYPE_ACCOUNT, TYPE_CONTRACT, TYPE_MUXED_ACCOUNT, TYPE_CLAIMABLE_BALANCE, TYPE_LIQUIDITY_POOL, or TYPE_MUXED_CONTRACT)
      */
     public function setType(int $type): void
     {
@@ -448,6 +508,24 @@ class Address
     public function setLiquidityPoolId(?string $liquidityPoolId): void
     {
         $this->liquidityPoolId = $liquidityPoolId;
+    }
+
+    /**
+     * Returns the muxed contract id if this is a muxed contract address.
+     * @return string|null the muxed contract id (W-prefixed), only present if type is TYPE_MUXED_CONTRACT
+     */
+    public function getMuxedContractId(): ?string
+    {
+        return $this->muxedContractId;
+    }
+
+    /**
+     * Sets the muxed contract id.
+     * @param string|null $muxedContractId the muxed contract id (W-prefixed), only required if type is TYPE_MUXED_CONTRACT
+     */
+    public function setMuxedContractId(?string $muxedContractId): void
+    {
+        $this->muxedContractId = $muxedContractId;
     }
 
     /**

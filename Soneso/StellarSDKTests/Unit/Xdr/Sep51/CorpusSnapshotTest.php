@@ -46,6 +46,7 @@ use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyClaimableBalance;
 use Soneso\StellarSDK\Xdr\XdrMemo;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
+use Soneso\StellarSDK\Xdr\XdrMuxedContract;
 use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationResult;
 use Soneso\StellarSDK\Xdr\XdrPeerAddress;
@@ -163,6 +164,7 @@ class CorpusSnapshotTest extends TestCase
             'LedgerKeyClaimableBalance' => XdrLedgerKeyClaimableBalance::class,
             'Memo' => XdrMemo::class,
             'MuxedAccount' => XdrMuxedAccount::class,
+            'MuxedContract' => XdrMuxedContract::class,
             'Operation' => XdrOperation::class,
             'OperationResult' => XdrOperationResult::class,
             'PeerAddress' => XdrPeerAddress::class,

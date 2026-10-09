@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDKTests\Unit\SEP\WebAuthForContracts;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -533,6 +534,51 @@ class P27WebAuthForContractsTest extends TestCase
         $this->assertNotNull($innerCreds);
         $this->assertSame(888888, $innerCreds->signatureExpirationLedger,
             'the client-domain entry must carry the stamped expiration');
+    }
+
+    /**
+     * A client-domain entry whose credential address is a muxed contract is refused before
+     * its expiration is written or the client-domain signing callback runs.
+     */
+    public function testSignAuthorizationEntriesRejectsAMuxedClientDomainEntryBeforeTheCallback(): void
+    {
+        $muxedContractId = 'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY';
+        $entry = $this->buildAuthEntry(
+            KeyPair::random()->getAccountId(),
+            $this->webAuthContractId,
+            'web_auth_verify',
+            $this->buildArgsMap($this->clientContractId, $this->domain, 'auth.example.stellar.org',
+                $this->serverAccountId, 'nonce_cd_muxed'),
+            88002,
+            100,
+        );
+        $credentials = new SorobanAddressCredentials(Address::fromMuxedContractId($muxedContractId), 88002, 100, XdrSCVal::forVoid());
+        $entry->credentials = new SorobanCredentials(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS, $credentials);
+
+        $calls = 0;
+        try {
+            $this->makeWebAuth()->signAuthorizationEntries(
+                [$entry],
+                $this->clientContractId,
+                [],
+                200,
+                null,
+                function (SorobanAuthorizationEntry $entry) use (&$calls): SorobanAuthorizationEntry {
+                    $calls++;
+                    return $entry;
+                },
+                $muxedContractId,
+            );
+            $this->fail('Expected the muxed client-domain entry to be refused');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame(
+                'Muxed account (M...) and muxed contract (W...) addresses are not valid Soroban auth credential'
+                    . ' addresses: ' . $muxedContractId . '; use the underlying G... or C... address instead',
+                $e->getMessage()
+            );
+        }
+        $this->assertSame(0, $calls);
+        $this->assertSame(100, $credentials->signatureExpirationLedger);
     }
 
     /**

@@ -20,6 +20,11 @@ use Soneso\StellarSDK\Xdr\XdrSCValType;
 
 class AddressTest extends TestCase
 {
+    // SEP-23 muxed contract vector: id 123456 with the contract below.
+    private const MUXED_CONTRACT_ID = 'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+    private const MUXED_CONTRACT_CONTRACT_ID = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
+    private const MUXED_CONTRACT_HASH_HEX = '363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103';
+
     private string $testAccountId;
     private string $testContractIdHex;
     private string $testContractIdStrKey;
@@ -802,5 +807,82 @@ class AddressTest extends TestCase
             }
             $this->assertTrue($threw, "expected an exception for salt length $length");
         }
+    }
+
+    // Muxed contract (CAP-0084)
+
+    public function testFromMuxedContractIdUsesTheMuxedContractArm(): void
+    {
+        $address = Address::fromMuxedContractId(self::MUXED_CONTRACT_ID);
+
+        $this->assertSame(Address::TYPE_MUXED_CONTRACT, $address->getType());
+        $this->assertSame(self::MUXED_CONTRACT_ID, $address->getMuxedContractId());
+        $xdr = $address->toXdr();
+        $this->assertSame(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT, $xdr->type->value);
+        $this->assertSame(123456, $xdr->muxedContract->id);
+        $this->assertSame(self::MUXED_CONTRACT_HASH_HEX, bin2hex($xdr->muxedContract->contractId));
+        $this->assertSame(self::MUXED_CONTRACT_ID, $address->toStrKey());
+    }
+
+    public function testMuxedContractXdrAndScValRoundTrip(): void
+    {
+        $address = Address::fromMuxedContractId(self::MUXED_CONTRACT_ID);
+
+        $fromXdr = Address::fromXdr(XdrSCAddress::decode(new XdrBuffer($address->toXdr()->encode())));
+        $this->assertSame(Address::TYPE_MUXED_CONTRACT, $fromXdr->type);
+        $this->assertSame(self::MUXED_CONTRACT_ID, $fromXdr->muxedContractId);
+
+        $scVal = XdrSCVal::fromBase64Xdr($address->toXdrSCVal()->toBase64Xdr());
+        $this->assertSame(XdrSCValType::SCV_ADDRESS, $scVal->type->value);
+        $this->assertSame(self::MUXED_CONTRACT_ID, Address::fromXdrSCVal($scVal)->muxedContractId);
+    }
+
+    public function testFromMuxedContractPairsAContractWithAnId(): void
+    {
+        $fromStrKey = Address::fromMuxedContract(self::MUXED_CONTRACT_CONTRACT_ID, 123456);
+        $fromHex = Address::fromMuxedContract(self::MUXED_CONTRACT_HASH_HEX, 123456);
+
+        $this->assertSame(Address::TYPE_MUXED_CONTRACT, $fromStrKey->type);
+        $this->assertSame(self::MUXED_CONTRACT_ID, $fromStrKey->muxedContractId);
+        $this->assertSame(self::MUXED_CONTRACT_ID, $fromHex->toStrKey());
+    }
+
+    public function testStrkeyReadersResolveAMuxedContractId(): void
+    {
+        $this->assertSame(Address::TYPE_MUXED_CONTRACT, Address::fromStrKey(self::MUXED_CONTRACT_ID)->type);
+        $this->assertSame(self::MUXED_CONTRACT_ID, Address::fromAnyId(self::MUXED_CONTRACT_ID)?->muxedContractId);
+    }
+
+    public function testFromMuxedContractIdRejectsAnInvalidStrkey(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('invalid checksum in encoded data');
+        Address::fromMuxedContractId('WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWA');
+    }
+
+    public function testFromStrKeyRejectsAValueThatIsNoAddressStrkey(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Not a valid address strkey: ' . self::MUXED_CONTRACT_HASH_HEX);
+        Address::fromStrKey(self::MUXED_CONTRACT_HASH_HEX);
+    }
+
+    public function testToXdrThrowsExceptionForNullMuxedContractId(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('muxedContractId is null');
+        (new Address(Address::TYPE_MUXED_CONTRACT))->toXdr();
+    }
+
+    public function testSetMuxedContractIdReplacesAndClearsTheId(): void
+    {
+        $address = new Address(Address::TYPE_MUXED_CONTRACT);
+
+        $address->setMuxedContractId(self::MUXED_CONTRACT_ID);
+        $this->assertSame(self::MUXED_CONTRACT_ID, $address->getMuxedContractId());
+        $this->assertSame(self::MUXED_CONTRACT_ID, $address->toStrKey());
+
+        $address->setMuxedContractId(null);
+        $this->assertNull($address->getMuxedContractId());
     }
 }

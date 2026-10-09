@@ -16,6 +16,7 @@ class XdrSCAddressType {
     const SC_ADDRESS_TYPE_MUXED_ACCOUNT = 2;
     const SC_ADDRESS_TYPE_CLAIMABLE_BALANCE = 3;
     const SC_ADDRESS_TYPE_LIQUIDITY_POOL = 4;
+    const SC_ADDRESS_TYPE_MUXED_CONTRACT = 5;
 
     public function __construct(int $value) {
         $this->value = $value;
@@ -45,6 +46,10 @@ class XdrSCAddressType {
         return new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL);
     }
 
+    public static function SC_ADDRESS_TYPE_MUXED_CONTRACT(): XdrSCAddressType {
+        return new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }
@@ -57,6 +62,7 @@ class XdrSCAddressType {
             case 2:
             case 3:
             case 4:
+            case 5:
                 return new XdrSCAddressType($value);
             default:
                 throw new InvalidArgumentException("Unknown enum value: $value");
@@ -82,6 +88,7 @@ class XdrSCAddressType {
             self::SC_ADDRESS_TYPE_MUXED_ACCOUNT => 'muxed_account',
             self::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE => 'claimable_balance',
             self::SC_ADDRESS_TYPE_LIQUIDITY_POOL => 'liquidity_pool',
+            self::SC_ADDRESS_TYPE_MUXED_CONTRACT => 'muxed_contract',
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown XdrSCAddressType enum value: ' . $this->value
@@ -102,6 +109,7 @@ class XdrSCAddressType {
             'muxed_account' => new static(self::SC_ADDRESS_TYPE_MUXED_ACCOUNT),
             'claimable_balance' => new static(self::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE),
             'liquidity_pool' => new static(self::SC_ADDRESS_TYPE_LIQUIDITY_POOL),
+            'muxed_contract' => new static(self::SC_ADDRESS_TYPE_MUXED_CONTRACT),
             default => throw new InvalidArgumentException(
                 'Unknown XdrSCAddressType JSON value: ' . XdrJsonHelper::safePreview($value)
             ),
@@ -139,6 +147,8 @@ class XdrSCAddressType {
                 return 'SC_ADDRESS_TYPE_CLAIMABLE_BALANCE';
             case self::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
                 return 'SC_ADDRESS_TYPE_LIQUIDITY_POOL';
+            case self::SC_ADDRESS_TYPE_MUXED_CONTRACT:
+                return 'SC_ADDRESS_TYPE_MUXED_CONTRACT';
             default:
                 return 'XdrSCAddressType#' . $this->value;
         }
@@ -156,6 +166,8 @@ class XdrSCAddressType {
                 return new static(self::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE);
             case 'SC_ADDRESS_TYPE_LIQUIDITY_POOL':
                 return new static(self::SC_ADDRESS_TYPE_LIQUIDITY_POOL);
+            case 'SC_ADDRESS_TYPE_MUXED_CONTRACT':
+                return new static(self::SC_ADDRESS_TYPE_MUXED_CONTRACT);
             default:
                 $prefix = 'XdrSCAddressType#';
                 if (str_starts_with($name, $prefix)) {

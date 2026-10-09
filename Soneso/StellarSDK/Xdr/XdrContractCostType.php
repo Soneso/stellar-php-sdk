@@ -97,6 +97,15 @@ class XdrContractCostType {
     const Bn254FrPow = 83;
     const Bn254FrInv = 84;
     const Bn254G1Msm = 85;
+    const MlDsa44DecodeVerifyingKey = 86;
+    const MlDsa65DecodeVerifyingKey = 87;
+    const MlDsa87DecodeVerifyingKey = 88;
+    const MlDsa44DecodeSignature = 89;
+    const MlDsa65DecodeSignature = 90;
+    const MlDsa87DecodeSignature = 91;
+    const VerifyMlDsa44Sig = 92;
+    const VerifyMlDsa65Sig = 93;
+    const VerifyMlDsa87Sig = 94;
 
     public function __construct(int $value) {
         $this->value = $value;
@@ -450,6 +459,42 @@ class XdrContractCostType {
         return new XdrContractCostType(XdrContractCostType::Bn254G1Msm);
     }
 
+    public static function MlDsa44DecodeVerifyingKey(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::MlDsa44DecodeVerifyingKey);
+    }
+
+    public static function MlDsa65DecodeVerifyingKey(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::MlDsa65DecodeVerifyingKey);
+    }
+
+    public static function MlDsa87DecodeVerifyingKey(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::MlDsa87DecodeVerifyingKey);
+    }
+
+    public static function MlDsa44DecodeSignature(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::MlDsa44DecodeSignature);
+    }
+
+    public static function MlDsa65DecodeSignature(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::MlDsa65DecodeSignature);
+    }
+
+    public static function MlDsa87DecodeSignature(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::MlDsa87DecodeSignature);
+    }
+
+    public static function VerifyMlDsa44Sig(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::VerifyMlDsa44Sig);
+    }
+
+    public static function VerifyMlDsa65Sig(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::VerifyMlDsa65Sig);
+    }
+
+    public static function VerifyMlDsa87Sig(): XdrContractCostType {
+        return new XdrContractCostType(XdrContractCostType::VerifyMlDsa87Sig);
+    }
+
     public function encode(): string {
         return XdrEncoder::integer32($this->value);
     }
@@ -543,6 +588,15 @@ class XdrContractCostType {
             case 83:
             case 84:
             case 85:
+            case 86:
+            case 87:
+            case 88:
+            case 89:
+            case 90:
+            case 91:
+            case 92:
+            case 93:
+            case 94:
                 return new XdrContractCostType($value);
             default:
                 throw new InvalidArgumentException("Unknown enum value: $value");
@@ -649,6 +703,15 @@ class XdrContractCostType {
             self::Bn254FrPow => 'bn254_fr_pow',
             self::Bn254FrInv => 'bn254_fr_inv',
             self::Bn254G1Msm => 'bn254_g1_msm',
+            self::MlDsa44DecodeVerifyingKey => 'ml_dsa44_decode_verifying_key',
+            self::MlDsa65DecodeVerifyingKey => 'ml_dsa65_decode_verifying_key',
+            self::MlDsa87DecodeVerifyingKey => 'ml_dsa87_decode_verifying_key',
+            self::MlDsa44DecodeSignature => 'ml_dsa44_decode_signature',
+            self::MlDsa65DecodeSignature => 'ml_dsa65_decode_signature',
+            self::MlDsa87DecodeSignature => 'ml_dsa87_decode_signature',
+            self::VerifyMlDsa44Sig => 'verify_ml_dsa44_sig',
+            self::VerifyMlDsa65Sig => 'verify_ml_dsa65_sig',
+            self::VerifyMlDsa87Sig => 'verify_ml_dsa87_sig',
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown XdrContractCostType enum value: ' . $this->value
@@ -750,6 +813,15 @@ class XdrContractCostType {
             'bn254_fr_pow' => new static(self::Bn254FrPow),
             'bn254_fr_inv' => new static(self::Bn254FrInv),
             'bn254_g1_msm' => new static(self::Bn254G1Msm),
+            'ml_dsa44_decode_verifying_key' => new static(self::MlDsa44DecodeVerifyingKey),
+            'ml_dsa65_decode_verifying_key' => new static(self::MlDsa65DecodeVerifyingKey),
+            'ml_dsa87_decode_verifying_key' => new static(self::MlDsa87DecodeVerifyingKey),
+            'ml_dsa44_decode_signature' => new static(self::MlDsa44DecodeSignature),
+            'ml_dsa65_decode_signature' => new static(self::MlDsa65DecodeSignature),
+            'ml_dsa87_decode_signature' => new static(self::MlDsa87DecodeSignature),
+            'verify_ml_dsa44_sig' => new static(self::VerifyMlDsa44Sig),
+            'verify_ml_dsa65_sig' => new static(self::VerifyMlDsa65Sig),
+            'verify_ml_dsa87_sig' => new static(self::VerifyMlDsa87Sig),
             // Deprecated input aliases: wire names emitted by SDK releases
             // up to 1.11.x. Accepted for compatibility; toJsonValue never
             // emits them.
@@ -839,6 +911,15 @@ class XdrContractCostType {
             'bn254frpow' => new static(self::Bn254FrPow),
             'bn254frinv' => new static(self::Bn254FrInv),
             'bn254g1msm' => new static(self::Bn254G1Msm),
+            'mldsa44decodeverifyingkey' => new static(self::MlDsa44DecodeVerifyingKey),
+            'mldsa65decodeverifyingkey' => new static(self::MlDsa65DecodeVerifyingKey),
+            'mldsa87decodeverifyingkey' => new static(self::MlDsa87DecodeVerifyingKey),
+            'mldsa44decodesignature' => new static(self::MlDsa44DecodeSignature),
+            'mldsa65decodesignature' => new static(self::MlDsa65DecodeSignature),
+            'mldsa87decodesignature' => new static(self::MlDsa87DecodeSignature),
+            'verifymldsa44sig' => new static(self::VerifyMlDsa44Sig),
+            'verifymldsa65sig' => new static(self::VerifyMlDsa65Sig),
+            'verifymldsa87sig' => new static(self::VerifyMlDsa87Sig),
             default => throw new InvalidArgumentException(
                 'Unknown XdrContractCostType JSON value: ' . XdrJsonHelper::safePreview($value)
             ),

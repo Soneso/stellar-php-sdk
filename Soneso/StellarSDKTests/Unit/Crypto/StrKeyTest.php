@@ -238,6 +238,28 @@ class StrKeyTest extends TestCase
         assertEquals(StrKey::decodeMuxedAccountId($mPubKey), $rawPubKey);
     }
 
+    /**
+     * A muxed contract strkey carries the contract id of the matching "C..." strkey
+     * followed by the big-endian multiplexing id.
+     */
+    public function testMuxedContractsDecomposeIntoContractIdAndId() {
+        $vectors = [
+            ['WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC',
+                'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA', '0'],
+            ['WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY',
+                'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA', '9223372036854775808'],
+            ['WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG',
+                'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE', '123456'],
+        ];
+        foreach ($vectors as [$muxedContractId, $contractId, $id]) {
+            $raw = StrKey::decodeMuxedContractId($muxedContractId);
+            assertSame(StrKey::decodeContractId($contractId), substr($raw, 0, 32));
+            assertSame($id, gmp_strval(gmp_import(substr($raw, 32, 8))));
+            assertFalse(StrKey::isValidMuxedAccountId($muxedContractId));
+            assertFalse(StrKey::isValidMuxedContractId($contractId));
+        }
+    }
+
     public function testSignedPayloads() {
         $decoded = StrKey::decodeSignedPayload(
                 "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAQACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IBZGM");
@@ -954,6 +976,24 @@ class StrKeyTest extends TestCase
                 $hash,
                 'encodeContractId', 'decodeContractId', 'isValidContractId',
             ],
+            'W, muxed contract, id 0' => [
+                'W',
+                'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC',
+                $hash . '0000000000000000',
+                'encodeMuxedContractId', 'decodeMuxedContractId', 'isValidMuxedContractId',
+            ],
+            'W, muxed contract, id past the signed 64-bit maximum' => [
+                'W',
+                'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY',
+                $hash . '8000000000000000',
+                'encodeMuxedContractId', 'decodeMuxedContractId', 'isValidMuxedContractId',
+            ],
+            'W, muxed contract, id 123456' => [
+                'W',
+                'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG',
+                '363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103' . '000000000001e240',
+                'encodeMuxedContractId', 'decodeMuxedContractId', 'isValidMuxedContractId',
+            ],
             'L — liquidity pool' => [
                 'L',
                 'LA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN',
@@ -1051,9 +1091,10 @@ class StrKeyTest extends TestCase
     }
 
     /**
-     * All fifteen invalid test vectors of SEP-23, each paired with the decode and
-     * isValid methods its prefix selects and with the message it is turned away
-     * with. The key names the rule the specification wrote the vector for, and
+     * The invalid test vectors of SEP-23, each paired with the decode and isValid
+     * methods its prefix selects and with the message it is turned away with. The
+     * muxed contract rows add the two invalid-algorithm variants of the
+     * rs-stellar-strkey reference, with the checksum recomputed and without. The key names the rule the specification wrote the vector for, and
      * the message is compared in full, so a vector that starts being rejected by
      * a different rule fails the test rather than passing for the wrong reason.
      *
@@ -1132,6 +1173,41 @@ class StrKeyTest extends TestCase
                 'decodeClaimableBalanceId', 'isValidClaimableBalanceId',
                 'invalid encoded string',
             ],
+            'muxed contract, unused trailing bit of the last symbol is not zero' => [
+                'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWD',
+                'decodeMuxedContractId', 'isValidMuxedContractId',
+                'invalid encoded string',
+            ],
+            'muxed contract, encoded length congruent to 6 mod 8' => [
+                'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWCA',
+                'decodeMuxedContractId', 'isValidMuxedContractId',
+                'W-strkey must be 69 characters long, 70 characters given',
+            ],
+            'muxed contract, base32 decoding yields 44 bytes, not 43' => [
+                'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAAIOUI',
+                'decodeMuxedContractId', 'isValidMuxedContractId',
+                'W-strkey must be 69 characters long, 71 characters given',
+            ],
+            'muxed contract, algorithm bits 7 with the checksum recomputed' => [
+                'W47QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAADXHW',
+                'decodeMuxedContractId', 'isValidMuxedContractId',
+                $versionByteMismatch,
+            ],
+            'muxed contract, algorithm bits 7 without the checksum recomputed' => [
+                'W47QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC',
+                'decodeMuxedContractId', 'isValidMuxedContractId',
+                $versionByteMismatch,
+            ],
+            'muxed contract, invalid checksum' => [
+                'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWA',
+                'decodeMuxedContractId', 'isValidMuxedContractId',
+                'invalid checksum in encoded data',
+            ],
+            'muxed contract, base32 padding characters are not allowed' => [
+                'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC===',
+                'decodeMuxedContractId', 'isValidMuxedContractId',
+                'W-strkey must be 69 characters long, 72 characters given',
+            ],
             'claimable balance type is not 0' => [
                 'BAAT6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGXACA',
                 'decodeClaimableBalanceId', 'isValidClaimableBalanceId',
@@ -1175,7 +1251,7 @@ class StrKeyTest extends TestCase
     }
 
     /**
-     * The eleven decode methods of the fixed-length strkey types, each with a
+     * The twelve decode methods of the fixed-length strkey types, each with a
      * payload one byte short of and one byte past what the type carries. The
      * three methods that answer with hexadecimal are listed alongside the ones
      * that answer with raw bytes because they read the encoded string themselves
@@ -1194,6 +1270,7 @@ class StrKeyTest extends TestCase
             'decodeLiquidityPoolId' => [VersionByte::LIQUIDITY_POOL_ID, 'L', 56, 32],
             'decodeLiquidityPoolIdHex' => [VersionByte::LIQUIDITY_POOL_ID, 'L', 56, 32],
             'decodeMuxedAccountId' => [VersionByte::MUXED_ACCOUNT_ID, 'M', 69, 40],
+            'decodeMuxedContractId' => [VersionByte::MUXED_CONTRACT_ID, 'W', 69, 40],
             'decodeClaimableBalanceId' => [VersionByte::CLAIMABLE_BALANCE_ID, 'B', 58, 33],
             'decodeClaimableBalanceIdHex' => [VersionByte::CLAIMABLE_BALANCE_ID, 'B', 58, 33],
         ];
@@ -1402,6 +1479,11 @@ class StrKeyTest extends TestCase
                 'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK',
                 $hash . '8000000000000000', '69',
             ],
+            'W, muxed contract' => [
+                'W', VersionByte::MUXED_CONTRACT_ID, 'decodeMuxedContractId', 'isValidMuxedContractId',
+                'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY',
+                $hash . '8000000000000000', '69',
+            ],
             'B — claimable balance' => [
                 'B', VersionByte::CLAIMABLE_BALANCE_ID, 'decodeClaimableBalanceId', 'isValidClaimableBalanceId',
                 'BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU', '00' . $hash, '58',
@@ -1559,6 +1641,9 @@ class StrKeyTest extends TestCase
             ],
             'encodeMuxedAccountId' => [
                 'encodeMuxedAccountId', 'isValidMuxedAccountId', 'M', 40, 69, false, [39, 41],
+            ],
+            'encodeMuxedContractId' => [
+                'encodeMuxedContractId', 'isValidMuxedContractId', 'W', 40, 69, false, [39, 41],
             ],
             'encodeClaimableBalanceId' => [
                 'encodeClaimableBalanceId', 'isValidClaimableBalanceId', 'B', 33, 58, false, [31, 34],

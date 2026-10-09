@@ -681,11 +681,11 @@ module StellarJsonOverrides
       end,
     },
 
-    # XdrSCAddress — five-arm strkey dispatch. account -> G-strkey via
+    # XdrSCAddress: six-arm strkey dispatch. account -> G-strkey via
     # delegation to XdrAccountID; contract -> C-strkey; muxed_account ->
     # M-strkey over a 40-byte ed25519 || id pack; claimable_balance ->
     # delegation to XdrClaimableBalanceID (B-strkey); liquidity_pool ->
-    # L-strkey.
+    # L-strkey; muxed_contract -> delegation to XdrMuxedContract (W-strkey).
     #
     # The contract id and the liquidity pool id fields hold the hash in
     # hexadecimal or its strkey spelling, so both arms resolve the field
@@ -733,6 +733,13 @@ module StellarJsonOverrides
                               );
                           }
                           return StrKey::encodeLiquidityPoolIdHex($this->getCanonicalLiquidityPoolIdHex());
+                      case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT:
+                          if ($this->muxedContract === null) {
+                              throw new InvalidArgumentException(
+                                  'XdrSCAddress muxedContract field is null'
+                              );
+                          }
+                          return $this->muxedContract->toJsonValue();
                       default:
                           throw new InvalidArgumentException(
                               'Unknown XdrSCAddress discriminant: ' . $this->type->getValue()
@@ -787,8 +794,14 @@ module StellarJsonOverrides
                       $result->liquidityPoolId = StrKey::decodeLiquidityPoolIdHex($value);
                       return $result;
                   }
+                  if ($prefix === 'W') {
+                      $result = new static(new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT));
+                      $result->muxedContract = XdrMuxedContract::fromJsonValue($value);
+                      return $result;
+                  }
                   throw new InvalidArgumentException(
-                      'Invalid XdrSCAddress strkey prefix: ' . XdrJsonHelper::safePreview($value)
+                      'Invalid XdrSCAddress strkey prefix (expected G, C, M, B, L or W): '
+                          . XdrJsonHelper::safePreview($value)
                   );
         PHP
       end,
@@ -1443,6 +1456,32 @@ module StellarJsonOverrides
                   $idBuf = new XdrBuffer(substr($raw, 32, 8));
                   $id = $idBuf->readUnsignedInteger64();
                   return new static($id, $ed25519);
+        PHP
+      end,
+    },
+
+    # XdrMuxedContract: standalone W-strkey (SEP-23, CAP-0084). The strkey
+    # payload is the 32-byte contract id followed by the 8-byte big-endian
+    # id, the reverse of the XDR field order.
+    'XdrMuxedContract' => {
+      to_value_signature: 'public function toJsonValue(): string',
+      to_body: lambda do |_ctx|
+        <<~PHP.chomp
+                  $packed = XdrEncoder::opaqueFixed($this->contractId, 32);
+                  $packed .= XdrEncoder::unsignedInteger64($this->id);
+                  return StrKey::encodeMuxedContractId($packed);
+        PHP
+      end,
+      from_body: lambda do |_ctx|
+        <<~PHP.chomp
+                  if (!is_string($value)) {
+                      throw new InvalidArgumentException(
+                          'Expected string for XdrMuxedContract JSON value, got ' . get_debug_type($value)
+                      );
+                  }
+                  $raw = StrKey::decodeMuxedContractId($value);
+                  $idBuf = new XdrBuffer(substr($raw, 32, 8));
+                  return new static($idBuf->readUnsignedInteger64(), substr($raw, 0, 32));
         PHP
       end,
     },
