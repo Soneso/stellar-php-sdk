@@ -215,6 +215,7 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
             XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT     => 'muxed_account',
             XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE => 'claimable_balance',
             XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL    => 'liquidity_pool',
+            XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT    => 'muxed_contract',
         ];
         foreach ($cases as $value => $expected) {
             $this->assertSame($expected, (new XdrSCAddressType($value))->toJsonValue());
@@ -397,13 +398,17 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
 
     public function testContractCostType_camelCaseRoundTripRepresentativeMembers(): void
     {
-        // Representative members spanning the index range [0, 85].
+        // Representative members spanning the index range [0, 94].
+        $this->assertSame(86, XdrContractCostType::MlDsa44DecodeVerifyingKey);
+        $this->assertSame(94, XdrContractCostType::VerifyMlDsa87Sig);
         $cases = [
-            XdrContractCostType::WasmInsnExec      => 'wasm_insn_exec',
-            XdrContractCostType::MemAlloc          => 'mem_alloc',
-            XdrContractCostType::ChaCha20DrawBytes => 'cha_cha20_draw_bytes',
-            XdrContractCostType::Bls12381EncodeFp  => 'bls12381_encode_fp',
-            XdrContractCostType::Bn254G1Msm        => 'bn254_g1_msm',
+            XdrContractCostType::WasmInsnExec              => 'wasm_insn_exec',
+            XdrContractCostType::MemAlloc                  => 'mem_alloc',
+            XdrContractCostType::ChaCha20DrawBytes         => 'cha_cha20_draw_bytes',
+            XdrContractCostType::Bls12381EncodeFp          => 'bls12381_encode_fp',
+            XdrContractCostType::Bn254G1Msm                => 'bn254_g1_msm',
+            XdrContractCostType::MlDsa44DecodeVerifyingKey => 'ml_dsa44_decode_verifying_key',
+            XdrContractCostType::VerifyMlDsa87Sig          => 'verify_ml_dsa87_sig',
         ];
         foreach ($cases as $value => $expected) {
             $this->assertSame(

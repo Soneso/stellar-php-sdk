@@ -21,6 +21,7 @@ use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrInt256Parts;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccountMed25519;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccountMed25519Base;
+use Soneso\StellarSDK\Xdr\XdrMuxedContract;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressBase;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
@@ -791,7 +792,7 @@ class XdrContractGenTest extends TestCase
 
     public function testXdrSCAddressTypeEnumRoundTrip(): void
     {
-        $values = [XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT, XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT, XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT, XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE, XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL];
+        $values = [XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT, XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT, XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT, XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE, XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL, XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT];
         foreach ($values as $v) {
             $original = new XdrSCAddressType($v);
             $encoded = $original->encode();
@@ -816,11 +817,12 @@ class XdrContractGenTest extends TestCase
         $this->assertNotNull(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT());
         $this->assertNotNull(XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE());
         $this->assertNotNull(XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL());
+        $this->assertNotNull(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT());
     }
 
     public function testXdrSCAddressTypeEnumJsonRoundTrip(): void
     {
-        $values = [XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT, XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT, XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT, XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE, XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL];
+        $values = [XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT, XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT, XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT, XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE, XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL, XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT];
         foreach ($values as $v) {
             $original = new XdrSCAddressType($v);
             $j1 = $original->toJsonValue();
@@ -938,6 +940,88 @@ class XdrContractGenTest extends TestCase
         $this->assertEquals($encoded, $fromB64->encode());
     }
 
+    public function testXdrMuxedContractStructRoundTrip(): void
+    {
+        $original = new XdrMuxedContract(42, str_repeat("\xAB", 32));
+        $encoded = $original->encode();
+        $decoded = XdrMuxedContract::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrMuxedContract');
+        $b64Decoded = XdrMuxedContract::fromBase64Xdr($original->toBase64Xdr());
+        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrMuxedContract');
+    }
+
+    public function testXdrMuxedContractStructJsonRoundTrip(): void
+    {
+        $original = new XdrMuxedContract(42, str_repeat("\xAB", 32));
+        $j1 = $original->toJsonValue();
+        $back = XdrMuxedContract::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrMuxedContract');
+        $this->assertSame($original->toJson(), $back->toJson(), 'JSON string not stable for XdrMuxedContract');
+        $back2 = XdrMuxedContract::fromJson($original->toJson());
+        $this->assertSame($original->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrMuxedContract');
+    }
+
+    public function testXdrMuxedContractStructJsonRejectsInvalid(): void
+    {
+        $original = new XdrMuxedContract(42, str_repeat("\xAB", 32));
+        $valid = $original->toJsonValue();
+        $noWrongTypeCheck = [];
+        $assertRejects = function ($bad, string $desc) {
+            $threw = false;
+            try { XdrMuxedContract::fromJsonValue($bad); }
+            catch (\InvalidArgumentException $e) { $threw = true; }
+            $this->assertTrue($threw, 'Expected rejection: ' . $desc);
+        };
+        if (!is_array($valid)) {
+            // Some structs render as a single scalar (e.g. 128-bit integer
+            // parts as one string); their fromJsonValue rejects the wrong
+            // scalar type and malformed scalar payloads.
+            if (is_string($valid)) {
+                $assertRejects(42, 'non-string scalar struct value');
+                $assertRejects([], 'array for scalar struct value');
+                $assertRejects('@@@malformed@@@', 'malformed scalar struct value');
+            } else {
+                $assertRejects('not-the-right-scalar', 'wrong scalar struct value');
+            }
+            return;
+        }
+        $assertRejects('not-an-object', 'non-array top-level');
+        foreach (array_keys($valid) as $k) {
+            if ($k === '$schema') { continue; }
+            $missing = $valid; unset($missing[$k]);
+            $assertRejects($missing, 'missing field ' . $k);
+            $v = $valid[$k];
+            if ($v === null) { continue; }
+            if (isset($noWrongTypeCheck[$k])) { continue; }
+            $wrong = $valid;
+            if (is_bool($v)) { $wrong[$k] = 'not-a-bool'; }
+            elseif (is_array($v)) { $wrong[$k] = 'not-an-array'; }
+            else { $wrong[$k] = []; }
+            $assertRejects($wrong, 'wrong type for field ' . $k);
+        }
+    }
+
+    public function testXdrMuxedContractEdgeCaseZeroRoundTrip(): void
+    {
+        $original = new XdrMuxedContract(0, str_repeat("\xAB", 32));
+        $encoded = $original->encode();
+        $decoded = XdrMuxedContract::decode(new XdrBuffer($encoded));
+        $this->assertEquals($encoded, $decoded->encode(), 'Edge case Zero failed for XdrMuxedContract');
+    }
+
+    public function testXdrMuxedContractGettersSetters(): void
+    {
+        $obj = new XdrMuxedContract(42, str_repeat("\xAB", 32));
+        $this->assertNotNull($obj->getId());
+        $newVal = 42;
+        $obj->setId($newVal);
+        $this->assertSame($newVal, $obj->getId());
+        $this->assertNotNull($obj->getContractId());
+        $newVal = str_repeat("\xAB", 32);
+        $obj->setContractId($newVal);
+        $this->assertSame($newVal, $obj->getContractId());
+    }
+
     public function testXdrSCAddressUnionRoundTrip(): void
     {
         $original = XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
@@ -992,6 +1076,13 @@ class XdrContractGenTest extends TestCase
         $this->assertSame($arm5->toJson(), $back->toJson(), 'JSON string not stable for XdrSCAddress arm XdrSCAddressType_SC_ADDRESS_TYPE_LIQUIDITY_POOL');
         $back2 = XdrSCAddress::fromJson($arm5->toJson());
         $this->assertSame($arm5->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCAddress arm XdrSCAddressType_SC_ADDRESS_TYPE_LIQUIDITY_POOL');
+        $arm6 = (function() { $u = new XdrSCAddressBase(new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT)); $u->muxedContract = new XdrMuxedContract(42, str_repeat("\xAB", 32)); return $u; })();
+        $j1 = $arm6->toJsonValue();
+        $back = XdrSCAddress::fromJsonValue($j1);
+        $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrSCAddress arm XdrSCAddressType_SC_ADDRESS_TYPE_MUXED_CONTRACT');
+        $this->assertSame($arm6->toJson(), $back->toJson(), 'JSON string not stable for XdrSCAddress arm XdrSCAddressType_SC_ADDRESS_TYPE_MUXED_CONTRACT');
+        $back2 = XdrSCAddress::fromJson($arm6->toJson());
+        $this->assertSame($arm6->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrSCAddress arm XdrSCAddressType_SC_ADDRESS_TYPE_MUXED_CONTRACT');
     }
 
     public function testXdrSCAddressUnionJsonRejectsInvalid(): void
@@ -1003,6 +1094,7 @@ class XdrContractGenTest extends TestCase
         $samples[] = ((function() { $u = new XdrSCAddressBase(new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT)); $u->muxedAccount = new XdrMuxedAccountMed25519(42, str_repeat("\xAB", 32)); return $u; })())->toJsonValue();
         $samples[] = ((function() { $u = new XdrSCAddressBase(new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE)); $u->claimableBalanceId = new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0), str_repeat('ab', 32)); return $u; })())->toJsonValue();
         $samples[] = ((function() { $u = new XdrSCAddressBase(new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL)); $u->liquidityPoolId = str_repeat('ab', 32); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrSCAddressBase(new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT)); $u->muxedContract = new XdrMuxedContract(42, str_repeat("\xAB", 32)); return $u; })())->toJsonValue();
         $valid = $samples[0];
         foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
         $assertRejects = function ($bad, string $desc) {
@@ -1054,6 +1146,7 @@ class XdrContractGenTest extends TestCase
         $obj->getMuxedAccount();
         $obj->getClaimableBalanceId();
         $obj->getLiquidityPoolId();
+        $obj->getMuxedContract();
     }
 
     public function testXdrSCAddressBaseRoundTrip(): void
@@ -2579,6 +2672,11 @@ class XdrContractGenTest extends TestCase
         $this->assertEquals('SC_ADDRESS_TYPE_LIQUIDITY_POOL', $name);
         $back = XdrSCAddressType::fromTxRepName($name);
         $this->assertEquals($val->getValue(), $back->getValue());
+        $val = new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT);
+        $name = $val->enumName();
+        $this->assertEquals('SC_ADDRESS_TYPE_MUXED_CONTRACT', $name);
+        $back = XdrSCAddressType::fromTxRepName($name);
+        $this->assertEquals($val->getValue(), $back->getValue());
     }
 
     public function testXdrSCAddressTypeTxRepRoundTrip_SC_ADDRESS_TYPE_ACCOUNT(): void
@@ -2626,6 +2724,15 @@ class XdrContractGenTest extends TestCase
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCAddressType_SC_ADDRESS_TYPE_LIQUIDITY_POOL');
     }
 
+    public function testXdrSCAddressTypeTxRepRoundTrip_SC_ADDRESS_TYPE_MUXED_CONTRACT(): void
+    {
+        $original = new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT);
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrSCAddressType::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCAddressType_SC_ADDRESS_TYPE_MUXED_CONTRACT');
+    }
+
     public function testXdrMuxedAccountMed25519TxRepRoundTrip(): void
     {
         $original = new XdrMuxedAccountMed25519(42, str_repeat("\xAB", 32));
@@ -2633,6 +2740,15 @@ class XdrContractGenTest extends TestCase
         $original->toTxRep('test', $lines);
         $reconstructed = XdrMuxedAccountMed25519Base::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrMuxedAccountMed25519');
+    }
+
+    public function testXdrMuxedContractTxRepRoundTrip(): void
+    {
+        $original = new XdrMuxedContract(42, str_repeat("\xAB", 32));
+        $lines = [];
+        $original->toTxRep('test', $lines);
+        $reconstructed = XdrMuxedContract::fromTxRep($lines, 'test');
+        $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrMuxedContract');
     }
 
     public function testXdrSCAddressTxRepRoundTrip(): void

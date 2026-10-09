@@ -99,6 +99,43 @@ class StrKey
     }
 
     /**
+     * Returns true if the given string is a valid muxed contract id ("W...").
+     *
+     * A muxed contract id (SEP-23, CAP-0084) pairs a contract with a 64-bit
+     * multiplexing id, for example
+     * WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC.
+     * @param string $muxedContractId muxed contract id ("W...") to check
+     * @return bool true if valid
+     */
+    public static function isValidMuxedContractId(string $muxedContractId) : bool {
+        return self::isValid(VersionByte::MUXED_CONTRACT_ID, $muxedContractId);
+    }
+
+    /**
+     * Encodes data to a strkey muxed contract id ("W...", SEP-23, CAP-0084).
+     * @param string $data the 32-byte contract id followed by the 8-byte big-endian
+     * multiplexing id, the reverse of the XDR MuxedContract field order
+     * @return string "W..." representation of the muxed contract
+     * @throws InvalidArgumentException when $data is not 40 bytes long
+     */
+    public static function encodeMuxedContractId(string $data) : string {
+        return self::encodeCheck(VersionByte::MUXED_CONTRACT_ID, $data);
+    }
+
+    /**
+     * Decodes a strkey muxed contract id ("W...", SEP-23, CAP-0084) to raw data.
+     * @param string $muxedContractId muxed contract id to decode ("W...")
+     * @return string the 32-byte contract id followed by the 8-byte big-endian
+     * multiplexing id
+     * @throws InvalidArgumentException when $muxedContractId is not a valid "W..." strkey:
+     * wrong encoded length, wrong version byte, bad checksum, or a payload that is
+     * not 40 bytes
+     */
+    public static function decodeMuxedContractId(string $muxedContractId) : string {
+        return self::decodeCheck(VersionByte::MUXED_CONTRACT_ID, $muxedContractId);
+    }
+
+    /**
      * Returns true if the given Stellar secret key ("S...") is a valid ed25519 secret seed.
      * @param string $seed seed to check ("S...")
      * @return bool true if valid
@@ -545,7 +582,7 @@ class StrKey
      * all read them from here, so the encode and decode sides cannot drift apart.
      * The prefix letter travels with the lengths so that a rejection can name the
      * strkey type the way a caller sees it, as "G" rather than as a version byte
-     * of 48. Six types share a length rule but not a prefix, which is why each
+     * of 48. Several types share a length rule but not a prefix, which is why each
      * version byte gets its own arm.
      *
      * The payload length is null for the signed payload, the one strkey type whose
@@ -599,6 +636,12 @@ class StrKey
                 'maxEncodedLength' => CryptoConstants::STRKEY_MUXED_ACCOUNT_ID_LENGTH,
                 'payloadLength' => StellarConstants::MUXED_ACCOUNT_DECODED_LENGTH,
                 'prefix' => 'M',
+            ],
+            VersionByte::MUXED_CONTRACT_ID => [
+                'minEncodedLength' => CryptoConstants::STRKEY_MUXED_CONTRACT_ID_LENGTH,
+                'maxEncodedLength' => CryptoConstants::STRKEY_MUXED_CONTRACT_ID_LENGTH,
+                'payloadLength' => StellarConstants::MUXED_CONTRACT_DECODED_LENGTH,
+                'prefix' => 'W',
             ],
             VersionByte::CLAIMABLE_BALANCE_ID => [
                 'minEncodedLength' => CryptoConstants::STRKEY_CLAIMABLE_BALANCE_LENGTH,

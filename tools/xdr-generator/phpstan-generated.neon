@@ -237,6 +237,7 @@ parameters:
         - ../../Soneso/StellarSDK/Xdr/XdrMessageType.php
         - ../../Soneso/StellarSDK/Xdr/XdrMuxedAccountBase.php
         - ../../Soneso/StellarSDK/Xdr/XdrMuxedAccountMed25519Base.php
+        - ../../Soneso/StellarSDK/Xdr/XdrMuxedContract.php
         - ../../Soneso/StellarSDK/Xdr/XdrNodeID.php
         - ../../Soneso/StellarSDK/Xdr/XdrOfferEntry.php
         - ../../Soneso/StellarSDK/Xdr/XdrOfferEntryExt.php

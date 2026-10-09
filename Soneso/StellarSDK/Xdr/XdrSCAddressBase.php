@@ -17,6 +17,7 @@ class XdrSCAddressBase {
     public ?XdrMuxedAccountMed25519 $muxedAccount = null;
     public ?XdrClaimableBalanceID $claimableBalanceId = null;
     public ?string $liquidityPoolId = null;
+    public ?XdrMuxedContract $muxedContract = null;
 
     public function __construct(?XdrSCAddressType $type = null) {
         if ($type !== null) {
@@ -42,6 +43,9 @@ class XdrSCAddressBase {
             case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
                 $bytes .= XdrEncoder::opaqueFixed(pack('H*', $this->getCanonicalLiquidityPoolIdHex()), 32);
                 break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT:
+                $bytes .= $this->muxedContract->encode();
+                break;
             default:
                 break;
         }
@@ -66,6 +70,9 @@ class XdrSCAddressBase {
             case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
                 $result->liquidityPoolId = bin2hex($xdr->readOpaqueFixed(32));
                 break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT:
+                $result->muxedContract = XdrMuxedContract::decode($xdr);
+                break;
         }
         return $result;
     }
@@ -82,6 +89,8 @@ class XdrSCAddressBase {
     public function setClaimableBalanceId(?XdrClaimableBalanceID $claimableBalanceId): void { $this->claimableBalanceId = $claimableBalanceId; }
     public function getLiquidityPoolId(): ?string { return $this->liquidityPoolId; }
     public function setLiquidityPoolId(?string $liquidityPoolId): void { $this->liquidityPoolId = $liquidityPoolId; }
+    public function getMuxedContract(): ?XdrMuxedContract { return $this->muxedContract; }
+    public function setMuxedContract(?XdrMuxedContract $muxedContract): void { $this->muxedContract = $muxedContract; }
 
     /**
      * Length of a "C..." contract strkey.
@@ -248,6 +257,13 @@ class XdrSCAddressBase {
                     );
                 }
                 return StrKey::encodeLiquidityPoolIdHex($this->getCanonicalLiquidityPoolIdHex());
+            case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT:
+                if ($this->muxedContract === null) {
+                    throw new InvalidArgumentException(
+                        'XdrSCAddress muxedContract field is null'
+                    );
+                }
+                return $this->muxedContract->toJsonValue();
             default:
                 throw new InvalidArgumentException(
                     'Unknown XdrSCAddress discriminant: ' . $this->type->getValue()
@@ -301,8 +317,14 @@ class XdrSCAddressBase {
             $result->liquidityPoolId = StrKey::decodeLiquidityPoolIdHex($value);
             return $result;
         }
+        if ($prefix === 'W') {
+            $result = new static(new XdrSCAddressType(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT));
+            $result->muxedContract = XdrMuxedContract::fromJsonValue($value);
+            return $result;
+        }
         throw new InvalidArgumentException(
-            'Invalid XdrSCAddress strkey prefix: ' . XdrJsonHelper::safePreview($value)
+            'Invalid XdrSCAddress strkey prefix (expected G, C, M, B, L or W): '
+                . XdrJsonHelper::safePreview($value)
         );
     }
 
@@ -347,6 +369,9 @@ class XdrSCAddressBase {
             case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
                 $lines[$prefix . '.liquidityPoolId'] = $this->getCanonicalLiquidityPoolIdHex();
                 break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT:
+                $this->muxedContract->toTxRep($prefix . '.muxedContract', $lines);
+                break;
             default:
                 break;
         }
@@ -370,6 +395,9 @@ class XdrSCAddressBase {
                 break;
             case XdrSCAddressType::SC_ADDRESS_TYPE_LIQUIDITY_POOL:
                 $result->liquidityPoolId = TxRepHelper::getValue($map, $prefix . '.liquidityPoolId') ?? '';
+                break;
+            case XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT:
+                $result->muxedContract = XdrMuxedContract::fromTxRep($map, $prefix . '.muxedContract');
                 break;
             default:
                 break;

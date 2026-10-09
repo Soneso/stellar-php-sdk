@@ -68,6 +68,24 @@ final class CryptoConstants
      */
     public const STRKEY_MUXED_ACCOUNT_ID_LENGTH = 69;
 
+    /**
+     * Length of a muxed contract ID in strkey format (W...).
+     *
+     * Format: 1 byte version + 32 bytes contract ID + 8 bytes ID + 2 bytes checksum = 43 bytes
+     * Base32 encoded: ceil(43 × 8 ÷ 5) = 69 characters
+     *
+     * Muxed contract IDs pair a contract with a 64-bit multiplexing ID. Defined in
+     * SEP-0023 and CAP-0084.
+     *
+     * Example: WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC
+     *
+     * Unit: characters (base32 encoded)
+     *
+     * Reference: CAP-0084 (Muxed Contract Addresses)
+     * @see https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md
+     */
+    public const STRKEY_MUXED_CONTRACT_ID_LENGTH = 69;
+
 
     /**
      * Length of a claimable balance ID in strkey format (B... or encoded hex).

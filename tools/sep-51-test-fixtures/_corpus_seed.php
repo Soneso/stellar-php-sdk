@@ -117,6 +117,7 @@ use Soneso\StellarSDK\Xdr\XdrMemo;
 use Soneso\StellarSDK\Xdr\XdrMemoType;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccountMed25519;
+use Soneso\StellarSDK\Xdr\XdrMuxedContract;
 use Soneso\StellarSDK\Xdr\XdrNodeID;
 use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
@@ -356,6 +357,20 @@ $cb = new XdrClaimableBalanceID(new XdrClaimableBalanceIDType(XdrClaimableBalanc
 $cbSCAddr->claimableBalanceId = $cb;
 add($fixtures, 'scval_address_claimable_balance', 'SCVal', XdrSCVal::forAddress($cbSCAddr),
     'SEP-0051 §Stellar-Specific Types > Address Types > B-strkey');
+
+// Muxed contract (CAP-0084): id 123456 paired with the contract
+// CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE, the SEP-23 vector.
+$muxedContract = new XdrMuxedContract(
+    123456, hex2bin('363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103')
+);
+$muxedContractSCAddr = new XdrSCAddress(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT());
+$muxedContractSCAddr->muxedContract = $muxedContract;
+add($fixtures, 'scval_address_muxed_contract', 'SCVal', XdrSCVal::forAddress($muxedContractSCAddr),
+    'SEP-0051 §Stellar-Specific Types > Address Types; SEP-0023 W-strkey',
+    'muxed_contract arm: W-strkey of the contract id followed by the big-endian id');
+add($fixtures, 'muxed_contract', 'MuxedContract', $muxedContract,
+    'SEP-0051 §Stellar-Specific Types > Address Types; SEP-0023 W-strkey',
+    'standalone MuxedContract renders as the same W-strkey');
 
 // Error
 $scErr = new XdrSCError(new XdrSCErrorType(XdrSCErrorType::SCE_CONTRACT));

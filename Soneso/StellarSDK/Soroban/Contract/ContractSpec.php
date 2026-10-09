@@ -7,9 +7,11 @@
 namespace Soneso\StellarSDK\Soroban\Contract;
 
 use InvalidArgumentException;
+use RuntimeException;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrInt256Parts;
+use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind;
@@ -292,7 +294,8 @@ class ContractSpec
      * - Primitives: int, string, bool
      * - Collections: arrays to vectors, tuples, or maps
      * - BigInts: GMP resources or numeric strings for 128/256-bit integers
-     * - Addresses: Address objects or G/C-prefixed strings
+     * - Addresses: Address objects or strkeys; an Address parameter takes G or C, a
+     *   MuxedAddress parameter also M or W
      * - UDTs: Custom structs, unions, and enums
      *
      * @param mixed $val The native PHP value to convert
@@ -334,11 +337,12 @@ class ContractSpec
         if ($val instanceof XdrSCVal) {
             return $val;
         }
+        if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_ADDRESS
+            || $type->value === XdrSCSpecType::SC_SPEC_TYPE_MUXED_ADDRESS) {
+            return $this->addressToXdrSCVal($val, $type->value);
+        }
         if ($val instanceof Address) {
-            if ($type->value !== XdrSCSpecType::SC_SPEC_TYPE_ADDRESS) {
-                throw new InvalidArgumentException("Type was not address but val was address.");
-            }
-            return  $val->toXdrSCVal();
+            throw new InvalidArgumentException("Type was not address but val was address.");
         }
 
         if (is_array($val)) {
@@ -489,14 +493,6 @@ class ContractSpec
             if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_SYMBOL) {
                 return XdrSCVal::forSymbol($val);
             }
-            if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_ADDRESS) {
-                if (str_starts_with($val, "C")) {
-                    $addr = new Address(type:1, contractId: $val);
-                } else {
-                    $addr = new Address(type:0, accountId: $val);
-                }
-                return $addr->toXdrSCVal();
-            }
             throw new InvalidArgumentException("Invalid type for val of type string.");
         }
 
@@ -508,6 +504,63 @@ class ContractSpec
         }
         $valType = gettype($val);
         throw new InvalidArgumentException("Failed to convert val of type $valType");
+    }
+
+    /**
+     * Converts a value for a parameter of spec type Address or MuxedAddress.
+     *
+     * An Address parameter takes an account (G...) or contract (C...) address; a
+     * MuxedAddress parameter also takes a muxed account (M...) or muxed contract (W...)
+     * address (CAP-0067, CAP-0084). The value is a strkey, whose kind the strkey codec
+     * decides, or an Address object, whose kind its XDR encoding decides.
+     *
+     * @param mixed $val the strkey or Address object
+     * @param int $specType SC_SPEC_TYPE_ADDRESS or SC_SPEC_TYPE_MUXED_ADDRESS
+     * @return XdrSCVal the address SCVal
+     * @throws InvalidArgumentException naming the parameter type, the address kinds it takes
+     * and the value given, for any other value, including an Address that does not encode
+     */
+    private function addressToXdrSCVal(mixed $val, int $specType) : XdrSCVal {
+        $muxedParameter = $specType === XdrSCSpecType::SC_SPEC_TYPE_MUXED_ADDRESS;
+        $expected = $muxedParameter
+            ? 'MuxedAddress takes an account (G...), muxed account (M...), contract (C...) or muxed contract (W...) address'
+            : 'Address takes an account (G...) or contract (C...) address';
+        if (is_string($val)) {
+            try {
+                $address = Address::fromStrKey($val);
+            } catch (InvalidArgumentException $e) {
+                throw new InvalidArgumentException("Invalid address format: $val; $expected");
+            }
+        } else if ($val instanceof Address) {
+            $address = $val;
+        } else {
+            throw new InvalidArgumentException("$expected, got " . get_debug_type($val));
+        }
+        try {
+            $scAddress = $address->toXdr();
+            // Encoding resolves every id the address holds, so one that cannot be
+            // submitted is refused here.
+            $scAddress->encode();
+        } catch (RuntimeException | InvalidArgumentException $e) {
+            throw new InvalidArgumentException(
+                "$expected, got an Address that does not encode: " . $e->getMessage(), 0, $e
+            );
+        }
+        $type = $scAddress->type->value;
+        $muxed = $type === XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_ACCOUNT
+            || $type === XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT;
+        if ($type === XdrSCAddressType::SC_ADDRESS_TYPE_ACCOUNT
+            || $type === XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT
+            || ($muxed && $muxedParameter)) {
+            return XdrSCVal::forAddress($scAddress);
+        }
+        $reason = match (true) {
+            $muxed => 'a muxed address needs a MuxedAddress parameter',
+            $type === XdrSCAddressType::SC_ADDRESS_TYPE_CLAIMABLE_BALANCE
+                => 'a claimable balance address is produced by the host and is not a contract input',
+            default => 'a liquidity pool address is produced by the host and is not a contract input',
+        };
+        throw new InvalidArgumentException("$expected, got " . $scAddress->toStrKey() . ": $reason");
     }
 
     /**

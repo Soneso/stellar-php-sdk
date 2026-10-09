@@ -26,6 +26,7 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
+use Soneso\StellarSDK\Soroban\SorobanAuthAddressGuard;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
@@ -542,6 +543,8 @@ class AssembledTransaction
      * @return void
      * @throws GuzzleException If the RPC request fails
      * @throws Exception If no auth entries need signing, signer address not found, or transaction not simulated
+     * @throws \InvalidArgumentException If an entry to sign has a muxed account (M...) or muxed contract (W...)
+     * credential address; it is refused before its expiration is written or the callback runs
      * @see sign() For signing the main transaction envelope
      * @see needsNonInvokerSigningBy() For determining which accounts need to sign
      */
@@ -618,6 +621,10 @@ class AssembledTransaction
                 }
 
                 $entry = SorobanAuthorizationEntry::fromBase64Xdr($entry->toBase64Xdr());
+                $credentialAddressCreds = $entry->credentials->getAddressCredentials();
+                if ($credentialAddressCreds !== null) {
+                    SorobanAuthAddressGuard::requireCredentialAddress($credentialAddressCreds->address);
+                }
                 $expirationLedger = $entry->resolveSignatureExpirationLedger($validUntilLedgerSeq);
                 if ($expirationLedger === null) {
                     if ($defaultExpirationLedger === null) {

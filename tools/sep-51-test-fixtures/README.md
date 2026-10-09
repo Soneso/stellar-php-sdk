@@ -1,7 +1,7 @@
 # SEP-51 Test Fixtures
 
 Correctness baseline for the SDK's SEP-51 (XDR-JSON) emission. The committed
-`corpus.json` holds 259 XDR base64 fixtures; for each fixture, the decode
+`corpus.json` holds 262 XDR base64 fixtures; for each fixture, the decode
 output of the rs-stellar-xdr CLI oracle (the SEP-0051 reference
 implementation, at the build pinned in `oracle-pin.json`) is stored as
 `spec_reference_json`.

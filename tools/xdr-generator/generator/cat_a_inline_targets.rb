@@ -14,6 +14,7 @@ CAT_A_INLINE_TARGETS = %w[
   XdrLedgerBounds
   XdrLiquidityPoolEntry
   XdrMemo
+  XdrMuxedContract
   XdrNodeID
   XdrPreconditions
   XdrPreconditionsV2

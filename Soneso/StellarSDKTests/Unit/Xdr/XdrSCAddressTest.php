@@ -13,6 +13,7 @@ use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
+use Soneso\StellarSDK\Xdr\XdrMuxedContract;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 
@@ -20,7 +21,7 @@ use Soneso\StellarSDK\Xdr\XdrSCAddressType;
  * Unit tests for XdrSCAddress
  *
  * Tests all address type variants: account, contract, muxed account,
- * claimable balance, and liquidity pool.
+ * claimable balance, liquidity pool, and muxed contract.
  */
 class XdrSCAddressTest extends TestCase
 {
@@ -35,6 +36,14 @@ class XdrSCAddressTest extends TestCase
     private const TEST_CONTRACT_ID_XDR = 'AAAAAeXCRPd/jmuC8ajT6bDFptf46aCxwtPk9aa3yNng8aKz';
     private const TEST_LIQUIDITY_POOL_ID_STRKEY = 'LDOXWGVYGHBHGMIN3PWG7F4HBKUDYL55PDHCFLPNG7WL6TZTQD5MP4GN';
     private const TEST_LIQUIDITY_POOL_ID_XDR = 'AAAABN17GrgxwnMxDdvsb5eHCqg8L714ziKt7Tfsv08zgPrH';
+
+    // SEP-23 muxed contract vector: id 123456 with the contract
+    // CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE, and its XDR as the
+    // stellar-xdr tool encodes it, as an SCAddress and as a bare MuxedContract.
+    private const MUXED_CONTRACT_ID = 'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+    private const MUXED_CONTRACT_HASH_HEX = '363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103';
+    private const MUXED_CONTRACT_SC_ADDRESS_XDR = 'AAAABQAAAAAAAeJANj6qOGeEH7rQ9O2Ix3nk/mblaiRw3JjA7JwHPQXHsQM=';
+    private const MUXED_CONTRACT_XDR = 'AAAAAAAB4kA2Pqo4Z4QfutD07YjHeeT+ZuVqJHDcmMDsnAc9BcexAw==';
 
     // Account Address Tests
 
@@ -717,5 +726,77 @@ class XdrSCAddressTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('must be an "L..." strkey or a hexadecimal string');
         XdrSCAddress::forLiquidityPoolId('not a pool id')->getCanonicalLiquidityPoolIdHex();
+    }
+
+    // Muxed contract (CAP-0084)
+
+    public function testMuxedContractBinaryRoundTrip(): void
+    {
+        $decoded = XdrMuxedContract::fromBase64Xdr(self::MUXED_CONTRACT_XDR);
+
+        $this->assertSame(123456, $decoded->getId());
+        $this->assertSame(self::MUXED_CONTRACT_HASH_HEX, bin2hex($decoded->getContractId()));
+        $this->assertSame(self::MUXED_CONTRACT_XDR, $decoded->toBase64Xdr());
+    }
+
+    public function testMuxedContractJsonIsTheWStrkey(): void
+    {
+        $muxedContract = new XdrMuxedContract(123456, hex2bin(self::MUXED_CONTRACT_HASH_HEX));
+
+        $this->assertSame(self::MUXED_CONTRACT_ID, $muxedContract->toJsonValue());
+        $this->assertSame('"' . self::MUXED_CONTRACT_ID . '"', $muxedContract->toJson());
+        $parsed = XdrMuxedContract::fromJson('"' . self::MUXED_CONTRACT_ID . '"');
+        $this->assertSame(123456, $parsed->id);
+        $this->assertSame(self::MUXED_CONTRACT_HASH_HEX, bin2hex($parsed->contractId));
+    }
+
+    public function testMuxedContractArmBinaryRoundTrip(): void
+    {
+        $address = XdrSCAddress::forMuxedContractId(self::MUXED_CONTRACT_ID);
+
+        $this->assertSame(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT, $address->type->value);
+        $this->assertSame(123456, $address->getMuxedContract()->getId());
+        $this->assertSame(self::MUXED_CONTRACT_HASH_HEX, bin2hex($address->getMuxedContract()->getContractId()));
+        $this->assertSame(self::MUXED_CONTRACT_SC_ADDRESS_XDR, $address->toBase64Xdr());
+
+        $decoded = XdrSCAddress::fromBase64Xdr(self::MUXED_CONTRACT_SC_ADDRESS_XDR);
+        $this->assertSame(self::MUXED_CONTRACT_ID, $decoded->toStrKey());
+    }
+
+    public function testMuxedContractArmJsonRoundTrip(): void
+    {
+        $address = XdrSCAddress::fromBase64Xdr(self::MUXED_CONTRACT_SC_ADDRESS_XDR);
+
+        $this->assertSame(self::MUXED_CONTRACT_ID, $address->toJsonValue());
+        $parsed = XdrSCAddress::fromJsonValue(self::MUXED_CONTRACT_ID);
+        $this->assertSame(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT, $parsed->type->value);
+        $this->assertSame(self::MUXED_CONTRACT_SC_ADDRESS_XDR, $parsed->toBase64Xdr());
+    }
+
+    public function testMuxedContractArmTxRepRoundTrip(): void
+    {
+        $lines = [];
+        XdrSCAddress::forMuxedContractId(self::MUXED_CONTRACT_ID)->toTxRep('addr', $lines);
+
+        $this->assertSame([
+            'addr.type' => 'SC_ADDRESS_TYPE_MUXED_CONTRACT',
+            'addr.muxedContract.id' => '123456',
+            'addr.muxedContract.contractId' => self::MUXED_CONTRACT_HASH_HEX,
+        ], $lines);
+        $this->assertSame(self::MUXED_CONTRACT_ID, XdrSCAddress::fromTxRep($lines, 'addr')->toStrKey());
+    }
+
+    public function testForMuxedContractIdRejectsAnotherStrkey(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('version byte in encoded data does not match');
+        XdrSCAddress::forMuxedContractId('MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK');
+    }
+
+    public function testFromJsonValueNamesTheAcceptedPrefixes(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid XdrSCAddress strkey prefix (expected G, C, M, B, L or W): Z');
+        XdrSCAddress::fromJsonValue('Z' . str_repeat('A', 55));
     }
 }

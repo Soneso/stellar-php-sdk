@@ -46,6 +46,13 @@ class ContractSpecTest extends TestCase
 {
     private const TEST_ACCOUNT_ID = "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H";
     private const TEST_CONTRACT_ID = "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA";
+    private const MUXED_ACCOUNT_ID = 'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK';
+    private const MUXED_CONTRACT_ID = 'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY';
+    private const CLAIMABLE_BALANCE_ID = 'BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU';
+    private const LIQUIDITY_POOL_ID = 'LA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN';
+    private const TAKES_ADDRESS = 'Address takes an account (G...) or contract (C...) address';
+    private const TAKES_MUXED_ADDRESS = 'MuxedAddress takes an account (G...), muxed account (M...), contract (C...) or muxed contract (W...) address';
+    private const HOST_PRODUCED = ' is produced by the host and is not a contract input';
 
     public function setUp(): void
     {
@@ -510,6 +517,111 @@ class ContractSpecTest extends TestCase
 
         $result = $spec->nativeToXdrSCVal(self::TEST_CONTRACT_ID, $typeDef);
         $this->assertEquals(XdrSCValType::SCV_ADDRESS, $result->type->value);
+    }
+
+    /** @return array<string, array{0: XdrSCSpecTypeDef, 1: string}> */
+    public static function acceptedAddressProvider(): array
+    {
+        $rows = [];
+        foreach ([self::TEST_ACCOUNT_ID, self::TEST_CONTRACT_ID] as $strKey) {
+            $rows['Address ' . $strKey[0]] = [new XdrSCSpecTypeDef(XdrSCSpecType::ADDRESS()), $strKey];
+        }
+        foreach ([self::TEST_ACCOUNT_ID, self::MUXED_ACCOUNT_ID, self::TEST_CONTRACT_ID, self::MUXED_CONTRACT_ID] as $strKey) {
+            $rows['MuxedAddress ' . $strKey[0]] = [new XdrSCSpecTypeDef(XdrSCSpecType::MUXED_ADDRESS()), $strKey];
+        }
+        return $rows;
+    }
+
+    /**
+     * A strkey or an Address object of a kind the parameter takes converts to an address
+     * SCVal that renders as the strkey given.
+     * @dataProvider acceptedAddressProvider
+     */
+    public function testNativeToXdrSCValAcceptsTheAddressKindsOfTheSpecType(XdrSCSpecTypeDef $typeDef, string $strKey): void
+    {
+        $spec = new ContractSpec([]);
+        foreach ([$strKey, Address::fromStrKey($strKey)] as $value) {
+            $result = $spec->nativeToXdrSCVal($value, $typeDef);
+            $this->assertSame(XdrSCValType::SCV_ADDRESS, $result->type->value);
+            $this->assertSame($strKey, $result->address->toStrKey());
+        }
+    }
+
+    /** @return array<string, array{0: XdrSCSpecTypeDef, 1: mixed, 2: string}> */
+    public static function rejectedAddressProvider(): array
+    {
+        $address = new XdrSCSpecTypeDef(XdrSCSpecType::ADDRESS());
+        $muxedAddress = new XdrSCSpecTypeDef(XdrSCSpecType::MUXED_ADDRESS());
+        $muxedNeedsParameter = ': a muxed address needs a MuxedAddress parameter';
+        $rows = [
+            'Address M' => [$address, self::MUXED_ACCOUNT_ID,
+                self::TAKES_ADDRESS . ', got ' . self::MUXED_ACCOUNT_ID . $muxedNeedsParameter],
+            'Address W' => [$address, self::MUXED_CONTRACT_ID,
+                self::TAKES_ADDRESS . ', got ' . self::MUXED_CONTRACT_ID . $muxedNeedsParameter],
+            'Address W object' => [$address, Address::fromMuxedContractId(self::MUXED_CONTRACT_ID),
+                self::TAKES_ADDRESS . ', got ' . self::MUXED_CONTRACT_ID . $muxedNeedsParameter],
+            'Address M object' => [$address, Address::fromMuxedAccountId(self::MUXED_ACCOUNT_ID),
+                self::TAKES_ADDRESS . ', got ' . self::MUXED_ACCOUNT_ID . $muxedNeedsParameter],
+            'Address malformed account object' => [$address, Address::fromAccountId('GBAD'), self::TAKES_ADDRESS
+                . ', got an Address that does not encode: G-strkey must be 56 characters long, 4 characters given'],
+            'Address malformed' => [$address, 'GBAD', 'Invalid address format: GBAD; ' . self::TAKES_ADDRESS],
+            'MuxedAddress malformed' => [$muxedAddress, 'WBAD', 'Invalid address format: WBAD; ' . self::TAKES_MUXED_ADDRESS],
+            'Address int' => [$address, 42, self::TAKES_ADDRESS . ', got int'],
+            'MuxedAddress int' => [$muxedAddress, 42, self::TAKES_MUXED_ADDRESS . ', got int'],
+        ];
+        foreach (['Address' => [$address, self::TAKES_ADDRESS], 'MuxedAddress' => [$muxedAddress, self::TAKES_MUXED_ADDRESS]]
+                 as $name => [$typeDef, $takes]) {
+            $rows[$name . ' B'] = [$typeDef, self::CLAIMABLE_BALANCE_ID, $takes . ', got ' . self::CLAIMABLE_BALANCE_ID
+                . ': a claimable balance address' . self::HOST_PRODUCED];
+            $rows[$name . ' L'] = [$typeDef, self::LIQUIDITY_POOL_ID, $takes . ', got ' . self::LIQUIDITY_POOL_ID
+                . ': a liquidity pool address' . self::HOST_PRODUCED];
+            $rows[$name . ' B object'] = [$typeDef, Address::fromStrKey(self::CLAIMABLE_BALANCE_ID),
+                $takes . ', got ' . self::CLAIMABLE_BALANCE_ID . ': a claimable balance address' . self::HOST_PRODUCED];
+            $rows[$name . ' L object'] = [$typeDef, Address::fromStrKey(self::LIQUIDITY_POOL_ID),
+                $takes . ', got ' . self::LIQUIDITY_POOL_ID . ': a liquidity pool address' . self::HOST_PRODUCED];
+            $rows[$name . ' incomplete object'] = [$typeDef, new Address(Address::TYPE_MUXED_CONTRACT),
+                $takes . ', got an Address that does not encode: muxedContractId is null'];
+        }
+        return $rows;
+    }
+
+    /**
+     * @dataProvider rejectedAddressProvider
+     */
+    public function testNativeToXdrSCValRejectsWhatTheAddressSpecTypeDoesNotTake(
+        XdrSCSpecTypeDef $typeDef,
+        mixed $value,
+        string $expectedMessage
+    ): void {
+        try {
+            (new ContractSpec([]))->nativeToXdrSCVal($value, $typeDef);
+            $this->fail('accepted ' . get_debug_type($value));
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame($expectedMessage, $e->getMessage());
+        }
+    }
+
+    public function testFuncArgsToXdrSCValuesTransfersToAMuxedContract(): void
+    {
+        $inputs = [
+            new XdrSCSpecFunctionInputV0('', 'from', new XdrSCSpecTypeDef(XdrSCSpecType::ADDRESS())),
+            new XdrSCSpecFunctionInputV0('', 'to', new XdrSCSpecTypeDef(XdrSCSpecType::MUXED_ADDRESS())),
+            new XdrSCSpecFunctionInputV0('', 'amount', new XdrSCSpecTypeDef(XdrSCSpecType::I128())),
+        ];
+        $spec = new ContractSpec([
+            $this->createFunctionEntry($this->createFunction('transfer', $inputs, new XdrSCSpecTypeDef(XdrSCSpecType::VOID()))),
+        ]);
+
+        $result = $spec->funcArgsToXdrSCValues('transfer', [
+            'from' => self::TEST_ACCOUNT_ID,
+            'to' => self::MUXED_CONTRACT_ID,
+            'amount' => 1000,
+        ]);
+
+        $this->assertCount(3, $result);
+        $this->assertSame(self::TEST_ACCOUNT_ID, $result[0]->address->toStrKey());
+        $this->assertSame(self::MUXED_CONTRACT_ID, $result[1]->address->toStrKey());
+        $this->assertSame(XdrSCValType::SCV_I128, $result[2]->type->value);
     }
 
     public function testNativeToXdrSCValConvertsVec(): void
