@@ -799,4 +799,33 @@ class XdrSCAddressTest extends TestCase
         $this->expectExceptionMessage('Invalid XdrSCAddress strkey prefix (expected G, C, M, B, L or W): Z');
         XdrSCAddress::fromJsonValue('Z' . str_repeat('A', 55));
     }
+
+    public function testMuxedContractSetterReplacesAndClearsTheArmValue(): void
+    {
+        $address = new XdrSCAddress(XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT());
+        $muxedContract = XdrMuxedContract::fromBase64Xdr(self::MUXED_CONTRACT_XDR);
+
+        $address->setMuxedContract($muxedContract);
+        $this->assertSame($muxedContract, $address->getMuxedContract());
+        $this->assertSame(self::MUXED_CONTRACT_SC_ADDRESS_XDR, $address->toBase64Xdr());
+
+        $address->setMuxedContract(null);
+        $this->assertNull($address->getMuxedContract());
+        try {
+            $address->toJsonValue();
+            $this->fail('toJsonValue() accepted a muxed contract arm without its value');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame('XdrSCAddress muxedContract field is null', $e->getMessage());
+        }
+    }
+
+    public function testMuxedContractFromBase64XdrRejectsInvalidBase64(): void
+    {
+        try {
+            XdrMuxedContract::fromBase64Xdr('not base64!');
+            $this->fail('fromBase64Xdr() accepted invalid base64');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame('Invalid base64-encoded XDR', $e->getMessage());
+        }
+    }
 }

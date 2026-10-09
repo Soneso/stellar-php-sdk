@@ -873,4 +873,16 @@ class AddressTest extends TestCase
         $this->expectExceptionMessage('muxedContractId is null');
         (new Address(Address::TYPE_MUXED_CONTRACT))->toXdr();
     }
+
+    public function testSetMuxedContractIdReplacesAndClearsTheId(): void
+    {
+        $address = new Address(Address::TYPE_MUXED_CONTRACT);
+
+        $address->setMuxedContractId(self::MUXED_CONTRACT_ID);
+        $this->assertSame(self::MUXED_CONTRACT_ID, $address->getMuxedContractId());
+        $this->assertSame(self::MUXED_CONTRACT_ID, $address->toStrKey());
+
+        $address->setMuxedContractId(null);
+        $this->assertNull($address->getMuxedContractId());
+    }
 }

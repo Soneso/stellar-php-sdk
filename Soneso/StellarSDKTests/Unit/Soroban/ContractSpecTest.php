@@ -601,6 +601,19 @@ class ContractSpecTest extends TestCase
         }
     }
 
+    public function testNativeToXdrSCValRejectsAnAddressForANonAddressType(): void
+    {
+        try {
+            (new ContractSpec([]))->nativeToXdrSCVal(
+                Address::fromAccountId(self::TEST_ACCOUNT_ID),
+                new XdrSCSpecTypeDef(XdrSCSpecType::STRING())
+            );
+            $this->fail('accepted an Address for a String parameter');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame('Type was not address but val was address.', $e->getMessage());
+        }
+    }
+
     public function testFuncArgsToXdrSCValuesTransfersToAMuxedContract(): void
     {
         $inputs = [

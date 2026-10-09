@@ -432,6 +432,15 @@ class PrimitivesAndEnumsRoundTripTest extends TestCase
             'chacha20drawbytes' => XdrContractCostType::ChaCha20DrawBytes,
             'bls12381encodefp'  => XdrContractCostType::Bls12381EncodeFp,
             'bn254g1msm'        => XdrContractCostType::Bn254G1Msm,
+            'mldsa44decodeverifyingkey' => XdrContractCostType::MlDsa44DecodeVerifyingKey,
+            'mldsa65decodeverifyingkey' => XdrContractCostType::MlDsa65DecodeVerifyingKey,
+            'mldsa87decodeverifyingkey' => XdrContractCostType::MlDsa87DecodeVerifyingKey,
+            'mldsa44decodesignature'    => XdrContractCostType::MlDsa44DecodeSignature,
+            'mldsa65decodesignature'    => XdrContractCostType::MlDsa65DecodeSignature,
+            'mldsa87decodesignature'    => XdrContractCostType::MlDsa87DecodeSignature,
+            'verifymldsa44sig'          => XdrContractCostType::VerifyMlDsa44Sig,
+            'verifymldsa65sig'          => XdrContractCostType::VerifyMlDsa65Sig,
+            'verifymldsa87sig'          => XdrContractCostType::VerifyMlDsa87Sig,
         ];
         foreach ($aliases as $alias => $value) {
             $this->assertSame(
