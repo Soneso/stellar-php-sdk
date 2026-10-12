@@ -85,17 +85,6 @@ _INLINE_OPAQUE_REASON = (
     "string)."
 )
 
-# Drop the entries carrying this reason once the pinned build vendors these members.
-_NEWER_THAN_PIN_REASON = (
-    "StellarValueType members STELLAR_VALUE_SIGNED_MS and "
-    "STELLAR_VALUE_EMPTY_TX_SET_MS, SCAddressType member "
-    "SC_ADDRESS_TYPE_MUXED_CONTRACT and the MuxedContract struct are newer than "
-    "the XDR revision the pinned rs-stellar-xdr build vendors, which rejects "
-    "these bytes as an invalid XDR value or names no such type. XdrLedgerTest "
-    "pins the spec-derived JSON of both StellarValue arms, XdrSCAddressTest the "
-    "W-strkey JSON of the muxed contract."
-)
-
 ORACLE_INCOMPARABLE_ENTRIES = {
     "peer_address_ip_ipv4": _INLINE_OPAQUE_REASON,
     "peer_address_ip_ipv6": _INLINE_OPAQUE_REASON,
@@ -116,10 +105,6 @@ ORACLE_INCOMPARABLE_ENTRIES = {
         "form (presence flag 0) has no standalone CLI equivalent and the "
         "SDK emits JSON null where a bare empty DataValue would emit \"\"."
     ),
-    "stellar_value_signed_ms": _NEWER_THAN_PIN_REASON,
-    "stellar_value_empty_tx_set_ms": _NEWER_THAN_PIN_REASON,
-    "scval_address_muxed_contract": _NEWER_THAN_PIN_REASON,
-    "muxed_contract": _NEWER_THAN_PIN_REASON,
 }
 
 

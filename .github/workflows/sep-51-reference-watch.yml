@@ -121,7 +121,7 @@ jobs:
           ## Required actions
 
           1. Reproduce locally: \`bash tools/sep-51-test-fixtures/refresh_corpus.sh\`
-          2. For a changed entry, fix the emission so it matches the reference again and run \`vendor/bin/phpunit --filter Sep51\`.
+          2. For a changed entry, fix the emission so it matches the reference again and run \`php -d memory_limit=-1 vendor/bin/phpunit --no-coverage --filter Sep51\`.
           3. For an added or missing entry, regenerate the corpus with the pinned build: \`cargo install stellar-xdr --features cli --version $PINNED --locked\`, then \`python3 tools/sep-51-test-fixtures/generate_corpus.py\`. Review the diff before committing; a changed rendering is a wire-format change and belongs in the release notes.
           EOF
           } > /tmp/report.md
@@ -301,7 +301,7 @@ jobs:
           1. Install the new build: \`cargo install stellar-xdr --features cli --version $LATEST --locked\`
           2. Update \`tools/sep-51-test-fixtures/oracle-pin.json\`: \`version\`, \`tool_commit\` and \`xdr_commit\` from \`stellar-xdr version\`, and the version inside \`install\`, which the generator prints as the remedy when the pinned build is missing.
           3. Regenerate the corpus with the pinned build: \`python3 tools/sep-51-test-fixtures/generate_corpus.py\`
-          4. Run the SEP-51 tests: \`vendor/bin/phpunit --filter Sep51\`
+          4. Run the SEP-51 tests: \`php -d memory_limit=-1 vendor/bin/phpunit --no-coverage --filter Sep51\`
 
           EOF
               else
