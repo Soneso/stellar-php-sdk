@@ -48,16 +48,17 @@ cd stellar-php-sdk && zip -r ../stellar-php-sdk.zip . -x "*.DS_Store"
 
 ## When to regenerate
 
-Regenerate whenever the SDK's public API surface changes:
+Regenerate at release preparation, together with the skill version fields and
+the zip. The committed reference describes the released SDK, so a pull request
+that changes the public API leaves it unchanged, and on `main` the generated
+output differs from the committed file by the unreleased API. The release
+picks up every change of these kinds:
 
 - New SEP implementation, public class, method, constant, or property in any
   non-XDR namespace
 - A type moved between namespaces
 - A signature changed (parameter, type, default, return type) or a member
   renamed, deprecated, or removed
-
-Stale generation does not break the SDK, but the agent skill will offer
-out-of-date guidance.
 
 ## What gets scanned
 
@@ -70,9 +71,11 @@ out-of-date guidance.
   methods other than `__construct`; members inherited from a parent class or
   interface (only members declared on the type itself are emitted).
 - **Type simplification**: parameter, property, and return types are rendered
-  with short class names; nullable types use the `?` prefix; common base
-  exceptions and PHP interfaces (`Throwable`, `Stringable`, `JsonSerializable`,
-  etc.) are omitted from the header to reduce noise.
+  with short class names; nullable types use the `?` prefix; the header omits
+  the parent classes `Exception`, `RuntimeException`, and
+  `InvalidArgumentException` and the PHP interfaces `Throwable`, `Stringable`,
+  `JsonSerializable`, `ArrayAccess`, `Iterator`, `IteratorAggregate`, and
+  `Countable` to reduce noise.
 
 ## Output format
 

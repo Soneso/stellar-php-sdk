@@ -10,8 +10,6 @@ on:
       - 'Makefile'
       - '.github/workflows/xdr-generator.yml'
   pull_request:
-    branches:
-      - main
     paths:
       - 'tools/xdr-generator/**'
       - 'Soneso/StellarSDK/Xdr/**'
