@@ -30,3 +30,7 @@ tools/.venv-corpus-refresh/
 
 # P28 owner fixture build output
 tools/p28-owner-fixture/target/
+
+# PHPDoc build output
+/docs/api/
+/.phpdoc/

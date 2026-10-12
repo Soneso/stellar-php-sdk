@@ -1,0 +1,103 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+- Muxed contract addresses (`W...`, CAP-0084, protocol 30 and higher).
+  `StrKey::encodeMuxedContractId`, `decodeMuxedContractId`, and `isValidMuxedContractId` encode,
+  decode, and validate the SEP-0023 strkey, whose payload is the 32-byte contract id followed by the
+  8-byte big-endian id. `Address` gains `TYPE_MUXED_CONTRACT`, `getMuxedContractId`,
+  `setMuxedContractId`, `fromMuxedContractId`, `fromMuxedContract`, and `fromStrKey`; `fromAnyId`
+  accepts `W...`. `MuxedContract` takes a contract id as a `C...` strkey or 64 hexadecimal
+  characters and an optional integer id. `getAddress` returns `W...` with an id and `C...` without;
+  `fromAddress`, `fromXdrSCAddress`, `toXdrSCAddress`, and `toAddress` convert between
+  representations. Ids above `PHP_INT_MAX` use negative integers in two's complement form.
+  `XdrSCAddress::forMuxedContractId` builds the address, and `XdrSCVal::toNative` returns an
+  `Address` for the new arm. TxRep writes a muxed contract as `.muxedContract.id` and
+  `.muxedContract.contractId`. `VersionByte::MUXED_CONTRACT_ID` is `22 << 3`,
+  `CryptoConstants::STRKEY_MUXED_CONTRACT_ID_LENGTH` is 69, and
+  `StellarConstants::MUXED_CONTRACT_DECODED_LENGTH` is 40.
+- The [SEP-23 compatibility matrix](compatibility/sep/SEP-0023_COMPATIBILITY_MATRIX.md) documents
+  strkey format support and specification test vectors.
+
+### Changed
+- Breaking: `ContractSpec::nativeToXdrSCVal` and `funcArgsToXdrSCValues` accept `G...` or `C...`
+  strkeys or account or contract `Address` objects for an `Address` parameter. A `MuxedAddress`
+  parameter also accepts `M...` and `W...` strkeys or the corresponding `Address` objects. Callers
+  passing a muxed address to an `Address` parameter must use its underlying account or contract
+  address, or a contract function with a `MuxedAddress` parameter. Claimable balance and liquidity
+  pool addresses, malformed strings, objects that cannot encode, and other value types throw
+  `InvalidArgumentException` naming the parameter type and the value or its type. Prebuilt
+  `XdrSCVal` values pass through; `null` is accepted only for void or optional types. Before this
+  change, an `Address` parameter also accepted an `M...` strkey and passed any `Address` object
+  through unchecked, and a `MuxedAddress` parameter threw for every string.
+- Breaking: Soroban authorization rejects muxed account (`M...`) and muxed contract (`W...`)
+  addresses with `InvalidArgumentException`. Use the underlying `G...` or `C...` address for
+  credentials, signing targets, and delegates. `SorobanAuthorizationEntry::sign` checks the
+  credential address and `forAddress`; `withDelegates` and the `SorobanCredentials` address
+  factories check credentials and delegates. `AssembledTransaction::signAuthEntries` and
+  `WebAuthForContracts::signAuthorizationEntries` check the credentials they sign before writing an
+  expiration or invoking a signing callback. Before this change, an `M...` `forAddress` target or
+  delegate was rejected with other messages, and a muxed credential address was signed without a
+  check.
+- XDR definitions support CAP-0084 muxed contract addresses and CAP-0087 ML-DSA cost types.
+  `XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT` has value 5, and `XdrSCAddress` gains the
+  `muxedContract` arm with an `XdrMuxedContract` whose constructor takes `id`, then `contractId`.
+  `XdrContractCostType` gains nine members from `MlDsa44DecodeVerifyingKey` (86) through
+  `VerifyMlDsa87Sig` (94). XDR-JSON renders a muxed contract as its `W...` strkey and adds the enum
+  names `muxed_contract` and `ml_dsa44_decode_verifying_key` through `verify_ml_dsa87_sig`. Code
+  that dispatches on these values must handle the new cases when receiving them. Before this change,
+  decoding `SC_ADDRESS_TYPE_MUXED_CONTRACT` or a cost type from 86 to 94 threw
+  `InvalidArgumentException` for an unknown enum value.
+- XDR definitions support millisecond ledger close times (CAP-0088). `XdrStellarValueType` gains
+  `STELLAR_VALUE_SIGNED_MS` (3) and `STELLAR_VALUE_EMPTY_TX_SET_MS` (4). `XdrStellarValueExt` gains
+  `signedMsValue` (`XdrStellarValueSignedMsValue`) and `proposedMsValue`
+  (`XdrStellarValueProposedMsValue`), carrying `closeTimeMs` as a PHP integer. XDR-JSON uses
+  `signed_ms`, `empty_tx_set_ms`, and `close_time_ms`. Code that dispatches on these values must
+  handle the new members; existing values and JSON keys retain their meaning. Before this change,
+  decoding `STELLAR_VALUE_SIGNED_MS` or `STELLAR_VALUE_EMPTY_TX_SET_MS` threw
+  `InvalidArgumentException` for an unknown enum value.
+- SEP compatibility matrices state the specification version and status that the assessment uses.
+- Horizon and Soroban RPC compatibility matrices target v29.0.0 and retain their reported coverage.
+- The [SEP guide index](docs/sep/README.md) and [contract parser
+  guide](docs/soroban.md#contract-parser) document SEP-46 metadata, SEP-47 interface discovery, and
+  SEP-48 interface specifications. The parser example shows the declared SEP numbers in the
+  `supportedSeps` property of `SorobanContractInfo`. The README lists 23 supported SEPs, and the
+  agent skill documents the same three SEPs.
+- The repository documents its build, test, generation and contribution rules in `AGENTS.md` and
+  `CONTRIBUTING.md`; CI checks that every path `AGENTS.md` names exists.
+
+### Fixed
+- Breaking: `AssembledTransaction::signAuthEntries` and `SorobanAuthorizationEntry::sign` keep
+  `signatureExpirationLedger` when any top-level or delegate node already carries a signature,
+  preserving earlier signatures when another signer signs the entry. Callers must omit an explicit
+  expiration or pass the stored value; a conflicting `validUntilLedgerSeq` or
+  `signatureExpirationLedger` throws `InvalidArgumentException` naming both values.
+  `signAuthEntries` fetches the latest ledger at most once, only for unsigned entries that need the
+  default of the latest ledger plus 100. It signs copies and replaces the transaction's auth entries
+  only after every matching entry signs successfully, so a failure leaves them unchanged.
+  `SorobanAuthorizationEntry::resolveSignatureExpirationLedger` exposes the same expiration check.
+  Before this change, `signAuthEntries` passed a fresh expiration ledger on every call. A second
+  signer whose call computed a later default or passed another explicit value therefore signed a
+  different payload than the first, and the host rejected the entry.
+- Breaking: `XdrSCVal::forMap` and maps and map-encoded structs built by `ContractSpec` use the
+  Soroban host's key order, fixing host rejection of arguments emitted in insertion order. Callers
+  must supply distinct keys; keys equal in host order throw `InvalidArgumentException` naming the
+  duplicate key. The public `ScValHostOrder::compare` comparator covers every value type, including
+  signed integer and nonce ordering. Decoding preserves the wire order.
+- Breaking: `AssetTypePoolShare` validates credit assets of the same type and code by the issuers'
+  raw 32-byte public keys, matching stellar-core. Strkey text orders some issuer pairs differently.
+  Construction and `Asset::fromXdrChangeTrustAsset` accept the correct order and reject the reversed
+  pair with `RuntimeException` naming both assets. Before this change, the SDK used that text order,
+  so for such a pair it rejected the order stellar-core accepts and accepted the reversed one.
+- `TransactionInfo` reads `diagnosticEventsXdr` from each transaction returned by
+  `SorobanServer::getTransactions`, exposing the server's diagnostic events. Before this change the
+  property stayed null because the SDK read the absent `diagnostic_events` key.
+- The [SEP-29 guide](docs/sep/sep-29.md) replaces vanished example accounts with variables whose
+  comments describe the required funded accounts and memo settings, so callers can run the examples
+  with their own accounts.

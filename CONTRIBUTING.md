@@ -1,71 +1,42 @@
 # Contributing to the PHP Stellar SDK
 
-Thank you for your interest in contributing! 🚀  
-This SDK is an open-source project maintained by [Soneso](https://github.com/Soneso).  
-Contributions, feedback, and feature requests from the community are highly appreciated. 🙏
+Thank you for helping to improve the SDK. This guide covers bug reports, feature proposals, setup and the pull request process. The commands, the definition of done and the repository rules are in `AGENTS.md`.
 
----
+## Reporting a bug
 
-## 📣 How to Provide Feedback
+Open a bug report issue; the template asks for what you did, what happened, what you expected, the SDK version, and the PHP version. A failing test or a short script that reproduces the behavior shortens the fix.
 
-We’d love to hear your thoughts about the SDK:
-- ✅ What’s working well?
-- ⚡ What could be improved?
-- 🌟 Features you’d like to see in the future?
+## Proposing a feature
 
-👉 Please share your feedback in [GitHub Discussions](https://github.com/Soneso/stellar-php-sdk/discussions).
+Open a feature request issue and describe the use case and the proposed behavior. For a SEP or a protocol feature, name the specification. Discuss before writing a large change, so the design is settled before the code.
 
----
+## Setting up
 
-## 🐞 Reporting Bugs
+- PHP at or above the floor in `composer.json`, with the extensions it requires (bcmath, gmp, mbstring, sodium). The development dependencies need a newer PHP than the runtime floor; the CI matrix in `.github/workflows/tests.yml` names the tested versions. The streaming integration tests need the pcntl extension.
+- Composer 2. The Commands section of `AGENTS.md` has the install command and the test commands.
+- For the XDR generator: Docker, Ruby, and Python 3. For the compatibility matrices: Python 3 with `requests` and network; a GitHub token raises the API rate limit. For the SEP-51 fixtures: Rust's cargo for the pinned reference CLI. Each tool's README under `tools/` names its requirements.
 
-If you find a bug:
-1. Check [existing issues](https://github.com/Soneso/stellar-php-sdk/issues) to avoid duplicates.
-2. Open a new [Bug Report](https://github.com/Soneso/stellar-php-sdk/issues/new?template=bug_report.yml).  
-   Please include:
-    - Steps to reproduce
-    - Expected vs. actual behavior
-    - Error messages/logs
-    - SDK and PHP version
-    - Environment details (OS, server, etc.)
+Run the unit suite as `AGENTS.md` describes before you change anything, so you know the baseline is green on your machine.
 
-The more details, the faster we can fix it!
+## Submitting a change
 
----
+1. Fork the repository and branch from `main` with a short kebab-case name that names the change.
+2. Make the change with its tests. A bug fix starts with a test that fails before the fix.
+3. Add an entry under `[Unreleased]` in `CHANGELOG.md`, in the section the change belongs to.
+4. Run the gates listed under "Definition of done" in `AGENTS.md`.
+5. Commit with an imperative subject and a body that states the motivation and what the change does. Open the pull request against `main` and describe what you verified.
 
-## 🌟 Requesting Features
+The user documentation under `docs/` and the skill under `skills/` describe the released SDK and are updated on the `release-docs` branch with the release; a pull request does not change them. Describe the needed documentation change in the pull request, and the maintainer adds it on that branch. `docs/documentation-strategy.md`, `AGENTS.md` and this file are process documents: change them in the pull request that changes a fact they state.
 
-Have an idea for an improvement or a new feature?
-1. First, check [existing feature requests](https://github.com/Soneso/stellar-php-sdk/issues?q=label%3Aenhancement).
-2. Open a new [Feature Request](https://github.com/Soneso/stellar-php-sdk/issues/new?template=feature_request.yml).  
-   Tell us:
-    - What problem the feature solves
-    - Why it would be useful
-    - Any proposed solutions or alternatives
+## What the review checks
 
----
+- The change does what the pull request says, and nothing else.
+- The tests fail without the change and pass with it; unit tests mock HTTP.
+- The conventions in `AGENTS.md`: typed API, strict types, PHPDoc on public API.
+- The CHANGELOG entry; no hand edits to generated files; no change to the user documentation or the skill.
 
-## 🤝 Contributing Code
+CI runs the unit suite on the PHP versions of the CI matrix, static analysis, and the dependency audit; the Codecov project status must pass.
 
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/my-new-feature`).
-3. Commit your changes (`git commit -m "Add my new feature"`).
-4. Push to your fork (`git push origin feature/my-new-feature`).
-5. Open a Pull Request.
+## Questions
 
-Please ensure your code:
-- Follows PHP best practices.
-- Includes tests for new functionality.
-- Updates documentation/examples if relevant.
-
----
-
-## 💬 Questions?
-
-If you’re not sure whether something should be a bug report, feature request, or discussion,  
-just start with [GitHub Discussions](https://github.com/Soneso/stellar-php-sdk/discussions).  
-We’ll help point you in the right direction.
-
----
-
-Thanks again for contributing to the Stellar ecosystem! 🌌
+Use GitHub Discussions for questions about using the SDK or about a change you plan.
