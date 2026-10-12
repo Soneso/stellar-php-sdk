@@ -41,7 +41,7 @@ Before reporting a change as done:
 4. `CHANGELOG.md` has an entry under `[Unreleased]` in the Keep a Changelog section the change belongs to (Added, Changed, Deprecated, Removed, Fixed, Security), in present tense, one entry per user-visible change.
 5. No generated file was edited by hand. The user documentation under `docs/` and the skill under `skills/` describe the released SDK; they change on the `release-docs` branch with the release. `docs/documentation-strategy.md` is a process document and changes in the pull request that changes a fact it states.
 
-Every pull request runs `.github/workflows/tests.yml` (unit suite per PHP version with the `de_DE.UTF-8` locale, PCOV coverage, Codecov upload), `.github/workflows/static-analysis.yml` and `.github/workflows/dependency-audit.yml` (`composer audit --no-dev --abandoned=report`). The `agents-md-paths` job of the tests workflow runs `.github/scripts/check_agents_md_paths.py`, which fails when a path this file names does not exist, so a change that moves a file also changes the line here. `.github/workflows/xdr-generator.yml` runs when its path filter matches and fails on regenerated types, PHPStan list, or SEP-51 tests that differ from the committed files. The branch rules require the Codecov project status; `codecov.yml` holds the targets and the ignore list. A pull request body states what was verified and how.
+Every pull request runs `.github/workflows/tests.yml` (unit suite per PHP version with the `de_DE.UTF-8` locale, PCOV coverage, Codecov upload), `.github/workflows/static-analysis.yml` and `.github/workflows/dependency-audit.yml` (`composer audit --no-dev --abandoned=report`). The `agents-md-paths` job of the tests workflow runs `.github/scripts/check_agents_md_paths.py`, which fails when a path this file names does not exist, so a change that moves a file also changes the line here. `.github/workflows/xdr-generator.yml` runs when its path filter matches and fails on regenerated types, PHPStan list, or SEP-51 tests that differ from the committed files. The branch rules require the Codecov project status; `codecov.yml` holds the targets and the ignore list.
 
 ## Generated code and data
 
@@ -60,21 +60,18 @@ Generated files are never edited by hand. Change the generator or its override f
 - A new unit test declares `strict_types=1`, so a wrong scalar type in test code is an error.
 - `phpstan-baseline.neon` lists known findings. An entry without a matching finding fails `composer analyse`, so fixing a baselined finding removes its entry.
 - Public classes and methods carry PHPDoc blocks with `@param`, `@return`, `@throws` and `@see` where they apply; the API documentation is generated from them. Comments describe current behavior and its reason, never history.
-- A Horizon request throws `HorizonRequestException`, which carries the requested URL and method and, when Horizon answered, the status code and the response; the streaming path surfaces Guzzle's exceptions.
 - New code uses the typed API; raw XDR appears only where no typed path exists, because the typed layer carries the validation and the documentation users read.
-- Composer writes `vendor/` and `composer.lock`, PHPUnit writes `.phpunit.cache/` and `coverage/`; all are gitignored. The matrix generators and the corpus generator dirty tracked files (see above).
 
 ## Boundaries
 
 - Releases are the maintainer's. An agent never changes `VERSION_NR` in `Soneso/StellarSDK/StellarSDK.php`, the skill version fields in `skills/stellar-php-sdk/SKILL.md`, `skills/.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`, the zip `skills/stellar-php-sdk.zip`, a tag, a GitHub release, or the Packagist package.
-- Never edit `xdr/*.x`, a generated file or `tools/sep-51-test-fixtures/corpus.json` by hand.
 - No credential lives in the repository. CI uses OIDC for the Codecov, Pages, and SBOM uploads. Ask before adding a dependency, a workflow, or a new generated artifact; each is a maintenance commitment the maintainer carries after the pull request.
 
 ## Changes
 
 - Branch from `main` with a short kebab-case name that names the change; open the pull request against `main`.
 - The commit subject is one imperative sentence of at most 72 characters without a type prefix; the body states the motivation and what the change does, so the log reads without the diff. The pull request body follows the same form and names what was verified.
-- A pull request carries code, tests, and the CHANGELOG entry. `AGENTS.md`, `CONTRIBUTING.md` and `docs/documentation-strategy.md` change in the pull request that changes a fact they state.
+- A pull request carries code, tests, and the CHANGELOG entry.
 
 ## Where details live
 
@@ -82,7 +79,3 @@ Generated files are never edited by hand. Change the generator or its override f
 - Before writing or changing a page under `docs/`, read `docs/documentation-strategy.md`; it holds the page template, the example rules, and the release policy for documentation.
 - Before touching the skill under `skills/`, read `skills/README.md` and `tools/skill-generator/README.md`; they hold the skill's structure and the reference generator.
 - Before changing a tool under `tools/`, read its README; every tool directory has one.
-
-## Locations
-
-- `examples/` holds one-line redirect stubs kept for links in older material; the examples live in `docs/`.
