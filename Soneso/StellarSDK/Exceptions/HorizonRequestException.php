@@ -150,7 +150,7 @@ class HorizonRequestException extends \ErrorException
      * @param string $title The error message title
      * @param Throwable|null $previous The previous exception for exception chaining
      */
-    public function __construct(string $title, Throwable $previous = null)
+    public function __construct(string $title, ?Throwable $previous = null)
     {
         parent::__construct($title, 0, 1, $previous->getFile(), $previous->getLine(), $previous);
     }
