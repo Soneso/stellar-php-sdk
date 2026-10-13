@@ -45,6 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   expiration or invoking a signing callback. Before this change, an `M...` `forAddress` target or
   delegate was rejected with other messages, and a muxed credential address was signed without a
   check.
+- Breaking: the SDK requires PHP 8.1 or higher; `composer.json` declares `php >=8.1`. Projects on
+  PHP 8.0 stay on 1.15.0 until they move to 8.1. The floor was 8.0, a version without security
+  support since 2023-11 and outside the CI matrix.
 - XDR definitions support CAP-0084 muxed contract addresses and CAP-0087 ML-DSA cost types.
   `XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT` has value 5, and `XdrSCAddress` gains the
   `muxedContract` arm with an `XdrMuxedContract` whose constructor takes `id`, then `contractId`.
