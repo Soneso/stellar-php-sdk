@@ -879,12 +879,10 @@ class P27AssembledTransactionTest extends TestCase
         $tx         = $reflection->newInstanceWithoutConstructor();
 
         $optionsProp = $reflection->getProperty('options');
-        $optionsProp->setAccessible(true);
         $optionsProp->setValue($tx, $txOptions);
 
         $server     = new SorobanServer($txOptions->clientOptions->rpcUrl);
         $serverProp = $reflection->getProperty('server');
-        $serverProp->setAccessible(true);
         $serverProp->setValue($tx, $server);
 
         $account   = new Account($invokerKp->getAccountId(), new BigInteger(123456789));
@@ -903,7 +901,6 @@ class P27AssembledTransactionTest extends TestCase
         $built->setSorobanTransactionData($txData);
 
         $txProp = $reflection->getProperty('tx');
-        $txProp->setAccessible(true);
         $txProp->setValue($tx, $built);
 
         $simResponse = new SimulateTransactionResponse([]);
@@ -914,7 +911,6 @@ class P27AssembledTransactionTest extends TestCase
 
         // Set auth in the sim result so isReadCall() returns false (authsCount > 0).
         $simResultProp = $reflection->getProperty('simulationResult');
-        $simResultProp->setAccessible(true);
         $simResultProp->setValue($tx, new SimulateHostFunctionResult($txData, XdrSCVal::forVoid(), $entries));
 
         return $tx;
@@ -962,17 +958,14 @@ class P27AssembledTransactionTest extends TestCase
         $tx         = $reflection->newInstanceWithoutConstructor();
 
         $optionsProp = $reflection->getProperty('options');
-        $optionsProp->setAccessible(true);
         $optionsProp->setValue($tx, $txOptions);
 
         $server = new SorobanServer($txOptions->clientOptions->rpcUrl);
         $serverReflection = new \ReflectionClass($server);
         $httpClientProp   = $serverReflection->getProperty('httpClient');
-        $httpClientProp->setAccessible(true);
         $httpClientProp->setValue($server, $client);
 
         $serverProp = $reflection->getProperty('server');
-        $serverProp->setAccessible(true);
         $serverProp->setValue($tx, $server);
 
         // Build the raw transaction builder (no network).
@@ -988,7 +981,6 @@ class P27AssembledTransactionTest extends TestCase
         $txBuilder->setMaxOperationFee($methodOptions->fee);
 
         $rawProp = $reflection->getProperty('raw');
-        $rawProp->setAccessible(true);
         $rawProp->setValue($tx, $txBuilder);
 
         return $tx;
@@ -1007,12 +999,10 @@ class P27AssembledTransactionTest extends TestCase
 
         $reflection = new \ReflectionClass($tx);
         $serverProp = $reflection->getProperty('server');
-        $serverProp->setAccessible(true);
         $server = $serverProp->getValue($tx);
 
         $serverReflection = new \ReflectionClass($server);
         $httpClientProp   = $serverReflection->getProperty('httpClient');
-        $httpClientProp->setAccessible(true);
         $httpClientProp->setValue($server, $client);
         return $mock;
     }

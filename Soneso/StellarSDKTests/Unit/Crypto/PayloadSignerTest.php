@@ -167,7 +167,6 @@ class PayloadSignerTest extends TestCase
         $signer = SignedPayloadSigner::fromAccountId(self::ACCOUNT_ID, $payload);
 
         $accountIdField = new \ReflectionProperty(XdrAccountID::class, 'accountId');
-        $accountIdField->setAccessible(true);
         $accountIdField->setValue($signer->getSignerAccountId(), self::MUXED_ID_1);
 
         try {

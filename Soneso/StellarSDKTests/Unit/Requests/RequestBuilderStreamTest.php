@@ -28,7 +28,6 @@ class RequestBuilderStreamTest extends TestCase
     private function consume(string &$buffer): array
     {
         $method = new ReflectionMethod(RequestBuilder::class, 'consumeStreamEvents');
-        $method->setAccessible(true);
         $args = array(&$buffer);
         return $method->invokeArgs(null, $args);
     }

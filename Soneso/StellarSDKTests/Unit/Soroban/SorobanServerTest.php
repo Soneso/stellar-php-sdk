@@ -98,7 +98,6 @@ class SorobanServerTest extends TestCase
         // Use reflection to inject the mocked client
         $reflection = new \ReflectionClass($server);
         $property = $reflection->getProperty('httpClient');
-        $property->setAccessible(true);
         $property->setValue($server, $client);
 
         return $server;
