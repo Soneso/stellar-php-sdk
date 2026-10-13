@@ -13,7 +13,7 @@ Build and sign Stellar transactions, query [Horizon](https://developers.stellar.
 composer require soneso/stellar-php-sdk
 ```
 
-Requires PHP 8.0+.
+Requires PHP 8.1+.
 
 ## Quick examples
 

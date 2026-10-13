@@ -104,7 +104,7 @@ All code must:
 
 ### 6. PHP Version Compatibility
 
-Examples must work with PHP 8.0+:
+Examples must work with PHP 8.1+:
 - Use modern PHP syntax where appropriate
 - Note the PHP version requirements
 - Use type hints consistently

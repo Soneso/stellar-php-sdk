@@ -671,8 +671,7 @@ final class XdrJsonHelper
             return (object) $sorted;
         }
         if (is_array($value)) {
-            // array_is_list() requires PHP 8.1+; use an 8.0-compatible equivalent so the
-            // helper runs on any PHP version the composer.json constraint allows (>=8.0).
+            // Empty or consecutive integer keys from 0 identify a list.
             $isList = $value === [] || array_keys($value) === range(0, count($value) - 1);
             if ($isList) {
                 // Indexed array: preserve order, recurse into elements.
