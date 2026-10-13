@@ -652,11 +652,10 @@ class P27CoverageClosureTest extends TestCase
     }
 
     /**
-     * WITH_DELEGATES entry where all delegates are signed and top-level is void:
-     * getBlockingNonInvokerSigners must treat this as the "delegates-only" pattern
-     * and NOT block submission.
+     * WITH_DELEGATES entry where all delegates are signed and the top-level account is void:
+     * getBlockingNonInvokerSigners reports the top-level account and sign() blocks.
      */
-    public function testGetBlockingNonInvokerSignersAllowsDelegatesOnlyPattern(): void
+    public function testGetBlockingNonInvokerSignersBlocksVoidTopLevelAccountDespiteSignedDelegates(): void
     {
         $topKp      = KeyPair::random();
         $delegateKp = KeyPair::random();
@@ -677,15 +676,17 @@ class P27CoverageClosureTest extends TestCase
         $entry         = new SorobanAuthorizationEntry($creds, $this->makeInvocation());
 
         $tx = $this->buildAssembledTransactionWithAuthEntries([$entry], KeyPair::fromSeed(self::TEST_SECRET));
+        $blocking = (new \ReflectionMethod(AssembledTransaction::class, 'getBlockingNonInvokerSigners'))->invoke($tx);
 
-        // No blocking signers → sign() must succeed.
-        try {
-            $tx->sign(force: true);
-        } catch (Exception $e) {
-            $this->fail('Delegates-only pattern must not block sign(): ' . $e->getMessage());
-        }
+        $this->assertSame([$topKp->getAccountId()], $blocking);
+        $this->assertSame([$topKp->getAccountId()], $tx->needsNonInvokerSigningBy());
 
-        $this->assertNotNull($tx->signed);
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage(
+            'Transaction requires signatures from multiple signers. See `needsNonInvokerSigningBy` for details.'
+        );
+
+        $tx->sign(force: true);
     }
 
     /**
@@ -973,8 +974,8 @@ class P27CoverageClosureTest extends TestCase
 
     // =========================================================================
     // Additional coverage: AssembledTransaction signAuthEntries SOURCE_ACCOUNT skip,
-    // delegateTreeContainsAddress, allDelegateNodesSigned, needsNonInvokerSigningBy
-    // SOURCE_ACCOUNT skip, and collectUnsignedDelegateGAddresses
+    // delegateTreeContainsAddress, sign() blocking on unsigned delegate entries,
+    // needsNonInvokerSigningBy SOURCE_ACCOUNT skip, and collectUnsignedDelegateGAddresses
     // =========================================================================
 
     /**
@@ -1039,13 +1040,10 @@ class P27CoverageClosureTest extends TestCase
     }
 
     /**
-     * allDelegateNodesSigned returns false when one delegate is unsigned.
-     *
-     * Exercises the "return false when delegate has void signature" branch (line 757)
-     * inside allDelegateNodesSigned, which is called from getBlockingNonInvokerSigners
-     * through sign() force check.
+     * sign() blocks on a WITH_DELEGATES entry whose top-level account and delegate are both
+     * unsigned.
      */
-    public function testAllDelegatesSignedReturnsFalseForUnsignedDelegate(): void
+    public function testSignBlocksWhenTopLevelAccountAndDelegateAreUnsigned(): void
     {
         $topKp       = KeyPair::random();
         $delegateKp  = KeyPair::random();
@@ -1063,8 +1061,6 @@ class P27CoverageClosureTest extends TestCase
 
         $tx = $this->buildAssembledTransactionWithAuthEntries([$entry], KeyPair::fromSeed(self::TEST_SECRET));
 
-        // sign() calls getBlockingNonInvokerSigners() which calls allDelegateNodesSigned().
-        // Since the delegate is unsigned, allDelegateNodesSigned returns false,
         // getBlockingNonInvokerSigners reports both addresses, and sign() throws.
         $this->expectException(Exception::class);
         $this->expectExceptionMessageMatches('/multiple signers/');
@@ -1166,19 +1162,14 @@ class P27CoverageClosureTest extends TestCase
     }
 
     // =========================================================================
-    // AssembledTransaction — allDelegateNodesSigned() nested false path (line 757)
+    // AssembledTransaction: sign() with an unsigned nested delegate
     // =========================================================================
 
     /**
-     * allDelegateNodesSigned() returns false when an OUTER delegate is signed but one of its
-     * NESTED delegates is unsigned.
-     *
-     * The outer delegate carries a non-void signature; the inner (level-2) delegate is void.
-     * getBlockingNonInvokerSigners calls allDelegateNodesSigned, which recurses into the outer
-     * node's nestedDelegates and returns false (line 757) because the inner node is void.
-     * As a result sign() throws because the entry is not fully satisfied.
+     * sign() blocks on a WITH_DELEGATES entry whose top-level account is unsigned and whose
+     * signed OUTER delegate has an unsigned NESTED delegate.
      */
-    public function testAllDelegatesSignedReturnsFalseForUnsignedNestedDelegate(): void
+    public function testSignBlocksWhenTopLevelAccountAndNestedDelegateAreUnsigned(): void
     {
         $topKp        = KeyPair::random();
         $outerKp      = KeyPair::random();
@@ -1205,11 +1196,10 @@ class P27CoverageClosureTest extends TestCase
 
         $invokerKp = KeyPair::fromSeed(self::TEST_SECRET);
         $tx        = $this->buildAssembledTransactionWithAuthEntries([$entry], $invokerKp);
+        $blocking  = (new \ReflectionMethod(AssembledTransaction::class, 'getBlockingNonInvokerSigners'))->invoke($tx);
 
-        // sign(force:true) calls getBlockingNonInvokerSigners() -> allDelegateNodesSigned().
-        // allDelegateNodesSigned sees outer is signed, recurses into nestedDelegates, finds
-        // the inner node is void, and returns false (line 757).
-        // The entry is therefore still blocking, and sign() throws.
+        // getBlockingNonInvokerSigners reports the top-level and inner accounts, and sign() throws.
+        $this->assertSame([$topKp->getAccountId(), $innerKp->getAccountId()], $blocking);
         $this->expectException(\Exception::class);
         $this->expectExceptionMessageMatches('/multiple signers/');
 

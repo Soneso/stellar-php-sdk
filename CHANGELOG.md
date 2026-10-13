@@ -110,3 +110,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   operations, payments, and transactions request builders declare their optional parameters as
   nullable types. PHP 8.4 and later reported an implicit-nullable deprecation when these classes
   loaded.
+- `AssembledTransaction::sign` stops on an unsigned account at the top level of a
+  `SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES` entry whatever its delegate nodes carry, and blocks
+  on every unsigned account `needsNonInvokerSigningBy` reports. Before this change, the check
+  treated such an account as satisfied when every delegate node carried a signature or the entry
+  had no delegate nodes, so `sign` produced an envelope the host rejects when it authenticates the
+  entry: an account address authenticates with its own signatures (CAP-71). A custom account
+  contract at the top level never blocks.
