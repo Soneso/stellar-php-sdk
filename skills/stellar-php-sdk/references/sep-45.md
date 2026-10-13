@@ -613,7 +613,8 @@ $argsMap = XdrSCVal::forMap([
 $buildEntry = function (string $credentialsAddress, int $nonceSeed) use ($webAuthContractId, $argsMap): SorobanAuthorizationEntry {
     $address = Address::fromAnyId($credentialsAddress);
     $credentials = new SorobanCredentials(
-        new SorobanAddressCredentials($address, $nonceSeed, 1000000, XdrSCVal::forVec([]))
+        // Unsigned signature placeholder
+        new SorobanAddressCredentials($address, $nonceSeed, 1000000, XdrSCVal::forVoid())
     );
     $contractAddress = Address::fromContractId(StrKey::decodeContractIdHex($webAuthContractId));
     $contractFn = new XdrInvokeContractArgs($contractAddress->toXdr(), 'web_auth_verify', [$argsMap]);
@@ -652,7 +653,13 @@ $webAuth = new WebAuthForContracts($authServer, $webAuthContractId, $serverAccou
 $webAuth->setMockHandler($mock);
 
 $clientSigner = KeyPair::random();
-$jwtToken = $webAuth->jwtToken($clientContractId, [$clientSigner], $domain);
+// Mock-only expiration; avoids a live ledger lookup
+$jwtToken = $webAuth->jwtToken(
+    $clientContractId,
+    [$clientSigner],
+    $domain,
+    signatureExpirationLedger: 2000010,
+);
 
 echo 'Mock JWT: ' . $jwtToken . PHP_EOL;
 ```

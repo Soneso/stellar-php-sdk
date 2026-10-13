@@ -197,7 +197,9 @@ $methodNames = $client->getMethodNames(); // ['transfer', 'balance', ...]
 **Preferred: use `funcArgsToXdrSCValues` when you have the contract spec.** Pass native PHP values and let the spec handle type conversion:
 
 ```php
-// SorobanClient already has the spec loaded — access it via getContractSpec()
+use Soneso\StellarSDK\Crypto\KeyPair;
+
+// The client loads the deployed contract spec
 $spec = $client->getContractSpec();
 
 // Read call with auto-converted args
@@ -210,11 +212,13 @@ $balance = gmp_strval($result->toBigInt());
 // Write call with auto-converted args
 $args = $spec->funcArgsToXdrSCValues('transfer', [
     'from' => $keyPair->getAccountId(),  // String → Address
-    'to' => 'GDEST...',                   // String → Address
+    'to' => KeyPair::random()->getAccountId(), // String → MuxedAddress
     'amount' => 1000,                     // int → I128
 ]);
 $result = $client->invokeMethod('transfer', $args);
 ```
+
+`Address` parameters accept G... and C... strings or account and contract `Address` objects. `MuxedAddress` parameters also accept M... and W... strings or their `Address` objects.
 
 ### Low-Level: SorobanServer
 
@@ -330,12 +334,13 @@ XdrSCVal::forU32(4294967295)->toNative(); // int(4294967295)
 // uint64 above PHP_INT_MAX: the stored bit pattern wraps, so -1 means 2^64-1
 XdrSCVal::forU64(-1)->toNative(); // string(20) "18446744073709551615"
 
-// Map with symbol keys, insertion order preserved
+// Map with symbol keys; forMap orders entries by Soroban host key order
 $val = XdrSCVal::forMap([
     new XdrSCMapEntry(XdrSCVal::forSymbol('name'), XdrSCVal::forString('Alice')),
     new XdrSCMapEntry(XdrSCVal::forSymbol('age'), XdrSCVal::forU32(30)),
 ]);
-$val->toNative(); // ['name' => 'Alice', 'age' => 30]
+$native = $val->toNative(); // ['age' => 30, 'name' => 'Alice']
+echo json_encode($native) . PHP_EOL; // {"age":30,"name":"Alice"}
 ```
 
 **Trap: uint64 values above `PHP_INT_MAX` arrive as strings, not int.**
@@ -441,8 +446,12 @@ $i128Parts  = XdrSCVal::forI128(new XdrInt128Parts(0, 1_000_000)); // hi, lo
 $i128BigInt = XdrSCVal::forI128BigInt('999999999999999999');        // GMP string
 
 // Addresses (account or contract)
-$accountAddr  = Address::fromAccountId('GABC...')->toXdrSCVal();
-$contractAddr = Address::fromContractId('CABC...')->toXdrSCVal();
+$accountAddr  = Address::fromAccountId('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX')->toXdrSCVal();
+$contractAddr = Address::fromContractId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE')->toXdrSCVal();
+
+// Stellar Asset Contract transfer recipient (MuxedAddress)
+$to = Address::fromMuxedContractId('WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG')->toXdrSCVal();
+echo $to->address->toStrKey() . PHP_EOL;
 
 // Vec (ordered array of values)
 $vecVal = XdrSCVal::forVec([
@@ -451,7 +460,7 @@ $vecVal = XdrSCVal::forVec([
     XdrSCVal::forU32(3),
 ]);
 
-// Map (key-value pairs)
+// Map entries use Soroban host key order; equal keys throw InvalidArgumentException
 $mapVal = XdrSCVal::forMap([
     new XdrSCMapEntry(XdrSCVal::forSymbol('name'), XdrSCVal::forString('Alice')),
     new XdrSCMapEntry(XdrSCVal::forSymbol('age'), XdrSCVal::forU32(30)),
@@ -486,7 +495,7 @@ switch ($result->type->value) {
         $value = $result->sym; // string
         break;
     case XdrSCValType::SCV_ADDRESS:
-        $strKey = $result->address->toStrKey(); // G... or C... address
+        $strKey = $result->address->toStrKey(); // Address strkey
         break;
     case XdrSCValType::SCV_MAP:
         foreach ($result->map ?? [] as $entry) {
@@ -569,13 +578,19 @@ $response = $tx->signAndSend(); // returns GetTransactionResponse
 echo $response->getStatus();     // e.g. "SUCCESS"
 ```
 
+Muxed (M..., W...) credential addresses and `forAddress` targets throw `InvalidArgumentException` before that entry's expiration write or callback. Building a delegate tree with a muxed delegate address throws `InvalidArgumentException`.
+
+A non-null expiration passed to `sign()` must equal the stored expiration once any node carries a signature. A node carries a signature when its value is neither void nor an empty vector. A conflicting expiration throws `InvalidArgumentException`.
+
+`signAuthEntries` keeps the stored expiration once any node carries a signature and throws on a conflicting `validUntilLedgerSeq`.
+
 ## Protocol 27 Credentials (CAP-71)
 
 `SorobanCredentials` has four arms: source-account, legacy `ADDRESS` (valid on all protocols), `ADDRESS_V2` (the default arm), and `ADDRESS_WITH_DELEGATES` (the latter two protocol 27+; invalid below 27). `forAddress()`/`forAddressCredentials()` build `ADDRESS_V2`; `forAddressLegacy()`/`forAddressCredentialsLegacy()` build legacy `ADDRESS`. All signing APIs handle every arm; `getAddressCredentials()` returns the inner `SorobanAddressCredentials` for any address arm (null only for source-account); `getCredentialType()` / `isSourceAccount()` inspect the arm.
 
 Simulation requests V2 entries by default (`useUpgradedAuth` is `true` on `MethodOptions` and `SimulateTransactionRequest`, always sent on the wire); pass `false` for legacy `ADDRESS` entries. RPCs without protocol 27 support silently ignore the flag and return legacy `ADDRESS` entries — detect support by checking the returned credential arm, not by expecting an error.
 
-`ADDRESS_WITH_DELEGATES` lets delegate addresses co-sign one entry. Simulation never returns this arm; build it from an `ADDRESS`/`ADDRESS_V2` entry via `SorobanAuthorizationEntry::withDelegates($source, $expirationLedger, $delegates)`, passing `SorobanDelegateDescriptor` objects. The builder sorts the delegate array and rejects duplicates. All nodes (top-level + delegates at any depth) sign the same payload bound to the top-level address; delegates carry no nonce/expiration. `sign($kp, $network, forAddress: $strkey)` routes a signature to matching nodes depth-first; `null` signs top-level. A void top-level with all delegates signed is valid (delegates-only). After attaching the signed entries, re-simulate in enforcing mode (`new SimulateTransactionRequest($tx, authMode: 'enforce')`) and apply the returned `transactionData` / `minResourceFee` before submitting: the recording simulation does not run `__check_auth`, so for a custom (contract) account it omits the footprint its authorization reads (and understates the delegate fee). For multiple classical signatures on one node, call `sign()` in ascending public-key order (the SDK appends in call order and does not sort).
+`ADDRESS_WITH_DELEGATES` lets delegate addresses co-sign one entry. Simulation never returns this arm; build it from an `ADDRESS`/`ADDRESS_V2` entry via `SorobanAuthorizationEntry::withDelegates($source, $expirationLedger, $delegates)`, passing `SorobanDelegateDescriptor` objects. The builder sorts the delegate array and rejects duplicates. All nodes (top-level + delegates at any depth) sign the same payload bound to the top-level address; delegates carry no nonce/expiration. `sign($kp, $network, forAddress: $strkey)` routes a signature to the nodes matching `$strkey`, a G... or C... address, depth-first; `null` signs top-level. A void top-level with all delegates signed is valid (delegates-only). After attaching the signed entries, re-simulate in enforcing mode (`new SimulateTransactionRequest($tx, authMode: 'enforce')`) and apply the returned `transactionData` / `minResourceFee` before submitting: the recording simulation does not run `__check_auth`, so for a custom (contract) account it omits the footprint its authorization reads (and understates the delegate fee). For multiple classical signatures on one node, call `sign()` in ascending public-key order (the SDK appends in call order and does not sort).
 
 ```php
 <?php
@@ -810,6 +825,7 @@ XdrSCVal::forString('TEST'); // spec says String, so use forString
 | SC_SPEC_TYPE_STRING | 16 | String | `XdrSCVal::forString($val)` |
 | SC_SPEC_TYPE_SYMBOL | 17 | Symbol | `XdrSCVal::forSymbol($val)` |
 | SC_SPEC_TYPE_ADDRESS | 19 | Address | `Address::fromAccountId($id)->toXdrSCVal()` |
+| SC_SPEC_TYPE_MUXED_ADDRESS | 20 | MuxedAddress | `Address::fromMuxedContractId($id)->toXdrSCVal()` |
 
 ### Enumerating User-Defined Types and Events
 

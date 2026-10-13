@@ -561,6 +561,8 @@ $neededSigners = $tx->needsNonInvokerSigningBy();
 
 Sign auth entries when you have the private key locally.
 
+`signAuthEntries` keeps the stored expiration once any node of an entry carries a signature. A node carries a signature when its value is neither void nor an empty vector. A conflicting `validUntilLedgerSeq` throws `InvalidArgumentException`. Entries needing the default expiration share at most one latest-ledger lookup, with an offset of 100 ledgers. It skips source-account entries and entries in which no node names the signer. The transaction's auth entries are replaced only after every matching signing step succeeds.
+
 ```php
 <?php
 // Sign Bob's auth entries (Bob's keypair available locally)
@@ -600,6 +602,8 @@ $tx->signAuthEntries(
 $response = $tx->signAndSend();
 ```
 
+Muxed (M..., W...) credential addresses and `forAddress` targets throw `InvalidArgumentException` before that entry's expiration write or callback. Building a delegate tree with a muxed delegate address throws `InvalidArgumentException`.
+
 ### Protocol 27 Credentials (CAP-71)
 
 Protocol 27 adds two address-credential arms to `SorobanCredentials`:
@@ -609,7 +613,7 @@ Protocol 27 adds two address-credential arms to `SorobanCredentials`:
 
 `ADDRESS_V2` is the default arm: simulation requests it, and `SorobanCredentials::forAddress()` / `forAddressCredentials()` build it. The legacy `ADDRESS` arm stays fully valid; use it on a network below protocol 27, where the newer arms invalidate the transaction — request it from simulation with `useUpgradedAuth: false` and build it with `forAddressLegacy()` / `forAddressCredentialsLegacy()`.
 
-All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry::sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry. Use `$credentials->getAddressCredentials()` to read the inner `SorobanAddressCredentials` of any address arm (it returns `null` only for source-account credentials), and `$credentials->getCredentialType()` / `$credentials->isSourceAccount()` to inspect the arm. Factories: `SorobanCredentials::forAddress()` / `forAddressCredentials()` build `ADDRESS_V2` (as does the explicit `forAddressCredentialsV2()`), `forAddressLegacy()` / `forAddressCredentialsLegacy()` build legacy `ADDRESS`, and `forAddressWithDelegates()` builds the delegated arm.
+All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry::sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void or an empty vector, including each unsigned delegate node of a `WITH_DELEGATES` entry. Use `$credentials->getAddressCredentials()` to read the inner `SorobanAddressCredentials` of any address arm (it returns `null` only for source-account credentials), and `$credentials->getCredentialType()` / `$credentials->isSourceAccount()` to inspect the arm. Factories: `SorobanCredentials::forAddress()` / `forAddressCredentials()` build `ADDRESS_V2` (as does the explicit `forAddressCredentialsV2()`), `forAddressLegacy()` / `forAddressCredentialsLegacy()` build legacy `ADDRESS`, and `forAddressWithDelegates()` builds the delegated arm.
 
 #### V2 Entries from Simulation
 
@@ -834,20 +838,29 @@ echo gmp_strval($bigInt);
 
 Account and contract addresses for referencing entities on the network.
 
+A Stellar Asset Contract `transfer` accepts a muxed contract as its `to` argument, which has type `MuxedAddress`.
+
 ```php
 <?php
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\MuxedContract;
 
 // Account address (G...)
 $account = Address::fromAccountId('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX')->toXdrSCVal();
 
 // Contract address (C...) - use fromAnyId for strkey format
 $contract = Address::fromAnyId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE')->toXdrSCVal();
+
+// Stellar Asset Contract transfer recipient (MuxedAddress)
+$to = (new MuxedContract('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE', 123456))->toAddress()->toXdrSCVal();
+echo $to->address->toStrKey() . PHP_EOL;
 ```
 
 #### Collections
 
 Arrays (vectors) and key-value pairs (maps) for structured data.
+
+`forMap` orders entries by Soroban host key order. Keys equal in host order throw `InvalidArgumentException`.
 
 ```php
 <?php
@@ -870,6 +883,8 @@ $map = XdrSCVal::forMap([
 ### Using ContractSpec
 
 Auto-convert native PHP values based on contract specification. The spec is loaded from the contract and knows the expected types.
+
+An `Address` parameter accepts G... or C... strings or account and contract `Address` objects. A `MuxedAddress` parameter also accepts M... and W... strings or the corresponding `Address` objects. A prebuilt `XdrSCVal` for an `Address` or `MuxedAddress` parameter passes through unchanged. Only void and optional types accept `null`. Claimable balance and liquidity pool addresses, malformed strings, and other value types throw `InvalidArgumentException`. For rejected address inputs, the message names the parameter type and the value or its type.
 
 ```php
 <?php
@@ -954,6 +969,8 @@ $val = $spec->nativeToXdrSCVal([
     "bob" => "GBOB..."
 ], $def);
 ```
+
+`ContractSpec` maps and map-encoded structs use Soroban host key order. Keys equal in host order throw `InvalidArgumentException`.
 
 > **PHP Limitation**: PHP only accepts `int` or `string` as array keys. If a map key must be a type that cannot be constructed from int/string (e.g., bool, vec, another map), you must construct the `XdrSCVal` manually.
 
@@ -1553,12 +1570,15 @@ $latestLedger = $server->getLatestLedger();
 
 foreach ($auth as $entry) {
     if ($entry instanceof SorobanAuthorizationEntry) {
-        // Set signature expiration (~50 seconds at 5s/ledger)
-        $entry->credentials->addressCredentials->signatureExpirationLedger = 
-            $latestLedger->sequence + 10;
-        
-        // Sign the entry
-        $entry->sign($signerKeyPair, Network::testnet());
+        $credentials = $entry->credentials->getAddressCredentials();
+        if ($credentials !== null) {
+            // The expiration is checked against signatures on every node
+            $entry->sign(
+                $signerKeyPair,
+                Network::testnet(),
+                signatureExpirationLedger: $latestLedger->sequence + 10,
+            );
+        }
     }
 }
 

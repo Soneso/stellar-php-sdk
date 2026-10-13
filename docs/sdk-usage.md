@@ -1047,9 +1047,10 @@ use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\AssetTypePoolShare;
 
-$usdAsset = new AssetTypeCreditAlphanum4("USD", "GISSUER...");
+$usdAsset = new AssetTypeCreditAlphanum4("USD", "GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX");
 
-// Create pool share asset (assets must be in lexicographic order)
+// Order assets as stellar-core does: type (native, alphanum4, alphanum12),
+// then code bytes, then the issuer's raw key bytes. A reversed pair throws.
 $poolShareAsset = new AssetTypePoolShare(Asset::native(), $usdAsset);
 
 // Establish trustline for pool shares
@@ -2655,9 +2656,10 @@ use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
 use Soneso\StellarSDK\AssetTypePoolShare;
 
-$usdAsset = new AssetTypeCreditAlphanum4("USD", "GISSUER...");
+$usdAsset = new AssetTypeCreditAlphanum4("USD", "GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX");
 
-// Create pool share asset (assets must be in lexicographic order)
+// Order assets as stellar-core does: type (native, alphanum4, alphanum12),
+// then code bytes, then the issuer's raw key bytes. A reversed pair throws.
 $poolShareAsset = new AssetTypePoolShare(Asset::native(), $usdAsset);
 ```
 

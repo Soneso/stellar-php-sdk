@@ -686,7 +686,7 @@ The same executable fields appear under `createContractV2` for
 | bytes | `SCV_BYTES` | `bytes: <hex>` |
 | string | `SCV_STRING` | `str: hello` |
 | symbol | `SCV_SYMBOL` | `sym: transfer` |
-| address | `SCV_ADDRESS` | `address.type: ...` `address.accountId/contractId: ...` |
+| address | `SCV_ADDRESS` | `address.type: ...` `address.accountId/contractId: ...`; muxed contract: `address.type: SC_ADDRESS_TYPE_MUXED_CONTRACT`, `address.muxedContract.id: ...`, `address.muxedContract.contractId: ...` |
 | vec | `SCV_VEC` | `vec._present: true` `vec.len: 2` `vec[0].type: ...` |
 | map | `SCV_MAP` | `map._present: true` `map.len: 2` `map[0].key.type: ...` `map[0].val.type: ...` |
 | contract instance | `SCV_CONTRACT_INSTANCE` | `contractInstance.executable.type: ...` |

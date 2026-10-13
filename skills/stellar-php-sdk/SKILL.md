@@ -2,7 +2,7 @@
 name: stellar-php-sdk
 description: Guides Stellar blockchain development in PHP with the soneso/stellar-php-sdk package. Use when generating or reviewing PHP code for keypairs and accounts, assets and trustlines, transaction building, signing and submission, operation builders, Horizon API queries and streaming, Soroban RPC, smart contract deployment and invocation, XDR encoding and decoding, and SEP protocol integration (stellar.toml, federation, mnemonic key derivation, web authentication, KYC, deposit and withdrawal flows, muxed accounts, anchor quotes). HTTP calls are synchronous and built on Guzzle.
 license: Apache 2.0
-compatibility: Requires PHP 8.0+, ext-bcmath, ext-gmp, ext-mbstring, ext-sodium, and Composer
+compatibility: Requires PHP 8.1+, ext-bcmath, ext-gmp, ext-mbstring, ext-sodium, and Composer
 metadata:
   version: "1.7.0"
   sdk_version: "1.15.0"
@@ -13,7 +13,7 @@ metadata:
 
 ## Overview
 
-The `soneso/stellar-php-sdk` is a PHP 8.0+ library for the Stellar blockchain network. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), 30/30 streaming endpoints, and 23 SEP implementations. All HTTP operations are synchronous using Guzzle 7. The root namespace is `Soneso\StellarSDK`.
+The `soneso/stellar-php-sdk` is a PHP 8.1+ library for the Stellar blockchain network. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), 31/31 streaming endpoints, and 23 SEP implementations. All HTTP operations are synchronous using Guzzle 7. The root namespace is `Soneso\StellarSDK`.
 
 ## Installation
 
@@ -180,7 +180,7 @@ $sdk->payments()
 
 The same pattern applies to all streamable resources (`transactions()`, `ledgers()`, `operations()`, etc.). Auto-reconnects on server errors with a 10-second delay. **Streams block indefinitely** — use `pcntl_fork()` to run a stream alongside other operations (see streaming guide).
 
-For reconnection patterns and all 30 streaming endpoints:
+For reconnection patterns and all 31 streaming endpoints:
 [Horizon Streaming Guide](./references/horizon_streaming.md)
 
 ## 4. Transactions & Operations
@@ -319,6 +319,8 @@ $result = $client->invokeMethod('expensive_operation', [XdrSCVal::forSymbol('dat
 
 Protocol 27 (CAP-71) adds `ADDRESS_V2` and `ADDRESS_WITH_DELEGATES` credential arms; `ADDRESS_V2` is the default — simulation requests it (set `useUpgradedAuth: false` for legacy `ADDRESS`) and `SorobanCredentials::forAddress()`/`forAddressCredentials()` build it (legacy via `forAddressLegacy()`/`forAddressCredentialsLegacy()`). Build delegate trees with `SorobanAuthorizationEntry::withDelegates(...)`.
 
+`MuxedAddress` parameters accept muxed contract addresses (CAP-0084), which are invalid as Soroban authorization addresses.
+
 Protocol 28 (CAP-85) lets a contract instance name an owner contract and a tag instead of carrying its own wasm hash; `SorobanClient::deployFromExternalRef()` deploys from such a reference and `SorobanServer::loadWasmIdForExternalRef()` resolves one to its wasm.
 
 For external-reference deploy and resolution, contract authorization, multi-auth workflows, delegated auth, and remote signing:
@@ -434,7 +436,7 @@ For all SEP examples and the complete implementation table:
 - **Sponsored reserves** — three-operation pattern (Begin → Create → End), both parties sign → [Sponsorship Example](./references/advanced.md)
 - **Fee bump transactions** — `FeeBumpTransactionBuilder` → [Fee Bump Example](./references/advanced.md)
 - **Liquidity pools** — AMM with `AssetTypePoolShare` → [Pools Example](./references/advanced.md)
-- **Muxed accounts** — `MuxedAccount` with M... addresses → [Muxed Example](./references/advanced.md)
+- **Muxed accounts**: `MuxedAccount` with M... addresses, see [Muxed Example](./references/advanced.md); `MuxedContract` with W... addresses, see [muxed address examples](./references/sep-23.md).
 - **Async submission** — `submitAsyncTransaction()` → [Async Example](./references/advanced.md)
 
 ## Reference Documentation
@@ -443,7 +445,7 @@ Links to the reference guides:
 
 - [Operations Reference](./references/operations.md) - All 26 Stellar operations with examples
 - [Horizon API Reference](./references/horizon_api.md) - Complete Horizon endpoint coverage (50/50)
-- [Horizon Streaming Guide](./references/horizon_streaming.md) - SSE patterns for all 30 streaming endpoints
+- [Horizon Streaming Guide](./references/horizon_streaming.md) - SSE patterns for all 31 streaming endpoints
 - [RPC Reference](./references/rpc.md) - All 12 Soroban RPC methods
 - [Smart Contracts Guide](./references/soroban_contracts.md) - Contract deployment, invocation, auth
 - [XDR Guide](./references/xdr.md) - XDR encoding/decoding and debugging

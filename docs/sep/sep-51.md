@@ -60,7 +60,7 @@ SEP-51 covers four families of types:
 
 1. **XDR primitives.** 32-bit and 64-bit signed and unsigned integers, hyper integers (64-bit) and unsigned hyper, booleans, fixed and variable opaque, strings, fixed and variable arrays.
 2. **XDR composites.** Enums, structs, discriminated unions (void and non-void arms), optional values.
-3. **Stellar-specific types.** StrKey-encoded addresses (G, C, M, B, L, T, X, P prefixes), Asset, AssetCode4 / AssetCode12, MuxedAccount, ClaimableBalanceID, SignerKey, ContractID.
+3. **Stellar-specific types.** StrKey-encoded addresses (G, C, M, W, B, L, T, X, P prefixes), Asset, AssetCode4 / AssetCode12, MuxedAccount, MuxedContract, ClaimableBalanceID, SignerKey, ContractID.
 4. **Composite envelopes.** TransactionEnvelope and every nested struct, including operation bodies, contract host functions, and Soroban authorization entries.
 
 Per-type status with file:line evidence is tracked in [`compatibility/sep/SEP-0051_COMPATIBILITY_MATRIX.md`](../../compatibility/sep/SEP-0051_COMPATIBILITY_MATRIX.md). The matrix is generated; do not hand-edit it.
@@ -292,6 +292,7 @@ Every Stellar address type that has a StrKey representation is emitted as the St
 | `AccountID`, `PublicKey`, `SignerKey ed25519` | `G` | 32-byte ed25519 public key |
 | `ContractID`, `SCAddress contract` | `C` | 32-byte contract id |
 | `MuxedAccount muxed`, `SCAddress muxed_account` | `M` | 32-byte ed25519 + 8-byte id |
+| `MuxedContract`, `SCAddress muxed_contract` | `W` | 32-byte contract id + 8-byte id |
 | `ClaimableBalanceID`, `SCAddress claimable_balance` | `B` | 1-byte type + 32-byte hash |
 | `PoolID`, `SCAddress liquidity_pool` | `L` | 32-byte pool id |
 | `SignerKey pre_auth_tx` | `T` | 32-byte tx hash |
@@ -312,6 +313,23 @@ $muxed = XdrMuxedAccount::fromJson($json);
 echo $muxed->toJsonValue() . PHP_EOL;
 ```
 <!-- expected: GDTJSJTEYGG7L23UZSROA5SNR4GJMOUXYNRDCVMEY3FPB22HUYWQBZIA
+-->
+
+Muxed contracts follow [CAP-0084](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md); this SDK encodes them with the W prefix.
+
+```php
+<?php declare(strict_types=1);
+
+use Soneso\StellarSDK\Xdr\XdrMuxedContract;
+use Soneso\StellarSDK\Xdr\XdrSCAddress;
+
+$address = 'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+$muxed = XdrMuxedContract::fromJson('"' . $address . '"');
+echo $muxed->toJsonValue() . PHP_EOL;
+echo XdrSCAddress::forMuxedContractId($address)->toJsonValue() . PHP_EOL;
+```
+<!-- expected: WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG
+WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG
 -->
 
 ### Asset

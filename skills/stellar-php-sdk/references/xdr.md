@@ -179,7 +179,7 @@ The `XdrSCVal` class is the central type for Soroban smart contract values. See 
 | `XdrSCVal::forBytes($b)` | Bytes | `string` (raw) |
 | `XdrSCVal::forAddress(XdrSCAddress)` | Address | `XdrSCAddress` |
 | `XdrSCVal::forVec(array)` | Vec | `array<XdrSCVal>` |
-| `XdrSCVal::forMap(array)` | Map | `array<XdrSCMapEntry>` |
+| `XdrSCVal::forMap(array)` | Map | `array<XdrSCMapEntry>`; host key order; keys equal in host order throw `InvalidArgumentException` |
 
 ### Base64 Serialization of XdrSCVal
 
@@ -264,16 +264,20 @@ use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 // From account ID (G... address)
-$accountAddress = XdrSCAddress::forAccountId('GABC...');
+$accountAddress = XdrSCAddress::forAccountId('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX');
 
 // From contract ID (C... or hex)
-$contractAddress = XdrSCAddress::forContractId('CABC...');
+$contractAddress = XdrSCAddress::forContractId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE');
+
+// A muxed contract can receive a Stellar Asset Contract transfer
+$muxedContractAddress = XdrSCAddress::forMuxedContractId('WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG');
 
 // Wrap in XdrSCVal for use as contract argument
 $addressVal = XdrSCVal::forAddress($accountAddress);
 
 // Convert back to StrKey
-$strKey = $accountAddress->toStrKey(); // 'GABC...'
+$strKey = $accountAddress->toStrKey(); // 'GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX'
+echo $muxedContractAddress->toStrKey() . PHP_EOL;
 ```
 
 ## XdrTransactionEnvelope Base64 Round-Trip
