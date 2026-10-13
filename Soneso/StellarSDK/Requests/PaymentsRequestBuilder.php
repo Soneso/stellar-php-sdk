@@ -194,7 +194,7 @@ class PaymentsRequestBuilder extends RequestBuilder
      * @param callable|null $callback
      * @throws GuzzleException
      */
-    public function stream(callable $callback = null)
+    public function stream(?callable $callback = null)
     {
         $this->getAndStream($this->buildUrl(), function($rawData) use ($callback) {
             if (isset($rawData['type'])){

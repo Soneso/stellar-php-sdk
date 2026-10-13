@@ -106,3 +106,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The [SEP-29 guide](docs/sep/sep-29.md) replaces vanished example accounts with variables whose
   comments describe the required funded accounts and memo settings, so callers can run the examples
   with their own accounts.
+- `HorizonRequestException::__construct` and the `stream()` methods of the effects, ledgers,
+  operations, payments, and transactions request builders declare their optional parameters as
+  nullable types. PHP 8.4 and later reported an implicit-nullable deprecation when these classes
+  loaded.

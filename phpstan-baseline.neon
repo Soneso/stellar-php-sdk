@@ -61,12 +61,6 @@ parameters:
 			path: Soneso/StellarSDK/Crypto/StrKey.php
 
 		-
-			message: '#^Deprecated in PHP 8\.4\: Parameter \#2 \$previous \(Throwable\) is implicitly nullable via default value null\.$#'
-			identifier: parameter.implicitlyNullable
-			count: 1
-			path: Soneso/StellarSDK/Exceptions/HorizonRequestException.php
-
-		-
 			message: '#^Comparison operation "\<" between int\<100, max\> and 0 is always false\.$#'
 			identifier: smaller.alwaysFalse
 			count: 1
@@ -235,12 +229,6 @@ parameters:
 			path: Soneso/StellarSDK/Requests/ClaimableBalancesRequestBuilder.php
 
 		-
-			message: '#^Deprecated in PHP 8\.4\: Parameter \#1 \$callback \(callable\) is implicitly nullable via default value null\.$#'
-			identifier: parameter.implicitlyNullable
-			count: 1
-			path: Soneso/StellarSDK/Requests/EffectsRequestBuilder.php
-
-		-
 			message: '#^Method Soneso\\StellarSDK\\Requests\\EffectsRequestBuilder\:\:cursor\(\) should return Soneso\\StellarSDK\\Requests\\EffectsRequestBuilder but returns Soneso\\StellarSDK\\Requests\\RequestBuilder\.$#'
 			identifier: return.type
 			count: 1
@@ -305,12 +293,6 @@ parameters:
 			identifier: return.type
 			count: 1
 			path: Soneso/StellarSDK/Requests/HealthRequestBuilder.php
-
-		-
-			message: '#^Deprecated in PHP 8\.4\: Parameter \#1 \$callback \(callable\) is implicitly nullable via default value null\.$#'
-			identifier: parameter.implicitlyNullable
-			count: 1
-			path: Soneso/StellarSDK/Requests/LedgersRequestBuilder.php
 
 		-
 			message: '#^Method Soneso\\StellarSDK\\Requests\\LedgersRequestBuilder\:\:cursor\(\) should return Soneso\\StellarSDK\\Requests\\LedgersRequestBuilder but returns Soneso\\StellarSDK\\Requests\\RequestBuilder\.$#'
@@ -415,12 +397,6 @@ parameters:
 			path: Soneso/StellarSDK/Requests/OffersRequestBuilder.php
 
 		-
-			message: '#^Deprecated in PHP 8\.4\: Parameter \#1 \$callback \(callable\) is implicitly nullable via default value null\.$#'
-			identifier: parameter.implicitlyNullable
-			count: 1
-			path: Soneso/StellarSDK/Requests/OperationsRequestBuilder.php
-
-		-
 			message: '#^Method Soneso\\StellarSDK\\Requests\\OperationsRequestBuilder\:\:cursor\(\) should return Soneso\\StellarSDK\\Requests\\OperationsRequestBuilder but returns Soneso\\StellarSDK\\Requests\\RequestBuilder\.$#'
 			identifier: return.type
 			count: 1
@@ -479,12 +455,6 @@ parameters:
 			identifier: missingType.return
 			count: 1
 			path: Soneso/StellarSDK/Requests/OrderBookRequestBuilder.php
-
-		-
-			message: '#^Deprecated in PHP 8\.4\: Parameter \#1 \$callback \(callable\) is implicitly nullable via default value null\.$#'
-			identifier: parameter.implicitlyNullable
-			count: 1
-			path: Soneso/StellarSDK/Requests/PaymentsRequestBuilder.php
 
 		-
 			message: '#^Match expression does not handle remaining value\: mixed$#'
@@ -683,12 +653,6 @@ parameters:
 			identifier: missingType.return
 			count: 1
 			path: Soneso/StellarSDK/Requests/TradesRequestBuilder.php
-
-		-
-			message: '#^Deprecated in PHP 8\.4\: Parameter \#1 \$callback \(callable\) is implicitly nullable via default value null\.$#'
-			identifier: parameter.implicitlyNullable
-			count: 1
-			path: Soneso/StellarSDK/Requests/TransactionsRequestBuilder.php
 
 		-
 			message: '#^Method Soneso\\StellarSDK\\Requests\\TransactionsRequestBuilder\:\:cursor\(\) should return Soneso\\StellarSDK\\Requests\\TransactionsRequestBuilder but returns Soneso\\StellarSDK\\Requests\\RequestBuilder\.$#'
