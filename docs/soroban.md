@@ -699,7 +699,7 @@ Rules enforced by the host and handled by the SDK builder:
 
 - Every delegate array must be sorted ascending by the XDR-encoded bytes of the delegate address, with no duplicates within one array. The builder sorts automatically and throws on duplicates — always construct trees through `withDelegates` rather than assembling the XDR by hand.
 - Every signer in the tree — top-level and delegates at any depth — signs the same payload, which is bound to the top-level credential address. Delegates carry no nonce and no expiration; only the top-level credentials do.
-- A void top-level signature is legitimate when the delegates sign (the delegates-only pattern); such an entry passes the send precheck once every delegate is signed.
+- An account (`G...`) at the top level authenticates with the signatures of its own node, whatever the delegates carry. `AssembledTransaction::sign()` throws while that node is unsigned. A custom account contract (`C...`) may leave its top-level signature void when its `__check_auth` accepts the delegate signatures alone. Contract addresses never make `sign()` throw.
 
 ```php
 <?php
@@ -752,7 +752,7 @@ $delegated = SorobanAuthorizationEntry::withDelegates(
     [new SorobanDelegateDescriptor($delegateKeyPair->getAccountId())],
 );
 
-// Optional top-level signature (skip this for the delegates-only pattern).
+// The top-level account signs its own node; only a custom account contract may leave it void.
 // When one node needs multiple classical (G-address) signatures, add them in
 // ascending public-key order — the host requires that order and the SDK
 // appends signatures in the order you call sign().
