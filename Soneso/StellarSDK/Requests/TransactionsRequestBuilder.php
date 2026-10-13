@@ -260,7 +260,7 @@ class TransactionsRequestBuilder extends RequestBuilder
      * @return void This method runs indefinitely until interrupted
      * @throws GuzzleException If the streaming connection fails
      */
-    public function stream(callable $callback = null)
+    public function stream(?callable $callback = null)
     {
         $this->getAndStream($this->buildUrl(), function($rawData) use ($callback) {
             $parsedObject = TransactionResponse::fromJson($rawData);

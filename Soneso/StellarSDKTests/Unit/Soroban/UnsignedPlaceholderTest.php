@@ -226,8 +226,79 @@ class UnsignedPlaceholderTest extends TestCase
         $this->assertCount(1, $credentials->delegates[0]->signature->vec);
         $this->assertSignatureVerifies($this->delegate, $credentials->delegates[0]->signature->vec[0], $entry);
         $this->assertSame([$top], $tx->needsNonInvokerSigningBy());
+        $this->assertSame([$top], $this->blockingSigners($tx));
+        $this->assertSame(self::BLOCKED, $this->signError($tx));
+
+        $tx->signAuthEntries($this->top);
+
+        $entry = $tx->tx->getOperations()[0]->auth[0];
+        $credentials = $entry->credentials->addressWithDelegates;
+        $this->assertSame(1100, $credentials->addressCredentials->signatureExpirationLedger);
+        $this->assertSignatureVerifies($this->top, $credentials->addressCredentials->signature->vec[0], $entry);
+        $this->assertSignatureVerifies($this->delegate, $credentials->delegates[0]->signature->vec[0], $entry);
+        $this->assertSame([], $tx->needsNonInvokerSigningBy());
         $this->assertSame([], $this->blockingSigners($tx));
         $this->assertNull($this->signError($tx));
+    }
+
+    public function testAssembledTransactionBlocksAnUnsignedTopLevelWithoutDelegates(): void
+    {
+        $mock = new MockHandler([$this->latestLedgerResponse(1000)]);
+        $tx = $this->assembledTransaction([$this->delegatesEntry(XdrSCVal::forVoid(), null, 0)], $mock);
+        $top = $this->top->getAccountId();
+
+        $this->assertSame([$top], $tx->needsNonInvokerSigningBy());
+        $this->assertSame([$top], $this->blockingSigners($tx));
+        $this->assertSame(self::BLOCKED, $this->signError($tx));
+
+        $tx->signAuthEntries($this->top);
+
+        $this->assertCount(0, $mock);
+        $entry = $tx->tx->getOperations()[0]->auth[0];
+        $credentials = $entry->credentials->addressWithDelegates;
+        $this->assertSame([], $credentials->delegates);
+        $this->assertSame(1100, $credentials->addressCredentials->signatureExpirationLedger);
+        $this->assertSignatureVerifies($this->top, $credentials->addressCredentials->signature->vec[0], $entry);
+        $this->assertSame([], $tx->needsNonInvokerSigningBy());
+        $this->assertSame([], $this->blockingSigners($tx));
+        $this->assertNull($this->signError($tx));
+        $this->assertNotNull($tx->signed);
+    }
+
+    public function testAssembledTransactionBlocksAPlaceholderTopLevelWithSignedDelegates(): void
+    {
+        $signed = XdrSCVal::forVec([XdrSCVal::forBytes(str_repeat("\x07", 64))]);
+        $tx = $this->assembledTransaction([$this->delegatesEntry(XdrSCVal::forVec([]), $signed, 900)], new MockHandler([]));
+        $top = $this->top->getAccountId();
+
+        $this->assertSame([$top], $tx->needsNonInvokerSigningBy());
+        $this->assertSame([$top], $this->blockingSigners($tx));
+        $this->assertSame(self::BLOCKED, $this->signError($tx));
+
+        $tx->signAuthEntries($this->top);
+
+        $entry = $tx->tx->getOperations()[0]->auth[0];
+        $credentials = $entry->credentials->addressWithDelegates->addressCredentials;
+        $this->assertSame(900, $credentials->signatureExpirationLedger);
+        $this->assertSignatureVerifies($this->top, $credentials->signature->vec[0], $entry);
+        $this->assertSame([], $tx->needsNonInvokerSigningBy());
+        $this->assertSame([], $this->blockingSigners($tx));
+        $this->assertNull($this->signError($tx));
+    }
+
+    public function testAssembledTransactionDoesNotBlockOnAnUnsignedContractTopLevel(): void
+    {
+        $signed = XdrSCVal::forVec([XdrSCVal::forBytes(str_repeat("\x07", 64))]);
+        $contract = Address::fromContractId(self::AUX_CONTRACT_ID);
+        $tx = $this->assembledTransaction(
+            [$this->delegatesEntry(XdrSCVal::forVoid(), $signed, 900, $contract)],
+            new MockHandler([]),
+        );
+
+        $this->assertSame([StrKey::decodeContractIdHex(self::AUX_CONTRACT_ID)], $tx->needsNonInvokerSigningBy());
+        $this->assertSame([], $this->blockingSigners($tx));
+        $this->assertNull($this->signError($tx));
+        $this->assertNotNull($tx->signed);
     }
 
     /** @dataProvider signedValueProvider */
@@ -259,8 +330,8 @@ class UnsignedPlaceholderTest extends TestCase
 
         $expectedUnsigned = $node === 'top' ? [] : [$this->top->getAccountId()];
         $this->assertSame($expectedUnsigned, $tx->needsNonInvokerSigningBy());
-        $this->assertSame([], $this->blockingSigners($tx));
-        $this->assertNull($this->signError($tx));
+        $this->assertSame($expectedUnsigned, $this->blockingSigners($tx));
+        $this->assertSame($node === 'top' ? null : self::BLOCKED, $this->signError($tx));
     }
 
     /** @return array<string, array{string}> */
@@ -291,12 +362,23 @@ class UnsignedPlaceholderTest extends TestCase
         );
     }
 
-    private function delegatesEntry(XdrSCVal $topSignature, XdrSCVal $delegateSignature, int $expiration): SorobanAuthorizationEntry
-    {
-        $credentials = new SorobanAddressCredentials(Address::fromAccountId($this->top->getAccountId()), 7, $expiration, $topSignature);
-        $node = new SorobanDelegateSignature(XdrSCAddress::forAccountId($this->delegate->getAccountId()), $delegateSignature);
+    /**
+     * Builds a WITH_DELEGATES entry for the top-level account, or for $topAddress when given,
+     * with one delegate node for the delegate account, or none when $delegateSignature is null.
+     */
+    private function delegatesEntry(
+        XdrSCVal $topSignature,
+        ?XdrSCVal $delegateSignature,
+        int $expiration,
+        ?Address $topAddress = null,
+    ): SorobanAuthorizationEntry {
+        $address = $topAddress ?? Address::fromAccountId($this->top->getAccountId());
+        $credentials = new SorobanAddressCredentials($address, 7, $expiration, $topSignature);
+        $nodes = $delegateSignature === null
+            ? []
+            : [new SorobanDelegateSignature(XdrSCAddress::forAccountId($this->delegate->getAccountId()), $delegateSignature)];
         return new SorobanAuthorizationEntry(
-            SorobanCredentials::forAddressWithDelegates(new SorobanAddressCredentialsWithDelegates($credentials, [$node])),
+            SorobanCredentials::forAddressWithDelegates(new SorobanAddressCredentialsWithDelegates($credentials, $nodes)),
             $this->invocation(),
         );
     }

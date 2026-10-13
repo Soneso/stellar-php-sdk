@@ -45,6 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   expiration or invoking a signing callback. Before this change, an `M...` `forAddress` target or
   delegate was rejected with other messages, and a muxed credential address was signed without a
   check.
+- Breaking: the SDK requires PHP 8.1 or higher; `composer.json` declares `php >=8.1`. Projects on
+  PHP 8.0 stay on 1.15.0 until they move to 8.1. The floor was 8.0, a version without security
+  support since 2023-11 and outside the CI matrix.
 - XDR definitions support CAP-0084 muxed contract addresses and CAP-0087 ML-DSA cost types.
   `XdrSCAddressType::SC_ADDRESS_TYPE_MUXED_CONTRACT` has value 5, and `XdrSCAddress` gains the
   `muxedContract` arm with an `XdrMuxedContract` whose constructor takes `id`, then `contractId`.
@@ -103,3 +106,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The [SEP-29 guide](docs/sep/sep-29.md) replaces vanished example accounts with variables whose
   comments describe the required funded accounts and memo settings, so callers can run the examples
   with their own accounts.
+- `HorizonRequestException::__construct` and the `stream()` methods of the effects, ledgers,
+  operations, payments, and transactions request builders declare their optional parameters as
+  nullable types. PHP 8.4 and later reported an implicit-nullable deprecation when these classes
+  loaded.
+- `AssembledTransaction::sign` stops on an unsigned account at the top level of a
+  `SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES` entry whatever its delegate nodes carry, and blocks
+  on every unsigned account `needsNonInvokerSigningBy` reports. Before this change, the check
+  treated such an account as satisfied when every delegate node carried a signature or the entry
+  had no delegate nodes, so `sign` produced an envelope the host rejects when it authenticates the
+  entry: an account address authenticates with its own signatures (CAP-71). A custom account
+  contract at the top level never blocks.

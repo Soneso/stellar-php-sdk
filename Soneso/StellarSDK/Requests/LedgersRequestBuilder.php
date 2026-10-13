@@ -134,7 +134,7 @@ class LedgersRequestBuilder extends RequestBuilder
      * @param callable|null $callback
      * @throws GuzzleException
      */
-    public function stream(callable $callback = null)
+    public function stream(?callable $callback = null)
     {
         $this->getAndStream($this->buildUrl(), function($rawData) use ($callback) {
             $parsedObject = LedgerResponse::fromJson($rawData);

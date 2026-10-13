@@ -54,8 +54,8 @@ use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
  * Protocol 27 (CAP-71) simulation and AssembledTransaction tests.
  *
  * Covers SimulateTransactionRequest.useUpgradedAuth wire flag, MethodOptions.useUpgradedAuth thread-through,
- * signAuthEntries and needsNonInvokerSigningBy across all three address arms, the
- * delegates-only send-precheck reconciliation, and arm preservation.
+ * signAuthEntries and needsNonInvokerSigningBy across all three address arms, the send
+ * precheck for WITH_DELEGATES entries, and arm preservation.
  */
 class P27AssembledTransactionTest extends TestCase
 {
@@ -284,7 +284,7 @@ class P27AssembledTransactionTest extends TestCase
     }
 
     // =========================================================================
-    // needsNonInvokerSigningBy: all arms, delegates, delegates-only pattern
+    // needsNonInvokerSigningBy: all arms, delegates, send precheck
     // =========================================================================
 
     /**
@@ -345,12 +345,10 @@ class P27AssembledTransactionTest extends TestCase
     }
 
     /**
-     * The no-blocking rule: a WITH_DELEGATES entry where the top-level signature is void
-     * but ALL delegate nodes are signed must NOT cause sign() to throw.
-     *
-     * This is the "delegates-only" pattern — the void top-level is legitimate.
+     * A WITH_DELEGATES entry whose top-level account signature is void blocks sign() when every
+     * delegate node is signed: the host authenticates the account with its own signatures.
      */
-    public function testSendPrecheckAllowsDelegatesOnlyPatternDespiteVoidTopLevel(): void
+    public function testSendPrecheckBlocksVoidTopLevelAccountDespiteSignedDelegates(): void
     {
         $topKp       = KeyPair::random();
         $delegateKp  = KeyPair::random();
@@ -370,21 +368,22 @@ class P27AssembledTransactionTest extends TestCase
         $creds         = SorobanCredentials::forAddressWithDelegates($withDelegates);
         $entry         = new SorobanAuthorizationEntry($creds, $this->makeInvocation());
 
-        // The invoker is signing the envelope; the entry is a delegates-only pattern.
         $tx = $this->buildAssembledTransactionWithAuthEntries([$entry], $this->invokerKp);
+        $blocking = (new \ReflectionMethod(AssembledTransaction::class, 'getBlockingNonInvokerSigners'))->invoke($tx);
 
-        // sign() must NOT throw even though top-level is void — all delegates are signed.
-        try {
-            $tx->sign(force: true);
-        } catch (Exception $e) {
-            $this->fail('sign() must not throw for delegates-only pattern: ' . $e->getMessage());
-        }
+        $this->assertSame([$topKp->getAccountId()], $tx->needsNonInvokerSigningBy());
+        $this->assertSame([$topKp->getAccountId()], $blocking);
 
-        $this->assertNotNull($tx->signed, 'Signed transaction must be set after successful sign()');
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage(
+            'Transaction requires signatures from multiple signers. See `needsNonInvokerSigningBy` for details.'
+        );
+
+        $tx->sign(force: true);
     }
 
     /**
-     * Contrast: a WITH_DELEGATES entry where a DELEGATE is unsigned DOES block the send.
+     * sign() blocks when the top-level account and its delegate are unsigned.
      */
     public function testSendPrecheckBlocksWhenDelegateIsUnsigned(): void
     {

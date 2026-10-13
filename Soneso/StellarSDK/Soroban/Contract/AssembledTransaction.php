@@ -502,9 +502,8 @@ class AssembledTransaction
             throw new Exception('Source account keypair has no private key, but needed for signing.');
         }
 
-        // Determine which G-address signers are BLOCKING submission. A WITH_DELEGATES entry
-        // whose top-level node is unsigned but all delegate nodes are signed is the legitimate
-        // "delegates-only" pattern; the unsigned top-level node does not block the send.
+        // Every unsigned account node of an address-arm entry blocks, at the top level and in
+        // the delegate tree. Contract addresses never block.
         $blockingSigners = $this->getBlockingNonInvokerSigners();
         if (count($blockingSigners) > 0) {
             throw new Exception("Transaction requires signatures from multiple signers. " .
@@ -697,19 +696,18 @@ class AssembledTransaction
 
 
     /**
-     * Returns the set of G-address signers that are BLOCKING submission.
+     * Returns the account (G...) addresses whose missing signatures block submission.
      *
      * A node is unsigned when its signature value is void or an empty vector
-     * (see SorobanAuthorizationEntry::carriesSignature()). An address is blocking if:
-     * - It appears as the top-level address of an unsigned ADDRESS or ADDRESS_V2 entry, OR
-     * - It appears as the unsigned top-level address of a WITH_DELEGATES entry
-     *   AND at least one delegate node is also unsigned (the full entry is not yet satisfied), OR
-     * - It appears as an unsigned delegate node in a WITH_DELEGATES entry.
+     * (see SorobanAuthorizationEntry::carriesSignature()). An address blocks when it is:
+     * - the unsigned top-level account of an ADDRESS, ADDRESS_V2 or WITH_DELEGATES entry, or
+     * - an unsigned account node at any depth of the delegate tree of a WITH_DELEGATES entry.
      *
-     * A WITH_DELEGATES entry where the top-level node is unsigned but every delegate node carries
-     * a signature is the "delegates-only" pattern and does NOT block the send.
-     *
-     * Contract (C-prefixed) addresses are excluded: they cannot sign independently.
+     * The host authenticates an account with the signatures of its own node, whatever the
+     * delegate nodes of its entry carry (CAP-71). Contract (C...) addresses never block: the
+     * contract's __check_auth decides which signature value it accepts.
+     * needsNonInvokerSigningBy() lists every unsigned node, so every blocking address appears
+     * in its list.
      *
      * @return array<string> G-address strkeys that block submission
      * @throws Exception if the transaction has not yet been simulated
@@ -738,64 +736,24 @@ class AssembledTransaction
                 continue;
             }
 
+            // Top-level node of any address arm; a contract address has no accountId.
+            $topCreds = $entry->credentials->getAddressCredentials();
+            if ($topCreds !== null && !SorobanAuthorizationEntry::carriesSignature($topCreds->signature)) {
+                $topStrkey = $topCreds->getAddress()->accountId;
+                if ($topStrkey !== null && !in_array($topStrkey, $blocking, true)) {
+                    $blocking[] = $topStrkey;
+                }
+            }
+
+            // Delegate nodes (ADDRESS_WITH_DELEGATES only).
             if ($credType === XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
                 $withDelegates = $entry->credentials->addressWithDelegates;
-                if ($withDelegates === null) {
-                    continue;
-                }
-                $topUnsigned = !SorobanAuthorizationEntry::carriesSignature($withDelegates->addressCredentials->signature);
-
-                // Check whether all delegate nodes are signed.
-                $allDelegatesSigned = $this->allDelegateNodesSigned($withDelegates->delegates, 0);
-
-                if ($topUnsigned && $allDelegatesSigned) {
-                    // Delegates-only pattern: an unsigned top-level node is acceptable; nothing blocks.
-                    continue;
-                }
-
-                // Entry not yet satisfied — collect unsigned G-address nodes.
-                if ($topUnsigned) {
-                    $topStrkey = $withDelegates->addressCredentials->getAddress()->accountId;
-                    if ($topStrkey !== null && !in_array($topStrkey, $blocking, true)) {
-                        $blocking[] = $topStrkey;
-                    }
-                }
-                $this->collectUnsignedDelegateGAddresses($withDelegates->delegates, $blocking, 0);
-            } else {
-                // ADDRESS or ADDRESS_V2: top-level only.
-                $topCreds = $entry->credentials->getAddressCredentials();
-                if ($topCreds !== null && !SorobanAuthorizationEntry::carriesSignature($topCreds->signature)) {
-                    $topStrkey = $topCreds->getAddress()->accountId;
-                    if ($topStrkey !== null && !in_array($topStrkey, $blocking, true)) {
-                        $blocking[] = $topStrkey;
-                    }
+                if ($withDelegates !== null) {
+                    $this->collectUnsignedDelegateGAddresses($withDelegates->delegates, $blocking, 0);
                 }
             }
         }
         return $blocking;
-    }
-
-    /**
-     * Returns true when every node in the delegate array (and all their children) carries a
-     * signature, a value other than void or an empty vector.
-     *
-     * @param array<\Soneso\StellarSDK\Soroban\SorobanDelegateSignature> $delegates
-     * @param int $depth guard against hostile deep trees
-     */
-    private function allDelegateNodesSigned(array $delegates, int $depth): bool
-    {
-        if ($depth > 128) {
-            return true; // Truncate at limit; overly deep trees are rejected on decode.
-        }
-        foreach ($delegates as $delegate) {
-            if (!SorobanAuthorizationEntry::carriesSignature($delegate->signature)) {
-                return false;
-            }
-            if (!$this->allDelegateNodesSigned($delegate->nestedDelegates, $depth + 1)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -833,10 +791,9 @@ class AssembledTransaction
      * entry AND each unsigned delegate node within a WITH_DELEGATES entry. A top-level signature
      * alongside delegates is a legal pattern; both may appear in the returned list independently.
      *
-     * Note: a WITH_DELEGATES entry where the top-level node is unsigned but every delegate node
-     * is signed is the "delegates-only" pattern; the top-level address still appears in the list
-     * because its own node is unsigned. The send precheck in sign() treats such entries as satisfied
-     * (all required delegate signatures are present) and does not block submission.
+     * Note: sign() blocks on every unsigned account (G...) node in this list, at the top level and
+     * in the delegate tree. An unsigned contract (C...) node does not block sign(), because the
+     * contract's __check_auth decides which signature value it accepts.
      *
      * @param bool $includeAlreadySigned when true, includes signers whose nodes already carry signatures.
      * @return array<string> strkeys of addresses that need (or needed) to sign auth entries.
