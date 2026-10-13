@@ -38,6 +38,7 @@ use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Soroban\SorobanCredentials;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\Soroban\Responses\GetLatestLedgerResponse;
+use Soneso\StellarSDK\Util\Hash;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
 use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
@@ -216,7 +217,8 @@ class WebAuthForContractsTest extends TestCase
         string $functionName,
         XdrSCVal $argsMap,
         int $nonce,
-        int $expirationLedger
+        int $expirationLedger,
+        ?XdrSCVal $signature = null
     ): SorobanAuthorizationEntry {
         $address = Address::fromAnyId($credentialsAddress);
         if ($address === null) {
@@ -228,7 +230,7 @@ class WebAuthForContractsTest extends TestCase
                 $address,
                 $nonce,
                 $expirationLedger,
-                XdrSCVal::forVoid()
+                $signature ?? XdrSCVal::forVoid()
             )
         );
 
@@ -1041,6 +1043,67 @@ class WebAuthForContractsTest extends TestCase
         );
 
         $this->assertEquals($this->successJWTToken, $token);
+    }
+
+    /**
+     * Test signing challenge entries built the way js-stellar-sdk builds them
+     *
+     * js-stellar-sdk writes an empty signature vector and expiration ledger 0 into unsigned
+     * entries. Signing stamps the requested expiration on the client and client domain entries
+     * and appends one signature that verifies against each entry's preimage.
+     */
+    public function testSignAuthorizationEntriesStampsPlaceholderEntriesFromJsStellarSdk(): void
+    {
+        $clientSigner = KeyPair::random();
+        $clientDomainKeyPair = KeyPair::random();
+        $argsMap = $this->buildArgsMap(
+            $this->clientContractId,
+            $this->domain,
+            "auth.example.stellar.org",
+            $this->serverAccountId,
+            "test_nonce",
+            "client.example.com",
+            $clientDomainKeyPair->getAccountId()
+        );
+        $clientEntry = $this->buildAuthEntry(
+            $this->clientContractId, $this->webAuthContractId, "web_auth_verify", $argsMap, 12346, 0, XdrSCVal::forVec([])
+        );
+        $clientDomainEntry = $this->buildAuthEntry(
+            $clientDomainKeyPair->getAccountId(), $this->webAuthContractId, "web_auth_verify", $argsMap, 12347, 0, XdrSCVal::forVec([])
+        );
+
+        $webAuth = new WebAuthForContracts(
+            $this->authServer,
+            $this->webAuthContractId,
+            $this->serverAccountId,
+            $this->domain,
+            Network::testnet()
+        );
+        $webAuth->setMockHandler(new MockHandler([]));
+
+        $signed = $webAuth->signAuthorizationEntries(
+            [$clientEntry, $clientDomainEntry],
+            $this->clientContractId,
+            [$clientSigner],
+            500,
+            $clientDomainKeyPair
+        );
+
+        $this->assertCount(2, $signed);
+        foreach ([[$signed[0], $clientSigner], [$signed[1], $clientDomainKeyPair]] as [$entry, $signer]) {
+            $credentials = $entry->credentials->getAddressCredentials();
+            $this->assertSame(500, $credentials->signatureExpirationLedger);
+            $this->assertCount(1, $credentials->signature->vec);
+            $signature = null;
+            foreach ($credentials->signature->vec[0]->map ?? [] as $mapEntry) {
+                if ($mapEntry->key->sym === 'signature') {
+                    $signature = $mapEntry->val->bytes?->getValue();
+                }
+            }
+            $this->assertNotNull($signature, 'The signature element must carry a signature field');
+            $hash = Hash::generate($entry->buildPreimage(Network::testnet())->encode());
+            $this->assertTrue($signer->verifySignature($signature, $hash));
+        }
     }
 
     /**

@@ -225,7 +225,7 @@ class SorobanAuthorizationEntry
      * Source-account credentials throw RuntimeException.
      *
      * Expiration is shared by all credential nodes. A non-null expiration must
-     * match the stored value when any node carries a non-void signature.
+     * match the stored value when any node carries a signature (see carriesSignature()).
      * Null keeps the stored value.
      *
      * Routing: when $forAddress is null, the signature is written to the top-level
@@ -300,8 +300,8 @@ class SorobanAuthorizationEntry
     /**
      * Resolves expiration while preserving every existing signature on the entry.
      *
-     * Every non-void signature commits to the shared expiration, including signatures
-     * on nodes receiving an additional signature.
+     * Every node that carries a signature (see carriesSignature()) commits to the shared
+     * expiration, including nodes receiving an additional signature.
      *
      * @param int|null $expirationLedger the requested expiration, or null to reuse a committed value
      * @return int|null the resolved expiration, or null when a default is needed
@@ -313,7 +313,7 @@ class SorobanAuthorizationEntry
         if ($top === null) {
             return $expirationLedger;
         }
-        $signed = $top->signature->type->value !== XdrSCValType::SCV_VOID;
+        $signed = self::carriesSignature($top->signature);
         $delegates = $this->credentials->addressWithDelegates->delegates ?? [];
         $signed = $signed || $this->delegatesCarrySignatures($delegates, 0);
         if (!$signed) {
@@ -326,6 +326,32 @@ class SorobanAuthorizationEntry
         return $stored;
     }
 
+    /**
+     * Reports whether a credential node's signature value carries a signature.
+     *
+     * A void value and a vector that is empty or absent are unsigned placeholders; every other
+     * value is a signature payload. js-stellar-sdk 17.2.1 writes an empty vector with expiration
+     * ledger 0 into the unsigned entries it builds (`src/base/auth.ts`, lines 482 to 487) and
+     * treats a void value and an empty vector alike as unsigned (`signaturePresent`, lines 1108
+     * to 1122), so entries from either SDK are classified the same way.
+     *
+     * The check classifies placeholders and does not judge whether a payload authorizes the
+     * address. A custom account contract whose policy needs no signer can accept an empty vector
+     * as a valid payload; such a node is reported as unsigned.
+     *
+     * @param XdrSCVal $signature the signature value of a top-level or delegate credential node
+     * @return bool true when the value is neither void nor an empty or absent vector
+     * @see https://github.com/stellar/js-stellar-sdk/blob/v17.2.1/src/base/auth.ts
+     */
+    public static function carriesSignature(XdrSCVal $signature): bool
+    {
+        return match ($signature->type->value) {
+            XdrSCValType::SCV_VOID => false,
+            XdrSCValType::SCV_VEC => ($signature->getVec() ?? []) !== [],
+            default => true,
+        };
+    }
+
     /** @param array<SorobanDelegateSignature> $delegates */
     private function delegatesCarrySignatures(array $delegates, int $depth): bool
     {
@@ -333,7 +359,7 @@ class SorobanAuthorizationEntry
             throw new InvalidArgumentException('Delegate tree traversal depth limit (' . self::DELEGATE_DEPTH_LIMIT . ') exceeded');
         }
         foreach ($delegates as $node) {
-            if ($node->signature->type->value !== XdrSCValType::SCV_VOID) {
+            if (self::carriesSignature($node->signature)) {
                 return true;
             }
             if ($node->nestedDelegates !== []
