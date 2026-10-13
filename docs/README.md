@@ -15,6 +15,9 @@ Welcome to the documentation for the Stellar SDK for PHP. Whether you're buildin
 ### Standards
 - **[SEP Implementations](sep/README.md)** - Stellar Ecosystem Proposal support
 
+### Migration Guides
+- **[Migrating to 1.16.0](migration/1.16.0.md)** - Observable changes since 1.15.0
+
 ## Getting Help
 
 - **[GitHub Issues](https://github.com/Soneso/stellar-php-sdk/issues)** - Bug reports and feature requests

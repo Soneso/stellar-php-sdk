@@ -97,6 +97,7 @@ Uppercase hex escapes are rejected on input — the SEP-51 mapping is canonical 
 | `AccountID`, `PublicKey` | `G` | `XdrAccountID`, `XdrPublicKey` |
 | `ContractID` | `C` | bare-typedef sites; full class is `XdrSCAddress` |
 | `MuxedAccount` (muxed arm), `MuxedEd25519Account` | `M` | `XdrMuxedAccount`, `XdrMuxedEd25519Account` |
+| `MuxedContract`, `SCAddress muxed_contract` | `W` | `XdrMuxedContract`, `XdrSCAddress` |
 | `ClaimableBalanceID` | `B` | `XdrClaimableBalanceID` |
 | `PoolID` | `L` | `XdrPoolID` |
 | `SignerKey pre_auth_tx` | `T` | `XdrSignerKey` |

@@ -1,6 +1,6 @@
 # SEP-23: Strkey Encoding
 
-**Purpose:** Validate and convert Stellar addresses between human-readable strings and raw binary data. Covers all strkey types: account IDs (G...), secret seeds (S...), muxed accounts (M...), pre-auth TX hashes (T...), SHA-256 hashes (X...), signed payloads (P...), contract IDs (C...), liquidity pool IDs (L...), and claimable balance IDs (B...).
+**Purpose:** Validate and convert Stellar addresses between human-readable strings and raw binary data. Covers all strkey types: account IDs (G...), secret seeds (S...), muxed accounts (M...), pre-auth TX hashes (T...), SHA-256 hashes (X...), signed payloads (P...), contract IDs (C...), muxed contract IDs (W...), liquidity pool IDs (L...), and claimable balance IDs (B...).
 
 **Prerequisites:** None
 
@@ -14,13 +14,15 @@
 4. [Muxed accounts (M...)](#muxed-accounts-m)
 5. [Pre-auth TX and SHA-256 hashes](#pre-auth-tx-and-sha-256-hashes)
 6. [Contract IDs (C...)](#contract-ids-c)
-7. [Signed payloads (P...)](#signed-payloads-p)
-8. [Liquidity pool IDs (L...)](#liquidity-pool-ids-l)
-9. [Claimable balance IDs (B...)](#claimable-balance-ids-b)
-10. [MuxedAccount class](#muxedaccount-class)
-11. [Validation and error handling](#validation-and-error-handling)
-12. [Version bytes reference table](#version-bytes-reference-table)
-13. [Common pitfalls](#common-pitfalls)
+7. [Muxed contract IDs (W...)](#muxed-contract-ids-w)
+8. [Signed payloads (P...)](#signed-payloads-p)
+9. [Liquidity pool IDs (L...)](#liquidity-pool-ids-l)
+10. [Claimable balance IDs (B...)](#claimable-balance-ids-b)
+11. [MuxedAccount class](#muxedaccount-class)
+12. [MuxedContract class](#muxedcontract-class)
+13. [Validation and error handling](#validation-and-error-handling)
+14. [Version bytes reference table](#version-bytes-reference-table)
+15. [Common pitfalls](#common-pitfalls)
 
 ---
 
@@ -89,6 +91,16 @@ StrKey::encodeContractIdHex(string $contractId): string // hex string → C...
 StrKey::decodeContractId(string $contractId): string   // C... → raw 32 bytes
 StrKey::decodeContractIdHex(string $contractId): string // C... → hex string
 ```
+
+### Muxed contract ID (W...)
+
+```text
+StrKey::isValidMuxedContractId(string $muxedContractId): bool
+StrKey::encodeMuxedContractId(string $data): string
+StrKey::decodeMuxedContractId(string $muxedContractId): string
+```
+
+The payload is the 32-byte contract id followed by the 8-byte big-endian id.
 
 ### Liquidity pool ID (L...)
 
@@ -359,6 +371,32 @@ var_dump($fromHex === $contractId); // bool(true)
 
 ---
 
+## Muxed contract IDs (W...)
+
+Muxed contracts follow [CAP-0084](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md); this SDK encodes them with the W prefix.
+
+The 40-byte payload holds the 32-byte contract id followed by the 8-byte big-endian multiplexing id. The strkey has 69 characters.
+
+Ids greater than `PHP_INT_MAX` use negative integers with the same 64-bit pattern.
+
+```php
+<?php declare(strict_types=1);
+
+use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\MuxedContract;
+
+$muxed = new MuxedContract('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE', 123456);
+$address = $muxed->getAddress();
+$payload = StrKey::decodeMuxedContractId($address);
+$encoded = StrKey::encodeMuxedContractId($payload);
+
+var_dump(StrKey::isValidMuxedContractId($encoded)); // bool(true)
+echo $encoded . PHP_EOL;
+echo 'Characters: ' . strlen($encoded) . ', payload bytes: ' . strlen($payload) . PHP_EOL;
+```
+
+---
+
 ## Signed payloads (P...)
 
 Signed payloads (CAP-40) combine an Ed25519 public key with 1–64 bytes of arbitrary payload data. Used for delegated signing where the signature covers both the transaction and additional application context.
@@ -571,6 +609,65 @@ $fromM = MuxedAccount::fromAccountId($mAddress);  // parses M-address, getId() =
 
 ---
 
+## MuxedContract class
+
+`Soneso\StellarSDK\MuxedContract` pairs a contract with an optional multiplexing id.
+
+### Constructor
+
+```text
+new MuxedContract(string $contractId, ?int $id = null)
+```
+
+The contract id is a C-strkey or 64 hexadecimal characters. Ids greater than `PHP_INT_MAX` use negative integers.
+
+- With an id, `getAddress()` returns a W-address.
+- Without an id, `getAddress()` returns a C-address.
+
+### Methods
+
+```text
+$muxed->getContractId(): string
+$muxed->getId(): ?int
+$muxed->getAddress(): string
+$muxed->toXdrSCAddress(): XdrSCAddress
+$muxed->toAddress(): Address
+```
+
+### Static factory methods
+
+```text
+MuxedContract::fromAddress(string $address): MuxedContract
+// Accepts C... or W...; other prefixes throw InvalidArgumentException
+MuxedContract::fromXdrSCAddress(XdrSCAddress $address): MuxedContract
+// Accepts the contract and muxed contract arms
+```
+
+### Full example
+
+```php
+<?php declare(strict_types=1);
+
+use Soneso\StellarSDK\MuxedContract;
+
+$contractId = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
+$muxed = new MuxedContract($contractId, 123456);
+echo 'W-address: ' . $muxed->getAddress() . PHP_EOL;
+$parsed = MuxedContract::fromAddress($muxed->getAddress());
+echo 'ID: ' . $parsed->getId() . PHP_EOL;
+$fromXdr = MuxedContract::fromXdrSCAddress($muxed->toXdrSCAddress());
+var_dump($fromXdr->toAddress()->toXdr()->toStrKey() === $muxed->getAddress()); // bool(true)
+$plain = MuxedContract::fromAddress($contractId);
+echo 'C-address: ' . $plain->getAddress() . PHP_EOL;
+var_dump($plain->getId()); // NULL
+
+// The unsigned maximum uses the signed 64-bit pattern -1
+$maximum = MuxedContract::fromAddress((new MuxedContract($contractId, -1))->getAddress());
+echo 'Maximum ID pattern: ' . $maximum->getId() . PHP_EOL;
+```
+
+---
+
 ## Validation and error handling
 
 All `isValid*` methods return `bool` and never throw. All `decode*` and `encode*` methods throw `InvalidArgumentException` on invalid input.
@@ -582,6 +679,7 @@ All `isValid*` methods return `bool` and never throw. All `decode*` and `encode*
 
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\MuxedAccount;
+use Soneso\StellarSDK\MuxedContract;
 
 // --- Safe validation pattern ---
 $input = $_POST['address'] ?? '';
@@ -594,6 +692,9 @@ if (StrKey::isValidAccountId($input)) {
     echo 'M-address: G=' . $muxed->getEd25519AccountId() . ' ID=' . $muxed->getId() . PHP_EOL;
 } elseif (StrKey::isValidContractId($input)) {
     echo 'Contract: ' . $input . PHP_EOL;
+} elseif (StrKey::isValidMuxedContractId($input)) {
+    $muxed = MuxedContract::fromAddress($input);
+    echo 'W-address: C=' . $muxed->getContractId() . ' ID=' . $muxed->getId() . PHP_EOL;
 } else {
     echo 'Unknown or invalid address format' . PHP_EOL;
 }
@@ -635,7 +736,7 @@ Each type fixes the length of its encoded string and, except for the signed payl
 | Prefix | Encoded length | Decoded payload |
 |--------|----------------|-----------------|
 | G, S, T, X, C, L | 56 characters | 32 bytes |
-| M | 69 characters | 40 bytes |
+| M, W | 69 characters | 40 bytes |
 | B | 58 characters | 33 bytes |
 | P | 69 to 165 characters | variable, see [Signed payload framing](#signed-payload-framing-p) |
 
@@ -711,6 +812,7 @@ Each strkey type has a version byte that determines its prefix character:
 | G | Account ID (Ed25519 public key) | 32 bytes |
 | S | Secret Seed (Ed25519 private key) | 32 bytes |
 | M | Muxed Account (public key + ID) | 40 bytes (32-byte key + 8-byte big-endian ID) |
+| W | Muxed Contract (contract + ID) | 40 bytes (32-byte contract id + 8-byte big-endian ID) |
 | T | Pre-Auth TX hash | 32 bytes |
 | X | SHA-256 Hash signer | 32 bytes |
 | P | Signed Payload | 40–100 bytes (32-byte key + 4-byte length + payload padded to 4–64 bytes) |

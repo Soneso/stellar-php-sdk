@@ -7,8 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.16.0] - 2026-10-14
+
+Migration guide: [docs/migration/1.16.0.md](docs/migration/1.16.0.md)
+
 ### Added
-- Muxed contract addresses (`W...`, CAP-0084, protocol 30 and higher).
+- Muxed contract addresses (`W...`, CAP-0084).
   `StrKey::encodeMuxedContractId`, `decodeMuxedContractId`, and `isValidMuxedContractId` encode,
   decode, and validate the SEP-0023 strkey, whose payload is the 32-byte contract id followed by the
   8-byte big-endian id. `Address` gains `TYPE_MUXED_CONTRACT`, `getMuxedContractId`,
@@ -33,9 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   address, or a contract function with a `MuxedAddress` parameter. Claimable balance and liquidity
   pool addresses, malformed strings, objects that cannot encode, and other value types throw
   `InvalidArgumentException` naming the parameter type and the value or its type. Prebuilt
-  `XdrSCVal` values pass through; `null` is accepted only for void or optional types. Before this
-  change, an `Address` parameter also accepted an `M...` strkey and passed any `Address` object
-  through unchecked, and a `MuxedAddress` parameter threw for every string.
+  `XdrSCVal` values pass through for `Address` and `MuxedAddress` parameters; `null` is accepted
+  only for void or optional types. Before this change, an `Address` parameter also accepted an
+  `M...` strkey and passed any `Address` object through unchecked, and a `MuxedAddress` parameter
+  threw for every string.
 - Breaking: Soroban authorization rejects muxed account (`M...`) and muxed contract (`W...`)
   addresses with `InvalidArgumentException`. Use the underlying `G...` or `C...` address for
   credentials, signing targets, and delegates. `SorobanAuthorizationEntry::sign` checks the
@@ -66,12 +71,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   decoding `STELLAR_VALUE_SIGNED_MS` or `STELLAR_VALUE_EMPTY_TX_SET_MS` threw
   `InvalidArgumentException` for an unknown enum value.
 - SEP compatibility matrices state the specification version and status that the assessment uses.
-- Horizon and Soroban RPC compatibility matrices target v29.0.0 and retain their reported coverage.
+- The Horizon compatibility matrix targets Horizon v29.0.0 and the Soroban RPC matrix targets
+  stellar-rpc v29.0.1; both retain their reported coverage.
 - The [SEP guide index](docs/sep/README.md) and [contract parser
   guide](docs/soroban.md#contract-parser) document SEP-46 metadata, SEP-47 interface discovery, and
   SEP-48 interface specifications. The parser example shows the declared SEP numbers in the
   `supportedSeps` property of `SorobanContractInfo`. The README lists 23 supported SEPs, and the
   agent skill documents the same three SEPs.
+- The user documentation and the agent skill describe the behavior of this release: muxed contract
+  addresses in every strkey list and section, the `ContractSpec` address rules, the address guards
+  of Soroban authorization, the expiration rule of `signAuthEntries`, the host key order of map
+  arguments, the pool-share asset order, the PHP 8.1 floor, the count of 31 streaming endpoints,
+  the unsigned placeholder in the SEP-45 example, and the top-level signature rule of entries with
+  delegates.
 - The repository documents its build, test, generation and contribution rules in `AGENTS.md` and
   `CONTRIBUTING.md`; CI checks that every path `AGENTS.md` names exists.
 

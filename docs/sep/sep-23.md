@@ -224,6 +224,30 @@ $encoded = StrKey::encodeContractId($raw);
 $encodedFromHex = StrKey::encodeContractIdHex($hex);
 ```
 
+## Muxed contract IDs (W...)
+
+Muxed contracts follow [CAP-0084](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md); this SDK encodes them with the W prefix.
+
+The 40-byte payload holds the 32-byte contract id followed by the 8-byte big-endian multiplexing id. The strkey has 69 characters.
+
+Ids greater than `PHP_INT_MAX` use negative integers with the same 64-bit pattern.
+
+```php
+<?php declare(strict_types=1);
+
+use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\MuxedContract;
+
+$muxed = new MuxedContract('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE', 123456);
+$address = $muxed->getAddress();
+$payload = StrKey::decodeMuxedContractId($address);
+$encoded = StrKey::encodeMuxedContractId($payload);
+
+var_dump(StrKey::isValidMuxedContractId($encoded)); // bool(true)
+echo $encoded . PHP_EOL;
+echo 'Characters: ' . strlen($encoded) . ', payload bytes: ' . strlen($payload) . PHP_EOL;
+```
+
 ## Signed payloads (P...)
 
 Signed payloads (defined in [CAP-40](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md)) combine a public key with arbitrary payload data. They're used for delegated signing scenarios where a signature covers both the transaction and additional application-specific data.
@@ -282,6 +306,7 @@ Each strkey type has a unique version byte that determines its prefix character:
 | G | Account ID | Ed25519 public key |
 | S | Secret Seed | Ed25519 private key |
 | M | Muxed Account | Account ID + 64-bit ID |
+| W | Muxed Contract | Contract ID + 64-bit ID |
 | T | Pre-Auth TX | Pre-authorized transaction hash |
 | X | SHA-256 Hash | Hash signer |
 | P | Signed Payload | Public key + payload |
@@ -296,7 +321,7 @@ Each strkey type has a unique version byte that determines its prefix character:
 | Prefix | Encoded characters | Payload bytes |
 |--------|--------------------|---------------|
 | G, S, T, X, C, L | 56 | 32 |
-| M | 69 | 40 |
+| M, W | 69 | 40 |
 | B | 58 | 33 |
 | P | 69 to 165 | variable, set by the framing rules below |
 
@@ -334,7 +359,7 @@ The first payload byte of a B-strkey is the `ClaimableBalanceID` union discrimin
 
 ### Encoding
 
-`encode*` rejects a payload whose length is wrong for the type. `encodeAccountId()`, `encodeSeed()`, `encodePreAuthTx()`, `encodeSha256Hash()`, `encodeContractId()` and `encodeLiquidityPoolId()` take 32 bytes, and `encodeMuxedAccountId()` takes 40.
+`encode*` rejects a payload whose length is wrong for the type. `encodeAccountId()`, `encodeSeed()`, `encodePreAuthTx()`, `encodeSha256Hash()`, `encodeContractId()` and `encodeLiquidityPoolId()` take 32 bytes, and `encodeMuxedAccountId()` and `encodeMuxedContractId()` take 40.
 
 `encodeClaimableBalanceId()` takes any of three forms: the 33-byte payload led by the zero discriminant, the bare 32-byte hash, which it prefixes with that discriminant itself, or the 36-byte XDR form, whose 4-byte discriminant it narrows to one byte.
 
@@ -379,12 +404,15 @@ try {
 }
 
 // Use validation to avoid exceptions
-$input = 'user-provided-address';
+$input = 'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
 if (StrKey::isValidAccountId($input)) {
     $raw = StrKey::decodeAccountId($input);
 } elseif (StrKey::isValidMuxedAccountId($input)) {
     $muxed = MuxedAccount::fromAccountId($input);
     $raw = StrKey::decodeAccountId($muxed->getEd25519AccountId());
+} elseif (StrKey::isValidMuxedContractId($input)) {
+    $raw = StrKey::decodeMuxedContractId($input);
+    echo "Muxed contract payload bytes: " . strlen($raw) . PHP_EOL;
 } else {
     echo "Invalid address format" . PHP_EOL;
 }
