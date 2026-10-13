@@ -1,9 +1,9 @@
 # Soroban RPC vs PHP SDK Compatibility Matrix
 
-**RPC Version:** v29.0.0 (released 2026-10-01)  
-**RPC Source:** [v29.0.0](https://github.com/stellar/stellar-rpc/releases/tag/v29.0.0)  
-**SDK Version:** 1.15.0  
-**Generated:** 2026-10-01 23:27 UTC
+**RPC Version:** v29.0.1 (released 2026-10-12)  
+**RPC Source:** [v29.0.1](https://github.com/stellar/stellar-rpc/releases/tag/v29.0.1)  
+**SDK Version:** 1.16.0  
+**Generated:** 2026-10-13 22:05 UTC
 
 ## Overall Coverage
 
@@ -79,7 +79,7 @@ Detailed breakdown of response field support per method.
 | getLedgerEntries | 2 | 3 | - |
 | getLedgers | 6 | 7 | - |
 | getNetwork | 3 | 4 | - |
-| getTransaction | 5 | 16 | - |
+| getTransaction | 15 | 16 | - |
 | getTransactions | 6 | 7 | - |
 | getVersionInfo | 5 | 6 | - |
 | sendTransaction | 6 | 7 | - |

@@ -12,7 +12,7 @@ Open a feature request issue and describe the use case and the proposed behavior
 
 ## Setting up
 
-- PHP at or above the floor in `composer.json`, with the extensions it requires (bcmath, gmp, mbstring, sodium). The development dependencies need a newer PHP than the runtime floor; the CI matrix in `.github/workflows/tests.yml` names the tested versions. The streaming integration tests need the pcntl extension.
+- PHP at or above the floor in `composer.json`, with the extensions it requires (bcmath, gmp, mbstring, sodium). The CI matrix in `.github/workflows/tests.yml` names the tested versions. The streaming integration tests need the pcntl extension.
 - Composer 2. The Commands section of `AGENTS.md` has the install command and the test commands.
 - For the XDR generator: Docker, Ruby, and Python 3. For the compatibility matrices: Python 3 with `requests` and network; a GitHub token raises the API rate limit. For the SEP-51 fixtures: Rust's cargo for the pinned reference CLI. Each tool's README under `tools/` names its requirements.
 

@@ -389,6 +389,7 @@ docs/
 ├── getting-started.md          # Fundamentals: installation, keys, accounts
 ├── sdk-usage.md                # All SDK features organized by use case
 ├── soroban.md                  # Soroban smart contract development
+├── migration/                  # Migration guides (X.Y.Z.md)
 ├── sep/
 │   ├── README.md              # SEP overview and selection guide
 │   ├── sep-01.md              # stellar.toml configuration
@@ -401,7 +402,7 @@ docs/
 │   ├── sep-10.md              # Web authentication
 │   ├── sep-11.md              # Transaction representation
 │   ├── sep-12.md              # KYC API
-│   ├── sep-23.md              # Muxed accounts and memos
+│   ├── sep-23.md              # Strkey encoding (SEP-23)
 │   ├── sep-24.md              # Interactive deposit/withdrawal
 │   ├── sep-29.md              # Memo requirement discovery
 │   ├── sep-30.md              # Account recovery

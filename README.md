@@ -68,7 +68,7 @@ This repository includes an [Agent Skill](https://agentskills.io) that teaches A
 | [Getting started](docs/getting-started.md) | Keys, accounts, and fundamentals |
 | [SDK usage](docs/sdk-usage.md) | Transactions, operations, Horizon queries, streaming |
 | [Soroban](docs/soroban.md) | Smart contract deployment and interaction |
-| [SEPs](docs/sep/) | Anchor integration, authentication, KYC, etc. |
+| [SEPs](docs/sep/) | Anchor integration, authentication, KYC and the other supported SEPs |
 
 [API reference](https://soneso.github.io/stellar-php-sdk/)
 
