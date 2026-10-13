@@ -129,13 +129,11 @@ class AssembledTransactionTest extends TestCase
 
         // Initialize the options property
         $optionsProperty = $reflection->getProperty('options');
-        $optionsProperty->setAccessible(true);
         $optionsProperty->setValue($tx, $txOptions);
 
         // Create a SorobanServer (we'll mock its HTTP client if needed)
         $server = new SorobanServer($txOptions->clientOptions->rpcUrl);
         $serverProperty = $reflection->getProperty('server');
-        $serverProperty->setAccessible(true);
         $serverProperty->setValue($tx, $server);
 
         // Create a mock Account directly (no network call needed)
@@ -161,7 +159,6 @@ class AssembledTransactionTest extends TestCase
         $txBuilder->setMaxOperationFee($txOptions->methodOptions->fee);
 
         $rawProperty = $reflection->getProperty('raw');
-        $rawProperty->setAccessible(true);
         $rawProperty->setValue($tx, $txBuilder);
 
         return $tx;
@@ -180,12 +177,10 @@ class AssembledTransactionTest extends TestCase
 
         $reflection = new \ReflectionClass($tx);
         $serverProperty = $reflection->getProperty('server');
-        $serverProperty->setAccessible(true);
         $server = $serverProperty->getValue($tx);
 
         $serverReflection = new \ReflectionClass($server);
         $httpClientProperty = $serverReflection->getProperty('httpClient');
-        $httpClientProperty->setAccessible(true);
         $httpClientProperty->setValue($server, $client);
 
         return $mock;
@@ -286,7 +281,6 @@ class AssembledTransactionTest extends TestCase
 
         $reflection = new \ReflectionClass($tx);
         $property = $reflection->getProperty('simulationResult');
-        $property->setAccessible(true);
 
         $mockResult = new SimulateHostFunctionResult(
             $simulationResponse->transactionData,
@@ -366,7 +360,6 @@ class AssembledTransactionTest extends TestCase
 
         $reflection = new \ReflectionClass($tx);
         $property = $reflection->getProperty('simulationResult');
-        $property->setAccessible(true);
 
         $footprint = new XdrLedgerFootprint([], [new XdrLedgerKey(XdrLedgerEntryType::ACCOUNT())]);
         $resources = new XdrSorobanResources($footprint, 100, 100, 100);
@@ -406,7 +399,6 @@ class AssembledTransactionTest extends TestCase
 
         $reflection = new \ReflectionClass($tx);
         $property = $reflection->getProperty('simulationResult');
-        $property->setAccessible(true);
 
         $mockResult = new SimulateHostFunctionResult(
             $simulationResponse->transactionData,
@@ -441,7 +433,6 @@ class AssembledTransactionTest extends TestCase
 
         $reflection = new \ReflectionClass($tx);
         $property = $reflection->getProperty('simulationResult');
-        $property->setAccessible(true);
 
         $mockResult = new SimulateHostFunctionResult(
             $simulationResponse->transactionData,
@@ -817,7 +808,6 @@ class AssembledTransactionTest extends TestCase
 
         $reflection = new \ReflectionClass($tx);
         $property = $reflection->getProperty('simulationResult');
-        $property->setAccessible(true);
         $footprint = new XdrLedgerFootprint([], [new XdrLedgerKey(XdrLedgerEntryType::ACCOUNT())]);
         $resources = new XdrSorobanResources($footprint, 100, 100, 100);
         $ext = new XdrSorobanTransactionDataExt(0);
@@ -1044,7 +1034,6 @@ class AssembledTransactionTest extends TestCase
 
         $reflection = new \ReflectionClass($tx);
         $property = $reflection->getProperty('simulationResult');
-        $property->setAccessible(true);
 
         $mockResult = new SimulateHostFunctionResult(
             $simulationResponse->transactionData,
@@ -1077,7 +1066,6 @@ class AssembledTransactionTest extends TestCase
 
         $reflection = new \ReflectionClass($tx);
         $property = $reflection->getProperty('simulationResult');
-        $property->setAccessible(true);
 
         $mockResult = new SimulateHostFunctionResult(
             $simulationResponse->transactionData,

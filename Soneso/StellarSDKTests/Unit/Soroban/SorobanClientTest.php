@@ -858,7 +858,6 @@ class SorobanClientTest extends TestCase
         $reflection = new ReflectionClass(SorobanClient::class);
         $client = $reflection->newInstanceWithoutConstructor();
         $constructor = $reflection->getConstructor();
-        $constructor->setAccessible(true);
         $constructor->invoke($client, $specEntries ?? $this->createSpecEntries(), $options ?? $this->createClientOptions());
         return $client;
     }
@@ -927,7 +926,6 @@ class SorobanClientTest extends TestCase
         }
         $server = new SorobanServer(self::TEST_RPC_URL);
         $httpClientProperty = new ReflectionProperty(SorobanServer::class, 'httpClient');
-        $httpClientProperty->setAccessible(true);
         $httpClientProperty->setValue($server, new Client(['handler' => $stack]));
         return $server;
     }
