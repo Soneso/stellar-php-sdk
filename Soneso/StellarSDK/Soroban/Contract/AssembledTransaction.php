@@ -30,7 +30,6 @@ use Soneso\StellarSDK\Soroban\SorobanAuthAddressGuard;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
-use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 
@@ -504,8 +503,8 @@ class AssembledTransaction
         }
 
         // Determine which G-address signers are BLOCKING submission. A WITH_DELEGATES entry
-        // whose top-level signature is void but all delegate nodes are signed is the legitimate
-        // "delegates-only" pattern; the void top-level does not block the send.
+        // whose top-level node is unsigned but all delegate nodes are signed is the legitimate
+        // "delegates-only" pattern; the unsigned top-level node does not block the send.
         $blockingSigners = $this->getBlockingNonInvokerSigners();
         if (count($blockingSigners) > 0) {
             throw new Exception("Transaction requires signatures from multiple signers. " .
@@ -700,14 +699,14 @@ class AssembledTransaction
     /**
      * Returns the set of G-address signers that are BLOCKING submission.
      *
-     * An address is blocking if:
-     * - It appears as the top-level address of an ADDRESS or ADDRESS_V2 entry with a void signature, OR
-     * - It appears as the top-level address of a WITH_DELEGATES entry with a void top-level signature
+     * A node is unsigned when its signature value is void or an empty vector
+     * (see SorobanAuthorizationEntry::carriesSignature()). An address is blocking if:
+     * - It appears as the top-level address of an unsigned ADDRESS or ADDRESS_V2 entry, OR
+     * - It appears as the unsigned top-level address of a WITH_DELEGATES entry
      *   AND at least one delegate node is also unsigned (the full entry is not yet satisfied), OR
-     * - It appears as a delegate node with a void signature in a WITH_DELEGATES entry whose top-level
-     *   signature is also void.
+     * - It appears as an unsigned delegate node in a WITH_DELEGATES entry.
      *
-     * A WITH_DELEGATES entry where the top-level signature is void but every delegate node carries
+     * A WITH_DELEGATES entry where the top-level node is unsigned but every delegate node carries
      * a signature is the "delegates-only" pattern and does NOT block the send.
      *
      * Contract (C-prefixed) addresses are excluded: they cannot sign independently.
@@ -744,18 +743,18 @@ class AssembledTransaction
                 if ($withDelegates === null) {
                     continue;
                 }
-                $topIsVoid = $withDelegates->addressCredentials->signature->type->value === XdrSCValType::SCV_VOID;
+                $topUnsigned = !SorobanAuthorizationEntry::carriesSignature($withDelegates->addressCredentials->signature);
 
                 // Check whether all delegate nodes are signed.
                 $allDelegatesSigned = $this->allDelegateNodesSigned($withDelegates->delegates, 0);
 
-                if ($topIsVoid && $allDelegatesSigned) {
-                    // Delegates-only pattern: top-level void is acceptable; nothing blocks.
+                if ($topUnsigned && $allDelegatesSigned) {
+                    // Delegates-only pattern: an unsigned top-level node is acceptable; nothing blocks.
                     continue;
                 }
 
                 // Entry not yet satisfied — collect unsigned G-address nodes.
-                if ($topIsVoid) {
+                if ($topUnsigned) {
                     $topStrkey = $withDelegates->addressCredentials->getAddress()->accountId;
                     if ($topStrkey !== null && !in_array($topStrkey, $blocking, true)) {
                         $blocking[] = $topStrkey;
@@ -765,7 +764,7 @@ class AssembledTransaction
             } else {
                 // ADDRESS or ADDRESS_V2: top-level only.
                 $topCreds = $entry->credentials->getAddressCredentials();
-                if ($topCreds !== null && $topCreds->signature->type->value === XdrSCValType::SCV_VOID) {
+                if ($topCreds !== null && !SorobanAuthorizationEntry::carriesSignature($topCreds->signature)) {
                     $topStrkey = $topCreds->getAddress()->accountId;
                     if ($topStrkey !== null && !in_array($topStrkey, $blocking, true)) {
                         $blocking[] = $topStrkey;
@@ -778,7 +777,7 @@ class AssembledTransaction
 
     /**
      * Returns true when every node in the delegate array (and all their children) carries a
-     * non-void signature.
+     * signature, a value other than void or an empty vector.
      *
      * @param array<\Soneso\StellarSDK\Soroban\SorobanDelegateSignature> $delegates
      * @param int $depth guard against hostile deep trees
@@ -789,7 +788,7 @@ class AssembledTransaction
             return true; // Truncate at limit; overly deep trees are rejected on decode.
         }
         foreach ($delegates as $delegate) {
-            if ($delegate->signature->type->value === XdrSCValType::SCV_VOID) {
+            if (!SorobanAuthorizationEntry::carriesSignature($delegate->signature)) {
                 return false;
             }
             if (!$this->allDelegateNodesSigned($delegate->nestedDelegates, $depth + 1)) {
@@ -800,7 +799,8 @@ class AssembledTransaction
     }
 
     /**
-     * Walks a delegate array and appends G-address strkeys with void signatures to $blocking.
+     * Walks a delegate array and appends the G-address strkeys of unsigned nodes (void or empty
+     * vector signature) to $blocking.
      *
      * Only G-address (account) nodes are included; contract (C-address) nodes cannot sign independently.
      *
@@ -814,7 +814,7 @@ class AssembledTransaction
             return;
         }
         foreach ($delegates as $delegate) {
-            if ($delegate->signature->type->value === XdrSCValType::SCV_VOID) {
+            if (!SorobanAuthorizationEntry::carriesSignature($delegate->signature)) {
                 $nodeStrkey = $delegate->address->toStrKey();
                 // Only G-address (account) nodes block submission; C-address contracts cannot sign.
                 if (str_starts_with($nodeStrkey, 'G') && !in_array($nodeStrkey, $blocking, true)) {
@@ -828,13 +828,14 @@ class AssembledTransaction
     /**
      * Returns a list of addresses — other than the invoker — that still need to sign auth entries.
      *
-     * Reports EVERY node whose signature is void: the top-level address of any address-arm entry
-     * AND each unsigned delegate node within a WITH_DELEGATES entry. A top-level signature
+     * Reports EVERY unsigned node, one whose signature value is void or an empty vector
+     * (see SorobanAuthorizationEntry::carriesSignature()): the top-level address of any address-arm
+     * entry AND each unsigned delegate node within a WITH_DELEGATES entry. A top-level signature
      * alongside delegates is a legal pattern; both may appear in the returned list independently.
      *
-     * Note: a WITH_DELEGATES entry where the top-level signature is void but every delegate node
+     * Note: a WITH_DELEGATES entry where the top-level node is unsigned but every delegate node
      * is signed is the "delegates-only" pattern; the top-level address still appears in the list
-     * because its own slot is void. The send precheck in sign() treats such entries as satisfied
+     * because its own node is unsigned. The send precheck in sign() treats such entries as satisfied
      * (all required delegate signatures are present) and does not block submission.
      *
      * @param bool $includeAlreadySigned when true, includes signers whose nodes already carry signatures.
@@ -868,8 +869,8 @@ class AssembledTransaction
             // Top-level address node.
             $topCreds = $entry->credentials->getAddressCredentials();
             if ($topCreds !== null) {
-                $isVoid = $topCreds->signature->type->value === XdrSCValType::SCV_VOID;
-                if ($includeAlreadySigned || $isVoid) {
+                $unsigned = !SorobanAuthorizationEntry::carriesSignature($topCreds->signature);
+                if ($includeAlreadySigned || $unsigned) {
                     $addrStr = $topCreds->getAddress()->accountId ?? $topCreds->getAddress()->contractId;
                     if ($addrStr !== null && !in_array($addrStr, $needed, true)) {
                         $needed[] = $addrStr;
@@ -903,8 +904,8 @@ class AssembledTransaction
             return;
         }
         foreach ($delegates as $delegate) {
-            $isVoid = $delegate->signature->type->value === XdrSCValType::SCV_VOID;
-            if ($includeAlreadySigned || $isVoid) {
+            $unsigned = !SorobanAuthorizationEntry::carriesSignature($delegate->signature);
+            if ($includeAlreadySigned || $unsigned) {
                 $nodeStrkey = $delegate->address->toStrKey();
                 if (!in_array($nodeStrkey, $needed, true)) {
                     $needed[] = $nodeStrkey;

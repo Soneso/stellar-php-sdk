@@ -574,21 +574,36 @@ class P27AssembledTransactionTest extends TestCase
     {
         $top = KeyPair::random();
         $delegate = KeyPair::random();
-        foreach ([XdrSCVal::forBytes('opaque'), XdrSCVal::forVec([])] as $signature) {
-            $entry = $this->expirationEntry($top, $delegate);
-            $node = $entry->credentials->addressWithDelegates->delegates[0];
-            $node->nestedDelegates = [new SorobanDelegateSignature(XdrSCAddress::forAccountId($delegate->getAccountId()), $signature)];
-            $before = $entry->toBase64Xdr();
-            try {
-                $entry->sign($delegate, $this->network, 901, $delegate->getAccountId());
-                $this->fail('Expected conflicting expiration');
-            } catch (\InvalidArgumentException $e) {
-                $this->assertStringContainsString('900', $e->getMessage());
-                $this->assertStringContainsString('901', $e->getMessage());
-            }
-            $this->assertSame($before, $entry->toBase64Xdr());
-            $entry->sign($delegate, $this->network, 900, $delegate->getAccountId());
-            $this->assertCount(1, $node->signature->vec);
+        $entry = $this->expirationEntry($top, $delegate);
+        $node = $entry->credentials->addressWithDelegates->delegates[0];
+        $node->nestedDelegates = [new SorobanDelegateSignature(XdrSCAddress::forAccountId($delegate->getAccountId()), XdrSCVal::forBytes('opaque'))];
+        $before = $entry->toBase64Xdr();
+        try {
+            $entry->sign($delegate, $this->network, 901, $delegate->getAccountId());
+            $this->fail('Expected conflicting expiration');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString('900', $e->getMessage());
+            $this->assertStringContainsString('901', $e->getMessage());
+        }
+        $this->assertSame($before, $entry->toBase64Xdr());
+        $entry->sign($delegate, $this->network, 900, $delegate->getAccountId());
+        $this->assertCount(1, $node->signature->vec);
+    }
+
+    public function testEntryExpirationGuardIgnoresNestedEmptyVectorPlaceholders(): void
+    {
+        $top = KeyPair::random();
+        $delegate = KeyPair::random();
+        $entry = $this->expirationEntry($top, $delegate);
+        $node = $entry->credentials->addressWithDelegates->delegates[0];
+        $nested = new SorobanDelegateSignature(XdrSCAddress::forAccountId($delegate->getAccountId()), XdrSCVal::forVec([]));
+        $node->nestedDelegates = [$nested];
+        $entry->sign($delegate, $this->network, 901, $delegate->getAccountId());
+        $this->assertSame(901, $entry->credentials->getAddressCredentials()->signatureExpirationLedger);
+        $hash = Hash::generate($entry->buildPreimage($this->network)->encode());
+        foreach ([$node, $nested] as $signed) {
+            $this->assertCount(1, $signed->signature->vec);
+            $this->assertTrue($delegate->verifySignature($signed->signature->vec[0]->map[1]->val->bytes->getValue(), $hash));
         }
     }
 

@@ -84,7 +84,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `SorobanAuthorizationEntry::resolveSignatureExpirationLedger` exposes the same expiration check.
   Before this change, `signAuthEntries` passed a fresh expiration ledger on every call. A second
   signer whose call computed a later default or passed another explicit value therefore signed a
-  different payload than the first, and the host rejected the entry.
+  different payload than the first, and the host rejected the entry. A signature value of void or an
+  empty vector counts as unsigned, which matches the placeholder js-stellar-sdk writes.
+  `SorobanAuthorizationEntry::carriesSignature` exposes the check.
 - Breaking: `XdrSCVal::forMap` and maps and map-encoded structs built by `ContractSpec` use the
   Soroban host's key order, fixing host rejection of arguments emitted in insertion order. Callers
   must supply distinct keys; keys equal in host order throw `InvalidArgumentException` naming the
