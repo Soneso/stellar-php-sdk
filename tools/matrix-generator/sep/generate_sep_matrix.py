@@ -1672,6 +1672,7 @@ class SEP23Analyzer(SEPAnalyzerBase):
         "STRKEY_CONTRACT": ("CONTRACT_ID", "encodeContractId", "decodeContractId"),
         "STRKEY_LIQUIDITY_POOL": ("LIQUIDITY_POOL_ID", "encodeLiquidityPoolId", "decodeLiquidityPoolId"),
         "STRKEY_CLAIMABLE_BALANCE": ("CLAIMABLE_BALANCE_ID", "encodeClaimableBalanceId", "decodeClaimableBalanceId"),
+        "STRKEY_MUXED_CONTRACT": ("MUXED_CONTRACT_ID", "encodeMuxedContractId", "decodeMuxedContractId"),
     }
 
     def _sections(self) -> list[SEPSection]:
