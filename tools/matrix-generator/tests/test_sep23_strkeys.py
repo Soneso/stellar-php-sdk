@@ -19,9 +19,9 @@ import generate_sep_matrix as sep  # noqa: E402
 from support import FakeUrlopen  # noqa: E402
 from test_sep_matrix import SEP_0001, raw_url  # noqa: E402
 
-# ecosystem/sep-0023.md of stellar-protocol master at 9cd7030, version 1.3.0.
+# ecosystem/sep-0023.md of stellar-protocol master at f2d3649, version 1.4.0.
 SEP_0023 = (FIXTURES_DIR / "sep-0023.md").read_text(encoding="utf-8")
-SEP_0023_BLOB = "8bbca61ecfe50853c2a25887d7bcb4e7fe4a3838"
+SEP_0023_BLOB = "743ee270df82d2138d43c99f6c7849f76ab82339"
 
 SEP_0023_KEY_TYPES = [
     ("STRKEY_PUBKEY", "6 << 3", 48, "G"),
@@ -33,6 +33,7 @@ SEP_0023_KEY_TYPES = [
     ("STRKEY_CONTRACT", "2 << 3", 16, "C"),
     ("STRKEY_LIQUIDITY_POOL", "11 << 3", 88, "L"),
     ("STRKEY_CLAIMABLE_BALANCE", "1 << 3", 8, "B"),
+    ("STRKEY_MUXED_CONTRACT", "22 << 3", 176, "W"),
 ]
 
 SEP_0023_VECTORS = [
@@ -52,6 +53,10 @@ SEP_0023_VECTORS = [
      "LA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN"),
     ("valid_08", "Valid claimable balance address",
      "BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU"),
+    ("valid_09", "Valid muxed contract address",
+     "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC"),
+    ("valid_10", "Valid muxed contract address in which unsigned id exceeds maximum signed 64-bit integer",
+     "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY"),
     ("invalid_01", "Invalid length (Ed25519 should be 32 bytes, not 5)",
      "GAAAAAAAACGC6"),
     ("invalid_02", "The unused trailing bit must be zero in the encoding of the last three bytes (24 bits) "
@@ -83,6 +88,17 @@ SEP_0023_VECTORS = [
      "BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TV"),
     ("invalid_15", "Invalid claimable balance type (first byte of binary key is not 0)",
      "BAAT6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGXACA"),
+    ("invalid_16", "The unused trailing bit must be zero in the encoding of the last three bytes (24 bits) "
+                   "as five base-32 symbols (25 bits) of a muxed contract",
+     "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWD"),
+    ("invalid_17", "Invalid length (congruent to 6 mod 8) of a muxed contract",
+     "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWCA"),
+    ("invalid_18", "Invalid length (base-32 decoding should yield 43 bytes, not 44) of a muxed contract",
+     "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAAIOUI"),
+    ("invalid_19", "Invalid algorithm (low 3 bits of version byte are 7) of a muxed contract",
+     "W47QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAADXHW"),
+    ("invalid_20", "Invalid checksum of a muxed contract",
+     "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWA"),
 ]
 
 SDK_VERSION_PATH = "Soneso/StellarSDK/StellarSDK.php"
@@ -100,12 +116,14 @@ VERSION_BYTES = [
     ("ACCOUNT_ID", "6 << 3"), ("MUXED_ACCOUNT_ID", "12 << 3"), ("SEED", "18 << 3"), ("PRE_AUTH_TX", "19 << 3"),
     ("SHA256_HASH", "23 << 3"), ("SIGNED_PAYLOAD", "15 << 3"), ("CONTRACT_ID", "2 << 3"),
     ("LIQUIDITY_POOL_ID", "11 << 3"), ("CLAIMABLE_BALANCE_ID", "1 << 3"),
+    ("MUXED_CONTRACT_ID", "22 << 3"),
 ]
 STRKEY_METHODS = [
     "encodeAccountId", "decodeAccountId", "encodeMuxedAccountId", "decodeMuxedAccountId",
     "encodeSeed", "decodeSeed", "encodePreAuthTx", "decodePreAuthTx", "encodeSha256Hash", "decodeSha256Hash",
     "encodeSignedPayload", "decodeSignedPayload", "encodeContractId", "decodeContractId",
     "encodeLiquidityPoolId", "decodeLiquidityPoolId", "encodeClaimableBalanceId", "decodeClaimableBalanceId",
+    "encodeMuxedContractId", "decodeMuxedContractId",
 ]
 
 
@@ -160,8 +178,8 @@ class Sep23ParseTest(unittest.TestCase):
 
     def test_items_follow_an_edited_document(self):
         document = edit(SEP_0023, "| STRKEY_PUBKEY            | 6 << 3     |", "| STRKEY_PUBKEY            | 7 << 3     |")
-        document = edit(document, "`CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA`",
-                        "`CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDB`")
+        document = edit(document, f"- Strkey `{SEP_0023_VECTORS[5][2]}`",
+                        "- Strkey `CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDB`")
 
         self.assertEqual(self.key_types(document)[0], ("STRKEY_PUBKEY", "7 << 3", 56, "G"))
         self.assertEqual(self.vectors(document)[5][2], "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDB")
@@ -266,6 +284,7 @@ class Sep23AnalyzerTest(unittest.TestCase):
             ("ACCOUNT_ID", "0b110_000"), ("MUXED_ACCOUNT_ID", "0x6_0"), ("SEED", "0o220"), ("PRE_AUTH_TX", "0230"),
             ("SHA256_HASH", "1_84"), ("SIGNED_PAYLOAD", "0b1111 << 0b11"), ("CONTRACT_ID", "2 << 0o3"),
             ("LIQUIDITY_POOL_ID", "0X58"), ("CLAIMABLE_BALANCE_ID", "0B1 << 3"),
+            ("MUXED_CONTRACT_ID", "0xB0"),
         ]))
 
         self.assertEqual(set(self.statuses(KEY_TYPE_SECTION).values()), {SUPPORTED})

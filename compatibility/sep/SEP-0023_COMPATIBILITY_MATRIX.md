@@ -1,25 +1,25 @@
 # SEP-23: Strkeys
 
 **Status:** ✅ Supported  
-**SEP Version:** 1.3.0  
+**SEP Version:** 1.4.0  
 **SEP Status:** Active  
 **SDK Version:** 1.16.0  
-**Generated:** 2026-10-13 22:06 UTC  
+**Generated:** 2026-10-15 12:31 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md)
 
 ## Overall Coverage
 
-**Total Coverage:** 100.0% (32/32 fields)
+**Total Coverage:** 100.0% (40/40 fields)
 
-- ✅ **Implemented:** 32/32
-- ❌ **Not Implemented:** 0/32
+- ✅ **Implemented:** 40/40
+- ❌ **Not Implemented:** 0/40
 
 ## Coverage by Section
 
 | Section | Coverage | Implemented | Total |
 |---------|----------|-------------|-------|
-| Key types | 100.0% | 9 | 9 |
-| Test vectors quoted in the StrKey unit test files | 100.0% | 23 | 23 |
+| Key types | 100.0% | 10 | 10 |
+| Test vectors quoted in the StrKey unit test files | 100.0% | 30 | 30 |
 
 ## Key types
 
@@ -36,6 +36,7 @@ Version-byte table of the specification. A key type is implemented when `Version
 | `STRKEY_CONTRACT` | ✅ Supported | `VersionByte::CONTRACT_ID, StrKey::encodeContractId() / decodeContractId()` |
 | `STRKEY_LIQUIDITY_POOL` | ✅ Supported | `VersionByte::LIQUIDITY_POOL_ID, StrKey::encodeLiquidityPoolId() / decodeLiquidityPoolId()` |
 | `STRKEY_CLAIMABLE_BALANCE` | ✅ Supported | `VersionByte::CLAIMABLE_BALANCE_ID, StrKey::encodeClaimableBalanceId() / decodeClaimableBalanceId()` |
+| `STRKEY_MUXED_CONTRACT` | ✅ Supported | `VersionByte::MUXED_CONTRACT_ID, StrKey::encodeMuxedContractId() / decodeMuxedContractId()` |
 
 ## Test vectors quoted in the StrKey unit test files
 
@@ -51,6 +52,8 @@ Valid and invalid test cases of the specification. A vector counts when it is th
 | `valid_06` | ✅ Supported | Valid contract, quoted in `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php` |
 | `valid_07` | ✅ Supported | Valid liquidity pool address, quoted in `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php` |
 | `valid_08` | ✅ Supported | Valid claimable balance address, quoted in `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php` |
+| `valid_09` | ✅ Supported | Valid muxed contract address, quoted in `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php` |
+| `valid_10` | ✅ Supported | Valid muxed contract address in which unsigned id exceeds maximum signed 64-bit integer, quoted in `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php` |
 | `invalid_01` | ✅ Supported | Invalid length (Ed25519 should be 32 bytes, not 5), quoted in `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php` |
 | `invalid_02` | ✅ Supported | The unused trailing bit must be zero in the encoding of the last three bytes (24 bits) as five base-32 symbols (25 bits), quoted in `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php` |
 | `invalid_03` | ✅ Supported | Invalid length (congruent to 1 mod 8), quoted in `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php` |
@@ -66,3 +69,8 @@ Valid and invalid test cases of the specification. A vector counts when it is th
 | `invalid_13` | ✅ Supported | No zero padding in signed payload, quoted in `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php` |
 | `invalid_14` | ✅ Supported | The unused trailing 2-bits must be zero in the encoding of the last symbol, quoted in `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php` |
 | `invalid_15` | ✅ Supported | Invalid claimable balance type (first byte of binary key is not 0), quoted in `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php` |
+| `invalid_16` | ✅ Supported | The unused trailing bit must be zero in the encoding of the last three bytes (24 bits) as five base-32 symbols (25 bits) of a muxed contract, quoted in `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php` |
+| `invalid_17` | ✅ Supported | Invalid length (congruent to 6 mod 8) of a muxed contract, quoted in `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php` |
+| `invalid_18` | ✅ Supported | Invalid length (base-32 decoding should yield 43 bytes, not 44) of a muxed contract, quoted in `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php` |
+| `invalid_19` | ✅ Supported | Invalid algorithm (low 3 bits of version byte are 7) of a muxed contract, quoted in `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php` |
+| `invalid_20` | ✅ Supported | Invalid checksum of a muxed contract, quoted in `Soneso/StellarSDKTests/Unit/Crypto/StrKeyTest.php` |
