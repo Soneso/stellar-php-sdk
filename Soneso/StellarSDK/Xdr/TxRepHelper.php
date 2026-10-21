@@ -282,11 +282,10 @@ class TxRepHelper
                     $i += 2;
                 } elseif ($next === 'x' && $i + 3 < $len) {
                     $hexStr = substr($input, $i + 2, 2);
-                    $byteVal = hexdec($hexStr);
-                    // Validate that hexStr is actually valid hex (hexdec silently
-                    // accepts partial strings, so re-check by re-encoding).
-                    if (strtolower($hexStr) === str_pad(dechex($byteVal), 2, '0', STR_PAD_LEFT)) {
-                        $pendingBytes[] = $byteVal;
+                    // A byte escape needs exactly two hex digits; any other
+                    // \x sequence passes through literally.
+                    if (ctype_xdigit($hexStr)) {
+                        $pendingBytes[] = (int) hexdec($hexStr);
                         $i += 4;
                     } else {
                         $flushPending();

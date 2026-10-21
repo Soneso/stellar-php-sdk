@@ -398,7 +398,7 @@ class SorobanResponsesTest extends TestCase
                 'latestLedger' => 123456,
                 'minResourceFee' => '100000',
                 'results' => [
-                    ['xdr' => 'AAAAEAAAAAEAAAAPAAAADkhlbGxvLCBXb3JsZCEAAA==']
+                    ['xdr' => 'AAAAEAAAAAEAAAAPAAAADkhlbGxvLCBXb3JsZCEAAA==', 'auth' => []]
                 ],
                 'events' => ['event1_base64', 'event2_base64']
             ]

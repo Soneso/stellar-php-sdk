@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 - `EventInfo::$inSuccessfulContractCall`: Stellar RPC 30 and later omit the field; the SDK still reads it from older servers.
 
+### Fixed
+- `TransferServerService::transaction` rejects a SEP-06 response without a `transaction` object with an `InvalidArgumentException` that names the missing member instead of raising a PHP warning and a `TypeError`.
+- `TxRepHelper::unescapeString` passes a `\x` escape without two hex digits through literally without raising a PHP deprecation.
+
 ## [1.16.0] - 2026-10-14
 
 Migration guide: [docs/migration/1.16.0.md](docs/migration/1.16.0.md)

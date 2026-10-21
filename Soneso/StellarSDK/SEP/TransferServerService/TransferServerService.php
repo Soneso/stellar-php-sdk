@@ -493,6 +493,7 @@ class TransferServerService
      * @param AnchorTransactionRequest $request Transaction query with at least one identifier
      * @return AnchorTransactionResponse Detailed transaction information
      * @throws GuzzleException If request error occurs
+     * @throws \InvalidArgumentException If the anchor response has no 'transaction' object
      */
     public function transaction(AnchorTransactionRequest $request) : AnchorTransactionResponse {
         $requestBuilder = new AnchorTransactionRequestBuilder($this->httpClient, $this->serviceAddress, $request->jwt);
