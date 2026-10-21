@@ -169,7 +169,7 @@ $offPage = $sdk->offers()
     ->forAccount($accountId)
     ->execute();
 foreach ($offPage->getOffers() as $offer) {
-    echo $offer->getId() . PHP_EOL;
+    echo $offer->getOfferId() . PHP_EOL;
 }
 
 // Account trades — execute() returns TradesPageResponse

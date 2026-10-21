@@ -855,11 +855,13 @@ Or query your account's existing offers:
 
 ```php
 <?php
+use Soneso\StellarSDK\Asset;
+
 // Get all offers for an account
 $offersPage = $sdk->offers()->forAccount("GABC...")->execute();
 foreach ($offersPage->getOffers()->toArray() as $offer) {
-    echo "Offer ID: " . $offer->getId() . "\n";
-    echo "Selling: " . $offer->getAmount() . " " . $offer->getSellingAsset() . "\n";
+    echo "Offer ID: " . $offer->getOfferId() . "\n";
+    echo "Selling: " . $offer->getAmount() . " " . Asset::canonicalForm($offer->getSelling()) . "\n";
     echo "Price: " . $offer->getPrice() . "\n";
 }
 ```
