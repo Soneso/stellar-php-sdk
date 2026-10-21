@@ -36,6 +36,9 @@ class EventInfo
         public string $id,
         public array $topic,
         public string $value,
+        /**
+         * @deprecated Stellar RPC 30 and later omit this field; the SDK still reads it from older servers.
+         */
         public ?bool $inSuccessfulContractCall,
         public string $txHash,
         public ?int $opIndex = null,
@@ -215,6 +218,7 @@ class EventInfo
 
     /**
      * @return bool|null Deprecated indicator if the event was emitted during successful contract call
+     * @deprecated Stellar RPC 30 and later omit this field; the SDK still reads it from older servers.
      */
     public function getInSuccessfulContractCall(): ?bool
     {
@@ -224,6 +228,7 @@ class EventInfo
     /**
      * @param bool|null $inSuccessfulContractCall Deprecated success indicator
      * @return void
+     * @deprecated Stellar RPC 30 and later omit this field; the SDK still reads it from older servers.
      */
     public function setInSuccessfulContractCall(?bool $inSuccessfulContractCall): void
     {

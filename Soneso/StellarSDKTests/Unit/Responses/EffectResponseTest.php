@@ -66,6 +66,7 @@ use Soneso\StellarSDK\Responses\Effects\EffectLinksResponse;
 use Soneso\StellarSDK\Responses\Effects\EffectsResponse;
 use Soneso\StellarSDK\Responses\Effects\EffectsPageResponse;
 use Soneso\StellarSDK\Asset;
+use Soneso\StellarSDK\Crypto\StrKey;
 
 /**
  * Unit tests for all Effect Response classes
@@ -1078,6 +1079,41 @@ class EffectResponseTest extends TestCase
         $this->assertEquals('1000.0000000', $response->getAmount());
         $this->assertEquals('native', $response->getAssetType());
         $this->assertNull($response->getAssetIssuer());
+        $this->assertNull($response->getContractMuxed());
+        $this->assertNull($response->getContractMuxedId());
+    }
+
+    public function testContractCreditedEffectWithMuxedContract(): void
+    {
+        $contract = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
+        $contractMuxed = 'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+        $json = $this->getBaseEffectJson(EffectType::CONTRACT_CREDITED, 'contract_credited');
+        $json['contract'] = $contract;
+        $json['contract_muxed'] = $contractMuxed;
+        $json['contract_muxed_id'] = '123456';
+        $json['amount'] = '25.0000000';
+        $json['asset_type'] = 'native';
+
+        $response = EffectResponse::fromJson($json);
+
+        $this->assertInstanceOf(ContractCreditedEffectResponse::class, $response);
+        $this->assertSame($contract, $response->getContract());
+        $this->assertSame($contractMuxed, $response->getContractMuxed());
+        $this->assertSame('123456', $response->getContractMuxedId());
+
+        $raw = StrKey::decodeMuxedContractId($response->getContractMuxed());
+        $this->assertSame(StrKey::decodeContractId($response->getContract()), substr($raw, 0, 32));
+        $this->assertSame(123456, unpack('J', substr($raw, 32, 8))[1]);
+
+        $otherMuxed = 'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY';
+        $response->setContractMuxed($otherMuxed);
+        $response->setContractMuxedId('9223372036854775808');
+        $this->assertSame($otherMuxed, $response->getContractMuxed());
+        $this->assertSame('9223372036854775808', $response->getContractMuxedId());
+        $response->setContractMuxed(null);
+        $response->setContractMuxedId(null);
+        $this->assertNull($response->getContractMuxed());
+        $this->assertNull($response->getContractMuxedId());
     }
 
     public function testContractCreditedEffectWithCreditAsset(): void

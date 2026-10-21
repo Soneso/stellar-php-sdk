@@ -26,6 +26,18 @@ class ContractCreditedEffectResponse extends EffectResponse
     public ?string $assetIssuer = null;
 
     /**
+     * @var string|null $contractMuxed The credited muxed contract address as a "W..." strkey, built from
+     * the contract and the muxed id; Horizon sets it for a transfer or mint to a muxed contract address
+     */
+    public ?string $contractMuxed = null;
+
+    /**
+     * @var string|null $contractMuxedId The muxed id of the credited contract address as the decimal string
+     * Horizon sends; Horizon sets it for a transfer or mint to a muxed contract address
+     */
+    public ?string $contractMuxedId = null;
+
+    /**
      * Loads object data from JSON array
      *
      * @param array $json JSON data array
@@ -38,6 +50,8 @@ class ContractCreditedEffectResponse extends EffectResponse
         $this->assetType = $json['asset_type'];
         if (isset($json['asset_code'])) $this->assetCode = $json['asset_code'];
         if (isset($json['asset_issuer'])) $this->assetIssuer = $json['asset_issuer'];
+        if (isset($json['contract_muxed'])) $this->contractMuxed = $json['contract_muxed'];
+        if (isset($json['contract_muxed_id'])) $this->contractMuxedId = $json['contract_muxed_id'];
         parent::loadFromJson($json);
     }
 
@@ -157,6 +171,52 @@ class ContractCreditedEffectResponse extends EffectResponse
     public function setAssetIssuer(?string $assetIssuer): void
     {
         $this->assetIssuer = $assetIssuer;
+    }
+
+    /**
+     * Gets the muxed contract address that was credited
+     *
+     * Horizon sets it for a transfer or mint to a muxed contract address.
+     *
+     * @return string|null The muxed contract address as a "W..." strkey, or null if the destination is not muxed
+     */
+    public function getContractMuxed(): ?string
+    {
+        return $this->contractMuxed;
+    }
+
+    /**
+     * Sets the muxed contract address
+     *
+     * @param string|null $contractMuxed The muxed contract address as a "W..." strkey
+     * @return void
+     */
+    public function setContractMuxed(?string $contractMuxed): void
+    {
+        $this->contractMuxed = $contractMuxed;
+    }
+
+    /**
+     * Gets the muxed id of the credited contract address
+     *
+     * Horizon sets it for a transfer or mint to a muxed contract address.
+     *
+     * @return string|null The muxed id as a decimal string, or null if the destination is not muxed
+     */
+    public function getContractMuxedId(): ?string
+    {
+        return $this->contractMuxedId;
+    }
+
+    /**
+     * Sets the muxed id of the credited contract address
+     *
+     * @param string|null $contractMuxedId The muxed id as a decimal string
+     * @return void
+     */
+    public function setContractMuxedId(?string $contractMuxedId): void
+    {
+        $this->contractMuxedId = $contractMuxedId;
     }
 
 }
