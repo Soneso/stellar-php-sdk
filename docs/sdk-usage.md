@@ -1566,7 +1566,7 @@ $effectsPage = $sdk->effects()
     ->execute();
 
 foreach ($effectsPage->getEffects()->toArray() as $effect) {
-    echo $effect->getType() . "\n";
+    echo $effect->getHumanReadableEffectType() . "\n";
 }
 ```
 
