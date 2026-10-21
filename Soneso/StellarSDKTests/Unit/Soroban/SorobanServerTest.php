@@ -921,6 +921,7 @@ class SorobanServerTest extends TestCase
             'id' => 1,
             'result' => [
                 'id' => 'ledger_id',
+                'protocolVersion' => 21,
                 'sequence' => 123456
             ]
         ]));

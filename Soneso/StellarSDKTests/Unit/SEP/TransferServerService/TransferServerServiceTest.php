@@ -1197,8 +1197,34 @@ class TransferServerServiceTest extends TestCase
         $request->id = "nonexistent_id";
         $request->jwt = $this->jwtToken;
 
-        $this->expectException(\Throwable::class);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Anchor transaction response has no 'transaction' object, received keys: []");
         $transferService->transaction($request);
+    }
+
+    public function testTransactionWithNonObjectTransactionMember(): void
+    {
+        foreach ([null, "abc"] as $member) {
+            $transferService = new TransferServerService($this->serviceAddress);
+            $mock = new MockHandler([
+                new Response(200, [], json_encode(['transaction' => $member]))
+            ]);
+            $transferService->setMockHandlerStack(HandlerStack::create($mock));
+
+            $request = new AnchorTransactionRequest();
+            $request->id = "82fhs729f63dh0v4";
+            $request->jwt = $this->jwtToken;
+
+            try {
+                $transferService->transaction($request);
+                $this->fail("No exception for transaction member " . json_encode($member));
+            } catch (\InvalidArgumentException $e) {
+                $this->assertSame(
+                    "Anchor transaction response has no 'transaction' object, received keys: [transaction]",
+                    $e->getMessage()
+                );
+            }
+        }
     }
 
     public function testPatchTransactionWithForbiddenError(): void

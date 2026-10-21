@@ -37,9 +37,16 @@ class AnchorTransactionResponse extends Response {
      * Constructs a new instance of AnchorTransactionResponse by using the given data.
      * @param array<array-key, mixed> $json the data to construct the object from.
      * @return AnchorTransactionResponse the object containing the parsed data.
+     * @throws \InvalidArgumentException If the data has no 'transaction' object, which SEP-06 requires.
      */
     public static function fromJson(array $json) : AnchorTransactionResponse
     {
-        return new AnchorTransactionResponse(AnchorTransaction::fromJson($json['transaction']));;
+        if (!isset($json['transaction']) || !is_array($json['transaction'])) {
+            throw new \InvalidArgumentException(
+                "Anchor transaction response has no 'transaction' object, received keys: ["
+                . implode(', ', array_keys($json)) . "]"
+            );
+        }
+        return new AnchorTransactionResponse(AnchorTransaction::fromJson($json['transaction']));
     }
 }

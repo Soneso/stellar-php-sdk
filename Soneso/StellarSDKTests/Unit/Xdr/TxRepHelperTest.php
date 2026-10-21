@@ -369,9 +369,20 @@ class TxRepHelperTest extends TestCase
 
     public function testUnescapeStringHandlesInvalidHexGracefully(): void
     {
-        // \xZZ is not valid hex — the backslash is passed through
-        $result = TxRepHelper::unescapeString('"\\xZZ"');
-        $this->assertSame('\\xZZ', $result);
+        // \xZZ and \x1Z do not hold two hex digits, so they pass through
+        // literally and the parser raises no PHP warning or deprecation.
+        $raised = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$raised): bool {
+            $raised[] = $errstr;
+            return true;
+        });
+        try {
+            $this->assertSame('\\xZZ', TxRepHelper::unescapeString('"\\xZZ"'));
+            $this->assertSame('\\x1Z', TxRepHelper::unescapeString('"\\x1Z"'));
+        } finally {
+            restore_error_handler();
+        }
+        $this->assertSame([], $raised);
     }
 
     public function testUnescapeStringHandlesUnknownEscapeSequence(): void
