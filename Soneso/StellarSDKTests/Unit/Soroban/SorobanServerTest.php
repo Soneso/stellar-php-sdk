@@ -48,6 +48,7 @@ use Soneso\StellarSDK\Xdr\XdrLedgerEntryData;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrSCContractInstance;
+use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
 use Soneso\StellarSDK\Xdr\XdrSCEnvMetaEntry;
 use Soneso\StellarSDK\Xdr\XdrSCEnvMetaEntryInterfaceVersion;
 use Soneso\StellarSDK\Xdr\XdrSCEnvMetaKind;
@@ -754,13 +755,62 @@ class SorobanServerTest extends TestCase
             ]
         ]));
 
-        $key = XdrSCVal::forSymbol('test_key');
+        // Account and contract addresses inside a vector and a map pass the muxed address guard.
+        $key = XdrSCVal::forVec([
+            XdrSCVal::forSymbol('test_key'),
+            Address::fromAccountId(self::TEST_ACCOUNT_ID)->toXdrSCVal(),
+            XdrSCVal::forMap([new XdrSCMapEntry(XdrSCVal::forSymbol('owner'),
+                Address::fromContractId(self::TEST_CONTRACT_ID)->toXdrSCVal())]),
+        ]);
         $durability = XdrContractDataDurability::PERSISTENT();
 
-        $server = $this->createMockedSorobanServer([$mockResponse]);
+        $requestHistory = [];
+        $server = $this->createMockedSorobanServer([$mockResponse], $requestHistory);
         $ledgerEntry = $server->getContractData(self::TEST_CONTRACT_ID, $key, $durability);
 
         $this->assertNotNull($ledgerEntry);
+        $contractData = $this->requestedLedgerKey($requestHistory, 0)->contractData;
+        $this->assertSame(self::TEST_CONTRACT_ID, $contractData?->contract->toStrKey());
+        $this->assertSame($key->toBase64Xdr(), $contractData?->key->toBase64Xdr());
+        $this->assertSame($durability->getValue(), $contractData?->durability->getValue());
+    }
+
+    public function testGetContractDataRejectsNonContractOwnerAndMuxedKeysBeforeAnyRequest(): void
+    {
+        $requestHistory = [];
+        $server = $this->createMockedSorobanServer([], $requestHistory);
+        $contract = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
+        $muxed = 'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+        $muxedAccount = 'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ';
+        $prefix = 'The contract data owner must be a contract (C...) address';
+        $keyMessage = 'Contract data keys cannot contain muxed account (M...) or muxed contract (W...) addresses';
+        $symbol = XdrSCVal::forSymbol('test_key');
+        $cases = [
+            [$muxed, $symbol, "$prefix, got a muxed contract (W...) address: $muxed; use its base contract (C...) address"],
+            [$muxedAccount, $symbol, "$prefix, got a muxed account (M...) address: $muxedAccount"],
+            [$contract, XdrSCVal::forVec([$symbol, Address::fromMuxedContractId($muxed)->toXdrSCVal()]), $keyMessage],
+            [$contract, XdrSCVal::forMap([new XdrSCMapEntry($symbol,
+                Address::fromMuxedAccountId($muxedAccount)->toXdrSCVal())]), $keyMessage],
+            [$contract, XdrSCVal::forMap([new XdrSCMapEntry(
+                XdrSCVal::forVec([Address::fromMuxedContractId($muxed)->toXdrSCVal()]), $symbol)]), $keyMessage],
+        ];
+        foreach ($cases as [$owner, $key, $message]) {
+            try {
+                $server->getContractData($owner, $key, XdrContractDataDurability::PERSISTENT());
+                $this->fail('Accepted ' . $owner . ' ' . $key->toBase64Xdr());
+            } catch (InvalidArgumentException $e) {
+                $this->assertSame($message, $e->getMessage());
+            }
+        }
+        $seed = 'SAMKI63THJER2XVJA5LQXIPBWIV6FEFSS5ILURYGSCHFKZVDE5YVQWC7';
+        try {
+            $server->getContractData($seed, $symbol, XdrContractDataDurability::PERSISTENT());
+            $this->fail('Accepted a secret seed as the owner');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame("$prefix, got a secret seed (S...) instead of an address", $e->getMessage());
+            $this->assertStringNotContainsString($seed, $e->getMessage());
+        }
+        $this->assertCount(0, $requestHistory);
     }
 
     public function testGetContractDataNotFound(): void
@@ -859,6 +909,30 @@ class SorobanServerTest extends TestCase
         $contractCode = $server->loadContractCodeForContractId(self::TEST_CONTRACT_ID);
 
         $this->assertNull($contractCode);
+    }
+
+    public function testContractLoadersRejectNonContractIdBeforeAnyRequest(): void
+    {
+        $requestHistory = [];
+        $server = $this->createMockedSorobanServer([], $requestHistory);
+        $muxed = 'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+        $muxedAccount = 'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ';
+        $prefix = 'The contract to load must be a contract (C...) address';
+        $cases = [
+            $muxed => "$prefix, got a muxed contract (W...) address: $muxed; use its base contract (C...) address",
+            $muxedAccount => "$prefix, got a muxed account (M...) address: $muxedAccount",
+        ];
+        foreach (['loadContractCodeForContractId', 'loadContractInfoForContractId'] as $loader) {
+            foreach ($cases as $id => $message) {
+                try {
+                    $server->$loader($id);
+                    $this->fail($loader . ' accepted ' . $id);
+                } catch (InvalidArgumentException $e) {
+                    $this->assertSame($message, $e->getMessage());
+                }
+            }
+        }
+        $this->assertCount(0, $requestHistory);
     }
 
     // Error Response Tests

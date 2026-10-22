@@ -420,14 +420,16 @@ class SorobanServer
      * reference is first resolved to its wasm id via loadWasmIdForExternalRef(). A Stellar
      * asset contract has no wasm code, so it yields null.
      *
-     * @param string $contractId The contract id (C-prefixed address) of the deployed contract
+     * @param string $contractId The contract id of the deployed contract, as a "C..." strkey or 64 hexadecimal characters
      * @return XdrContractCodeEntry|null The contract code entry if found, null if not found
-     * @throws InvalidArgumentException If the instance carries an external reference whose
-     * owner is not a contract address or whose tag entry does not hold a 32-byte wasm hash
+     * @throws InvalidArgumentException If the contract id is not a contract address, before any
+     * request, or the instance carries an external reference whose owner is not a contract
+     * address or whose tag entry does not hold a 32-byte wasm hash
      * @throws Exception If an external reference owner carries an unknown address type
      * @throws GuzzleException If the RPC request fails
      */
     public function loadContractCodeForContractId(string $contractId) : ?XdrContractCodeEntry {
+        ContractAddressGuard::requireContractId($contractId, ContractAddressGuard::CONTRACT_TO_LOAD);
         $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
         $ledgerKey->contractData = new XdrLedgerKeyContractData(
             Address::fromContractId($contractId)->toXdr(),
@@ -466,11 +468,12 @@ class SorobanServer
      * including environment meta, contract spec entries, and contract meta information.
      * The contract spec can be used to introspect available functions and types.
      *
-     * @param string $contractId The contract id (C-prefixed address) of the deployed contract
+     * @param string $contractId The contract id of the deployed contract, as a "C..." strkey or 64 hexadecimal characters
      * @return SorobanContractInfo|null The parsed contract information or null if contract not found
      * @throws SorobanContractParserException If parsing the WASM bytecode fails
-     * @throws InvalidArgumentException If the instance carries an external reference whose
-     * owner is not a contract address or whose tag entry does not hold a 32-byte wasm hash
+     * @throws InvalidArgumentException If the contract id is not a contract address, before any
+     * request, or the instance carries an external reference whose owner is not a contract
+     * address or whose tag entry does not hold a 32-byte wasm hash
      * @throws Exception If an external reference owner carries an unknown address type
      * @throws GuzzleException If the RPC request fails
      */
@@ -583,11 +586,13 @@ class SorobanServer
     /**
      * Reads the current value of contract data ledger entries directly.
      *
-     * @param string $contractId id of the contract containing the data to load.
-     * @param XdrSCVal $key of the contract data to load.
+     * @param string $contractId id of the contract containing the data to load, as a "C..." strkey or 64 hexadecimal characters.
+     * @param XdrSCVal $key of the contract data to load; it holds no muxed account or muxed contract address.
      * @param XdrContractDataDurability $durability keyspace that this ledger key belongs to, which is either
      * XdrContractDataDurability::PERSISTENT() or XdrContractDataDurability::TEMPORARY().
      * @return LedgerEntry|null Ledger Entry if found otherwise null.
+     * @throws InvalidArgumentException if the owner is not a contract address or the key holds a
+     * muxed address, before any request.
      * @throws GuzzleException if any request problem occurs.
      */
     public function getContractData(
@@ -595,7 +600,8 @@ class SorobanServer
         XdrSCVal $key,
         XdrContractDataDurability $durability,
     ) : ?LedgerEntry {
-
+        ContractAddressGuard::requireContractId($contractId, ContractAddressGuard::CONTRACT_DATA_OWNER);
+        ContractAddressGuard::requireKeyWithoutMuxedAddress($key);
         $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
         $ledgerKey->contractData = new XdrLedgerKeyContractData(
             Address::fromContractId($contractId)->toXdr(),

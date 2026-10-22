@@ -12,6 +12,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
+use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Account;
@@ -36,6 +37,9 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
+use Soneso\StellarSDK\Xdr\XdrHostFunction;
+use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
+use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedInvocation;
@@ -990,6 +994,48 @@ class AssembledTransactionTest extends TestCase
         $this->assertNull($tx->signed);
         $this->assertNull($tx->simulationResponse);
         $this->assertSame($txOptions, $tx->options);
+    }
+
+    public function testBuildAndBuildWithOpRejectNonContractTargetBeforeAnyRequest(): void
+    {
+        $mock = new MockHandler([]);
+        $server = new SorobanServer(self::TEST_RPC_URL);
+        (new \ReflectionProperty(SorobanServer::class, 'httpClient'))
+            ->setValue($server, new Client(['handler' => HandlerStack::create($mock)]));
+        $muxed = 'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+        $muxedAccount = 'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ';
+        $account = 'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ';
+        $prefix = 'The contract to invoke must be a contract (C...) address';
+        $cases = [
+            $muxed => "$prefix, got a muxed contract (W...) address: $muxed; use its base contract (C...) address",
+            $muxedAccount => "$prefix, got a muxed account (M...) address: $muxedAccount",
+            $account => "$prefix, got an account (G...) address: $account",
+        ];
+        foreach ($cases as $id => $message) {
+            $clientOptions = new ClientOptions(sourceAccountKeyPair: $this->testKeyPair, contractId: $id,
+                network: $this->testNetwork, rpcUrl: self::TEST_RPC_URL, server: $server);
+            try {
+                AssembledTransaction::build(new AssembledTransactionOptions(clientOptions: $clientOptions,
+                    methodOptions: new MethodOptions(simulate: false), method: 'test_method'));
+                $this->fail('Accepted ' . $id);
+            } catch (InvalidArgumentException $e) {
+                $this->assertSame($message, $e->getMessage());
+            }
+        }
+
+        // A host function decoded from XDR keeps a muxed target, which buildWithOp refuses.
+        $decoded = InvokeContractHostFunction::fromXdr(XdrHostFunction::forInvokingContractWithArgs(
+            new XdrInvokeContractArgs(XdrSCAddress::forMuxedContractId($muxed), 'test_method', [])));
+        $clientOptions = new ClientOptions(sourceAccountKeyPair: $this->testKeyPair, contractId: self::TEST_CONTRACT_ID,
+            network: $this->testNetwork, rpcUrl: self::TEST_RPC_URL, server: $server);
+        try {
+            AssembledTransaction::buildWithOp(new InvokeHostFunctionOperation($decoded), new AssembledTransactionOptions(
+                clientOptions: $clientOptions, methodOptions: new MethodOptions(simulate: false), method: 'test_method'));
+            $this->fail('buildWithOp accepted ' . $muxed);
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame($cases[$muxed], $e->getMessage());
+        }
+        $this->assertNull($mock->getLastRequest());
     }
 
     public function testSimulateUpdatesTransactionWithSimulationData(): void

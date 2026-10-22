@@ -843,6 +843,30 @@ class SorobanClientTest extends TestCase
         SorobanClient::forClientOptions($this->createClientOptions(server: $server));
     }
 
+    public function testForClientOptionsRejectsNonContractIdBeforeAnyRequest(): void
+    {
+        $mock = new MockHandler([]);
+        $server = $this->createMockedServer($mock);
+        $muxed = 'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+        $muxedAccount = 'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ';
+        $prefix = 'The contract to load must be a contract (C...) address';
+        $cases = [
+            $muxed => "$prefix, got a muxed contract (W...) address: $muxed; use its base contract (C...) address",
+            $muxedAccount => "$prefix, got a muxed account (M...) address: $muxedAccount",
+        ];
+        foreach ($cases as $id => $message) {
+            $options = new ClientOptions(sourceAccountKeyPair: KeyPair::fromAccountId(self::TEST_ACCOUNT_ID),
+                contractId: $id, network: $this->testNetwork, rpcUrl: self::TEST_RPC_URL, server: $server);
+            try {
+                SorobanClient::forClientOptions($options);
+                $this->fail('Accepted ' . $id);
+            } catch (InvalidArgumentException $e) {
+                $this->assertSame($message, $e->getMessage());
+            }
+        }
+        $this->assertNull($mock->getLastRequest());
+    }
+
     // ---------------------------------------------------------------------
     // helpers
     // ---------------------------------------------------------------------
