@@ -14,6 +14,12 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Soneso\StellarSDK\Responses\Effects\AccountDebitedEffectResponse;
 use Soneso\StellarSDK\Responses\Ledger\LedgerResponse;
+use Soneso\StellarSDK\Responses\Operations\AccountMergeOperationResponse;
+use Soneso\StellarSDK\Responses\Operations\CreateAccountOperationResponse;
+use Soneso\StellarSDK\Responses\Operations\InvokeHostFunctionOperationResponse;
+use Soneso\StellarSDK\Responses\Operations\OperationResponse;
+use Soneso\StellarSDK\Responses\Operations\PathPaymentStrictReceiveOperationResponse;
+use Soneso\StellarSDK\Responses\Operations\PathPaymentStrictSendOperationResponse;
 use Soneso\StellarSDK\Responses\Operations\PaymentOperationResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
 use Soneso\StellarSDK\StellarSDK;
@@ -33,6 +39,9 @@ class RequestBuilderStreamEntryPointsTest extends TestCase
     private const STOP_MESSAGE = 'stream stopped by the test';
     private const TRANSACTION_ACCOUNT_ID = 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7';
     private const TRANSACTION_HASH = '5ebd5c0af4385500b53dd63b0ef5f6e8feef1a7e1c0b5a8e6e7f3f84c1f7f1c4';
+    private const SENDER_ACCOUNT_ID = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
+    private const RECEIVER_ACCOUNT_ID = 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7';
+    private const USDC_ISSUER_ID = 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5';
 
     private MockHandler $mockHandler;
 
@@ -87,6 +96,81 @@ class RequestBuilderStreamEntryPointsTest extends TestCase
         });
     }
 
+    public function testPaymentsStreamDeliversStellarAssetContractTransfer(): void
+    {
+        $sdk = $this->createStreamingSdk(self::paymentsRecord('5287612393054209', 'invoke_host_function', 24, [
+            'function' => 'HostFunctionTypeHostFunctionTypeInvokeContract',
+            'parameters' => [
+                ['value' => 'AAAAEgAAAAHXkotywnA8z+r365/0701QSlWouXn8m0UOoshCtNHOYQ==', 'type' => 'Address'],
+                ['value' => 'AAAADwAAAAh0cmFuc2Zlcg==', 'type' => 'Sym'],
+                ['value' => 'AAAAEgAAAAAAAAAAYvwdC9CRsrYcDdZWNGsqaNfTR8bywsjubQRHAlb8Bfc=', 'type' => 'Address'],
+                ['value' => 'AAAAEgAAAAAAAAAAAZRyYo7njrknFNItA5CWPCTZJ+oAmZlIbokfrC2qnCE=', 'type' => 'Address'],
+                ['value' => 'AAAACgAAAAAAAAAAAAAAAAX14QA=', 'type' => 'I128'],
+            ],
+            'address' => '', 'salt' => '',
+            'asset_balance_changes' => [[
+                'asset_type' => 'native',
+                'type' => 'transfer',
+                'from' => self::SENDER_ACCOUNT_ID,
+                'to' => self::RECEIVER_ACCOUNT_ID,
+                'amount' => '10.0000000',
+            ]],
+        ]));
+        $this->expectStreamStop();
+
+        $sdk->payments()->cursor('now')->stream(function (mixed $payment): void {
+            $this->assertInstanceOf(InvokeHostFunctionOperationResponse::class, $payment);
+            $this->assertSame('5287612393054209', $payment->getOperationId());
+            $this->assertSame('HostFunctionTypeHostFunctionTypeInvokeContract', $payment->getFunction());
+            $changes = $payment->getAssetBalanceChanges()->toArray();
+            $this->assertCount(1, $changes);
+            $this->assertSame('native', $changes[0]->getAssetType());
+            $this->assertSame('transfer', $changes[0]->getType());
+            $this->assertSame(self::SENDER_ACCOUNT_ID, $changes[0]->getFrom());
+            $this->assertSame(self::RECEIVER_ACCOUNT_ID, $changes[0]->getTo());
+            $this->assertSame('10.0000000', $changes[0]->getAmount());
+            $this->stopStream('/payments');
+        });
+    }
+
+    public function testPaymentsStreamDeliversEachClassicPaymentType(): void
+    {
+        $accounts = ['from' => self::SENDER_ACCOUNT_ID, 'to' => self::RECEIVER_ACCOUNT_ID];
+        $usdcToNative = $accounts + ['asset_type' => 'native', 'source_asset_type' => 'credit_alphanum4',
+            'source_asset_code' => 'USDC', 'source_asset_issuer' => self::USDC_ISSUER_ID, 'path' => []];
+        $sdk = $this->createStreamingSdk(
+            self::paymentsRecord('5287612393050113', 'create_account', 0, ['starting_balance' => '10000.0000000',
+                'funder' => self::SENDER_ACCOUNT_ID, 'account' => self::RECEIVER_ACCOUNT_ID]),
+            self::paymentsRecord('5287612393050114', 'payment', 1, $accounts + ['asset_type' => 'native',
+                'amount' => '25.0000000']),
+            self::paymentsRecord('5287612393050115', 'account_merge', 8, ['account' => self::RECEIVER_ACCOUNT_ID,
+                'into' => self::SENDER_ACCOUNT_ID]),
+            self::paymentsRecord('5287612393050116', 'path_payment_strict_send', 13, $usdcToNative + [
+                'amount' => '98.1000000', 'source_amount' => '10.0000000', 'destination_min' => '95.0000000']),
+            self::paymentsRecord('5287612393050117', 'path_payment_strict_receive', 2, $usdcToNative + [
+                'amount' => '100.0000000', 'source_amount' => '10.2000000', 'source_max' => '10.5000000']),
+        );
+        $this->expectStreamStop();
+
+        $received = [];
+        $sdk->payments()->cursor('now')->stream(function (mixed $payment) use (&$received): void {
+            $received[] = $payment;
+            if (count($received) < 5) {
+                return;
+            }
+            $classes = array_map(fn (OperationResponse $r): string => $r::class, $received);
+            $this->assertSame([CreateAccountOperationResponse::class, PaymentOperationResponse::class,
+                AccountMergeOperationResponse::class, PathPaymentStrictSendOperationResponse::class,
+                PathPaymentStrictReceiveOperationResponse::class], $classes);
+            $this->assertSame('10000.0000000', $received[0]->getStartingBalance());
+            $this->assertSame('25.0000000', $received[1]->getAmount());
+            $this->assertSame(self::SENDER_ACCOUNT_ID, $received[2]->getInto());
+            $this->assertSame('95.0000000', $received[3]->getDestinationMin());
+            $this->assertSame('10.5000000', $received[4]->getSourceMax());
+            $this->stopStream('/payments');
+        });
+    }
+
     public function testTransactionsStreamDeliversParsedTransaction(): void
     {
         $sdk = $this->createStreamingSdk(self::transactionRecord());
@@ -101,15 +185,17 @@ class RequestBuilderStreamEntryPointsTest extends TestCase
 
     /**
      * Returns an SDK whose client answers the first request with an event
-     * stream that holds the Horizon handshake and one data event; a second
-     * request finds the mock queue empty and fails.
+     * stream that holds the Horizon handshake and one data event per record;
+     * a second request finds the mock queue empty and fails.
      *
-     * @param array<string, mixed> $event The Horizon record sent as the data event.
+     * @param array<string, mixed> ...$events The Horizon records sent as data events, in order.
      */
-    private function createStreamingSdk(array $event): StellarSDK
+    private function createStreamingSdk(array ...$events): StellarSDK
     {
-        $body = 'data: "hello"' . "\n"
-            . 'data: ' . json_encode($event, JSON_THROW_ON_ERROR) . "\n";
+        $body = 'data: "hello"' . "\n";
+        foreach ($events as $event) {
+            $body .= 'data: ' . json_encode($event, JSON_THROW_ON_ERROR) . "\n";
+        }
         $this->mockHandler = new MockHandler([
             new HttpResponse(200, ['Content-Type' => 'text/event-stream'], $body),
         ]);
@@ -253,6 +339,33 @@ class RequestBuilderStreamEntryPointsTest extends TestCase
                 'precedes' => ['href' => 'https://horizon-testnet.stellar.org/effects?order=asc&cursor=1234567890']
             ]
         ];
+    }
+
+    /**
+     * Returns a /payments record in the shape Horizon sends: the common
+     * operation fields followed by the fields of the operation type.
+     *
+     * @param array<string, mixed> $details The fields of the operation type.
+     * @return array<string, mixed>
+     */
+    private static function paymentsRecord(string $id, string $type, int $typeI, array $details): array
+    {
+        $url = self::HORIZON_URL . '/';
+        return [
+            '_links' => ['self' => ['href' => $url . 'operations/' . $id],
+                'transaction' => ['href' => $url . 'transactions/' . self::TRANSACTION_HASH],
+                'effects' => ['href' => $url . 'operations/' . $id . '/effects'],
+                'succeeds' => ['href' => $url . 'effects?order=desc&cursor=' . $id],
+                'precedes' => ['href' => $url . 'effects?order=asc&cursor=' . $id]],
+            'id' => $id,
+            'paging_token' => $id,
+            'transaction_successful' => true,
+            'source_account' => self::SENDER_ACCOUNT_ID,
+            'type' => $type,
+            'type_i' => $typeI,
+            'created_at' => '2026-10-22T10:00:00Z',
+            'transaction_hash' => self::TRANSACTION_HASH,
+        ] + $details;
     }
 
     /**
