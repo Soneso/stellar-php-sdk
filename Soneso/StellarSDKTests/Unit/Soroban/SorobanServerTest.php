@@ -69,8 +69,8 @@ use phpseclib3\Math\BigInteger;
 /**
  * Unit tests for SorobanServer class
  *
- * Tests all public methods of the SorobanServer class using mocked HTTP responses.
- * Uses reflection to inject mock HTTP client since SorobanServer doesn't have a setter.
+ * Tests all public methods of the SorobanServer class using mocked HTTP responses,
+ * served by a Guzzle client that the tests pass to the SorobanServer constructor.
  */
 class SorobanServerTest extends TestCase
 {
@@ -84,24 +84,15 @@ class SorobanServerTest extends TestCase
 
     /**
      * Helper method to create a mocked SorobanServer with predefined responses
-     * Uses reflection to inject the mock HTTP client. When a history container is
-     * passed, every request the server sends is recorded into it.
+     * The server sends its requests through a Guzzle client backed by a mock handler.
+     * When a history container is passed, every request the server sends is recorded into it.
      */
     private function createMockedSorobanServer(array $responses, array &$requestHistory = []): SorobanServer
     {
         $mock = new MockHandler($responses);
         $handlerStack = HandlerStack::create($mock);
         $handlerStack->push(Middleware::history($requestHistory));
-        $client = new Client(['handler' => $handlerStack]);
-
-        $server = new SorobanServer(self::TEST_ENDPOINT);
-
-        // Use reflection to inject the mocked client
-        $reflection = new \ReflectionClass($server);
-        $property = $reflection->getProperty('httpClient');
-        $property->setValue($server, $client);
-
-        return $server;
+        return new SorobanServer(self::TEST_ENDPOINT, new Client(['handler' => $handlerStack]));
     }
 
     /**
@@ -1066,6 +1057,41 @@ class SorobanServerTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Service URL must use HTTPS');
         new SorobanServer('http://soroban-testnet.stellar.org');
+    }
+
+    // HTTP Client Injection Tests
+
+    public function testInjectedHttpClientSendsRpcRequestsWithItsOptions(): void
+    {
+        // The host never resolves (RFC 6761), so a request that bypasses the injected client
+        // fails without reaching a server.
+        $endpoint = 'https://soroban-rpc.invalid';
+        $history = [];
+        $stack = HandlerStack::create(new MockHandler([new Response(200, [], json_encode([
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'result' => ['status' => 'healthy', 'ledgerRetentionWindow' => 17280, 'oldestLedger' => 100000, 'latestLedger' => 117280],
+        ]))]));
+        $stack->push(Middleware::history($history));
+        $client = new Client([
+            'handler' => $stack,
+            'timeout' => 12.5,
+            'connect_timeout' => 3.0,
+            'proxy' => 'http://proxy.example.com:3128',
+        ]);
+
+        $response = (new SorobanServer($endpoint, $client))->getHealth();
+
+        $this->assertSame('healthy', $response->getStatus());
+        $this->assertCount(1, $history);
+        $request = $history[0]['request'];
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertSame($endpoint, (string)$request->getUri());
+        $this->assertSame('application/json', $request->getHeaderLine('Content-Type'));
+        $this->assertSame('getHealth', json_decode((string)$request->getBody(), true)['method']);
+        $this->assertSame(12.5, $history[0]['options']['timeout']);
+        $this->assertSame(3.0, $history[0]['options']['connect_timeout']);
+        $this->assertSame('http://proxy.example.com:3128', $history[0]['options']['proxy']);
     }
 
     // External reference executable (CAP-85) tests

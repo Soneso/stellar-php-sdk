@@ -149,16 +149,24 @@ class SorobanServer
     /**
      * Creates a new Soroban RPC server client
      *
-     * Initializes the HTTP client and sets up default headers for JSON-RPC 2.0 communication.
+     * Sets up the HTTP client and the default headers for JSON-RPC 2.0 communication.
      * The endpoint should be a fully qualified URL to a Soroban RPC server.
      *
+     * An injected Guzzle client sends every RPC request of this server, so its options apply
+     * to them: timeouts, proxies, and handler middleware such as retries or logging. Requests
+     * go to the absolute endpoint URL, so the client needs no base_uri. Without an injected
+     * client, the server builds a Guzzle client with the endpoint as base_uri and Guzzle's
+     * default options, which set no request timeout.
+     *
      * @param string $endpoint The URL of the Soroban RPC server (e.g., "https://soroban-testnet.stellar.org")
+     * @param Client|null $httpClient Optional Guzzle client for the RPC requests, for example
+     *     new Client(['timeout' => 30, 'connect_timeout' => 5])
      */
-    public function __construct(string $endpoint)
+    public function __construct(string $endpoint, ?Client $httpClient = null)
     {
         UrlValidator::validateHttpsRequired($endpoint);
         $this->endpoint = $endpoint;
-        $this->httpClient = new Client([
+        $this->httpClient = $httpClient ?? new Client([
             'base_uri' => $this->endpoint,
         ]);
         $this->headers = array_merge($this->headers, RequestBuilder::HEADERS);

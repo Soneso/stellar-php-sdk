@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `ContractCreditedEffectResponse` exposes the muxed contract destination through `getContractMuxed()` and `getContractMuxedId()` when Horizon reports a transfer or mint to a muxed contract address.
+- `SorobanServer` and `URIScheme` accept an optional Guzzle `Client` as their last constructor parameter. `SorobanServer` sends its RPC requests through it, `URIScheme` its stellar.toml fetches and callback submissions, so applications can set timeouts, proxies and middleware.
 
 ### Changed
 - The `InvokeContractHostFunction` constructor, `InvokeContractHostFunction::setContractId` and `AssembledTransaction::buildWithOp` accept only a `C...` strkey or 64 hexadecimal characters as the contract to invoke and reject any other id with an `InvalidArgumentException` such as "The contract to invoke must be a contract (C...) address, got a muxed contract (W...) address: W...; use its base contract (C...) address"; `AssembledTransaction::build` and `buildWithOp` reject it before any request, while `InvokeContractHostFunction::fromXdr` and `toXdr` decode and re-encode every address kind unchanged.
