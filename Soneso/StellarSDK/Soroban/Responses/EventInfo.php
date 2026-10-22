@@ -73,13 +73,13 @@ class EventInfo
         $txHash = $json['txHash'];
 
         $opIndex = null;
-        if (isset($json['opIndex'])) {
-            $opIndex = $json['opIndex'];
+        if (isset($json['operationIndex'])) {
+            $opIndex = $json['operationIndex'];
         }
 
         $txIndex = null;
-        if (isset($json['txIndex'])) {
-            $txIndex = $json['txIndex'];
+        if (isset($json['transactionIndex'])) {
+            $txIndex = $json['transactionIndex'];
         }
 
         return new EventInfo(
