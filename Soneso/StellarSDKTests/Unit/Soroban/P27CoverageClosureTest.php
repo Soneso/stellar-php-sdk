@@ -942,21 +942,19 @@ class P27CoverageClosureTest extends TestCase
     }
 
     /**
+     * Gives an AssembledTransaction a SorobanServer that serves its RPC requests from the
+     * given responses.
+     *
      * @param array<Response> $responses
      */
     private function injectMockedServerResponses(AssembledTransaction $tx, array $responses): void
     {
         $mock    = new MockHandler($responses);
-        $stack   = HandlerStack::create($mock);
-        $client  = new Client(['handler' => $stack]);
+        $client  = new Client(['handler' => HandlerStack::create($mock)]);
+        $server  = new SorobanServer($tx->options->clientOptions->rpcUrl, $client);
 
-        $reflection = new \ReflectionClass($tx);
-        $serverProp = $reflection->getProperty('server');
-        $server = $serverProp->getValue($tx);
-
-        $serverReflection = new \ReflectionClass($server);
-        $httpClientProp   = $serverReflection->getProperty('httpClient');
-        $httpClientProp->setValue($server, $client);
+        $serverProp = (new \ReflectionClass($tx))->getProperty('server');
+        $serverProp->setValue($tx, $server);
     }
 
     private function makeLatestLedgerResponse(int $sequence): Response

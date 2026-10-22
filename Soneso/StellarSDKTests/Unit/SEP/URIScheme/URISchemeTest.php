@@ -6,8 +6,10 @@
 
 namespace Soneso\StellarSDKTests\Unit\SEP\URIScheme;
 
+use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -304,6 +306,27 @@ class URISchemeTest extends TestCase
         $this->assertNotNull($response->getCallBackResponse());
         $this->assertEquals(200, $response->getCallBackResponse()->getStatusCode());
         $this->assertNull($response->getSubmitTransactionResponse());
+    }
+
+    public function testSignAndSubmitTransactionSendsCallbackThroughInjectedHttpClient(): void
+    {
+        // The host never resolves (RFC 6761), so a request that bypasses the injected client
+        // fails without reaching a server.
+        $callbackUrl = 'https://wallet.invalid/sep7/callback';
+        $history = [];
+        $stack = HandlerStack::create(new MockHandler([new Response(200, [], '')]));
+        $stack->push(Middleware::history($history));
+        $uriScheme = new URIScheme(new Client(['handler' => $stack, 'timeout' => 12.5]));
+        $uri = $uriScheme->generateSignTransactionURI(self::TEST_XDR, callback: 'url:' . $callbackUrl);
+
+        $response = $uriScheme->signAndSubmitTransaction($uri, KeyPair::fromSeed(self::TEST_SECRET), Network::testnet());
+
+        $this->assertSame(200, $response->getCallBackResponse()?->getStatusCode());
+        $this->assertCount(1, $history);
+        $this->assertSame('POST', $history[0]['request']->getMethod());
+        $this->assertSame($callbackUrl, (string)$history[0]['request']->getUri());
+        $this->assertStringStartsWith('xdr=', (string)$history[0]['request']->getBody());
+        $this->assertSame(12.5, $history[0]['options']['timeout']);
     }
 
     public function testSignAndSubmitTransactionRejectsHttpCallback(): void

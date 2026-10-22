@@ -104,14 +104,22 @@ class URIScheme
     private Client $httpClient;
 
     /**
-     * Creates a new URIScheme instance with default HTTP client.
+     * Creates a new URIScheme instance.
      *
-     * Initializes Guzzle HTTP client for stellar.toml fetching and callback
-     * URL submissions. Use setMockHandlerStack() for testing scenarios.
+     * The HTTP client fetches the stellar.toml of an origin domain and posts signed
+     * transactions to callback URLs. An injected Guzzle client sends these requests, so its
+     * options apply to them: timeouts, proxies, and handler middleware such as retries or
+     * logging. Requests go to absolute URLs, so the client needs no base_uri. Without an
+     * injected client, a Guzzle client with default options is built, which sets no request
+     * timeout. A transaction without a callback is submitted through the StellarSDK Horizon
+     * client, not through this client.
+     *
+     * @param Client|null $httpClient Optional Guzzle client for the stellar.toml and callback
+     *     requests, for example new Client(['timeout' => 30, 'connect_timeout' => 5])
      */
-    public function __construct()
+    public function __construct(?Client $httpClient = null)
     {
-        $this->httpClient = new Client();
+        $this->httpClient = $httpClient ?? new Client();
     }
 
     /**

@@ -135,7 +135,7 @@ class AssembledTransactionTest extends TestCase
         $optionsProperty = $reflection->getProperty('options');
         $optionsProperty->setValue($tx, $txOptions);
 
-        // Create a SorobanServer (we'll mock its HTTP client if needed)
+        // Tests that need RPC responses replace this server with a mocked server.
         $server = new SorobanServer($txOptions->clientOptions->rpcUrl);
         $serverProperty = $reflection->getProperty('server');
         $serverProperty->setValue($tx, $server);
@@ -169,23 +169,19 @@ class AssembledTransactionTest extends TestCase
     }
 
     /**
-     * Injects a mocked HTTP client into an AssembledTransaction's server.
+     * Gives an AssembledTransaction a SorobanServer that serves its RPC requests from the
+     * given responses.
      *
      * Returns the mock handler so tests can assert the queue was fully consumed.
      */
     private function injectMockedServer(AssembledTransaction $tx, array $responses): MockHandler
     {
         $mock = new MockHandler($responses);
-        $handlerStack = HandlerStack::create($mock);
-        $client = new Client(['handler' => $handlerStack]);
+        $client = new Client(['handler' => HandlerStack::create($mock)]);
+        $server = new SorobanServer($tx->options->clientOptions->rpcUrl, $client);
 
-        $reflection = new \ReflectionClass($tx);
-        $serverProperty = $reflection->getProperty('server');
-        $server = $serverProperty->getValue($tx);
-
-        $serverReflection = new \ReflectionClass($server);
-        $httpClientProperty = $serverReflection->getProperty('httpClient');
-        $httpClientProperty->setValue($server, $client);
+        $serverProperty = (new \ReflectionClass($tx))->getProperty('server');
+        $serverProperty->setValue($tx, $server);
 
         return $mock;
     }
@@ -999,9 +995,7 @@ class AssembledTransactionTest extends TestCase
     public function testBuildAndBuildWithOpRejectNonContractTargetBeforeAnyRequest(): void
     {
         $mock = new MockHandler([]);
-        $server = new SorobanServer(self::TEST_RPC_URL);
-        (new \ReflectionProperty(SorobanServer::class, 'httpClient'))
-            ->setValue($server, new Client(['handler' => HandlerStack::create($mock)]));
+        $server = new SorobanServer(self::TEST_RPC_URL, new Client(['handler' => HandlerStack::create($mock)]));
         $muxed = 'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
         $muxedAccount = 'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ';
         $account = 'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ';
