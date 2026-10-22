@@ -205,35 +205,62 @@ class SorobanResponseTest extends TestCase
 
     public function testEventInfoComplete(): void
     {
+        // A getEvents event in the shape stellar-rpc sends: a Stellar Asset Contract
+        // transfer emitted by the first operation (index 0) of the transaction at index 2
+        // of ledger 1234567. stellar-rpc counts transactions from 1.
         $json = [
             'type' => 'contract',
-            'ledger' => 12345,
-            'ledgerClosedAt' => '2024-01-20T12:00:00Z',
-            'contractId' => 'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4',
-            'id' => '0000012345-0000000001',
-            'topic' => ['topic1', 'topic2', 'topic3'],
-            'value' => ['xdr' => 'base64value'],
+            'ledger' => 1234567,
+            'ledgerClosedAt' => '2026-10-22T09:14:05Z',
+            'contractId' => 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
+            'id' => '0005302424889729024-0000000001',
+            'operationIndex' => 0,
+            'transactionIndex' => 2,
+            'txHash' => '8735d2c7e31b1f10037f41d723072fbfacd0bbf74ed48f71f8e4211132017123',
             'inSuccessfulContractCall' => true,
-            'txHash' => 'txhash123',
-            'opIndex' => 0,
-            'txIndex' => 1
+            'topic' => [
+                'AAAADwAAAAh0cmFuc2Zlcg==',
+                'AAAAEgAAAAAAAAAAYvwdC9CRsrYcDdZWNGsqaNfTR8bywsjubQRHAlb8Bfc=',
+                'AAAAEgAAAAAAAAAAAZRyYo7njrknFNItA5CWPCTZJ+oAmZlIbokfrC2qnCE=',
+                'AAAADgAAAAZuYXRpdmUAAA==',
+            ],
+            'value' => 'AAAACgAAAAAAAAAAAAAAAAX14QA=',
         ];
 
         $event = EventInfo::fromJson($json);
 
-        $this->assertEquals('contract', $event->getType());
-        $this->assertEquals(12345, $event->getLedger());
-        $this->assertEquals('2024-01-20T12:00:00Z', $event->getLedgerClosedAt());
-        $this->assertEquals('CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4', $event->getContractId());
-        $this->assertEquals('0000012345-0000000001', $event->getId());
-        $this->assertIsArray($event->getTopic());
-        $this->assertCount(3, $event->getTopic());
-        $this->assertEquals('topic1', $event->getTopic()[0]);
-        $this->assertEquals('base64value', $event->getValue());
+        $this->assertSame('contract', $event->getType());
+        $this->assertSame(1234567, $event->getLedger());
+        $this->assertSame('2026-10-22T09:14:05Z', $event->getLedgerClosedAt());
+        $this->assertSame('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC', $event->getContractId());
+        $this->assertSame('0005302424889729024-0000000001', $event->getId());
+        $this->assertSame($json['topic'], $event->getTopic());
+        $this->assertSame('AAAACgAAAAAAAAAAAAAAAAX14QA=', $event->getValue());
         $this->assertTrue($event->getInSuccessfulContractCall());
-        $this->assertEquals('txhash123', $event->getTxHash());
-        $this->assertEquals(0, $event->getOpIndex());
-        $this->assertEquals(1, $event->getTxIndex());
+        $this->assertSame('8735d2c7e31b1f10037f41d723072fbfacd0bbf74ed48f71f8e4211132017123', $event->getTxHash());
+        $this->assertSame(0, $event->getOpIndex());
+        $this->assertSame(2, $event->getTxIndex());
+    }
+
+    public function testEventInfoIgnoresOpIndexAndTxIndexKeys(): void
+    {
+        $json = [
+            'type' => 'contract',
+            'ledger' => 1234567,
+            'ledgerClosedAt' => '2026-10-22T09:14:05Z',
+            'contractId' => 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
+            'id' => '0005302424889729025-0000000001',
+            'opIndex' => 1,
+            'txIndex' => 2,
+            'txHash' => '8735d2c7e31b1f10037f41d723072fbfacd0bbf74ed48f71f8e4211132017123',
+            'topic' => ['AAAADwAAAAh0cmFuc2Zlcg=='],
+            'value' => 'AAAACgAAAAAAAAAAAAAAAAX14QA=',
+        ];
+
+        $event = EventInfo::fromJson($json);
+
+        $this->assertNull($event->getOpIndex());
+        $this->assertNull($event->getTxIndex());
     }
 
     public function testEventInfoValueFormats(): void

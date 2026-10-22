@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `TransferServerService::transaction` rejects a SEP-06 response without a `transaction` object with an `InvalidArgumentException` that names the missing member instead of raising a PHP warning and a `TypeError`.
 - `TxRepHelper::unescapeString` passes a `\x` escape without two hex digits through literally without raising a PHP deprecation.
 - `PaymentsRequestBuilder::stream` delivers `invoke_host_function` records (Stellar Asset Contract transfers) as `InvokeHostFunctionOperationResponse` instead of ending the stream with an `UnhandledMatchError`.
+- `EventInfo` reads the operation and transaction indexes of each event returned by `SorobanServer::getEvents` from the `operationIndex` and `transactionIndex` fields stellar-rpc sends, so `getOpIndex()` and `getTxIndex()` return them instead of null.
 
 ## [1.16.0] - 2026-10-14
 
