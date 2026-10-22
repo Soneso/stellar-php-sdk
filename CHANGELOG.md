@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `InvokeContractHostFunction::toXdr` rejects an id that names no address with an `InvalidArgumentException` that names the id instead of raising a PHP Error.
 - `TransferServerService::transaction` rejects a SEP-06 response without a `transaction` object with an `InvalidArgumentException` that names the missing member instead of raising a PHP warning and a `TypeError`.
 - `TxRepHelper::unescapeString` passes a `\x` escape without two hex digits through literally without raising a PHP deprecation.
+- `PaymentsRequestBuilder::stream` delivers `invoke_host_function` records (Stellar Asset Contract transfers) as `InvokeHostFunctionOperationResponse` instead of ending the stream with an `UnhandledMatchError`.
 
 ## [1.16.0] - 2026-10-14
 

@@ -9,19 +9,16 @@ namespace Soneso\StellarSDK\Requests;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
-use Soneso\StellarSDK\Responses\Operations\AccountMergeOperationResponse;
-use Soneso\StellarSDK\Responses\Operations\CreateAccountOperationResponse;
+use Soneso\StellarSDK\Responses\Operations\OperationResponse;
 use Soneso\StellarSDK\Responses\Operations\OperationsPageResponse;
-use Soneso\StellarSDK\Responses\Operations\PathPaymentStrictReceiveOperationResponse;
-use Soneso\StellarSDK\Responses\Operations\PathPaymentStrictSendOperationResponse;
-use Soneso\StellarSDK\Responses\Operations\PaymentOperationResponse;
 
 /**
  * Builds requests for the payments endpoint in Horizon
  *
  * This class provides methods to query payment-related operations on the Stellar network.
- * Payment operations include create_account, payment, account_merge, and path payment
- * operations (both strict send and strict receive variants).
+ * Payment operations include create_account, payment, account_merge, path payment
+ * operations (both strict send and strict receive variants), and invoke_host_function
+ * operations that move Stellar Asset Contract balances.
  *
  * Query Methods:
  * - forAccount(): Get payments for a specific account
@@ -179,10 +176,12 @@ class PaymentsRequestBuilder extends RequestBuilder
     }
 
     /**
-     * Streams Payment or CreateAccount objects to $callback
+     * Streams the payment records of this request to $callback
      *
-     * $callback should have arguments:
-     *  OperationResponse
+     * $callback receives one OperationResponse per record, as the subclass of the record's
+     * operation type: for example PaymentOperationResponse for a payment and
+     * InvokeHostFunctionOperationResponse for an invoke_host_function record that moves
+     * a Stellar Asset Contract balance.
      *
      * For example:
      *
@@ -191,21 +190,14 @@ class PaymentsRequestBuilder extends RequestBuilder
      * printf('Payment operation id %s' . PHP_EOL, $payment->getOperationId());
      * });
      *
-     * @param callable|null $callback
+     * @param callable|null $callback Receives each record as an OperationResponse
      * @throws GuzzleException
      */
     public function stream(?callable $callback = null)
     {
         $this->getAndStream($this->buildUrl(), function($rawData) use ($callback) {
-            if (isset($rawData['type'])){
-                $parsedObject = match ($rawData['type']) {
-                    'create_account' => CreateAccountOperationResponse::fromJson($rawData),
-                    'payment' => PaymentOperationResponse::fromJson($rawData),
-                    'account_merge' => AccountMergeOperationResponse::fromJson($rawData),
-                    'path_payment_strict_send' => PathPaymentStrictSendOperationResponse::fromJson($rawData),
-                    'path_payment_strict_receive' => PathPaymentStrictReceiveOperationResponse::fromJson($rawData)
-                };
-                $callback($parsedObject);
+            if (isset($rawData['type_i'])) {
+                $callback(OperationResponse::fromJson($rawData));
             }
         });
     }
