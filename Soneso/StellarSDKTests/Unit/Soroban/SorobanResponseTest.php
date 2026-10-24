@@ -472,7 +472,7 @@ class SorobanResponseTest extends TestCase
             'xdr' => 'AAAABAAAAACjV3FgcL5qH9HoYmqBPn0ht6g13Tf9NXPqBzhnRq8ebAAAABQAAAAB',
             'lastModifiedLedgerSeq' => 12345,
             'liveUntilLedgerSeq' => 15000,
-            'ext' => 'AAAAAA=='
+            'extXdr' => 'AAAAAA=='
         ];
 
         $entry = LedgerEntry::fromJson($json);

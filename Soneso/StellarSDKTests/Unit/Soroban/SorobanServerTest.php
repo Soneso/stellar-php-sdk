@@ -287,6 +287,7 @@ class SorobanServerTest extends TestCase
                     [
                         'key' => 'AAAABgAAAAA=',
                         'xdr' => 'AAAABgAAAAE=',
+                        'extXdr' => 'AAAAAA==',
                         'lastModifiedLedgerSeq' => 123456
                     ]
                 ],
@@ -300,6 +301,7 @@ class SorobanServerTest extends TestCase
         $this->assertInstanceOf(GetLedgerEntriesResponse::class, $response);
         $this->assertNotNull($response->entries);
         $this->assertCount(1, $response->entries);
+        $this->assertSame('AAAAAA==', $response->entries[0]->ext);
         $this->assertEquals(123456, $response->getLatestLedger());
         $this->assertNull($response->error);
     }

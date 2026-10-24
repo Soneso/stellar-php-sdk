@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `EventInfo` reads the operation and transaction indexes of each event returned by `SorobanServer::getEvents` from the `operationIndex` and `transactionIndex` fields stellar-rpc sends, so `getOpIndex()` and `getTxIndex()` return them instead of null.
 - `StellarToml`, `fromDomain` and `currencyFromUrl` reject a field of the wrong type with an `Exception` that names the field and the type found instead of raising a `TypeError`.
 - `currencyFromUrl` rejects currency TOML files with no fields, and `StellarToml` rejects non-empty `DOCUMENTATION` lists, with an `Exception` naming the URL or field and what was found.
+- `LedgerEntry` reads the entry extension from the `extXdr` key that `getLedgerEntries` returns.
 
 ## [1.16.0] - 2026-10-14
 
