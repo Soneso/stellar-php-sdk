@@ -218,7 +218,7 @@ $args = $spec->funcArgsToXdrSCValues('transfer', [
 $result = $client->invokeMethod('transfer', $args);
 ```
 
-`Address` parameters accept G... and C... strings or account and contract `Address` objects. `MuxedAddress` parameters also accept M... and W... strings or their `Address` objects.
+`Address` parameters accept G... and C... strings or account and contract `Address` objects. `MuxedAddress` parameters also accept M... and W... strings or their `Address` objects. `u64`, `timepoint`, and `duration` parameters accept a non-negative `int` or a decimal string up to `18446744073709551615`. A prebuilt `XdrSCVal` passes through unchanged, and other inputs throw `InvalidArgumentException` naming the parameter type and the value or its type.
 
 ### Low-Level: SorobanServer
 

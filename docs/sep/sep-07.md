@@ -515,7 +515,7 @@ try {
 
 ## Testing with mock HTTP handler
 
-For unit testing, use `setMockHandlerStack()` to replace the HTTP client with a mock handler. This lets you test stellar.toml fetching and callback submissions without making actual network requests.
+For unit testing, use `setMockHandlerStack()` to replace the HTTP client with a mock handler. This lets you test stellar.toml fetching and callback submissions without making actual network requests. You can also pass a Guzzle `Client` to the `URIScheme` constructor, for example one with a mock handler or with timeouts.
 
 ```php
 <?php

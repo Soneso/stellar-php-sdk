@@ -855,11 +855,13 @@ Or query your account's existing offers:
 
 ```php
 <?php
+use Soneso\StellarSDK\Asset;
+
 // Get all offers for an account
 $offersPage = $sdk->offers()->forAccount("GABC...")->execute();
 foreach ($offersPage->getOffers()->toArray() as $offer) {
-    echo "Offer ID: " . $offer->getId() . "\n";
-    echo "Selling: " . $offer->getAmount() . " " . $offer->getSellingAsset() . "\n";
+    echo "Offer ID: " . $offer->getOfferId() . "\n";
+    echo "Selling: " . $offer->getAmount() . " " . Asset::canonicalForm($offer->getSelling()) . "\n";
     echo "Price: " . $offer->getPrice() . "\n";
 }
 ```
@@ -1566,7 +1568,7 @@ $effectsPage = $sdk->effects()
     ->execute();
 
 foreach ($effectsPage->getEffects()->toArray() as $effect) {
-    echo $effect->getType() . "\n";
+    echo $effect->getHumanReadableEffectType() . "\n";
 }
 ```
 
@@ -1584,7 +1586,7 @@ $sdk = StellarSDK::getTestNetInstance();
 $ledger = $sdk->requestLedger("12345678");
 $ledgersPage = $sdk->ledgers()->limit(10)->order("desc")->execute();
 
-// Payments (Payment, PathPayment, CreateAccount, AccountMerge)
+// Payments (Payment, PathPayment, CreateAccount, AccountMerge, InvokeHostFunction)
 $paymentsPage = $sdk->payments()->forAccount("GABC...")->execute();
 ```
 
@@ -2100,7 +2102,7 @@ Streaming runs indefinitely until the process is interrupted. To stop streaming,
 
 ### Stream Payments
 
-Stream payment-type operations (payments, path payments, create account, account merge) for an account.
+Stream payment-type operations (payments, path payments, create account, account merge, `invoke_host_function` for Stellar Asset Contract transfers) for an account.
 
 ```php
 <?php

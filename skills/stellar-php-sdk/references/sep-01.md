@@ -317,6 +317,9 @@ All SEP-01 methods throw generic `Exception`. There are no SEP-01-specific excep
 | `new StellarToml($string)` | `Exception` | TOML parse error if content is malformed |
 | `StellarToml::currencyFromUrl()` | `Exception` | `"Currency toml not found. Response status code {code}"` on non-200 HTTP |
 | `StellarToml::currencyFromUrl()` | `Exception` | `"Currency toml not found. {guzzle message}"` on network failure |
+| `StellarToml::fromDomain()`, `new StellarToml($string)`, `StellarToml::currencyFromUrl()` | `Exception` | `"Invalid stellar.toml field {field}: found {type}"` on a field of the wrong type |
+| `StellarToml::fromDomain()`, `new StellarToml($string)` | `Exception` | `"Invalid stellar.toml field DOCUMENTATION: found list"` on a non-empty `DOCUMENTATION` list |
+| `StellarToml::currencyFromUrl()` | `Exception` | `"Invalid currency toml {url}: no fields"` on a file with no fields |
 
 All exceptions can be caught with a single `catch (Exception $e)`. Use the message string to distinguish causes:
 

@@ -3,8 +3,8 @@
 **Status:** ✅ Supported  
 **SEP Version:** 1.4.0  
 **SEP Status:** Active  
-**SDK Version:** 1.16.0  
-**Generated:** 2026-10-15 12:31 UTC  
+**SDK Version:** 1.17.0  
+**Generated:** 2026-10-24 17:03 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md)
 
 ## Overall Coverage

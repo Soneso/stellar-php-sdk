@@ -314,7 +314,7 @@ if ($validators !== null) {
 
 ## Error handling
 
-The SDK throws exceptions when the stellar.toml file cannot be fetched or parsed. Always wrap network calls in try-catch blocks:
+The SDK throws exceptions when the stellar.toml file cannot be fetched or parsed. It also throws for a field of the wrong type, a non-empty `DOCUMENTATION` list, or a linked currency file without fields. The message names the field or the URL. Always wrap network calls in try-catch blocks:
 
 ```php
 <?php

@@ -290,7 +290,7 @@ class QueryTest extends TestCase
         $response = $this->sdk->root();
         $this->assertGreaterThan(17, $response->getCurrentProtocolVersion());
         $this->assertGreaterThan(17, $response->getCoreSupportedProtocolVersion());
-        $this->assertTrue(str_starts_with($response->getHorizonVersion(),"2"));
+        $this->assertMatchesRegularExpression('/^\d+\.\d+\.\d+/', $response->getHorizonVersion());
         $this->asserttrue(str_starts_with($response->getCoreVersion(), "stellar-core"));
         $this->assertGreaterThan(0, $response->getIngestLatestLedger());
         $this->assertGreaterThan(0, $response->getHistoryLatestLedger());
