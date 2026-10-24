@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `StellarToml`, `fromDomain` and `currencyFromUrl` reject a field of the wrong type with an `Exception` that names the field and the type found instead of raising a `TypeError`.
 - `currencyFromUrl` rejects currency TOML files with no fields, and `StellarToml` rejects non-empty `DOCUMENTATION` lists, with an `Exception` naming the URL or field and what was found.
 - `LedgerEntry` reads the entry extension from the `extXdr` key that `getLedgerEntries` returns.
+- `ContractSpec::nativeToXdrSCVal` converts u64, timepoint and duration values from non-negative integers or decimal strings across the full unsigned 64-bit range.
 
 ## [1.16.0] - 2026-10-14
 
