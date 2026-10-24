@@ -22,7 +22,7 @@ class LedgerEntry
      * @param string $xdr The current value of the given ledger entry (serialized in a base64 XDR string)
      * @param int $lastModifiedLedgerSeq The ledger sequence number of the last time this entry was updated
      * @param int|null $liveUntilLedgerSeq Ledger sequence number until which the entry is live
-     * @param string|null $ext The entry's "Ext" field (only available for protocol version >= 23)
+     * @param string|null $ext The entry extension from the "extXdr" response key (only available for protocol version >= 23)
      */
     public function __construct(
         public string $key,
@@ -50,8 +50,8 @@ class LedgerEntry
             $liveUntilLedgerSeq = $json['liveUntilLedgerSeq'];
         }
         $ext = null;
-        if (isset($json['ext'])) {
-            $ext = $json['ext'];
+        if (isset($json['extXdr'])) {
+            $ext = $json['extXdr'];
         }
         return new LedgerEntry($key, $xdr, $lastModifiedLedgerSeq, $liveUntilLedgerSeq, $ext);
     }
