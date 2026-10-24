@@ -17,7 +17,6 @@ use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use ReflectionClass;
-use ReflectionProperty;
 use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\CreateContractFromExternalRefWithConstructorHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -78,8 +77,8 @@ use Soneso\StellarSDK\Xdr\XdrTransactionMetaV3;
  * Unit tests for the SorobanClient high-level contract client.
  *
  * All RPC interactions are mocked with Guzzle MockHandler responses; no network access is required.
- * A SorobanServer whose private httpClient is replaced with a mock-backed Guzzle client is passed
- * through the server option of ClientOptions, InstallRequest and DeployRequest. The MockHandler
+ * A SorobanServer constructed with a mock-backed Guzzle client is passed through the server
+ * option of ClientOptions, InstallRequest and DeployRequest. The MockHandler
  * queue doubles as a guard: any HTTP request beyond the queued responses fails the test, and an
  * exhausted queue (count 0) proves that exactly the expected requests were made.
  */
@@ -843,6 +842,30 @@ class SorobanClientTest extends TestCase
         SorobanClient::forClientOptions($this->createClientOptions(server: $server));
     }
 
+    public function testForClientOptionsRejectsNonContractIdBeforeAnyRequest(): void
+    {
+        $mock = new MockHandler([]);
+        $server = $this->createMockedServer($mock);
+        $muxed = 'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+        $muxedAccount = 'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ';
+        $prefix = 'The contract to load must be a contract (C...) address';
+        $cases = [
+            $muxed => "$prefix, got a muxed contract (W...) address: $muxed; use its base contract (C...) address",
+            $muxedAccount => "$prefix, got a muxed account (M...) address: $muxedAccount",
+        ];
+        foreach ($cases as $id => $message) {
+            $options = new ClientOptions(sourceAccountKeyPair: KeyPair::fromAccountId(self::TEST_ACCOUNT_ID),
+                contractId: $id, network: $this->testNetwork, rpcUrl: self::TEST_RPC_URL, server: $server);
+            try {
+                SorobanClient::forClientOptions($options);
+                $this->fail('Accepted ' . $id);
+            } catch (InvalidArgumentException $e) {
+                $this->assertSame($message, $e->getMessage());
+            }
+        }
+        $this->assertNull($mock->getLastRequest());
+    }
+
     // ---------------------------------------------------------------------
     // helpers
     // ---------------------------------------------------------------------
@@ -911,8 +934,8 @@ class SorobanClientTest extends TestCase
     }
 
     /**
-     * SorobanServer whose private httpClient is replaced with a Guzzle client backed by the
-     * given mock handler, so that all RPC requests are served from the queued responses.
+     * SorobanServer that sends its RPC requests through a Guzzle client backed by the given
+     * mock handler, so that all RPC requests are served from the queued responses.
      * When $history is given, every request/response pair is also recorded into it via
      * Guzzle's history middleware, so tests can decode what was submitted.
      *
@@ -924,10 +947,7 @@ class SorobanClientTest extends TestCase
         if ($history !== null) {
             $stack->push(Middleware::history($history));
         }
-        $server = new SorobanServer(self::TEST_RPC_URL);
-        $httpClientProperty = new ReflectionProperty(SorobanServer::class, 'httpClient');
-        $httpClientProperty->setValue($server, new Client(['handler' => $stack]));
-        return $server;
+        return new SorobanServer(self::TEST_RPC_URL, new Client(['handler' => $stack]));
     }
 
     /**

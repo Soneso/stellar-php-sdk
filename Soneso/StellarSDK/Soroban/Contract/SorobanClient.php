@@ -93,8 +93,11 @@ class SorobanClient
      * Loads the contract specification from the network by fetching and parsing the contract's
      * WASM bytecode. The spec is used for type-safe method invocation.
      *
+     * The contract ID must be a "C..." strkey or the contract hash as 64 hexadecimal characters.
+     *
      * @param ClientOptions $options Client configuration including contract ID, network, and RPC URL
      * @return SorobanClient The initialized client ready to invoke contract methods
+     * @throws \InvalidArgumentException If the contract ID is not a contract address, before any request
      * @throws GuzzleException If the RPC request fails
      * @throws Exception If the contract is not found or spec parsing fails
      */

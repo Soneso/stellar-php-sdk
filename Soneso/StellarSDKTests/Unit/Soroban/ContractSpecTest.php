@@ -315,14 +315,39 @@ class ContractSpecTest extends TestCase
         $this->assertEquals(-42, $result->i32);
     }
 
-    public function testNativeToXdrSCValConvertsU64(): void
-    {
+    /** @dataProvider unsigned64Values */
+    public function testNativeToXdrSCValConvertsUnsigned64(
+        string $type, int|string $input, int|string $native, string $hex,
+    ): void {
         $spec = new ContractSpec([]);
-        $typeDef = new XdrSCSpecTypeDef(XdrSCSpecType::U64());
+        $typeDef = new XdrSCSpecTypeDef(XdrSCSpecType::$type());
+        $decoded = XdrSCVal::fromBase64Xdr(base64_encode(hex2bin($hex)));
+        $this->assertSame($native, $decoded->toNative());
+        $this->assertSame($decoded, $spec->nativeToXdrSCVal($decoded, $typeDef));
+        $this->assertSame($hex, bin2hex($spec->nativeToXdrSCVal($decoded->toNative(), $typeDef)->encode()));
+        $result = $spec->nativeToXdrSCVal($input, $typeDef);
+        $this->assertSame($hex, bin2hex($result->encode()));
+        $this->assertSame($native, $result->toNative());
+    }
 
-        $result = $spec->nativeToXdrSCVal(1000, $typeDef);
-        $this->assertEquals(XdrSCValType::SCV_U64, $result->type->value);
-        $this->assertEquals(1000, $result->u64);
+    /** @return array<string, array{string, int|string, int|string, string}> */
+    public static function unsigned64Values(): array
+    {
+        $data = [];
+        foreach (['U64' => '00000005', 'TIMEPOINT' => '00000007', 'DURATION' => '00000008'] as $type => $tag) {
+            foreach ([
+                [0, 0, '0000000000000000'],
+                [PHP_INT_MAX, PHP_INT_MAX, '7fffffffffffffff'],
+                ['9223372036854775808', '9223372036854775808', '8000000000000000'],
+                ['18446744073709551615', '18446744073709551615', 'ffffffffffffffff'],
+                ['0', 0, '0000000000000000'],
+                [(string)PHP_INT_MAX, PHP_INT_MAX, '7fffffffffffffff'],
+                ['000001', 1, '0000000000000001'],
+            ] as $i => [$input, $native, $bytes]) {
+                $data[$type . $i] = [$type, $input, $native, $tag . $bytes];
+            }
+        }
+        return $data;
     }
 
     public function testNativeToXdrSCValConvertsI64(): void
@@ -809,15 +834,41 @@ class ContractSpecTest extends TestCase
         $spec->nativeToXdrSCVal(-1, $typeDef);
     }
 
-    public function testNativeToXdrSCValThrowsForNegativeU64(): void
+    /** @dataProvider invalidUnsigned64Values */
+    public function testNativeToXdrSCValRejectsInvalidUnsigned64(string $type, mixed $input, string $display): void
     {
-        $spec = new ContractSpec([]);
-        $typeDef = new XdrSCSpecTypeDef(XdrSCSpecType::U64());
-
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Negative integer value provided for u64');
+        $this->expectExceptionMessage('Invalid ' . strtolower($type) . ' value ' . $display
+            . '; expected an integer or decimal string in [0, 18446744073709551615]');
+        (new ContractSpec([]))->nativeToXdrSCVal($input, new XdrSCSpecTypeDef(XdrSCSpecType::$type()));
+    }
 
-        $spec->nativeToXdrSCVal(-1, $typeDef);
+    /** @return array<string, array{string, mixed, string}> */
+    public static function invalidUnsigned64Values(): array
+    {
+        $data = [];
+        foreach (['U64', 'TIMEPOINT', 'DURATION'] as $type) {
+            foreach ([-1, '-1', '18446744073709551616', 'not-a-number', '', '1.5', '1e2', '+1', ' 1', "1\n", 1.5, true, null] as $i => $input) {
+                $data[$type . $i] = [$type, $input, var_export($input, true)];
+            }
+            $data[$type . ' array'] = [$type, [], 'array'];
+        }
+        return $data;
+    }
+
+    public function testUnsigned64ErrorRedactsSecretSeed(): void
+    {
+        $seed = \Soneso\StellarSDK\Crypto\StrKey::encodeSeed(str_repeat("\x01", 32));
+        try {
+            (new ContractSpec([]))->nativeToXdrSCVal('invalid ' . $seed, XdrSCSpecTypeDef::TIMEPOINT());
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('Invalid timepoint value', $e->getMessage());
+            $this->assertStringContainsString('[redacted seed]', $e->getMessage());
+            $this->assertStringNotContainsString($seed, $e->getMessage());
+            $this->assertNull($e->getPrevious());
+            return;
+        }
+        $this->fail('Expected an invalid timepoint exception');
     }
 
     public function testNativeToXdrSCValThrowsForInvalidBoolType(): void

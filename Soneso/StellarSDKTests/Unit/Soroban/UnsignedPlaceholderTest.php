@@ -16,7 +16,6 @@ use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionMethod;
-use ReflectionProperty;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
@@ -412,9 +411,7 @@ class UnsignedPlaceholderTest extends TestCase
      */
     private function assembledTransaction(array $entries, MockHandler $mock): AssembledTransaction
     {
-        $server = new SorobanServer(self::RPC_URL);
-        (new ReflectionProperty(SorobanServer::class, 'httpClient'))
-            ->setValue($server, new Client(['handler' => HandlerStack::create($mock)]));
+        $server = new SorobanServer(self::RPC_URL, new Client(['handler' => HandlerStack::create($mock)]));
 
         $operation = (new InvokeHostFunctionOperationBuilder(
             new InvokeContractHostFunction(self::CONTRACT_ID, 'test', []),

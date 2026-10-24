@@ -48,6 +48,7 @@ use Soneso\StellarSDK\Xdr\XdrLedgerEntryData;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrSCContractInstance;
+use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
 use Soneso\StellarSDK\Xdr\XdrSCEnvMetaEntry;
 use Soneso\StellarSDK\Xdr\XdrSCEnvMetaEntryInterfaceVersion;
 use Soneso\StellarSDK\Xdr\XdrSCEnvMetaKind;
@@ -68,8 +69,8 @@ use phpseclib3\Math\BigInteger;
 /**
  * Unit tests for SorobanServer class
  *
- * Tests all public methods of the SorobanServer class using mocked HTTP responses.
- * Uses reflection to inject mock HTTP client since SorobanServer doesn't have a setter.
+ * Tests all public methods of the SorobanServer class using mocked HTTP responses,
+ * served by a Guzzle client that the tests pass to the SorobanServer constructor.
  */
 class SorobanServerTest extends TestCase
 {
@@ -83,24 +84,15 @@ class SorobanServerTest extends TestCase
 
     /**
      * Helper method to create a mocked SorobanServer with predefined responses
-     * Uses reflection to inject the mock HTTP client. When a history container is
-     * passed, every request the server sends is recorded into it.
+     * The server sends its requests through a Guzzle client backed by a mock handler.
+     * When a history container is passed, every request the server sends is recorded into it.
      */
     private function createMockedSorobanServer(array $responses, array &$requestHistory = []): SorobanServer
     {
         $mock = new MockHandler($responses);
         $handlerStack = HandlerStack::create($mock);
         $handlerStack->push(Middleware::history($requestHistory));
-        $client = new Client(['handler' => $handlerStack]);
-
-        $server = new SorobanServer(self::TEST_ENDPOINT);
-
-        // Use reflection to inject the mocked client
-        $reflection = new \ReflectionClass($server);
-        $property = $reflection->getProperty('httpClient');
-        $property->setValue($server, $client);
-
-        return $server;
+        return new SorobanServer(self::TEST_ENDPOINT, new Client(['handler' => $handlerStack]));
     }
 
     /**
@@ -295,6 +287,7 @@ class SorobanServerTest extends TestCase
                     [
                         'key' => 'AAAABgAAAAA=',
                         'xdr' => 'AAAABgAAAAE=',
+                        'extXdr' => 'AAAAAA==',
                         'lastModifiedLedgerSeq' => 123456
                     ]
                 ],
@@ -308,6 +301,7 @@ class SorobanServerTest extends TestCase
         $this->assertInstanceOf(GetLedgerEntriesResponse::class, $response);
         $this->assertNotNull($response->entries);
         $this->assertCount(1, $response->entries);
+        $this->assertSame('AAAAAA==', $response->entries[0]->ext);
         $this->assertEquals(123456, $response->getLatestLedger());
         $this->assertNull($response->error);
     }
@@ -754,13 +748,62 @@ class SorobanServerTest extends TestCase
             ]
         ]));
 
-        $key = XdrSCVal::forSymbol('test_key');
+        // Account and contract addresses inside a vector and a map pass the muxed address guard.
+        $key = XdrSCVal::forVec([
+            XdrSCVal::forSymbol('test_key'),
+            Address::fromAccountId(self::TEST_ACCOUNT_ID)->toXdrSCVal(),
+            XdrSCVal::forMap([new XdrSCMapEntry(XdrSCVal::forSymbol('owner'),
+                Address::fromContractId(self::TEST_CONTRACT_ID)->toXdrSCVal())]),
+        ]);
         $durability = XdrContractDataDurability::PERSISTENT();
 
-        $server = $this->createMockedSorobanServer([$mockResponse]);
+        $requestHistory = [];
+        $server = $this->createMockedSorobanServer([$mockResponse], $requestHistory);
         $ledgerEntry = $server->getContractData(self::TEST_CONTRACT_ID, $key, $durability);
 
         $this->assertNotNull($ledgerEntry);
+        $contractData = $this->requestedLedgerKey($requestHistory, 0)->contractData;
+        $this->assertSame(self::TEST_CONTRACT_ID, $contractData?->contract->toStrKey());
+        $this->assertSame($key->toBase64Xdr(), $contractData?->key->toBase64Xdr());
+        $this->assertSame($durability->getValue(), $contractData?->durability->getValue());
+    }
+
+    public function testGetContractDataRejectsNonContractOwnerAndMuxedKeysBeforeAnyRequest(): void
+    {
+        $requestHistory = [];
+        $server = $this->createMockedSorobanServer([], $requestHistory);
+        $contract = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
+        $muxed = 'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+        $muxedAccount = 'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ';
+        $prefix = 'The contract data owner must be a contract (C...) address';
+        $keyMessage = 'Contract data keys cannot contain muxed account (M...) or muxed contract (W...) addresses';
+        $symbol = XdrSCVal::forSymbol('test_key');
+        $cases = [
+            [$muxed, $symbol, "$prefix, got a muxed contract (W...) address: $muxed; use its base contract (C...) address"],
+            [$muxedAccount, $symbol, "$prefix, got a muxed account (M...) address: $muxedAccount"],
+            [$contract, XdrSCVal::forVec([$symbol, Address::fromMuxedContractId($muxed)->toXdrSCVal()]), $keyMessage],
+            [$contract, XdrSCVal::forMap([new XdrSCMapEntry($symbol,
+                Address::fromMuxedAccountId($muxedAccount)->toXdrSCVal())]), $keyMessage],
+            [$contract, XdrSCVal::forMap([new XdrSCMapEntry(
+                XdrSCVal::forVec([Address::fromMuxedContractId($muxed)->toXdrSCVal()]), $symbol)]), $keyMessage],
+        ];
+        foreach ($cases as [$owner, $key, $message]) {
+            try {
+                $server->getContractData($owner, $key, XdrContractDataDurability::PERSISTENT());
+                $this->fail('Accepted ' . $owner . ' ' . $key->toBase64Xdr());
+            } catch (InvalidArgumentException $e) {
+                $this->assertSame($message, $e->getMessage());
+            }
+        }
+        $seed = 'SAMKI63THJER2XVJA5LQXIPBWIV6FEFSS5ILURYGSCHFKZVDE5YVQWC7';
+        try {
+            $server->getContractData($seed, $symbol, XdrContractDataDurability::PERSISTENT());
+            $this->fail('Accepted a secret seed as the owner');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame("$prefix, got a secret seed (S...) instead of an address", $e->getMessage());
+            $this->assertStringNotContainsString($seed, $e->getMessage());
+        }
+        $this->assertCount(0, $requestHistory);
     }
 
     public function testGetContractDataNotFound(): void
@@ -861,6 +904,30 @@ class SorobanServerTest extends TestCase
         $this->assertNull($contractCode);
     }
 
+    public function testContractLoadersRejectNonContractIdBeforeAnyRequest(): void
+    {
+        $requestHistory = [];
+        $server = $this->createMockedSorobanServer([], $requestHistory);
+        $muxed = 'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+        $muxedAccount = 'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ';
+        $prefix = 'The contract to load must be a contract (C...) address';
+        $cases = [
+            $muxed => "$prefix, got a muxed contract (W...) address: $muxed; use its base contract (C...) address",
+            $muxedAccount => "$prefix, got a muxed account (M...) address: $muxedAccount",
+        ];
+        foreach (['loadContractCodeForContractId', 'loadContractInfoForContractId'] as $loader) {
+            foreach ($cases as $id => $message) {
+                try {
+                    $server->$loader($id);
+                    $this->fail($loader . ' accepted ' . $id);
+                } catch (InvalidArgumentException $e) {
+                    $this->assertSame($message, $e->getMessage());
+                }
+            }
+        }
+        $this->assertCount(0, $requestHistory);
+    }
+
     // Error Response Tests
 
     public function testJsonRpcErrorResponse(): void
@@ -921,6 +988,7 @@ class SorobanServerTest extends TestCase
             'id' => 1,
             'result' => [
                 'id' => 'ledger_id',
+                'protocolVersion' => 21,
                 'sequence' => 123456
             ]
         ]));
@@ -991,6 +1059,41 @@ class SorobanServerTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Service URL must use HTTPS');
         new SorobanServer('http://soroban-testnet.stellar.org');
+    }
+
+    // HTTP Client Injection Tests
+
+    public function testInjectedHttpClientSendsRpcRequestsWithItsOptions(): void
+    {
+        // The host never resolves (RFC 6761), so a request that bypasses the injected client
+        // fails without reaching a server.
+        $endpoint = 'https://soroban-rpc.invalid';
+        $history = [];
+        $stack = HandlerStack::create(new MockHandler([new Response(200, [], json_encode([
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'result' => ['status' => 'healthy', 'ledgerRetentionWindow' => 17280, 'oldestLedger' => 100000, 'latestLedger' => 117280],
+        ]))]));
+        $stack->push(Middleware::history($history));
+        $client = new Client([
+            'handler' => $stack,
+            'timeout' => 12.5,
+            'connect_timeout' => 3.0,
+            'proxy' => 'http://proxy.example.com:3128',
+        ]);
+
+        $response = (new SorobanServer($endpoint, $client))->getHealth();
+
+        $this->assertSame('healthy', $response->getStatus());
+        $this->assertCount(1, $history);
+        $request = $history[0]['request'];
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertSame($endpoint, (string)$request->getUri());
+        $this->assertSame('application/json', $request->getHeaderLine('Content-Type'));
+        $this->assertSame('getHealth', json_decode((string)$request->getBody(), true)['method']);
+        $this->assertSame(12.5, $history[0]['options']['timeout']);
+        $this->assertSame(3.0, $history[0]['options']['connect_timeout']);
+        $this->assertSame('http://proxy.example.com:3128', $history[0]['options']['proxy']);
     }
 
     // External reference executable (CAP-85) tests

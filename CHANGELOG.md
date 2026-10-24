@@ -9,9 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `ContractCreditedEffectResponse` exposes the muxed contract destination through `getContractMuxed()` and `getContractMuxedId()` when Horizon reports a transfer or mint to a muxed contract address.
+- `SorobanServer` and `URIScheme` accept an optional Guzzle `Client` as their last constructor parameter. `SorobanServer` sends its RPC requests through it, `URIScheme` its stellar.toml fetches and callback submissions, so applications can set timeouts, proxies and middleware.
+
+### Changed
+- The `InvokeContractHostFunction` constructor, `InvokeContractHostFunction::setContractId` and `AssembledTransaction::buildWithOp` accept only a `C...` strkey or 64 hexadecimal characters as the contract to invoke and reject any other id with an `InvalidArgumentException` such as "The contract to invoke must be a contract (C...) address, got a muxed contract (W...) address: W...; use its base contract (C...) address"; `AssembledTransaction::build` and `buildWithOp` reject it before any request, while `InvokeContractHostFunction::fromXdr` and `toXdr` decode and re-encode every address kind unchanged.
+- `SorobanServer::loadContractCodeForContractId`, `SorobanServer::loadContractInfoForContractId` and `SorobanClient::forClientOptions` reject a contract id that is not a contract address before any request, with "The contract to load must be a contract (C...) address, got <kind> address: <id>".
+- `SorobanServer::getContractData` rejects an owner that is not a contract address with "The contract data owner must be a contract (C...) address, got <kind> address: <id>", and a key that is or holds a muxed account or muxed contract address, inside vectors and maps at any depth, with "Contract data keys cannot contain muxed account (M...) or muxed contract (W...) addresses", both before any request.
 
 ### Deprecated
 - `EventInfo::$inSuccessfulContractCall`: Stellar RPC 30 and later omit the field; the SDK still reads it from older servers.
+
+### Fixed
+- `InvokeContractHostFunction::toXdr` rejects an id that names no address with an `InvalidArgumentException` that names the id instead of raising a PHP Error.
+- `TransferServerService::transaction` rejects a SEP-06 response without a `transaction` object with an `InvalidArgumentException` that names the missing member instead of raising a PHP warning and a `TypeError`.
+- `TxRepHelper::unescapeString` passes a `\x` escape without two hex digits through literally without raising a PHP deprecation.
+- `PaymentsRequestBuilder::stream` delivers `invoke_host_function` records (Stellar Asset Contract transfers) as `InvokeHostFunctionOperationResponse` instead of ending the stream with an `UnhandledMatchError`.
+- `EventInfo` reads the operation and transaction indexes of each event returned by `SorobanServer::getEvents` from the `operationIndex` and `transactionIndex` fields stellar-rpc sends, so `getOpIndex()` and `getTxIndex()` return them instead of null.
+- `StellarToml`, `fromDomain` and `currencyFromUrl` reject a field of the wrong type with an `Exception` that names the field and the type found instead of raising a `TypeError`.
+- `currencyFromUrl` rejects currency TOML files with no fields, and `StellarToml` rejects non-empty `DOCUMENTATION` lists, with an `Exception` naming the URL or field and what was found.
+- `LedgerEntry` reads the entry extension from the `extXdr` key that `getLedgerEntries` returns.
+- `ContractSpec::nativeToXdrSCVal` converts u64, timepoint and duration values from non-negative integers or decimal strings across the full unsigned 64-bit range.
 
 ## [1.16.0] - 2026-10-14
 

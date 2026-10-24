@@ -11,6 +11,7 @@ use RuntimeException;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrInt256Parts;
+use Soneso\StellarSDK\Xdr\XdrJsonHelper;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
@@ -292,6 +293,7 @@ class ContractSpec
      *
      * Supported conversions include:
      * - Primitives: int, string, bool
+     * - u64, timepoint, duration: non-negative ints or decimal strings through 18446744073709551615
      * - Collections: arrays to vectors, tuples, or maps
      * - BigInts: GMP resources or numeric strings for 128/256-bit integers
      * - Addresses: Address objects or strkeys; an Address parameter takes G or C, a
@@ -326,6 +328,16 @@ class ContractSpec
                 return XdrSCVal::forVoid();
             }
             return $this->nativeToXdrSCVal($val, $ty->option->valueType);
+        }
+
+        $unsignedType = match ($type->value) {
+            XdrSCSpecType::SC_SPEC_TYPE_U64 => 'u64',
+            XdrSCSpecType::SC_SPEC_TYPE_TIMEPOINT => 'timepoint',
+            XdrSCSpecType::SC_SPEC_TYPE_DURATION => 'duration',
+            default => null,
+        };
+        if ($unsignedType !== null && !($val instanceof XdrSCVal)) {
+            return $this->unsigned64ToXdrSCVal($val, $unsignedType);
         }
 
         if ($val === null) {
@@ -408,12 +420,6 @@ class ContractSpec
             }
             if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_I32) {
                 return XdrSCVal::forI32($val);
-            }
-            if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_U64) {
-                if ($val < 0) {
-                    throw new InvalidArgumentException("Negative integer value provided for u64.");
-                }
-                return XdrSCVal::forU64($val);
             }
             if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_I64) {
                 return XdrSCVal::forI64($val);
@@ -504,6 +510,36 @@ class ContractSpec
         }
         $valType = gettype($val);
         throw new InvalidArgumentException("Failed to convert val of type $valType");
+    }
+
+    /**
+     * Converts an unsigned 64-bit value using the XDR layer's signed integer storage.
+     *
+     * @param mixed $value The native value
+     * @param string $type The u64, timepoint or duration type name
+     * @return XdrSCVal The encoded value
+     * @throws InvalidArgumentException If the value is not an unsigned 64-bit integer
+     */
+    private function unsigned64ToXdrSCVal(mixed $value, string $type): XdrSCVal
+    {
+        if (is_int($value) || is_string($value)) {
+            try {
+                $stored = XdrJsonHelper::stringToUint64($value);
+                return match ($type) {
+                    'u64' => XdrSCVal::forU64($stored),
+                    'timepoint' => XdrSCVal::forTimepoint($stored),
+                    default => XdrSCVal::forDuration($stored),
+                };
+            } catch (InvalidArgumentException) {
+                // Validation failures fall through to the diagnostic below, which names the parameter type and value.
+            }
+        }
+        // Secret seed strings are redacted from conversion diagnostics.
+        $display = is_string($value)
+            ? var_export(preg_replace('/S[A-Z2-7]{55}/i', '[redacted seed]', $value), true)
+            : (is_scalar($value) || $value === null ? var_export($value, true) : get_debug_type($value));
+        throw new InvalidArgumentException("Invalid {$type} value {$display}; "
+            . "expected an integer or decimal string in [0, 18446744073709551615]");
     }
 
     /**

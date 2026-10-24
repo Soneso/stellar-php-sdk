@@ -8,7 +8,10 @@
 namespace Soneso\StellarSDK;
 
 use Exception;
+use InvalidArgumentException;
+use ReflectionClass;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\ContractAddressGuard;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
@@ -19,8 +22,7 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
  * This host function type is used to invoke functions on deployed Soroban smart contracts.
  * It specifies the contract to call, the function name, and any arguments to pass to the function.
  *
- * The contract ID can be provided in various formats including hex contract ID, StrKey-encoded
- * contract ID, or other address types that can be converted using Address::fromAnyId().
+ * The contract ID is a contract strkey ("C...") or the contract hash as 64 hexadecimal characters.
  *
  * Usage:
  * <code>
@@ -47,9 +49,8 @@ use Soneso\StellarSDK\Xdr\XdrSCVal;
 class InvokeContractHostFunction extends HostFunction
 {
     /**
-     * @var string $contractId Can be any type that can be converted to an address.
-     * E.g. hex contract id, StrKey contract id, hex claimable balance id, StrKey claimable balance id, etc.
-     * Use Address::fromAnyId($contractId) to get the exact type.
+     * @var string $contractId the contract to invoke, as a "C..." strkey or as 64 hexadecimal characters;
+     * an instance from fromXdr() holds the strkey of the address its XDR names, of any kind
      */
     public string $contractId;
 
@@ -66,12 +67,14 @@ class InvokeContractHostFunction extends HostFunction
     /**
      * Constructs a new InvokeContractHostFunction
      *
-     * @param string $contractId The contract ID (can be hex or StrKey-encoded)
+     * @param string $contractId The contract to invoke, as a "C..." strkey or 64 hexadecimal characters
      * @param string $functionName The name of the function to invoke
      * @param array<XdrSCVal>|null $arguments Optional array of function arguments
+     * @throws InvalidArgumentException If the contract ID is not a contract address
      */
     public function __construct(string $contractId, string $functionName, ?array $arguments = null)
     {
+        ContractAddressGuard::requireContractId($contractId, ContractAddressGuard::CONTRACT_TO_INVOKE);
         $this->contractId = $contractId;
         $this->functionName = $functionName;
         $this->arguments = $arguments;
@@ -81,15 +84,21 @@ class InvokeContractHostFunction extends HostFunction
     /**
      * Converts the invoke contract host function to XDR format
      *
+     * Encodes the contract ID as the address kind it names, so an instance from fromXdr()
+     * re-encodes to the XDR it was decoded from.
+     *
      * @return XdrHostFunction The XDR host function
+     * @throws InvalidArgumentException If the contract ID names no address
      */
     public function toXdr() : XdrHostFunction {
         $args = array();
         if ($this->arguments !== null) {
             $args = array_merge($args, $this->arguments);
         }
-        // allow all kinds of addresses
         $address = Address::fromAnyId($this->contractId);
+        if ($address === null) {
+            throw ContractAddressGuard::notAnAddress($this->contractId, ContractAddressGuard::CONTRACT_TO_INVOKE);
+        }
         $invokeArgs = new XdrInvokeContractArgs($address->toXdr(),
             $this->functionName,$args);
         return XdrHostFunction::forInvokingContractWithArgs($invokeArgs);
@@ -107,12 +116,14 @@ class InvokeContractHostFunction extends HostFunction
         if ($invokeContract === null) {
             throw new Exception("Invalid argument");
         }
-        // allow all types of addresses
-        $contractId = $invokeContract->contractAddress->toStrKey();
-        $functionName = $invokeContract->functionName;
-        $args= $invokeContract->getArgs();
-
-        return new InvokeContractHostFunction($contractId, $functionName, $args);
+        // The constructor admits contract targets only. A decoded instance keeps the address
+        // its XDR names, of any kind, so decoding and encoding an envelope stays lossless.
+        // HostFunction's constructor holds no state, so skipping both constructors is safe.
+        $hostFunction = (new ReflectionClass(self::class))->newInstanceWithoutConstructor();
+        $hostFunction->contractId = $invokeContract->contractAddress->toStrKey();
+        $hostFunction->functionName = $invokeContract->functionName;
+        $hostFunction->arguments = $invokeContract->getArgs();
+        return $hostFunction;
     }
 
     /**
@@ -128,11 +139,13 @@ class InvokeContractHostFunction extends HostFunction
     /**
      * Sets the contract ID
      *
-     * @param string $contractId The contract ID
+     * @param string $contractId The contract to invoke, as a "C..." strkey or 64 hexadecimal characters
      * @return void
+     * @throws InvalidArgumentException If the contract ID is not a contract address
      */
     public function setContractId(string $contractId): void
     {
+        ContractAddressGuard::requireContractId($contractId, ContractAddressGuard::CONTRACT_TO_INVOKE);
         $this->contractId = $contractId;
     }
 

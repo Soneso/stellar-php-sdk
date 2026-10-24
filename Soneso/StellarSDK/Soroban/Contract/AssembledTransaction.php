@@ -22,6 +22,7 @@ use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\RestorePreamble;
 use Soneso\StellarSDK\Soroban\Responses\SendTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SimulateTransactionResponse;
+use Soneso\StellarSDK\Soroban\ContractAddressGuard;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\Transaction;
@@ -293,8 +294,11 @@ class AssembledTransaction
      * If you need to use a different host function type (e.g., CreateContractWithConstructorHostFunction),
      * use AssembledTransaction::buildWithOp instead.
      *
+     * The contract id must be a "C..." strkey or the contract hash as 64 hexadecimal characters.
+     *
      * @param AssembledTransactionOptions $options Configuration including contract id, method name, and arguments
      * @return AssembledTransaction The assembled and optionally simulated transaction
+     * @throws \InvalidArgumentException If the contract id is not a contract address, before any request
      * @throws GuzzleException If fetching the account or simulation fails
      * @throws Exception If transaction construction fails
      */
@@ -311,15 +315,21 @@ class AssembledTransaction
      * Use this factory method when you need to use a host function other than InvokeContractHostFunction,
      * such as CreateContractWithConstructorHostFunction for deploying contracts or
      * UploadContractWasmHostFunction for installing contract code.
+     * An InvokeContractHostFunction must name a "C..." strkey or 64 hexadecimal characters.
      *
      * @param InvokeHostFunctionOperation $operation The host function operation to include in the transaction
      * @param AssembledTransactionOptions $options Configuration for the transaction
      * @return AssembledTransaction The assembled and optionally simulated transaction
+     * @throws \InvalidArgumentException If an invoked contract id is not a contract address, before any request
      * @throws GuzzleException If fetching the account or simulation fails
      * @throws Exception If transaction construction fails
      */
     public static function buildWithOp(InvokeHostFunctionOperation $operation,
                                        AssembledTransactionOptions $options): AssembledTransaction {
+        if ($operation->function instanceof InvokeContractHostFunction) {
+            ContractAddressGuard::requireContractId($operation->function->contractId,
+                ContractAddressGuard::CONTRACT_TO_INVOKE);
+        }
         $tx = new AssembledTransaction(options: $options);
         $account = $tx->getSourceAccount();
         $tx->raw = new TransactionBuilder(sourceAccount: $account);

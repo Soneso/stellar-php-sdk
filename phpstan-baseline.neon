@@ -457,12 +457,6 @@ parameters:
 			path: Soneso/StellarSDK/Requests/OrderBookRequestBuilder.php
 
 		-
-			message: '#^Match expression does not handle remaining value\: mixed$#'
-			identifier: match.unhandled
-			count: 1
-			path: Soneso/StellarSDK/Requests/PaymentsRequestBuilder.php
-
-		-
 			message: '#^Method Soneso\\StellarSDK\\Requests\\PaymentsRequestBuilder\:\:cursor\(\) should return Soneso\\StellarSDK\\Requests\\PaymentsRequestBuilder but returns Soneso\\StellarSDK\\Requests\\RequestBuilder\.$#'
 			identifier: return.type
 			count: 1

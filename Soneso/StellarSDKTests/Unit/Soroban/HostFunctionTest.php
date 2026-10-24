@@ -6,7 +6,9 @@
 
 namespace Soneso\StellarSDKTests\Unit\Soroban;
 
+use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeNative;
 use Soneso\StellarSDK\CreateContractFromExternalRefHostFunction;
@@ -16,7 +18,10 @@ use Soneso\StellarSDK\CreateContractWithConstructorHostFunction;
 use Soneso\StellarSDK\DeploySACWithAssetHostFunction;
 use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperation;
+use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Transaction;
+use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrContractExecutable;
 use Soneso\StellarSDK\Xdr\XdrContractIDPreimage;
@@ -24,7 +29,9 @@ use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
 use Soneso\StellarSDK\Xdr\XdrCreateContractArgs;
 use Soneso\StellarSDK\Xdr\XdrCreateContractArgsV2;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
+use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
 use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionOp;
+use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Exception;
@@ -271,6 +278,93 @@ class HostFunctionTest extends TestCase
         $this->assertEquals($original->getContractId(), $decoded->getContractId());
         $this->assertEquals($original->getFunctionName(), $decoded->getFunctionName());
         $this->assertEmpty($decoded->getArguments());
+    }
+
+    public function testInvokeContractConstructorAndSetterAcceptOnlyContractTargets(): void
+    {
+        $hex = '363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103';
+        $hostFunction = new InvokeContractHostFunction($hex, 'f');
+        $target = $hostFunction->toXdr()->invokeContract?->contractAddress;
+        $this->assertSame('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE', $target?->toStrKey());
+        $hostFunction->setContractId(self::TEST_CONTRACT_ID);
+
+        $muxed = 'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+        $muxedAccount = 'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ';
+        $account = 'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ';
+        $balance = 'BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU';
+        $pool = 'LA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN';
+        $prefix = 'The contract to invoke must be a contract (C...) address';
+        $cases = [
+            $muxed => "$prefix, got a muxed contract (W...) address: $muxed; use its base contract (C...) address",
+            $muxedAccount => "$prefix, got a muxed account (M...) address: $muxedAccount",
+            $account => "$prefix, got an account (G...) address: $account",
+            $balance => "$prefix, got a claimable balance (B...) address: $balance",
+            $pool => "$prefix, got a liquidity pool (L...) address: $pool",
+            'not-an-address' => "$prefix: not-an-address",
+        ];
+        foreach ($cases as $id => $message) {
+            $builds = [fn() => new InvokeContractHostFunction($id, 'f'), fn() => $hostFunction->setContractId($id)];
+            foreach ($builds as $build) {
+                try {
+                    $build();
+                    $this->fail('Accepted ' . $id);
+                } catch (InvalidArgumentException $e) {
+                    $this->assertSame($message, $e->getMessage());
+                }
+            }
+        }
+        $this->assertSame(self::TEST_CONTRACT_ID, $hostFunction->getContractId());
+    }
+
+    public function testInvokeContractToXdrRejectsIdThatNamesNoAddress(): void
+    {
+        $hostFunction = new InvokeContractHostFunction(self::TEST_CONTRACT_ID, 'f');
+        $hostFunction->contractId = "not\nan-address";
+        try {
+            $hostFunction->toXdr();
+            $this->fail('Encoded an id that names no address');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame('The contract to invoke must be a contract (C...) address: not\x0Aan-address',
+                $e->getMessage());
+        }
+    }
+
+    public function testInvokeContractRejectsSecretSeedWithoutEchoingIt(): void
+    {
+        $seed = 'SAMKI63THJER2XVJA5LQXIPBWIV6FEFSS5ILURYGSCHFKZVDE5YVQWC7';
+        $hostFunction = new InvokeContractHostFunction(self::TEST_CONTRACT_ID, 'f');
+        $hostFunction->contractId = $seed;
+        $builds = [fn() => new InvokeContractHostFunction($seed, 'f'), fn() => $hostFunction->toXdr()];
+        foreach ($builds as $build) {
+            try {
+                $build();
+                $this->fail('Accepted a secret seed');
+            } catch (InvalidArgumentException $e) {
+                $this->assertSame('The contract to invoke must be a contract (C...) address, got a secret seed (S...)'
+                    . ' instead of an address', $e->getMessage());
+                $this->assertStringNotContainsString($seed, $e->getMessage());
+            }
+        }
+    }
+
+    public function testInvokeContractFromXdrKeepsMuxedTargetAndReencodesEnvelopeUnchanged(): void
+    {
+        $muxed = 'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+        $xdr = XdrHostFunction::forInvokingContractWithArgs(
+            new XdrInvokeContractArgs(XdrSCAddress::forMuxedContractId($muxed), 'f', [XdrSCVal::forU32(7)]));
+        $decoded = InvokeContractHostFunction::fromXdr(XdrHostFunction::decode(new XdrBuffer($xdr->encode())));
+        $this->assertSame($muxed, $decoded->getContractId());
+        $this->assertSame($xdr->encode(), $decoded->toXdr()->encode());
+
+        $envelope = (new TransactionBuilder(new Account(self::TEST_ACCOUNT_ID, new BigInteger(1))))
+            ->addOperation(new InvokeHostFunctionOperation($decoded))->build()->toEnvelopeXdrBase64();
+        $transaction = Transaction::fromEnvelopeBase64XdrString($envelope);
+        $this->assertSame($envelope, $transaction->toEnvelopeXdrBase64());
+        $this->assertSame(32, strlen($transaction->hash(Network::testnet())));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("got a muxed contract (W...) address: $muxed; use its base contract (C...) address");
+        new InvokeContractHostFunction($muxed, 'f');
     }
 
     public function testInvokeContractSetContractId(): void
