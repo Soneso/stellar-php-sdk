@@ -4,6 +4,8 @@ The `SorobanServer` class (`Soneso\StellarSDK\Soroban\SorobanServer`) is a JSON-
 
 ## Creating a SorobanServer
 
+The constructor takes an optional Guzzle `Client` as its second argument for timeouts, proxies, and middleware, and creates its own client without one.
+
 ```php
 <?php
 
@@ -163,7 +165,7 @@ if ($account !== null) {
 
 ### getContractData
 
-Read a specific contract data entry by key and durability.
+Read a specific contract data entry by key and durability. The contract id is a `C...` strkey or 64 hexadecimal characters. The key must not be or hold a muxed account (`M...`) or muxed contract (`W...`) address at any depth of its vectors and maps. Both checks throw `InvalidArgumentException` before the request.
 
 ```php
 use Soneso\StellarSDK\Soroban\SorobanServer;

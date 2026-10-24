@@ -965,7 +965,7 @@ if ($tx->status === 'pending_transaction_info_update') {
 
 ## Error Handling
 
-Three domain-specific exceptions plus standard HTTP exceptions:
+Three domain-specific exceptions plus standard HTTP exceptions. `transaction()` also throws `InvalidArgumentException` for a response without a `transaction` object.
 
 ```php
 <?php declare(strict_types=1);
@@ -1033,6 +1033,7 @@ try {
 | `AuthenticationRequiredException` | No/invalid JWT token | none |
 | `CustomerInformationNeededException` | KYC data required | `CustomerInformationNeededResponse` |
 | `CustomerInformationStatusException` | KYC pending or denied | `CustomerInformationStatusResponse` |
+| `InvalidArgumentException` | `transaction()` response without a `transaction` object | none |
 
 **CustomerInformationNeededResponse:**
 - `$fields: array<string>` — list of SEP-12 field names to submit

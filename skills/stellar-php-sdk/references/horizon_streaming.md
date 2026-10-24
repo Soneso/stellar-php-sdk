@@ -88,7 +88,7 @@ $sdk->payments()
     });
 ```
 
-The payments `stream()` method dispatches different response types based on the operation type field: `PaymentOperationResponse`, `CreateAccountOperationResponse`, `AccountMergeOperationResponse`, `PathPaymentStrictSendOperationResponse`, or `PathPaymentStrictReceiveOperationResponse`.
+The payments `stream()` method dispatches each record by its operation type: `PaymentOperationResponse`, `CreateAccountOperationResponse`, `AccountMergeOperationResponse`, `PathPaymentStrictSendOperationResponse`, `PathPaymentStrictReceiveOperationResponse`, or `InvokeHostFunctionOperationResponse` for Stellar Asset Contract transfers.
 
 ## Stream Ledger Closings
 

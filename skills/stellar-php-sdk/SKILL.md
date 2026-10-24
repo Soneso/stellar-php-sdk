@@ -165,14 +165,17 @@ Real-time update patterns using Server-Sent Events. Streaming runs in a blocking
 ### Stream Payments
 
 ```php
+use Soneso\StellarSDK\Responses\Operations\OperationResponse;
 use Soneso\StellarSDK\Responses\Operations\PaymentOperationResponse;
 
 // Stream payments for an account (blocking infinite loop)
 $sdk->payments()
     ->forAccount($accountId)
     ->cursor('now')
-    ->stream(function (PaymentOperationResponse $payment) {
-        echo $payment->getFrom() . ' -> ' . $payment->getTo() . ': ' . $payment->getAmount() . PHP_EOL;
+    ->stream(function (OperationResponse $payment) {
+        if ($payment instanceof PaymentOperationResponse) {
+            echo $payment->getFrom() . ' -> ' . $payment->getTo() . ': ' . $payment->getAmount() . PHP_EOL;
+        }
     });
 // WRONG: return false to stop streaming -- return values are IGNORED
 // CORRECT: throw an exception to break out, or use exit() in a forked child process

@@ -445,7 +445,7 @@ $e->getMessage();  // string: inherited from ErrorException (may be empty)
 
 ## Testing with Mock HTTP
 
-`setMockHandlerStack()` replaces the internal Guzzle HTTP client with a mock. Use it to test stellar.toml fetching and callback submissions without making real network requests.
+`setMockHandlerStack()` replaces the internal Guzzle HTTP client with a mock. Use it to test stellar.toml fetching and callback submissions without making real network requests. The `URIScheme` constructor also takes a Guzzle `Client`, for example one with a mock handler or with timeouts.
 
 ### Mock successful validation
 

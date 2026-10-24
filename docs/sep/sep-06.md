@@ -696,6 +696,7 @@ try {
 | `CustomerInformationNeededException` | KYC information required | Submit info via SEP-12 |
 | `CustomerInformationStatusException` | KYC pending or denied | Wait for review or contact anchor |
 | `GuzzleException` | Network or HTTP error | Check connectivity, retry |
+| `InvalidArgumentException` | `transaction()` response without a `transaction` object | Report the response to the anchor |
 | `Exception` | Domain/service unavailable | Verify anchor domain and availability |
 
 ## Transaction statuses

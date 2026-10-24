@@ -49,7 +49,7 @@ Direct communication with Soroban RPC nodes for low-level operations.
 
 ### Connecting to RPC
 
-Connect to a Soroban RPC node to send requests and receive responses.
+Connect to a Soroban RPC node to send requests and receive responses. The constructor takes an optional Guzzle `Client` as its second argument for timeouts, proxies, and middleware, and creates its own client without one.
 
 ```php
 <?php
@@ -127,7 +127,7 @@ if ($account !== null) {
 
 ### Contract Data
 
-Read persistent or temporary data stored by a contract.
+Read persistent or temporary data stored by a contract. Pass the contract as its `C...` strkey or as its 64-character hex id. The key must not be a muxed account (`M...`) or muxed contract (`W...`) address or hold one at any depth inside its vectors and maps. Both checks throw `InvalidArgumentException` before any request.
 
 ```php
 <?php
@@ -884,7 +884,7 @@ $map = XdrSCVal::forMap([
 
 Auto-convert native PHP values based on contract specification. The spec is loaded from the contract and knows the expected types.
 
-An `Address` parameter accepts G... or C... strings or account and contract `Address` objects. A `MuxedAddress` parameter also accepts M... and W... strings or the corresponding `Address` objects. A prebuilt `XdrSCVal` for an `Address` or `MuxedAddress` parameter passes through unchanged. Only void and optional types accept `null`. Claimable balance and liquidity pool addresses, malformed strings, and other value types throw `InvalidArgumentException`. For rejected address inputs, the message names the parameter type and the value or its type.
+An `Address` parameter accepts G... or C... strings or account and contract `Address` objects. A `MuxedAddress` parameter also accepts M... and W... strings or the corresponding `Address` objects. A prebuilt `XdrSCVal` for an `Address` or `MuxedAddress` parameter passes through unchanged. Only void and optional types accept `null`. Claimable balance and liquidity pool addresses, malformed strings, and other value types throw `InvalidArgumentException`. For rejected address inputs, the message names the parameter type and the value or its type. A `u64`, `timepoint`, or `duration` parameter accepts a non-negative `int` or a decimal string across the full unsigned 64-bit range, and a prebuilt `XdrSCVal` passes through unchanged. Any other input for these types throws `InvalidArgumentException`, and the message names the parameter type and the value or its type.
 
 ```php
 <?php
@@ -1586,7 +1586,7 @@ foreach ($auth as $entry) {
 $transaction->setSorobanAuth($auth);
 ```
 
-> **Tip**: Contract IDs must be C-prefixed strkey format. To convert from hex, use `StrKey::encodeContractIdHex($hexContractId)`. It takes exactly 64 hexadecimal characters (the 32-byte hash) and throws `InvalidArgumentException` for anything else.
+> **Tip**: The SDK accepts a contract ID as a `C...` strkey or as the 64-character hex id of the contract. To convert from hex, use `StrKey::encodeContractIdHex($hexContractId)`. It takes exactly 64 hexadecimal characters (the 32-byte hash) and throws `InvalidArgumentException` for anything else.
 
 ## Contract Parser
 

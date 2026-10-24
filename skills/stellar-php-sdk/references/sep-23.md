@@ -373,7 +373,7 @@ var_dump($fromHex === $contractId); // bool(true)
 
 ## Muxed contract IDs (W...)
 
-Muxed contracts follow [CAP-0084](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md); this SDK encodes them with the W prefix.
+Muxed contracts follow [CAP-0084](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md), and [SEP-23](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md) defines their `W...` strkey.
 
 The 40-byte payload holds the 32-byte contract id followed by the 8-byte big-endian multiplexing id. The strkey has 69 characters.
 

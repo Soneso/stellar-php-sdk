@@ -135,7 +135,8 @@ foreach ($opsPage->getOperations() as $op) {
 
 // Account payments — execute() returns OperationsPageResponse
 // Payment types: PaymentOperationResponse, PathPaymentStrictReceiveOperationResponse,
-//   PathPaymentStrictSendOperationResponse, CreateAccountOperationResponse, AccountMergeOperationResponse
+//   PathPaymentStrictSendOperationResponse, CreateAccountOperationResponse, AccountMergeOperationResponse,
+//   InvokeHostFunctionOperationResponse
 $pmtPage = $sdk->payments()
     ->forAccount($accountId)
     ->order('desc')

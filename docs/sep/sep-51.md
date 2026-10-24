@@ -315,7 +315,7 @@ echo $muxed->toJsonValue() . PHP_EOL;
 <!-- expected: GDTJSJTEYGG7L23UZSROA5SNR4GJMOUXYNRDCVMEY3FPB22HUYWQBZIA
 -->
 
-Muxed contracts follow [CAP-0084](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md); this SDK encodes them with the W prefix.
+Muxed contracts follow [CAP-0084](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0084.md), and [SEP-23](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md) defines their `W...` strkey.
 
 ```php
 <?php declare(strict_types=1);
