@@ -15,6 +15,7 @@ use GuzzleHttp\Psr7\Response;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
+use Soneso\StellarSDK\SEP\Toml\Documentation;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 use Yosymfony\Toml\Exception\ParseException;
 
@@ -161,6 +162,32 @@ display_decimals=2';
         $this->assertSame(0, $mock->count());
     }
 
+    /** @dataProvider emptyCurrencyBodies */
+    public function testCurrencyFromUrlWithEmptyBodyThrowsException(string $body): void
+    {
+        $mock = new MockHandler([new Response(200, [], $body)]);
+        $client = new Client(['handler' => HandlerStack::create($mock)]);
+
+        $url = 'https://example.com/.well-known/USD.toml';
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Invalid currency toml {$url}: no fields");
+        try {
+            StellarToml::currencyFromUrl($url, $client);
+        } finally {
+            $this->assertSame(0, $mock->count());
+        }
+    }
+
+    /** @return array<string, array{string}> */
+    public static function emptyCurrencyBodies(): array
+    {
+        return [
+            'empty' => [''],
+            'newline only' => ["\n"],
+            'comment only' => ['# only a comment'],
+        ];
+    }
+
     public function testCurrencyFromUrlNotFound(): void
     {
         $mock = new MockHandler([
@@ -187,4 +214,90 @@ display_decimals=2';
         $this->expectException(ParseException::class);
         StellarToml::currencyFromUrl("https://example.com/.well-known/USD.toml", $client);
     }
+    /** @dataProvider mistypedFields */
+    public function testMistypedFieldThrowsException(string $toml, string $field, string $type): void
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Invalid stellar.toml field {$field}: found {$type}");
+        new StellarToml($toml);
+    }
+
+    /** @return array<string, array{string, string, string}> */
+    public static function mistypedFields(): array
+    {
+        $sections = [
+            '' => 'VERSION NETWORK_PASSPHRASE FEDERATION_SERVER AUTH_SERVER TRANSFER_SERVER '
+                . 'TRANSFER_SERVER_SEP0024 KYC_SERVER WEB_AUTH_ENDPOINT WEB_AUTH_FOR_CONTRACTS_ENDPOINT '
+                . 'WEB_AUTH_CONTRACT_ID SIGNING_KEY HORIZON_URL ACCOUNTS URI_REQUEST_SIGNING_KEY '
+                . 'DIRECT_PAYMENT_SERVER ANCHOR_QUOTE_SERVER',
+            '[DOCUMENTATION]' => 'ORG_NAME ORG_DBA ORG_URL ORG_LOGO ORG_DESCRIPTION ORG_PHYSICAL_ADDRESS '
+                . 'ORG_PHYSICAL_ADDRESS_ATTESTATION ORG_PHONE_NUMBER ORG_PHONE_NUMBER_ATTESTATION '
+                . 'ORG_KEYBASE ORG_TWITTER ORG_GITHUB ORG_OFFICIAL_EMAIL ORG_SUPPORT_EMAIL '
+                . 'ORG_LICENSING_AUTHORITY ORG_LICENSE_TYPE ORG_LICENSE_NUMBER',
+            '[[PRINCIPALS]]' => 'name email keybase twitter telegram github id_photo_hash verification_photo_hash',
+            '[[CURRENCIES]]' => 'toml code code_template issuer contract status display_decimals name desc '
+                . 'conditions image fixed_number max_number is_unlimited is_asset_anchored anchor_asset_type '
+                . 'anchor_asset attestation_of_reserve redemption_instructions collateral_addresses '
+                . 'collateral_address_messages collateral_address_signatures regulated approval_server approval_criteria',
+            '[[VALIDATORS]]' => 'ALIAS DISPLAY_NAME PUBLIC_KEY HOST HISTORY',
+        ];
+        $data = [];
+        foreach ($sections as $section => $fields) {
+            foreach (explode(' ', $fields) as $field) {
+                $numericOrBool = in_array($field, [
+                    'display_decimals', 'fixed_number', 'max_number', 'is_unlimited', 'is_asset_anchored', 'regulated',
+                ], true);
+                $value = $numericOrBool ? '"7"' : '2';
+                $fieldName = $section === '[[PRINCIPALS]]' ? "PRINCIPALS.{$field}" : $field;
+                $data[$section . $field] = [$section . "\n{$field} = {$value}", $fieldName, $numericOrBool ? 'string' : 'int'];
+            }
+        }
+        foreach (['DOCUMENTATION', 'PRINCIPALS', 'CURRENCIES', 'VALIDATORS'] as $section) {
+            $data[$section] = ["{$section} = 2", $section, 'int'];
+        }
+        foreach (['PRINCIPALS', 'CURRENCIES', 'VALIDATORS'] as $section) {
+            $data[$section . ' item'] = ["{$section} = [2]", $section, 'int'];
+        }
+        $data['DOCUMENTATION array of tables'] = ['[[DOCUMENTATION]]' . "\n" . 'ORG_NAME = "Org"', 'DOCUMENTATION', 'list'];
+        $data['DOCUMENTATION inline list'] = ['DOCUMENTATION = ["Org"]', 'DOCUMENTATION', 'list'];
+        return $data;
+    }
+
+    /** @dataProvider emptyDocumentationTables */
+    public function testEmptyDocumentationParsesToEmptyDocumentation(string $toml): void
+    {
+        $documentation = (new StellarToml($toml))->getDocumentation();
+        $this->assertInstanceOf(Documentation::class, $documentation);
+        $this->assertSame(get_object_vars(new Documentation()), get_object_vars($documentation));
+    }
+
+    /** @return array<string, array{string}> */
+    public static function emptyDocumentationTables(): array
+    {
+        return [
+            'empty array' => ['DOCUMENTATION = []'],
+            'empty table' => ['[DOCUMENTATION]'],
+        ];
+    }
+
+    public function testFromDomainPreservesTypeException(): void
+    {
+        $client = new Client(['handler' => HandlerStack::create(new MockHandler([
+            new Response(200, [], 'VERSION = 2'),
+        ]))]);
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Invalid stellar.toml field VERSION: found int');
+        StellarToml::fromDomain('example.com', $client);
+    }
+
+    public function testCurrencyFromUrlPreservesTypeException(): void
+    {
+        $client = new Client(['handler' => HandlerStack::create(new MockHandler([
+            new Response(200, [], 'display_decimals = "7"'),
+        ]))]);
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Invalid stellar.toml field display_decimals: found string');
+        StellarToml::currencyFromUrl('https://example.com/USD.toml', $client);
+    }
+
 }
