@@ -94,7 +94,7 @@ class XdrSCNonceKey {
     }
 
     public static function fromTxRep(array $map, string $prefix): XdrSCNonceKey {
-        $nonce = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.nonce') ?? '0');
+        $nonce = TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.nonce') ?? '0', $prefix . '.nonce');
         return new XdrSCNonceKey($nonce);
     }
 }

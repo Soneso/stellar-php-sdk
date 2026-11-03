@@ -228,7 +228,7 @@ class XdrMemo {
                 $lines[$prefix . '.text'] = TxRepHelper::escapeString($this->text);
                 break;
             case XdrMemoType::MEMO_ID:
-                $lines[$prefix . '.id'] = (string)$this->id;
+                $lines[$prefix . '.id'] = sprintf('%u', $this->id);
                 break;
             case XdrMemoType::MEMO_HASH:
                 $lines[$prefix . '.hash'] = TxRepHelper::bytesToHex($this->hash);
@@ -251,7 +251,7 @@ class XdrMemo {
                 $result->text = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.text') ?? '');
                 break;
             case XdrMemoType::MEMO_ID:
-                $result->id = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.id') ?? '0');
+                $result->id = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.id') ?? '0', $prefix . '.id');
                 break;
             case XdrMemoType::MEMO_HASH:
                 $result->hash = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.hash') ?? '');

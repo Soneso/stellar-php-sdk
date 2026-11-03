@@ -186,7 +186,7 @@ class XdrSCError {
         $result = new XdrSCError($disc);
         switch ($result->type->getValue()) {
             case XdrSCErrorType::SCE_CONTRACT:
-                $result->contractCode = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.contractCode') ?? '0');
+                $result->contractCode = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.contractCode') ?? '0', $prefix . '.contractCode');
                 break;
             case XdrSCErrorType::SCE_WASM_VM:
             case XdrSCErrorType::SCE_CONTEXT:

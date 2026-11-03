@@ -109,7 +109,7 @@ class XdrLedgerKeyOffer {
 
     public static function fromTxRep(array $map, string $prefix): XdrLedgerKeyOffer {
         $sellerID = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.sellerID') ?? '');
-        $offerID = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.offerID') ?? '0');
+        $offerID = TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.offerID') ?? '0', $prefix . '.offerID');
         return new XdrLedgerKeyOffer($sellerID, $offerID);
     }
 }

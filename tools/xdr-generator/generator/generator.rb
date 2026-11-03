@@ -811,7 +811,7 @@ class Generator < Xdrgen::Generators::Base
       end
     end
     if should_generate_txrep?(php_name)
-      render_simple_typedef_txrep_methods(out, php_name, class_name, return_type, php_type, field_name)
+      render_simple_typedef_txrep_methods(out, php_name, class_name, return_type, php_type, field_name, underlying)
     end
     out.puts "}"
     out.close
@@ -1781,7 +1781,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "            default:"
     out.puts "                $prefix = '#{class_name}#';"
     out.puts "                if (str_starts_with($name, $prefix)) {"
-    out.puts "                    $val = (int) substr($name, strlen($prefix));"
+    out.puts "                    $val = TxRepHelper::parseInt32(substr($name, strlen($prefix)), $name);"
     out.puts "                    return new static($val);"
     out.puts "                }"
     out.puts "                throw new InvalidArgumentException('Unknown enum value: ' . $name);"
@@ -1796,6 +1796,9 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        $raw = TxRepHelper::getValue($map, $prefix);"
     out.puts "        if ($raw === null) {"
     out.puts "            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);"
+    out.puts "        }"
+    out.puts "        if (str_starts_with($raw, '#{class_name}#')) {"
+    out.puts "            return new static(TxRepHelper::parseInt32(substr($raw, #{class_name.length + 1}), $prefix));"
     out.puts "        }"
     out.puts "        return self::fromTxRepName($raw);"
     out.puts "    }"
@@ -1938,12 +1941,12 @@ class Generator < Xdrgen::Generators::Base
       if decl.is_a?(AST::Declarations::Array) && decl.fixed?
         size = resolve_size(decl)
         out.puts "#{indent}for ($i = 0; $i < #{size}; $i++) {"
-        txrep_emit_element_to_line(out, "#{accessor}[$i]", element_type, xdr_name, "#{indent}    ", true)
+        txrep_emit_element_to_line(out, "#{accessor}[$i]", element_type, xdr_name, "#{indent}    ", decl.type)
         out.puts "#{indent}}"
       else
         out.puts "#{indent}$lines[$prefix . '.#{xdr_name}.len'] = (string)count(#{accessor});"
         out.puts "#{indent}for ($i = 0; $i < count(#{accessor}); $i++) {"
-        txrep_emit_element_to_line(out, "#{accessor}[$i]", element_type, xdr_name, "#{indent}    ", true)
+        txrep_emit_element_to_line(out, "#{accessor}[$i]", element_type, xdr_name, "#{indent}    ", decl.type)
         out.puts "#{indent}}"
       end
       return
@@ -1971,7 +1974,7 @@ class Generator < Xdrgen::Generators::Base
 
     case php_type
     when "int"
-      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = (string)#{accessor};"
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = #{txrep_integer_to(field[:decl].type, accessor)};"
     when "bool"
       out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = #{accessor} ? 'true' : 'false';"
     when "BigInteger"
@@ -1989,7 +1992,7 @@ class Generator < Xdrgen::Generators::Base
   end
 
   # Emit toTxRep for a single array element.
-  def txrep_emit_element_to_line(out, accessor, element_type, xdr_name, indent, indexed)
+  def txrep_emit_element_to_line(out, accessor, element_type, xdr_name, indent, typespec)
     if TXREP_COMPACT_TYPES.key?(element_type)
       fmt = TXREP_COMPACT_TYPES[element_type][:format]
       out.puts "#{indent}$lines[$prefix . '.#{xdr_name}[' . $i . ']'] = #{fmt}(#{accessor});"
@@ -1998,7 +2001,7 @@ class Generator < Xdrgen::Generators::Base
 
     case element_type
     when "int"
-      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}[' . $i . ']'] = (string)#{accessor};"
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}[' . $i . ']'] = #{txrep_integer_to(typespec, accessor)};"
     when "bool"
       out.puts "#{indent}$lines[$prefix . '.#{xdr_name}[' . $i . ']'] = #{accessor} ? 'true' : 'false';"
     when "BigInteger"
@@ -2070,13 +2073,13 @@ class Generator < Xdrgen::Generators::Base
         size = resolve_size(decl)
         out.puts "#{indent}#{target} = [];"
         out.puts "#{indent}for ($i = 0; $i < #{size}; $i++) {"
-        txrep_emit_element_from_assign(out, "#{target}[]", element_type, xdr_name, "#{indent}    ")
+        txrep_emit_element_from_assign(out, "#{target}[]", element_type, xdr_name, "#{indent}    ", decl.type)
         out.puts "#{indent}}"
       else
-        out.puts "#{indent}$#{fname}Len = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}.len') ?? '0');"
+        out.puts "#{indent}$#{fname}Len = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}.len') ?? '0', $prefix . '.#{xdr_name}.len');"
         out.puts "#{indent}#{target} = [];"
         out.puts "#{indent}for ($i = 0; $i < $#{fname}Len; $i++) {"
-        txrep_emit_element_from_assign(out, "#{target}[]", element_type, xdr_name, "#{indent}    ")
+        txrep_emit_element_from_assign(out, "#{target}[]", element_type, xdr_name, "#{indent}    ", decl.type)
         out.puts "#{indent}}"
       end
       return
@@ -2104,11 +2107,11 @@ class Generator < Xdrgen::Generators::Base
 
     case php_type
     when "int"
-      out.puts "#{indent}#{target} = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '0');"
+      out.puts "#{indent}#{target} = #{txrep_integer_from(field[:decl].type, php_type, "$prefix . '.#{xdr_name}'")};"
     when "bool"
       out.puts "#{indent}#{target} = (TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? 'false') === 'true';"
     when "BigInteger"
-      out.puts "#{indent}#{target} = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '0');"
+      out.puts "#{indent}#{target} = #{txrep_integer_from(field[:decl].type, php_type, "$prefix . '.#{xdr_name}'")};"
     when "string"
       if is_opaque_string_field?(field)
         out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '');"
@@ -2122,7 +2125,7 @@ class Generator < Xdrgen::Generators::Base
   end
 
   # Emit fromTxRep for a single array element.
-  def txrep_emit_element_from_assign(out, target, element_type, xdr_name, indent)
+  def txrep_emit_element_from_assign(out, target, element_type, xdr_name, indent, typespec)
     if TXREP_COMPACT_TYPES.key?(element_type)
       parse = TXREP_COMPACT_TYPES[element_type][:parse]
       out.puts "#{indent}#{target} = #{parse}(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}[' . $i . ']') ?? '');"
@@ -2131,11 +2134,11 @@ class Generator < Xdrgen::Generators::Base
 
     case element_type
     when "int"
-      out.puts "#{indent}#{target} = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}[' . $i . ']') ?? '0');"
+      out.puts "#{indent}#{target} = #{txrep_integer_from(typespec, element_type, "$prefix . '.#{xdr_name}[' . $i . ']'")};"
     when "bool"
       out.puts "#{indent}#{target} = (TxRepHelper::getValue($map, $prefix . '.#{xdr_name}[' . $i . ']') ?? 'false') === 'true';"
     when "BigInteger"
-      out.puts "#{indent}#{target} = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}[' . $i . ']') ?? '0');"
+      out.puts "#{indent}#{target} = #{txrep_integer_from(typespec, element_type, "$prefix . '.#{xdr_name}[' . $i . ']'")};"
     when "string"
       # Array elements default to hex (opaque)
       out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}[' . $i . ']') ?? '');"
@@ -2212,7 +2215,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "        $disc = #{disc_type}::fromTxRep($map, $prefix . '.#{xdr_disc}');"
       out.puts "        $result = new #{decode_class}($disc);"
     else
-      out.puts "        $disc = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_disc}') ?? '0');"
+      out.puts "        $disc = #{txrep_integer_from(union.discriminant.type, "int", "$prefix . '.#{xdr_disc}'")};"
       out.puts "        $result = new #{decode_class}($disc);"
     end
 
@@ -2276,7 +2279,7 @@ class Generator < Xdrgen::Generators::Base
       element_type = arm[:element_type]
       out.puts "#{indent}$lines[$prefix . '.#{xdr_field}.len'] = (string)count(#{accessor});"
       out.puts "#{indent}for ($i = 0; $i < count(#{accessor}); $i++) {"
-      txrep_emit_element_to_line(out, "#{accessor}[$i]", element_type, xdr_field, "#{indent}    ", true)
+      txrep_emit_element_to_line(out, "#{accessor}[$i]", element_type, xdr_field, "#{indent}    ", arm[:element_typespec] || arm[:typespec])
       out.puts "#{indent}}"
     when :optional
       inner_type = arm[:inner_type]
@@ -2292,7 +2295,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "#{indent}    $lines[$prefix . '.#{xdr_field}._present'] = 'true';"
       out.puts "#{indent}    $lines[$prefix . '.#{xdr_field}.len'] = (string)count(#{accessor});"
       out.puts "#{indent}    for ($i = 0; $i < count(#{accessor}); $i++) {"
-      txrep_emit_element_to_line(out, "#{accessor}[$i]", element_type, xdr_field, "#{indent}        ", true)
+      txrep_emit_element_to_line(out, "#{accessor}[$i]", element_type, xdr_field, "#{indent}        ", arm[:element_typespec] || arm[:typespec])
       out.puts "#{indent}    }"
       out.puts "#{indent}} else {"
       out.puts "#{indent}    $lines[$prefix . '.#{xdr_field}._present'] = 'false';"
@@ -2305,7 +2308,7 @@ class Generator < Xdrgen::Generators::Base
         elem_type = resolve_arm_array_element_type(arm)
         out.puts "#{indent}$lines[$prefix . '.#{xdr_field}.len'] = (string)count(#{accessor});"
         out.puts "#{indent}for ($i = 0; $i < count(#{accessor}); $i++) {"
-        txrep_emit_element_to_line(out, "#{accessor}[$i]", elem_type, xdr_field, "#{indent}    ", true)
+        txrep_emit_element_to_line(out, "#{accessor}[$i]", elem_type, xdr_field, "#{indent}    ", arm[:element_typespec] || arm[:typespec])
         out.puts "#{indent}}"
       else
         render_txrep_simple_arm_to(out, accessor, php_type, xdr_field, indent, arm)
@@ -2317,7 +2320,7 @@ class Generator < Xdrgen::Generators::Base
   def render_txrep_simple_arm_to(out, accessor, php_type, xdr_field, indent, arm)
     case php_type
     when "int"
-      out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = (string)#{accessor};"
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = #{txrep_integer_to(arm[:typespec], accessor)};"
     when "bool"
       out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = #{accessor} ? 'true' : 'false';"
     when "BigInteger"
@@ -2341,7 +2344,7 @@ class Generator < Xdrgen::Generators::Base
     else
       case inner_type
       when "int"
-        out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = (string)#{accessor};"
+        out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = #{txrep_integer_to(arm[:inner_typespec] || arm[:typespec], accessor)};"
       when "bool"
         out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = #{accessor} ? 'true' : 'false';"
       when "BigInteger"
@@ -2382,10 +2385,10 @@ class Generator < Xdrgen::Generators::Base
       out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
     when :array
       element_type = arm[:element_type]
-      out.puts "#{indent}$#{field}Len = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}.len') ?? '0');"
+      out.puts "#{indent}$#{field}Len = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}.len') ?? '0', $prefix . '.#{xdr_field}.len');"
       out.puts "#{indent}#{target} = [];"
       out.puts "#{indent}for ($i = 0; $i < $#{field}Len; $i++) {"
-      txrep_emit_element_from_assign(out, "#{target}[]", element_type, xdr_field, "#{indent}    ")
+      txrep_emit_element_from_assign(out, "#{target}[]", element_type, xdr_field, "#{indent}    ", arm[:element_typespec] || arm[:typespec])
       out.puts "#{indent}}"
     when :optional
       inner_type = arm[:inner_type]
@@ -2397,10 +2400,10 @@ class Generator < Xdrgen::Generators::Base
       element_type = arm[:element_type]
       out.puts "#{indent}$#{field}Present = TxRepHelper::getValue($map, $prefix . '.#{xdr_field}._present');"
       out.puts "#{indent}if ($#{field}Present !== null && $#{field}Present === 'true') {"
-      out.puts "#{indent}    $#{field}Len = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}.len') ?? '0');"
+      out.puts "#{indent}    $#{field}Len = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}.len') ?? '0', $prefix . '.#{xdr_field}.len');"
       out.puts "#{indent}    #{target} = [];"
       out.puts "#{indent}    for ($i = 0; $i < $#{field}Len; $i++) {"
-      txrep_emit_element_from_assign(out, "#{target}[]", element_type, xdr_field, "#{indent}        ")
+      txrep_emit_element_from_assign(out, "#{target}[]", element_type, xdr_field, "#{indent}        ", arm[:element_typespec] || arm[:typespec])
       out.puts "#{indent}    }"
       out.puts "#{indent}}"
     when :simple
@@ -2409,10 +2412,10 @@ class Generator < Xdrgen::Generators::Base
         out.puts "#{indent}#{target} = #{parse}(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
       elsif php_type == "array"
         elem_type = resolve_arm_array_element_type(arm)
-        out.puts "#{indent}$#{field}Len = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}.len') ?? '0');"
+        out.puts "#{indent}$#{field}Len = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}.len') ?? '0', $prefix . '.#{xdr_field}.len');"
         out.puts "#{indent}#{target} = [];"
         out.puts "#{indent}for ($i = 0; $i < $#{field}Len; $i++) {"
-        txrep_emit_element_from_assign(out, "#{target}[]", elem_type, xdr_field, "#{indent}    ")
+        txrep_emit_element_from_assign(out, "#{target}[]", elem_type, xdr_field, "#{indent}    ", arm[:element_typespec] || arm[:typespec])
         out.puts "#{indent}}"
       else
         render_txrep_simple_arm_from(out, target, php_type, xdr_field, indent, arm)
@@ -2424,11 +2427,11 @@ class Generator < Xdrgen::Generators::Base
   def render_txrep_simple_arm_from(out, target, php_type, xdr_field, indent, arm)
     case php_type
     when "int"
-      out.puts "#{indent}#{target} = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '0');"
+      out.puts "#{indent}#{target} = #{txrep_integer_from(arm[:typespec], php_type, "$prefix . '.#{xdr_field}'")};"
     when "bool"
       out.puts "#{indent}#{target} = (TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? 'false') === 'true';"
     when "BigInteger"
-      out.puts "#{indent}#{target} = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '0');"
+      out.puts "#{indent}#{target} = #{txrep_integer_from(arm[:typespec], php_type, "$prefix . '.#{xdr_field}'")};"
     when "string"
       if is_opaque_arm?(arm)
         out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
@@ -2448,11 +2451,11 @@ class Generator < Xdrgen::Generators::Base
     else
       case inner_type
       when "int"
-        out.puts "#{indent}#{target} = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '0');"
+        out.puts "#{indent}#{target} = #{txrep_integer_from(arm[:inner_typespec] || arm[:typespec], inner_type, "$prefix . '.#{xdr_field}'")};"
       when "bool"
         out.puts "#{indent}#{target} = (TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? 'false') === 'true';"
       when "BigInteger"
-        out.puts "#{indent}#{target} = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '0');"
+        out.puts "#{indent}#{target} = #{txrep_integer_from(arm[:inner_typespec] || arm[:typespec], inner_type, "$prefix . '.#{xdr_field}'")};"
       when "string"
         if is_opaque_arm?(arm)
           out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
@@ -2511,8 +2514,28 @@ class Generator < Xdrgen::Generators::Base
   # Typedef TxRep methods
   # ---------------------------------------------------------------------------
 
+  # Resolve integer width from the XDR declaration, including typedefs and array elements.
+  def txrep_integer_width(typespec)
+    width = primitive_width(typespec)
+    return width if width
+    if typespec.is_a?(AST::Typespecs::Simple) && typespec.resolved_type.is_a?(AST::Definitions::Typedef)
+      return txrep_integer_width(typespec.resolved_type.declaration.type)
+    end
+    raise "No integer width for #{typespec.inspect}"
+  end
+
+  def txrep_integer_from(typespec, php_type, key)
+    parser = { int32: 'parseInt32', uint32: 'parseUint32', int64: 'parseInt64', uint64: 'parseUint64' }.fetch(txrep_integer_width(typespec))
+    parsed = "TxRepHelper::#{parser}(TxRepHelper::getValue($map, #{key}) ?? '0', #{key})"
+    php_type == 'BigInteger' ? "new BigInteger(#{txrep_integer_to(typespec, parsed)})" : parsed
+  end
+
+  def txrep_integer_to(typespec, accessor)
+    txrep_integer_width(typespec) == :uint64 ? "sprintf('%u', #{accessor})" : "(string)#{accessor}"
+  end
+
   # Simple typedef TxRep: wraps int, bool, BigInteger, or a named type.
-  def render_simple_typedef_txrep_methods(out, php_name, class_name, return_type, php_type, field_name)
+  def render_simple_typedef_txrep_methods(out, php_name, class_name, return_type, php_type, field_name, typespec)
     is_base = BASE_WRAPPER_TYPES.include?(php_name)
     decode_class = is_base ? "static" : class_name
 
@@ -2520,7 +2543,7 @@ class Generator < Xdrgen::Generators::Base
     render_to_txrep_signature(out)
     case php_type
     when "int"
-      out.puts "        $lines[$prefix] = (string)$this->#{field_name};"
+      out.puts "        $lines[$prefix] = #{txrep_integer_to(typespec, "$this->#{field_name}")};"
     when "bool"
       out.puts "        $lines[$prefix] = $this->#{field_name} ? 'true' : 'false';"
     when "BigInteger"
@@ -2538,11 +2561,11 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    public static function fromTxRep(array $map, string $prefix): #{return_type} {"
     case php_type
     when "int"
-      out.puts "        return new #{decode_class}(TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix) ?? '0'));"
+      out.puts "        return new #{decode_class}(#{txrep_integer_from(typespec, php_type, "$prefix")});"
     when "bool"
       out.puts "        return new #{decode_class}((TxRepHelper::getValue($map, $prefix) ?? 'false') === 'true');"
     when "BigInteger"
-      out.puts "        return new #{decode_class}(TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix) ?? '0'));"
+      out.puts "        return new #{decode_class}(#{txrep_integer_from(typespec, php_type, "$prefix")});"
     when "string"
       out.puts "        return new #{decode_class}(TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix) ?? ''));"
     else
@@ -2597,7 +2620,7 @@ class Generator < Xdrgen::Generators::Base
     accessor = "$this->#{field_name}[$i]"
     case element_type
     when "int"
-      out.puts "            $lines[$prefix . '[' . $i . ']'] = (string)#{accessor};"
+      out.puts "            $lines[$prefix . '[' . $i . ']'] = #{txrep_integer_to(decl.type, accessor)};"
     when "bool"
       out.puts "            $lines[$prefix . '[' . $i . ']'] = #{accessor} ? 'true' : 'false';"
     when "BigInteger"
@@ -2622,17 +2645,17 @@ class Generator < Xdrgen::Generators::Base
       size = resolve_size(decl)
       out.puts "        for ($i = 0; $i < #{size}; $i++) {"
     else
-      out.puts "        $len = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.len') ?? '0');"
+      out.puts "        $len = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.len') ?? '0', $prefix . '.len');"
       out.puts "        for ($i = 0; $i < $len; $i++) {"
     end
     # Emit element deserialization
     case element_type
     when "int"
-      out.puts "            $#{field_name}[] = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '[' . $i . ']') ?? '0');"
+      out.puts "            $#{field_name}[] = #{txrep_integer_from(decl.type, element_type, "$prefix . '[' . $i . ']'")};"
     when "bool"
       out.puts "            $#{field_name}[] = (TxRepHelper::getValue($map, $prefix . '[' . $i . ']') ?? 'false') === 'true';"
     when "BigInteger"
-      out.puts "            $#{field_name}[] = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '[' . $i . ']') ?? '0');"
+      out.puts "            $#{field_name}[] = #{txrep_integer_from(decl.type, element_type, "$prefix . '[' . $i . ']'")};"
     when "string"
       out.puts "            $#{field_name}[] = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '[' . $i . ']') ?? '');"
     else

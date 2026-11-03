@@ -159,7 +159,7 @@ class XdrCryptoKeyType {
             default:
                 $prefix = 'XdrCryptoKeyType#';
                 if (str_starts_with($name, $prefix)) {
-                    $val = (int) substr($name, strlen($prefix));
+                    $val = TxRepHelper::parseInt32(substr($name, strlen($prefix)), $name);
                     return new static($val);
                 }
                 throw new InvalidArgumentException('Unknown enum value: ' . $name);
@@ -178,6 +178,9 @@ class XdrCryptoKeyType {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
             throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        if (str_starts_with($raw, 'XdrCryptoKeyType#')) {
+            return new static(TxRepHelper::parseInt32(substr($raw, 17), $prefix));
         }
         return self::fromTxRepName($raw);
     }

@@ -142,7 +142,7 @@ class XdrInvokeContractArgs {
     public static function fromTxRep(array $map, string $prefix): XdrInvokeContractArgs {
         $contractAddress = XdrSCAddress::fromTxRep($map, $prefix . '.contractAddress');
         $functionName = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.functionName') ?? '');
-        $argsLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.args.len') ?? '0');
+        $argsLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.args.len') ?? '0', $prefix . '.args.len');
         $args = [];
         for ($i = 0; $i < $argsLen; $i++) {
             $args[] = XdrSCVal::fromTxRep($map, $prefix . '.args[' . $i . ']');

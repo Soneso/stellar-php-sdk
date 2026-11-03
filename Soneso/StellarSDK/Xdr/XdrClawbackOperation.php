@@ -125,7 +125,7 @@ class XdrClawbackOperation {
     public static function fromTxRep(array $map, string $prefix): XdrClawbackOperation {
         $asset = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.asset') ?? '');
         $from = TxRepHelper::parseMuxedAccount(TxRepHelper::getValue($map, $prefix . '.from') ?? '');
-        $amount = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0');
+        $amount = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0', $prefix . '.amount'));
         return new XdrClawbackOperation($asset, $from, $amount);
     }
 }

@@ -118,7 +118,7 @@ class XdrExtensionPoint {
     }
 
     public static function fromTxRep(array $map, string $prefix): XdrExtensionPoint {
-        $disc = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.v') ?? '0');
+        $disc = TxRepHelper::parseInt32(TxRepHelper::getValue($map, $prefix . '.v') ?? '0', $prefix . '.v');
         $result = new XdrExtensionPoint($disc);
         switch ($result->discriminant) {
             case 0:

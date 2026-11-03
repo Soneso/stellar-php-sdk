@@ -73,6 +73,6 @@ class XdrSequenceNumber {
     }
 
     public static function fromTxRep(array $map, string $prefix): XdrSequenceNumber {
-        return new XdrSequenceNumber(TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix) ?? '0'));
+        return new XdrSequenceNumber(new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix) ?? '0', $prefix)));
     }
 }

@@ -96,12 +96,12 @@ class XdrMuxedAccountMed25519Base {
      * @param array<string, string> $lines
      */
     public function toTxRep(string $prefix, array &$lines): void {
-        $lines[$prefix . '.id'] = (string)$this->id;
+        $lines[$prefix . '.id'] = sprintf('%u', $this->id);
         $lines[$prefix . '.ed25519'] = TxRepHelper::bytesToHex($this->ed25519);
     }
 
     public static function fromTxRep(array $map, string $prefix): static {
-        $id = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.id') ?? '0');
+        $id = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.id') ?? '0', $prefix . '.id');
         $ed25519 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.ed25519') ?? '');
         return new static($id, $ed25519);
     }

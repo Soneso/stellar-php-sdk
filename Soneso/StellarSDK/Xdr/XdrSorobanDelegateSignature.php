@@ -147,7 +147,7 @@ class XdrSorobanDelegateSignature {
     public static function fromTxRep(array $map, string $prefix): XdrSorobanDelegateSignature {
         $address = XdrSCAddress::fromTxRep($map, $prefix . '.address');
         $signature = XdrSCVal::fromTxRep($map, $prefix . '.signature');
-        $nestedDelegatesLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.nestedDelegates.len') ?? '0');
+        $nestedDelegatesLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.nestedDelegates.len') ?? '0', $prefix . '.nestedDelegates.len');
         $nestedDelegates = [];
         for ($i = 0; $i < $nestedDelegatesLen; $i++) {
             $nestedDelegates[] = XdrSorobanDelegateSignature::fromTxRep($map, $prefix . '.nestedDelegates[' . $i . ']');

@@ -127,7 +127,7 @@ class XdrSorobanAuthorizedInvocation {
 
     public static function fromTxRep(array $map, string $prefix): XdrSorobanAuthorizedInvocation {
         $function = XdrSorobanAuthorizedFunction::fromTxRep($map, $prefix . '.function');
-        $subInvocationsLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.subInvocations.len') ?? '0');
+        $subInvocationsLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.subInvocations.len') ?? '0', $prefix . '.subInvocations.len');
         $subInvocations = [];
         for ($i = 0; $i < $subInvocationsLen; $i++) {
             $subInvocations[] = XdrSorobanAuthorizedInvocation::fromTxRep($map, $prefix . '.subInvocations[' . $i . ']');

@@ -94,7 +94,7 @@ class XdrSorobanAuthorizationEntries {
 
     public static function fromTxRep(array $map, string $prefix): XdrSorobanAuthorizationEntries {
         $sorobanAuthorizationEntries = [];
-        $len = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.len') ?? '0');
+        $len = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.len') ?? '0', $prefix . '.len');
         for ($i = 0; $i < $len; $i++) {
             $sorobanAuthorizationEntries[] = XdrSorobanAuthorizationEntry::fromTxRep($map, $prefix . '[' . $i . ']');
         }

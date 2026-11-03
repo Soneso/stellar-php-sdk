@@ -110,7 +110,7 @@ class XdrChangeTrustOperationBase {
 
     public static function fromTxRep(array $map, string $prefix): static {
         $line = XdrChangeTrustAsset::fromTxRep($map, $prefix . '.line');
-        $limit = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.limit') ?? '0');
+        $limit = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.limit') ?? '0', $prefix . '.limit'));
         return new static($line, $limit);
     }
 }

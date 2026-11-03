@@ -110,7 +110,7 @@ class XdrCreateAccountOperation {
 
     public static function fromTxRep(array $map, string $prefix): XdrCreateAccountOperation {
         $destination = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.destination') ?? '');
-        $startingBalance = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.startingBalance') ?? '0');
+        $startingBalance = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.startingBalance') ?? '0', $prefix . '.startingBalance'));
         return new XdrCreateAccountOperation($destination, $startingBalance);
     }
 }

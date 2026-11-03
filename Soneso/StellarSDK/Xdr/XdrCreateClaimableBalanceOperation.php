@@ -142,8 +142,8 @@ class XdrCreateClaimableBalanceOperation {
 
     public static function fromTxRep(array $map, string $prefix): XdrCreateClaimableBalanceOperation {
         $asset = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.asset') ?? '');
-        $amount = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0');
-        $claimantsLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.claimants.len') ?? '0');
+        $amount = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0', $prefix . '.amount'));
+        $claimantsLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.claimants.len') ?? '0', $prefix . '.claimants.len');
         $claimants = [];
         for ($i = 0; $i < $claimantsLen; $i++) {
             $claimants[] = XdrClaimant::fromTxRep($map, $prefix . '.claimants[' . $i . ']');

@@ -93,12 +93,12 @@ class XdrInt128Parts {
      */
     public function toTxRep(string $prefix, array &$lines): void {
         $lines[$prefix . '.hi'] = (string)$this->hi;
-        $lines[$prefix . '.lo'] = (string)$this->lo;
+        $lines[$prefix . '.lo'] = sprintf('%u', $this->lo);
     }
 
     public static function fromTxRep(array $map, string $prefix): XdrInt128Parts {
-        $hi = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.hi') ?? '0');
-        $lo = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.lo') ?? '0');
+        $hi = TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.hi') ?? '0', $prefix . '.hi');
+        $lo = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.lo') ?? '0', $prefix . '.lo');
         return new XdrInt128Parts($hi, $lo);
     }
 }

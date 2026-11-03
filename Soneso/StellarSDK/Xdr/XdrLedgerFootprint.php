@@ -144,12 +144,12 @@ class XdrLedgerFootprint {
     }
 
     public static function fromTxRep(array $map, string $prefix): XdrLedgerFootprint {
-        $readOnlyLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.readOnly.len') ?? '0');
+        $readOnlyLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.readOnly.len') ?? '0', $prefix . '.readOnly.len');
         $readOnly = [];
         for ($i = 0; $i < $readOnlyLen; $i++) {
             $readOnly[] = XdrLedgerKey::fromTxRep($map, $prefix . '.readOnly[' . $i . ']');
         }
-        $readWriteLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.readWrite.len') ?? '0');
+        $readWriteLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.readWrite.len') ?? '0', $prefix . '.readWrite.len');
         $readWrite = [];
         for ($i = 0; $i < $readWriteLen; $i++) {
             $readWrite[] = XdrLedgerKey::fromTxRep($map, $prefix . '.readWrite[' . $i . ']');

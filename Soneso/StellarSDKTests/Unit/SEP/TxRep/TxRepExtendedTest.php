@@ -717,4 +717,62 @@ class TxRepExtendedTest extends TestCase {
         self::assertEquals($xdr1, $xdr2);
         self::assertEquals($xdr2, $xdr3);
     }
+
+    private function numericEnvelope(array $fields, bool $bump = false): string
+    {
+        $prefix = $bump ? 'feeBump.tx.innerTx.tx' : 'tx';
+        $account = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
+        $map = ['type' => $bump ? 'ENVELOPE_TYPE_TX_FEE_BUMP' : 'ENVELOPE_TYPE_TX',
+            $prefix . '.sourceAccount' => $account, $prefix . '.fee' => '100',
+            $prefix . '.seqNum' => '1', $prefix . '.memo.type' => 'MEMO_NONE',
+            $prefix . '.operations.len' => '0', $prefix . '.ext.v' => '0'];
+        if ($bump) {
+            $map += ['feeBump.tx.feeSource' => $account, 'feeBump.tx.fee' => '200'];
+        }
+        $lines = [];
+        foreach (array_replace($map, $fields) as $key => $value) {
+            $lines[] = $key . ': ' . $value;
+        }
+        return TxRep::transactionEnvelopeXdrBase64FromTxRep(implode("\n", $lines));
+    }
+
+    public function testNumericFacadeFields(): void
+    {
+        $signed = \Soneso\StellarSDK\Xdr\XdrTransactionEnvelope::fromBase64Xdr(
+            $this->numericEnvelope(['tx.fee' => '+100', 'tx.seqNum' => '+1']));
+        self::assertSame(100, $signed->v1->tx->fee);
+        self::assertSame('1', $signed->v1->tx->sequenceNumber->sequenceNumber->toString());
+        foreach (['tx.fee' => false, 'feeBump.tx.innerTx.tx.fee' => true] as $key => $bump) {
+            $envelope = \Soneso\StellarSDK\Xdr\XdrTransactionEnvelope::fromBase64Xdr(
+                $this->numericEnvelope([$key => '4294967295'], $bump));
+            $tx = $bump ? $envelope->feeBump->tx->innerTx->v1->tx : $envelope->v1->tx;
+            self::assertSame('ffffffff', bin2hex(substr($tx->encode(), 36, 4)));
+        }
+        $outer = \Soneso\StellarSDK\Xdr\XdrTransactionEnvelope::fromBase64Xdr(
+            $this->numericEnvelope(['feeBump.tx.fee' => (string)PHP_INT_MAX], true));
+        self::assertSame('7fffffffffffffff', bin2hex(substr($outer->feeBump->tx->encode(), 36, 8)));
+        $memo = $this->numericEnvelope(['tx.memo.type' => 'MEMO_ID', 'tx.memo.id' => '18446744073709551615']);
+        self::assertStringContainsString('tx.memo.id: 18446744073709551615', TxRep::fromTransactionEnvelopeXdrBase64($memo));
+        foreach ([['tx.fee', '4294967296', false], ['tx.fee', '-1', false],
+            ['feeBump.tx.innerTx.tx.fee', '4294967296', true],
+            ['feeBump.tx.fee', '9223372036854775808', true], ['tx.operations.len', '-1', false],
+            ['signatures.len', '-1', false], ['tx.ext.v', '2147483648', false],
+            ['tx.memo.id', '18446744073709551616', false], ['tx.fee', '0xZZ', false]] as [$key, $bad, $bump]) {
+            try {
+                $this->numericEnvelope([$key => $bad, 'tx.memo.type' => 'MEMO_ID', 'tx.memo.id' => $key === 'tx.memo.id' ? $bad : '0'], $bump);
+                self::fail('Accepted ' . $key . ': ' . $bad);
+            } catch (\InvalidArgumentException $e) {
+                self::assertStringContainsString($key, $e->getMessage());
+                self::assertStringContainsString($bad, $e->getMessage());
+            }
+        }
+        $seed = KeyPair::random()->getSecretSeed();
+        try {
+            $this->numericEnvelope(['tx.fee' => $seed]);
+            self::fail('Accepted a secret seed for tx.fee');
+        } catch (\InvalidArgumentException $e) {
+            self::assertSame('Cannot parse integer for tx.fee: [redacted seed]', $e->getMessage());
+            self::assertStringNotContainsString($seed, $e->getMessage());
+        }
+    }
 }

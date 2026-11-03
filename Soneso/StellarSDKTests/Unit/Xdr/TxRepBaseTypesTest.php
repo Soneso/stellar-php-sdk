@@ -55,6 +55,7 @@ use Soneso\StellarSDK\Xdr\XdrSCValBase;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
 use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
+use Soneso\StellarSDK\Xdr\XdrTimeBoundsBase;
 use Soneso\StellarSDK\Xdr\XdrTransaction;
 use Soneso\StellarSDK\Xdr\XdrTransactionBase;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
@@ -80,6 +81,7 @@ use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositOperationBase;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawOperationBase;
 use Soneso\StellarSDK\Xdr\XdrPrice;
+use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrSCContractInstance;
 use Soneso\StellarSDK\Xdr\XdrSCError;
 use Soneso\StellarSDK\Xdr\XdrSCErrorCode;
@@ -2119,6 +2121,23 @@ class TxRepBaseTypesTest extends TestCase
         $this->assertEquals(XdrEnvelopeType::ENVELOPE_TYPE_TX, $decoded->getInnerTx()->getType()->getValue());
     }
 
+    public function testFeeBumpTransactionRejectsMalformedOrOutOfRangeFeeNamingKey(): void
+    {
+        $map = ['feeBump.feeSource' => KeyPair::random()->getAccountId()];
+        foreach ([
+            '5x' => 'Cannot parse integer for feeBump.fee: 5x',
+            '9223372036854775808' => 'Integer value 9223372036854775808 for feeBump.fee is outside [-9223372036854775808, 9223372036854775807]',
+        ] as $fee => $message) {
+            $map['feeBump.fee'] = $fee;
+            try {
+                XdrFeeBumpTransaction::fromTxRep($map, 'feeBump');
+                self::fail('Accepted feeBump.fee: ' . $fee);
+            } catch (\InvalidArgumentException $e) {
+                self::assertSame($message, $e->getMessage());
+            }
+        }
+    }
+
     // ------------------------------------------------------------------
     // XdrFeeBumpTransactionEnvelope
     // ------------------------------------------------------------------
@@ -2353,12 +2372,11 @@ class TxRepBaseTypesTest extends TestCase
     }
 
     // ------------------------------------------------------------------
-    // Enum default branch coverage: enumName() and fromTxRepName()
+    // Enum numeric fallbacks and invalid names
     //
-    // Each enum's generated code has two uncovered default branches:
-    //   1. enumName() returns 'XdrFooType#<value>' for unknown values.
-    //   2. fromTxRepName() parses 'XdrFooType#<value>' back and also throws
-    //      InvalidArgumentException for completely unknown names.
+    // Unknown values round-trip through enumName(), fromTxRepName() and
+    // fromTxRep(). Malformed fallback integers throw with the field key,
+    // and fromTxRepName() rejects completely unknown names.
     // ------------------------------------------------------------------
 
     private function assertEnumDefaultBranches(
@@ -2376,6 +2394,15 @@ class TxRepBaseTypesTest extends TestCase
         $roundtripped = $className::fromTxRepName($name);
         $this->assertSame($unknownValue, $roundtripped->value);
 
+        $key = 'test.enum';
+        self::assertSame($unknownValue, $className::fromTxRep([$key => $name], $key)->value);
+        try {
+            $className::fromTxRep([$key => $prefix . '#5x'], $key);
+            self::fail('Accepted a malformed enum integer');
+        } catch (\InvalidArgumentException $e) {
+            self::assertSame('Cannot parse integer for test.enum: 5x', $e->getMessage());
+        }
+
         // fromTxRepName() throws for a completely unknown name
         $this->expectException(\InvalidArgumentException::class);
         $className::fromTxRepName('TOTALLY_UNKNOWN_VALUE_XYZ');
@@ -2384,6 +2411,11 @@ class TxRepBaseTypesTest extends TestCase
     public function testEnumDefaultBranches_XdrContractExecutableType(): void
     {
         $this->assertEnumDefaultBranches(XdrContractExecutableType::class, 'XdrContractExecutableType');
+    }
+
+    public function testEnumDefaultBranches_XdrContractIDPreimageType(): void
+    {
+        $this->assertEnumDefaultBranches(XdrContractIDPreimageType::class, 'XdrContractIDPreimageType');
     }
 
     public function testEnumDefaultBranches_XdrPreconditionType(): void
@@ -2966,5 +2998,108 @@ class TxRepBaseTypesTest extends TestCase
 
         $restored = XdrLedgerKeyBase::fromTxRep($lines, 'lk');
         $this->assertSame(9999, $restored->getType()->getValue());
+    }
+
+    private function rejectNumericField(string $class, array $map, string $key, string $token): void
+    {
+        try {
+            $class::fromTxRep(array_replace($map, [$key => $token]), 'test');
+            self::fail('Accepted ' . $key . ': ' . $token);
+        } catch (\InvalidArgumentException $e) {
+            self::assertStringContainsString($key, $e->getMessage());
+            self::assertStringContainsString($token, $e->getMessage());
+        }
+    }
+
+    public function testNumericGeneratedFields(): void
+    {
+        foreach ([-2147483648 => '80000000', 2147483647 => '7fffffff'] as $n => $hex) {
+            $price = XdrPrice::fromTxRep(['test.n' => (string)$n, 'test.d' => '1'], 'test');
+            self::assertSame($hex . '00000001', bin2hex($price->encode()));
+        }
+        foreach (['-2147483649', '2147483648', '0xZZ', '--5', '0x', '5x'] as $bad) {
+            $this->rejectNumericField(XdrPrice::class, [], 'test.n', $bad);
+        }
+        foreach (['u32' => ['4294967295', 'ffffffff', '4294967296'],
+            'u64' => ['18446744073709551615', 'ffffffffffffffff', '18446744073709551616'],
+            'i64' => [(string)PHP_INT_MIN, '8000000000000000', '-9223372036854775809']]
+            as $arm => [$token, $hex, $bad]) {
+            $map = ['test.type' => 'SCV_' . strtoupper($arm), 'test.' . $arm => $token];
+            $value = XdrSCVal::fromTxRep($map, 'test');
+            self::assertSame($hex, bin2hex(substr($value->encode(), 4)));
+            $lines = [];
+            XdrSCVal::decode(new XdrBuffer($value->encode()))->toTxRep('test', $lines);
+            self::assertSame($map, $lines);
+            $this->rejectNumericField(XdrSCVal::class, $map, 'test.' . $arm, $bad);
+        }
+        self::assertSame(PHP_INT_MAX, XdrSCVal::fromTxRep(['test.type' => 'SCV_I64',
+            'test.i64' => (string)PHP_INT_MAX], 'test')->i64);
+        $optional = \Soneso\StellarSDK\Xdr\XdrSetOptionsOperation::class;
+        $map = ['test.lowThreshold._present' => 'true', 'test.lowThreshold' => '4294967295'];
+        self::assertSame(4294967295, $optional::fromTxRep($map, 'test')->lowThreshold);
+        $this->rejectNumericField($optional, $map, 'test.lowThreshold', '-1');
+        $array = \Soneso\StellarSDK\Xdr\XdrSorobanResourcesExtV0::class;
+        $map = ['test.archivedSorobanEntries.len' => '1', 'test.archivedSorobanEntries[0]' => '4294967295'];
+        self::assertSame('00000001ffffffff', bin2hex($array::fromTxRep($map, 'test')->encode()));
+        $this->rejectNumericField($array, $map, 'test.archivedSorobanEntries[0]', '4294967296');
+        foreach (['-1', '4294967296'] as $bad) {
+            $this->rejectNumericField($array, [], 'test.archivedSorobanEntries.len', $bad);
+            $this->rejectNumericField(XdrSCVal::class, ['test.type' => 'SCV_VEC',
+                'test.vec._present' => 'true'], 'test.vec.len', $bad);
+        }
+        $this->rejectNumericField(XdrTransactionExt::class, [], 'test.v', '2147483648');
+        try {
+            XdrSCVal::fromTxRep(['test.type' => 'XdrSCValType#4294967296'], 'test');
+            self::fail('Accepted an enum outside the signed 32-bit range');
+        } catch (\InvalidArgumentException $e) {
+            self::assertSame('Integer value 4294967296 for test.type is outside [-2147483648, 2147483647]', $e->getMessage());
+        }
+        try {
+            XdrMemoType::fromTxRep(['tx.memo.type' => 'XdrMemoType#5x'], 'tx.memo.type');
+            self::fail('Accepted a malformed enum integer');
+        } catch (\InvalidArgumentException $e) {
+            self::assertSame('Cannot parse integer for tx.memo.type: 5x', $e->getMessage());
+        }
+        $sequence = \Soneso\StellarSDK\Xdr\XdrSequenceNumber::fromTxRep(['test' => (string)PHP_INT_MIN], 'test');
+        self::assertSame('8000000000000000', bin2hex($sequence->encode()));
+        $this->rejectNumericField(\Soneso\StellarSDK\Xdr\XdrSequenceNumber::class, [], 'test', '9223372036854775808');
+    }
+
+    public function testTimeBoundsBaseRoundTripsUnsignedValuesAndRejectsOutOfRangeMinTime(): void
+    {
+        $map = ['test.minTime' => '18446744073709551615', 'test.maxTime' => '9223372036854775808'];
+        $tb = XdrTimeBoundsBase::fromTxRep($map, 'test');
+        self::assertSame('ffffffffffffffff8000000000000000', bin2hex($tb->encode()));
+        $lines = [];
+        $tb->toTxRep('test', $lines);
+        self::assertSame($map, $lines);
+        foreach (['18446744073709551616', '-1'] as $bad) {
+            $this->rejectNumericField(XdrTimeBoundsBase::class, $map, 'test.minTime', $bad);
+        }
+    }
+
+    public function testNumericWrapperFields(): void
+    {
+        $time = \Soneso\StellarSDK\Xdr\XdrTimeBounds::class;
+        $map = ['test.minTime' => '18446744073709551615', 'test.maxTime' => '18446744073709551615'];
+        $value = $time::fromTxRep($map, 'test');
+        self::assertSame(str_repeat('ff', 16), bin2hex($value->encode()));
+        $lines = [];
+        $time::decode(new XdrBuffer($value->encode()))->toTxRep('test', $lines);
+        self::assertSame($map, $lines);
+        foreach (array_keys($map) as $key) {
+            $this->rejectNumericField($time, $map, $key, '18446744073709551616');
+        }
+        foreach (['XdrLiquidityPoolDepositOperation' => ['maxAmountA', 'maxAmountB'],
+            'XdrLiquidityPoolWithdrawOperation' => ['amount', 'minAmountA', 'minAmountB']] as $name => $fields) {
+            $class = 'Soneso\\StellarSDK\\Xdr\\' . $name;
+            foreach ($fields as $field) {
+                foreach ([PHP_INT_MIN, PHP_INT_MAX] as $bound) {
+                    $value = $class::fromTxRep(['test.' . $field => (string)$bound], 'test');
+                    self::assertSame((string)$bound, $value->$field->toString());
+                }
+                $this->rejectNumericField($class, [], 'test.' . $field, '9223372036854775808');
+            }
+        }
     }
 }

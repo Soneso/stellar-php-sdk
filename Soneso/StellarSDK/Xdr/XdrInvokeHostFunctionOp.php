@@ -127,7 +127,7 @@ class XdrInvokeHostFunctionOp {
 
     public static function fromTxRep(array $map, string $prefix): XdrInvokeHostFunctionOp {
         $hostFunction = XdrHostFunction::fromTxRep($map, $prefix . '.hostFunction');
-        $authLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.auth.len') ?? '0');
+        $authLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.auth.len') ?? '0', $prefix . '.auth.len');
         $auth = [];
         for ($i = 0; $i < $authLen; $i++) {
             $auth[] = XdrSorobanAuthorizationEntry::fromTxRep($map, $prefix . '.auth[' . $i . ']');

@@ -108,8 +108,8 @@ class XdrLedgerBounds {
     }
 
     public static function fromTxRep(array $map, string $prefix): XdrLedgerBounds {
-        $minLedger = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.minLedger') ?? '0');
-        $maxLedger = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.maxLedger') ?? '0');
+        $minLedger = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.minLedger') ?? '0', $prefix . '.minLedger');
+        $maxLedger = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.maxLedger') ?? '0', $prefix . '.maxLedger');
         return new XdrLedgerBounds($minLedger, $maxLedger);
     }
 }

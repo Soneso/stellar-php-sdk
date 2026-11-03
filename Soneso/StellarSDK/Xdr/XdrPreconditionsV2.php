@@ -221,7 +221,7 @@ class XdrPreconditionsV2 {
         } else {
             $lines[$prefix . '.minSeqNum._present'] = 'false';
         }
-        $lines[$prefix . '.minSeqAge'] = (string)$this->minSeqAge;
+        $lines[$prefix . '.minSeqAge'] = sprintf('%u', $this->minSeqAge);
         $lines[$prefix . '.minSeqLedgerGap'] = (string)$this->minSeqLedgerGap;
         $lines[$prefix . '.extraSigners.len'] = (string)count($this->extraSigners);
         for ($i = 0; $i < count($this->extraSigners); $i++) {
@@ -245,9 +245,9 @@ class XdrPreconditionsV2 {
         if ($minSeqNumPresent !== null && $minSeqNumPresent === 'true') {
             $minSeqNum = XdrSequenceNumber::fromTxRep($map, $prefix . '.minSeqNum');
         }
-        $minSeqAge = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.minSeqAge') ?? '0');
-        $minSeqLedgerGap = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.minSeqLedgerGap') ?? '0');
-        $extraSignersLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.extraSigners.len') ?? '0');
+        $minSeqAge = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.minSeqAge') ?? '0', $prefix . '.minSeqAge');
+        $minSeqLedgerGap = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.minSeqLedgerGap') ?? '0', $prefix . '.minSeqLedgerGap');
+        $extraSignersLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.extraSigners.len') ?? '0', $prefix . '.extraSigners.len');
         $extraSigners = [];
         for ($i = 0; $i < $extraSignersLen; $i++) {
             $extraSigners[] = TxRepHelper::parseSignerKey(TxRepHelper::getValue($map, $prefix . '.extraSigners[' . $i . ']') ?? '');
