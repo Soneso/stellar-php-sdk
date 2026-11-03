@@ -109,7 +109,7 @@ class XdrSigner {
 
     public static function fromTxRep(array $map, string $prefix): XdrSigner {
         $key = TxRepHelper::parseSignerKey(TxRepHelper::getValue($map, $prefix . '.key') ?? '');
-        $weight = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.weight') ?? '0');
+        $weight = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.weight') ?? '0', $prefix . '.weight');
         return new XdrSigner($key, $weight);
     }
 }

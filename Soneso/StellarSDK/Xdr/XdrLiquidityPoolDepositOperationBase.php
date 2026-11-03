@@ -158,8 +158,8 @@ class XdrLiquidityPoolDepositOperationBase {
 
     public static function fromTxRep(array $map, string $prefix): static {
         $liquidityPoolID = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.liquidityPoolID') ?? '');
-        $maxAmountA = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.maxAmountA') ?? '0');
-        $maxAmountB = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.maxAmountB') ?? '0');
+        $maxAmountA = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.maxAmountA') ?? '0', $prefix . '.maxAmountA'));
+        $maxAmountB = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.maxAmountB') ?? '0', $prefix . '.maxAmountB'));
         $minPrice = XdrPrice::fromTxRep($map, $prefix . '.minPrice');
         $maxPrice = XdrPrice::fromTxRep($map, $prefix . '.maxPrice');
         return new static($liquidityPoolID, $maxAmountA, $maxAmountB, $minPrice, $maxPrice);

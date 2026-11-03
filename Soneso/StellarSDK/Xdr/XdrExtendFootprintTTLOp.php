@@ -109,7 +109,7 @@ class XdrExtendFootprintTTLOp {
 
     public static function fromTxRep(array $map, string $prefix): XdrExtendFootprintTTLOp {
         $ext = XdrExtensionPoint::fromTxRep($map, $prefix . '.ext');
-        $extendTo = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.extendTo') ?? '0');
+        $extendTo = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.extendTo') ?? '0', $prefix . '.extendTo');
         return new XdrExtendFootprintTTLOp($ext, $extendTo);
     }
 }

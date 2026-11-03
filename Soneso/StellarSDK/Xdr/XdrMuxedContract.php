@@ -89,12 +89,12 @@ class XdrMuxedContract {
      * @param array<string, string> $lines
      */
     public function toTxRep(string $prefix, array &$lines): void {
-        $lines[$prefix . '.id'] = (string)$this->id;
+        $lines[$prefix . '.id'] = sprintf('%u', $this->id);
         $lines[$prefix . '.contractId'] = TxRepHelper::bytesToHex($this->contractId);
     }
 
     public static function fromTxRep(array $map, string $prefix): XdrMuxedContract {
-        $id = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.id') ?? '0');
+        $id = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.id') ?? '0', $prefix . '.id');
         $contractId = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.contractId') ?? '');
         return new XdrMuxedContract($id, $contractId);
     }

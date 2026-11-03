@@ -312,38 +312,21 @@ class TxRepHelper
     /**
      * Parse an integer string, supporting decimal and `0x`/`0X` hex notation.
      *
-     * Handles an optional leading minus sign for negative values.
+     * Handles an optional leading sign.
      *
      * @param string $s The integer string to parse.
      * @return int The parsed integer.
-     * @throws InvalidArgumentException If the string cannot be parsed.
+     * @throws InvalidArgumentException If the string is not an integer token or its value is outside the signed 64-bit range.
      */
     public static function parseInt(string $s): int
     {
-        $trimmed = trim($s);
-        $negative = false;
-
-        if (isset($trimmed[0]) && $trimmed[0] === '-') {
-            $negative = true;
-            $trimmed = substr($trimmed, 1);
-        }
-
-        if (str_starts_with($trimmed, '0x') || str_starts_with($trimmed, '0X')) {
-            $result = intval(substr($trimmed, 2), 16);
-        } else {
-            if (!is_numeric($trimmed) || strpos($trimmed, '.') !== false) {
-                throw new InvalidArgumentException('Cannot parse integer: ' . $s);
-            }
-            $result = intval($trimmed, 10);
-        }
-
-        return $negative ? -$result : $result;
+        return self::parseIntegerRange($s, null, '-9223372036854775808', '9223372036854775807');
     }
 
     /**
      * Parse a big-integer string, supporting decimal and `0x`/`0X` hex notation.
      *
-     * Handles an optional leading minus sign for negative values.
+     * Handles an optional leading sign.
      *
      * @param string $s The integer string to parse.
      * @return BigInteger The parsed big integer.
@@ -351,26 +334,85 @@ class TxRepHelper
      */
     public static function parseBigInt(string $s): BigInteger
     {
-        $trimmed = trim($s);
-        $negative = false;
+        return self::parseIntegerToken($s, null);
+    }
 
-        if (isset($trimmed[0]) && $trimmed[0] === '-') {
-            $negative = true;
-            $trimmed = substr($trimmed, 1);
+    /**
+     * Parse an unsigned 32-bit integer token.
+     * A secret seed in the text is replaced by `[redacted seed]` in errors.
+     * @param string $s Decimal or hexadecimal integer text.
+     * @param string $key Full TxRep field key for errors.
+     * @return int Value in [0, 4294967295].
+     * @throws InvalidArgumentException For invalid syntax or an out-of-range value.
+     */
+    public static function parseUint32(string $s, string $key): int
+    {
+        return self::parseIntegerRange($s, $key, '0', '4294967295');
+    }
+
+    /**
+     * Parse a signed 32-bit integer token.
+     * A secret seed in the text is replaced by `[redacted seed]` in errors.
+     * @param string $s Decimal or hexadecimal integer text.
+     * @param string $key Full TxRep field key for errors.
+     * @return int Value in [-2147483648, 2147483647].
+     * @throws InvalidArgumentException For invalid syntax or an out-of-range value.
+     */
+    public static function parseInt32(string $s, string $key): int
+    {
+        return self::parseIntegerRange($s, $key, '-2147483648', '2147483647');
+    }
+
+    /**
+     * Parse an unsigned 64-bit integer token into signed PHP storage bits.
+     * A secret seed in the text is replaced by `[redacted seed]` in errors.
+     * @param string $s Decimal or hexadecimal integer text.
+     * @param string $key Full TxRep field key for errors.
+     * @return int Storage value, negative for inputs at or above 2^63.
+     * @throws InvalidArgumentException For invalid syntax or a value outside [0, 2^64-1].
+     */
+    public static function parseUint64(string $s, string $key): int
+    {
+        return self::parseIntegerRange($s, $key, '0', '18446744073709551615', true);
+    }
+
+    /**
+     * Parse a signed 64-bit integer token.
+     * A secret seed in the text is replaced by `[redacted seed]` in errors.
+     * @param string $s Decimal or hexadecimal integer text.
+     * @param string $key Full TxRep field key for errors.
+     * @return int Value in [-2^63, 2^63-1].
+     * @throws InvalidArgumentException For invalid syntax or an out-of-range value.
+     */
+    public static function parseInt64(string $s, string $key): int
+    {
+        return self::parseIntegerRange($s, $key, '-9223372036854775808', '9223372036854775807');
+    }
+
+    private static function displayIntegerInput(string $s): string
+    {
+        return preg_replace('/S[A-Z2-7]{55}/i', '[redacted seed]', $s);
+    }
+
+    private static function parseIntegerToken(string $s, ?string $key): BigInteger
+    {
+        if (preg_match('/\A([+-]?)(?:0[xX]([0-9a-fA-F]+)|([0-9]+))\z/', trim($s), $parts) !== 1) {
+            $display = self::displayIntegerInput($s);
+            throw new InvalidArgumentException('Cannot parse integer' . ($key === null ? '' : " for $key") . ": $display");
         }
+        $hex = $parts[2] !== '';
+        $value = new BigInteger($hex ? $parts[2] : $parts[3], $hex ? 16 : 10);
+        return $parts[1] === '-' ? $value->negate() : $value;
+    }
 
-        if (str_starts_with($trimmed, '0x') || str_starts_with($trimmed, '0X')) {
-            $hex = substr($trimmed, 2);
-            $result = new BigInteger($hex, 16);
-        } else {
-            $result = new BigInteger($trimmed, 10);
+    private static function parseIntegerRange(string $s, ?string $key, string $min, string $max, bool $unsigned64 = false): int
+    {
+        $value = self::parseIntegerToken($s, $key);
+        if ($value->compare(new BigInteger($min)) < 0 || $value->compare(new BigInteger($max)) > 0) {
+            $display = self::displayIntegerInput($s);
+            throw new InvalidArgumentException("Integer value $display" . ($key === null ? '' : " for $key") . " is outside [$min, $max]");
         }
-
-        if ($negative) {
-            $result = $result->negate();
-        }
-
-        return $result;
+        return $unsigned64 ? XdrJsonHelper::stringToUint64($value->toString()) : (int)$value->toString();
     }
 
     // ---------------------------------------------------------------------------

@@ -124,7 +124,7 @@ class XdrSorobanTransactionData {
     public static function fromTxRep(array $map, string $prefix): XdrSorobanTransactionData {
         $ext = XdrSorobanTransactionDataExt::fromTxRep($map, $prefix . '.ext');
         $resources = XdrSorobanResources::fromTxRep($map, $prefix . '.resources');
-        $resourceFee = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.resourceFee') ?? '0');
+        $resourceFee = TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.resourceFee') ?? '0', $prefix . '.resourceFee');
         return new XdrSorobanTransactionData($ext, $resources, $resourceFee);
     }
 }

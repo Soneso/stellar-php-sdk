@@ -254,14 +254,14 @@ class XdrClaimPredicate {
             case XdrClaimPredicateType::UNCONDITIONAL:
                 break;
             case XdrClaimPredicateType::AND:
-                $andPredicatesLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.andPredicates.len') ?? '0');
+                $andPredicatesLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.andPredicates.len') ?? '0', $prefix . '.andPredicates.len');
                 $result->andPredicates = [];
                 for ($i = 0; $i < $andPredicatesLen; $i++) {
                     $result->andPredicates[] = XdrClaimPredicate::fromTxRep($map, $prefix . '.andPredicates[' . $i . ']');
                 }
                 break;
             case XdrClaimPredicateType::OR:
-                $orPredicatesLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.orPredicates.len') ?? '0');
+                $orPredicatesLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.orPredicates.len') ?? '0', $prefix . '.orPredicates.len');
                 $result->orPredicates = [];
                 for ($i = 0; $i < $orPredicatesLen; $i++) {
                     $result->orPredicates[] = XdrClaimPredicate::fromTxRep($map, $prefix . '.orPredicates[' . $i . ']');
@@ -274,10 +274,10 @@ class XdrClaimPredicate {
                 }
                 break;
             case XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME:
-                $result->absBefore = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.absBefore') ?? '0');
+                $result->absBefore = TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.absBefore') ?? '0', $prefix . '.absBefore');
                 break;
             case XdrClaimPredicateType::BEFORE_RELATIVE_TIME:
-                $result->relBefore = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.relBefore') ?? '0');
+                $result->relBefore = TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.relBefore') ?? '0', $prefix . '.relBefore');
                 break;
             default:
                 break;

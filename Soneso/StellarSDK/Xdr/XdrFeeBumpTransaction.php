@@ -137,7 +137,7 @@ class XdrFeeBumpTransaction {
 
     public static function fromTxRep(array $map, string $prefix): XdrFeeBumpTransaction {
         $feeSource = TxRepHelper::parseMuxedAccount(TxRepHelper::getValue($map, $prefix . '.feeSource') ?? '');
-        $fee = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.fee') ?? '0');
+        $fee = TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.fee') ?? '0', $prefix . '.fee');
         $innerTx = XdrFeeBumpTransactionInnerTx::fromTxRep($map, $prefix . '.innerTx');
         $ext = XdrFeeBumpTransactionExt::fromTxRep($map, $prefix . '.ext');
         return new XdrFeeBumpTransaction($feeSource, $fee, $innerTx, $ext);

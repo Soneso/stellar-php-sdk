@@ -197,7 +197,7 @@ class XdrTransactionV0Base {
 
     public static function fromTxRep(array $map, string $prefix): static {
         $sourceAccountEd25519 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.sourceAccountEd25519') ?? '');
-        $fee = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.fee') ?? '0');
+        $fee = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.fee') ?? '0', $prefix . '.fee');
         $seqNum = XdrSequenceNumber::fromTxRep($map, $prefix . '.seqNum');
         $timeBounds = null;
         $timeBoundsPresent = TxRepHelper::getValue($map, $prefix . '.timeBounds._present');
@@ -205,7 +205,7 @@ class XdrTransactionV0Base {
             $timeBounds = XdrTimeBounds::fromTxRep($map, $prefix . '.timeBounds');
         }
         $memo = XdrMemo::fromTxRep($map, $prefix . '.memo');
-        $operationsLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.operations.len') ?? '0');
+        $operationsLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.operations.len') ?? '0', $prefix . '.operations.len');
         $operations = [];
         for ($i = 0; $i < $operationsLen; $i++) {
             $operations[] = XdrOperation::fromTxRep($map, $prefix . '.operations[' . $i . ']');

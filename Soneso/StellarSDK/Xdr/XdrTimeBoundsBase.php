@@ -120,13 +120,13 @@ class XdrTimeBoundsBase {
      * @param array<string, string> $lines
      */
     public function toTxRep(string $prefix, array &$lines): void {
-        $lines[$prefix . '.minTime'] = (string)$this->minTimestamp;
-        $lines[$prefix . '.maxTime'] = (string)$this->maxTimestamp;
+        $lines[$prefix . '.minTime'] = sprintf('%u', $this->minTimestamp);
+        $lines[$prefix . '.maxTime'] = sprintf('%u', $this->maxTimestamp);
     }
 
     public static function fromTxRep(array $map, string $prefix): static {
-        $minTimestamp = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.minTime') ?? '0');
-        $maxTimestamp = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.maxTime') ?? '0');
+        $minTimestamp = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.minTime') ?? '0', $prefix . '.minTime');
+        $maxTimestamp = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.maxTime') ?? '0', $prefix . '.maxTime');
         return new static($minTimestamp, $maxTimestamp);
     }
 }

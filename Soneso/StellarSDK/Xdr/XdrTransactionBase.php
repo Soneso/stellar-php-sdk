@@ -176,11 +176,11 @@ class XdrTransactionBase {
 
     public static function fromTxRep(array $map, string $prefix): static {
         $sourceAccount = TxRepHelper::parseMuxedAccount(TxRepHelper::getValue($map, $prefix . '.sourceAccount') ?? '');
-        $fee = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.fee') ?? '0');
+        $fee = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.fee') ?? '0', $prefix . '.fee');
         $sequenceNumber = XdrSequenceNumber::fromTxRep($map, $prefix . '.seqNum');
         $preconditions = XdrPreconditions::fromTxRep($map, $prefix . '.cond');
         $memo = XdrMemo::fromTxRep($map, $prefix . '.memo');
-        $operationsLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.operations.len') ?? '0');
+        $operationsLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.operations.len') ?? '0', $prefix . '.operations.len');
         $operations = [];
         for ($i = 0; $i < $operationsLen; $i++) {
             $operations[] = XdrOperation::fromTxRep($map, $prefix . '.operations[' . $i . ']');

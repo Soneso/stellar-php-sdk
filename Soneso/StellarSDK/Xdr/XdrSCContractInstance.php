@@ -146,7 +146,7 @@ class XdrSCContractInstance {
         $storage = null;
         $storagePresent = TxRepHelper::getValue($map, $prefix . '.storage._present');
         if ($storagePresent !== null && $storagePresent === 'true') {
-            $storageLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.storage.len') ?? '0');
+            $storageLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.storage.len') ?? '0', $prefix . '.storage.len');
             $storage = [];
             for ($i = 0; $i < $storageLen; $i++) {
                 $storage[] = XdrSCMapEntry::fromTxRep($map, $prefix . '.storage[' . $i . ']');

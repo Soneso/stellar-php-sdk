@@ -265,10 +265,10 @@ class TxRep
         $feeSource = TxRepHelper::parseMuxedAccount($feeSourceStr);
 
         $feeStr = TxRepHelper::getValue($map, 'feeBump.tx.fee');
-        if ($feeStr === null || !is_numeric($feeStr)) {
+        if ($feeStr === null) {
             throw new InvalidArgumentException('missing or invalid feeBump.tx.fee');
         }
-        $fee = (int)$feeStr;
+        $fee = TxRepHelper::parseInt64($feeStr, 'feeBump.tx.fee');
 
         // Inner transaction.
         $innerTx   = self::decodeTransaction($map, 'feeBump.tx.innerTx.tx');
@@ -318,10 +318,10 @@ class TxRep
 
         // Fee.
         $feeStr = TxRepHelper::getValue($map, $prefix . '.fee');
-        if ($feeStr === null || !is_numeric($feeStr)) {
+        if ($feeStr === null) {
             throw new InvalidArgumentException('missing or invalid ' . $prefix . '.fee');
         }
-        $fee = (int)$feeStr;
+        $fee = TxRepHelper::parseUint32($feeStr, $prefix . '.fee');
 
         // Sequence number.
         $seqNum = XdrSequenceNumber::fromTxRep($map, $prefix . '.seqNum');
@@ -346,10 +346,10 @@ class TxRep
 
         // Operations.
         $opsLenStr = TxRepHelper::getValue($map, $prefix . '.operations.len');
-        if ($opsLenStr === null || !is_numeric($opsLenStr)) {
+        if ($opsLenStr === null) {
             throw new InvalidArgumentException('missing or invalid ' . $prefix . '.operations.len');
         }
-        $opsLen = (int)$opsLenStr;
+        $opsLen = TxRepHelper::parseUint32($opsLenStr, $prefix . '.operations.len');
         $operations = [];
         for ($i = 0; $i < $opsLen; $i++) {
             $operations[] = XdrOperation::fromTxRep($map, $prefix . '.operations[' . $i . ']');
@@ -359,7 +359,7 @@ class TxRep
         // not inside ext. Read ext.v to determine discriminant, then read
         // sorobanData from $prefix.sorobanData (not $prefix.ext.sorobanData).
         $extV = TxRepHelper::getValue($map, $prefix . '.ext.v');
-        if ($extV !== null && (int)$extV === 1) {
+        if ($extV !== null && TxRepHelper::parseInt32($extV, $prefix . '.ext.v') === 1) {
             $ext = new XdrTransactionExt(1);
             $ext->setSorobanTransactionData(
                 XdrSorobanTransactionData::fromTxRep($map, $prefix . '.sorobanData')
@@ -412,11 +412,11 @@ class TxRep
 
         if ($memoTypeStr === 'MEMO_ID') {
             $idStr = TxRepHelper::getValue($map, $prefix . '.id');
-            if ($idStr === null || !is_numeric($idStr)) {
+            if ($idStr === null) {
                 throw new InvalidArgumentException('missing or invalid ' . $prefix . '.id');
             }
             $memo = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_ID));
-            $memo->setId((int)$idStr);
+            $memo->setId(TxRepHelper::parseUint64($idStr, $prefix . '.id'));
             return $memo;
         }
 
@@ -454,10 +454,10 @@ class TxRep
     private static function decodeSignatures(array $map, string $prefix): array
     {
         $lenStr = TxRepHelper::getValue($map, $prefix . 'signatures.len');
-        if ($lenStr === null || !is_numeric($lenStr)) {
+        if ($lenStr === null) {
             return [];
         }
-        $count = (int)$lenStr;
+        $count = TxRepHelper::parseUint32($lenStr, $prefix . 'signatures.len');
         $sigs  = [];
         for ($i = 0; $i < $count; $i++) {
             $hintHex = TxRepHelper::getValue($map, $prefix . 'signatures[' . $i . '].hint');

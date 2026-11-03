@@ -125,7 +125,7 @@ class XdrPaymentOperation {
     public static function fromTxRep(array $map, string $prefix): XdrPaymentOperation {
         $destination = TxRepHelper::parseMuxedAccount(TxRepHelper::getValue($map, $prefix . '.destination') ?? '');
         $asset = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.asset') ?? '');
-        $amount = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0');
+        $amount = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0', $prefix . '.amount'));
         return new XdrPaymentOperation($destination, $asset, $amount);
     }
 }

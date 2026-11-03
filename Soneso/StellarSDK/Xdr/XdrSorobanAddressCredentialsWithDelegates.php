@@ -127,7 +127,7 @@ class XdrSorobanAddressCredentialsWithDelegates {
 
     public static function fromTxRep(array $map, string $prefix): XdrSorobanAddressCredentialsWithDelegates {
         $addressCredentials = XdrSorobanAddressCredentials::fromTxRep($map, $prefix . '.addressCredentials');
-        $delegatesLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.delegates.len') ?? '0');
+        $delegatesLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.delegates.len') ?? '0', $prefix . '.delegates.len');
         $delegates = [];
         for ($i = 0; $i < $delegatesLen; $i++) {
             $delegates[] = XdrSorobanDelegateSignature::fromTxRep($map, $prefix . '.delegates[' . $i . ']');

@@ -358,32 +358,32 @@ class XdrSetOptionsOperation {
         $clearFlags = null;
         $clearFlagsPresent = TxRepHelper::getValue($map, $prefix . '.clearFlags._present');
         if ($clearFlagsPresent !== null && $clearFlagsPresent === 'true') {
-            $clearFlags = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.clearFlags') ?? '0');
+            $clearFlags = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.clearFlags') ?? '0', $prefix . '.clearFlags');
         }
         $setFlags = null;
         $setFlagsPresent = TxRepHelper::getValue($map, $prefix . '.setFlags._present');
         if ($setFlagsPresent !== null && $setFlagsPresent === 'true') {
-            $setFlags = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.setFlags') ?? '0');
+            $setFlags = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.setFlags') ?? '0', $prefix . '.setFlags');
         }
         $masterWeight = null;
         $masterWeightPresent = TxRepHelper::getValue($map, $prefix . '.masterWeight._present');
         if ($masterWeightPresent !== null && $masterWeightPresent === 'true') {
-            $masterWeight = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.masterWeight') ?? '0');
+            $masterWeight = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.masterWeight') ?? '0', $prefix . '.masterWeight');
         }
         $lowThreshold = null;
         $lowThresholdPresent = TxRepHelper::getValue($map, $prefix . '.lowThreshold._present');
         if ($lowThresholdPresent !== null && $lowThresholdPresent === 'true') {
-            $lowThreshold = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.lowThreshold') ?? '0');
+            $lowThreshold = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.lowThreshold') ?? '0', $prefix . '.lowThreshold');
         }
         $medThreshold = null;
         $medThresholdPresent = TxRepHelper::getValue($map, $prefix . '.medThreshold._present');
         if ($medThresholdPresent !== null && $medThresholdPresent === 'true') {
-            $medThreshold = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.medThreshold') ?? '0');
+            $medThreshold = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.medThreshold') ?? '0', $prefix . '.medThreshold');
         }
         $highThreshold = null;
         $highThresholdPresent = TxRepHelper::getValue($map, $prefix . '.highThreshold._present');
         if ($highThresholdPresent !== null && $highThresholdPresent === 'true') {
-            $highThreshold = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.highThreshold') ?? '0');
+            $highThreshold = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.highThreshold') ?? '0', $prefix . '.highThreshold');
         }
         $homeDomain = null;
         $homeDomainPresent = TxRepHelper::getValue($map, $prefix . '.homeDomain._present');

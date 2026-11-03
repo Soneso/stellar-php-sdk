@@ -57,11 +57,12 @@ class XdrTimeBounds extends XdrTimeBoundsBase
      * @param array<string,string> $map
      * @param string               $prefix
      * @return static
+     * @throws \InvalidArgumentException If an integer token is malformed or outside its XDR range.
      */
     public static function fromTxRep(array $map, string $prefix): static
     {
-        $minTimestamp = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.minTime') ?? '0');
-        $maxTimestamp = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.maxTime') ?? '0');
+        $minTimestamp = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.minTime') ?? '0', $prefix . '.minTime');
+        $maxTimestamp = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.maxTime') ?? '0', $prefix . '.maxTime');
         $minDt = (new DateTime())->setTimestamp($minTimestamp);
         $maxDt = (new DateTime())->setTimestamp($maxTimestamp);
         return new static($minDt, $maxDt);

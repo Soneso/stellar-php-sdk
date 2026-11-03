@@ -108,8 +108,8 @@ class XdrPrice {
     }
 
     public static function fromTxRep(array $map, string $prefix): XdrPrice {
-        $n = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.n') ?? '0');
-        $d = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.d') ?? '0');
+        $n = TxRepHelper::parseInt32(TxRepHelper::getValue($map, $prefix . '.n') ?? '0', $prefix . '.n');
+        $d = TxRepHelper::parseInt32(TxRepHelper::getValue($map, $prefix . '.d') ?? '0', $prefix . '.d');
         return new XdrPrice($n, $d);
     }
 }

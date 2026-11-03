@@ -184,11 +184,11 @@ class XdrPathPaymentStrictSendOperation {
 
     public static function fromTxRep(array $map, string $prefix): XdrPathPaymentStrictSendOperation {
         $sendAsset = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.sendAsset') ?? '');
-        $sendAmount = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.sendAmount') ?? '0');
+        $sendAmount = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.sendAmount') ?? '0', $prefix . '.sendAmount'));
         $destination = TxRepHelper::parseMuxedAccount(TxRepHelper::getValue($map, $prefix . '.destination') ?? '');
         $destAsset = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.destAsset') ?? '');
-        $destMin = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.destMin') ?? '0');
-        $pathLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.path.len') ?? '0');
+        $destMin = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.destMin') ?? '0', $prefix . '.destMin'));
+        $pathLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.path.len') ?? '0', $prefix . '.path.len');
         $path = [];
         for ($i = 0; $i < $pathLen; $i++) {
             $path[] = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.path[' . $i . ']') ?? '');

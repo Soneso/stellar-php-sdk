@@ -153,9 +153,9 @@ class XdrManageBuyOfferOperation {
     public static function fromTxRep(array $map, string $prefix): XdrManageBuyOfferOperation {
         $selling = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.selling') ?? '');
         $buying = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.buying') ?? '');
-        $amount = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.buyAmount') ?? '0');
+        $amount = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.buyAmount') ?? '0', $prefix . '.buyAmount'));
         $price = XdrPrice::fromTxRep($map, $prefix . '.price');
-        $offerId = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.offerID') ?? '0');
+        $offerId = TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.offerID') ?? '0', $prefix . '.offerID');
         return new XdrManageBuyOfferOperation($selling, $buying, $amount, $price, $offerId);
     }
 }

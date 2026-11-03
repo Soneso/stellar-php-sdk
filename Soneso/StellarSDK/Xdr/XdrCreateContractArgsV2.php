@@ -142,7 +142,7 @@ class XdrCreateContractArgsV2 {
     public static function fromTxRep(array $map, string $prefix): XdrCreateContractArgsV2 {
         $contractIDPreimage = XdrContractIDPreimage::fromTxRep($map, $prefix . '.contractIDPreimage');
         $executable = XdrContractExecutable::fromTxRep($map, $prefix . '.executable');
-        $constructorArgsLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.constructorArgs.len') ?? '0');
+        $constructorArgsLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.constructorArgs.len') ?? '0', $prefix . '.constructorArgs.len');
         $constructorArgs = [];
         for ($i = 0; $i < $constructorArgsLen; $i++) {
             $constructorArgs[] = XdrSCVal::fromTxRep($map, $prefix . '.constructorArgs[' . $i . ']');

@@ -124,7 +124,7 @@ class XdrAllowTrustOperation {
     public static function fromTxRep(array $map, string $prefix): XdrAllowTrustOperation {
         $trustor = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.trustor') ?? '');
         $asset = TxRepHelper::parseAllowTrustAsset(TxRepHelper::getValue($map, $prefix . '.asset') ?? '');
-        $authorized = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.authorize') ?? '0');
+        $authorized = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.authorize') ?? '0', $prefix . '.authorize');
         return new XdrAllowTrustOperation($trustor, $asset, $authorized);
     }
 }

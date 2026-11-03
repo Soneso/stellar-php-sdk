@@ -137,9 +137,9 @@ class XdrSorobanResources {
 
     public static function fromTxRep(array $map, string $prefix): XdrSorobanResources {
         $footprint = XdrLedgerFootprint::fromTxRep($map, $prefix . '.footprint');
-        $instructions = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.instructions') ?? '0');
-        $diskReadBytes = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.diskReadBytes') ?? '0');
-        $writeBytes = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.writeBytes') ?? '0');
+        $instructions = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.instructions') ?? '0', $prefix . '.instructions');
+        $diskReadBytes = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.diskReadBytes') ?? '0', $prefix . '.diskReadBytes');
+        $writeBytes = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.writeBytes') ?? '0', $prefix . '.writeBytes');
         return new XdrSorobanResources($footprint, $instructions, $diskReadBytes, $writeBytes);
     }
 }

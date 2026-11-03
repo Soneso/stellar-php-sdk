@@ -375,7 +375,7 @@ class XdrSCValType {
             default:
                 $prefix = 'XdrSCValType#';
                 if (str_starts_with($name, $prefix)) {
-                    $val = (int) substr($name, strlen($prefix));
+                    $val = TxRepHelper::parseInt32(substr($name, strlen($prefix)), $name);
                     return new static($val);
                 }
                 throw new InvalidArgumentException('Unknown enum value: ' . $name);
@@ -394,6 +394,9 @@ class XdrSCValType {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
             throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+        }
+        if (str_starts_with($raw, 'XdrSCValType#')) {
+            return new static(TxRepHelper::parseInt32(substr($raw, 13), $prefix));
         }
         return self::fromTxRepName($raw);
     }

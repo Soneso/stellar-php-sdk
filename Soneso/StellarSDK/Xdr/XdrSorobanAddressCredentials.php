@@ -137,8 +137,8 @@ class XdrSorobanAddressCredentials {
 
     public static function fromTxRep(array $map, string $prefix): XdrSorobanAddressCredentials {
         $address = XdrSCAddress::fromTxRep($map, $prefix . '.address');
-        $nonce = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.nonce') ?? '0');
-        $signatureExpirationLedger = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.signatureExpirationLedger') ?? '0');
+        $nonce = TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.nonce') ?? '0', $prefix . '.nonce');
+        $signatureExpirationLedger = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.signatureExpirationLedger') ?? '0', $prefix . '.signatureExpirationLedger');
         $signature = XdrSCVal::fromTxRep($map, $prefix . '.signature');
         return new XdrSorobanAddressCredentials($address, $nonce, $signatureExpirationLedger, $signature);
     }

@@ -149,7 +149,7 @@ class XdrTransactionExt {
     }
 
     public static function fromTxRep(array $map, string $prefix): XdrTransactionExt {
-        $disc = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.v') ?? '0');
+        $disc = TxRepHelper::parseInt32(TxRepHelper::getValue($map, $prefix . '.v') ?? '0', $prefix . '.v');
         $result = new XdrTransactionExt($disc);
         switch ($result->discriminant) {
             case 0:

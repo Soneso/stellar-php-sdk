@@ -139,7 +139,7 @@ class XdrCreatePassiveSellOfferOperation {
     public static function fromTxRep(array $map, string $prefix): XdrCreatePassiveSellOfferOperation {
         $selling = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.selling') ?? '');
         $buying = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.buying') ?? '');
-        $amount = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0');
+        $amount = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0', $prefix . '.amount'));
         $price = XdrPrice::fromTxRep($map, $prefix . '.price');
         return new XdrCreatePassiveSellOfferOperation($selling, $buying, $amount, $price);
     }

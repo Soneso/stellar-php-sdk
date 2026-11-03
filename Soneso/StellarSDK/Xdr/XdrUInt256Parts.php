@@ -107,17 +107,17 @@ class XdrUInt256Parts {
      * @param array<string, string> $lines
      */
     public function toTxRep(string $prefix, array &$lines): void {
-        $lines[$prefix . '.hi_hi'] = (string)$this->hiHi;
-        $lines[$prefix . '.hi_lo'] = (string)$this->hiLo;
-        $lines[$prefix . '.lo_hi'] = (string)$this->loHi;
-        $lines[$prefix . '.lo_lo'] = (string)$this->loLo;
+        $lines[$prefix . '.hi_hi'] = sprintf('%u', $this->hiHi);
+        $lines[$prefix . '.hi_lo'] = sprintf('%u', $this->hiLo);
+        $lines[$prefix . '.lo_hi'] = sprintf('%u', $this->loHi);
+        $lines[$prefix . '.lo_lo'] = sprintf('%u', $this->loLo);
     }
 
     public static function fromTxRep(array $map, string $prefix): XdrUInt256Parts {
-        $hiHi = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.hi_hi') ?? '0');
-        $hiLo = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.hi_lo') ?? '0');
-        $loHi = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.lo_hi') ?? '0');
-        $loLo = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.lo_lo') ?? '0');
+        $hiHi = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.hi_hi') ?? '0', $prefix . '.hi_hi');
+        $hiLo = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.hi_lo') ?? '0', $prefix . '.hi_lo');
+        $loHi = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.lo_hi') ?? '0', $prefix . '.lo_hi');
+        $loLo = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.lo_lo') ?? '0', $prefix . '.lo_lo');
         return new XdrUInt256Parts($hiHi, $hiLo, $loHi, $loLo);
     }
 }

@@ -1408,4 +1408,72 @@ class TxRepHelperTest extends TestCase
         $map = TxRepHelper::parse('tx.asset: USD:' . self::ISSUER_A);
         $this->assertSame('USD:' . self::ISSUER_A, $map['tx.asset']);
     }
+
+    public function testValidatedIntegerTokens(): void
+    {
+        foreach (['parseInt', 'parseBigInt', 'parseUint32', 'parseInt32', 'parseUint64', 'parseInt64'] as $method) {
+            $big = $method === 'parseBigInt';
+            $keys = in_array($method, ['parseInt', 'parseBigInt']) ? [] : ['tx.value'];
+            foreach ([' 0X1f ' => '31', '+5' => '5', '+0x10' => '16'] as $token => $expected) {
+                $value = TxRepHelper::$method($token, ...$keys);
+                self::assertSame($expected, $big ? $value->toString() : (string)$value);
+            }
+            foreach (['0xZZ', '--5', '0x', '5x', '1e2', ''] as $token) {
+                try {
+                    TxRepHelper::$method($token, ...$keys);
+                    self::fail("Accepted malformed token $token in $method");
+                } catch (InvalidArgumentException $e) {
+                    self::assertSame('Cannot parse integer' . ($keys === [] ? '' : ' for tx.value')
+                        . ": $token", $e->getMessage());
+                }
+            }
+            $seed = KeyPair::random()->getSecretSeed();
+            try {
+                TxRepHelper::$method($seed, ...$keys);
+                self::fail('Accepted a secret seed in ' . $method);
+            } catch (InvalidArgumentException $e) {
+                self::assertSame('Cannot parse integer' . ($keys === [] ? '' : ' for tx.value')
+                    . ': [redacted seed]', $e->getMessage());
+                self::assertStringNotContainsString($seed, $e->getMessage());
+            }
+        }
+        foreach ([[strtolower(KeyPair::random()->getSecretSeed()), ''],
+            [KeyPair::random()->getSecretSeed(), 'x']] as [$seed, $suffix]) {
+            try {
+                TxRepHelper::parseInt($seed . $suffix);
+                self::fail('Accepted a token containing a secret seed');
+            } catch (InvalidArgumentException $e) {
+                self::assertSame('Cannot parse integer: [redacted seed]' . $suffix, $e->getMessage());
+                self::assertStringNotContainsString($seed, $e->getMessage());
+            }
+        }
+        self::assertSame('18446744073709551616', TxRepHelper::parseBigInt('0x10000000000000000')->toString());
+        self::assertSame(PHP_INT_MIN, TxRepHelper::parseInt('-0x8000000000000000'));
+    }
+
+    public function testIntegerParserWidths(): void
+    {
+        try {
+            TxRepHelper::parseInt('9223372036854775808');
+            self::fail('Accepted an integer outside the signed 64-bit range');
+        } catch (InvalidArgumentException $e) {
+            self::assertSame('Integer value 9223372036854775808 is outside [-9223372036854775808, 9223372036854775807]', $e->getMessage());
+        }
+        foreach ([['parseUint32', '4294967295', 4294967295, '-1', '4294967296'],
+            ['parseInt32', '-2147483648', -2147483648, '-2147483649', '2147483648'],
+            ['parseUint64', '18446744073709551615', -1, '-1', '18446744073709551616'],
+            ['parseInt64', '-9223372036854775808', PHP_INT_MIN, '-9223372036854775809', '9223372036854775808']]
+            as [$method, $token, $expected, $under, $over]) {
+            self::assertSame($expected, TxRepHelper::$method($token, 'tx.width'));
+            foreach ([$under, $over] as $bad) {
+                try {
+                    TxRepHelper::$method($bad, 'tx.width');
+                    self::fail('Accepted out-of-range ' . $bad);
+                } catch (InvalidArgumentException $e) {
+                    self::assertStringContainsString('tx.width', $e->getMessage());
+                    self::assertStringContainsString($bad, $e->getMessage());
+                }
+            }
+        }
+    }
 }

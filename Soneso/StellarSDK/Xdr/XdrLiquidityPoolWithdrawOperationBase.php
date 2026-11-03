@@ -144,9 +144,9 @@ class XdrLiquidityPoolWithdrawOperationBase {
 
     public static function fromTxRep(array $map, string $prefix): static {
         $liquidityPoolID = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.liquidityPoolID') ?? '');
-        $amount = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0');
-        $minAmountA = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.minAmountA') ?? '0');
-        $minAmountB = TxRepHelper::parseBigInt(TxRepHelper::getValue($map, $prefix . '.minAmountB') ?? '0');
+        $amount = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0', $prefix . '.amount'));
+        $minAmountA = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.minAmountA') ?? '0', $prefix . '.minAmountA'));
+        $minAmountB = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.minAmountB') ?? '0', $prefix . '.minAmountB'));
         return new static($liquidityPoolID, $amount, $minAmountA, $minAmountB);
     }
 }

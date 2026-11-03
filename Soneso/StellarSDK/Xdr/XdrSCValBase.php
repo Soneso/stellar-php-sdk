@@ -466,16 +466,16 @@ class XdrSCValBase {
                 $lines[$prefix . '.i32'] = (string)$this->i32;
                 break;
             case XdrSCValType::SCV_U64:
-                $lines[$prefix . '.u64'] = (string)$this->u64;
+                $lines[$prefix . '.u64'] = sprintf('%u', $this->u64);
                 break;
             case XdrSCValType::SCV_I64:
                 $lines[$prefix . '.i64'] = (string)$this->i64;
                 break;
             case XdrSCValType::SCV_TIMEPOINT:
-                $lines[$prefix . '.timepoint'] = (string)$this->timepoint;
+                $lines[$prefix . '.timepoint'] = sprintf('%u', $this->timepoint);
                 break;
             case XdrSCValType::SCV_DURATION:
-                $lines[$prefix . '.duration'] = (string)$this->duration;
+                $lines[$prefix . '.duration'] = sprintf('%u', $this->duration);
                 break;
             case XdrSCValType::SCV_U128:
                 $this->u128->toTxRep($prefix . '.u128', $lines);
@@ -552,22 +552,22 @@ class XdrSCValBase {
                 $result->error = XdrSCError::fromTxRep($map, $prefix . '.error');
                 break;
             case XdrSCValType::SCV_U32:
-                $result->u32 = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.u32') ?? '0');
+                $result->u32 = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.u32') ?? '0', $prefix . '.u32');
                 break;
             case XdrSCValType::SCV_I32:
-                $result->i32 = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.i32') ?? '0');
+                $result->i32 = TxRepHelper::parseInt32(TxRepHelper::getValue($map, $prefix . '.i32') ?? '0', $prefix . '.i32');
                 break;
             case XdrSCValType::SCV_U64:
-                $result->u64 = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.u64') ?? '0');
+                $result->u64 = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.u64') ?? '0', $prefix . '.u64');
                 break;
             case XdrSCValType::SCV_I64:
-                $result->i64 = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.i64') ?? '0');
+                $result->i64 = TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.i64') ?? '0', $prefix . '.i64');
                 break;
             case XdrSCValType::SCV_TIMEPOINT:
-                $result->timepoint = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.timepoint') ?? '0');
+                $result->timepoint = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.timepoint') ?? '0', $prefix . '.timepoint');
                 break;
             case XdrSCValType::SCV_DURATION:
-                $result->duration = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.duration') ?? '0');
+                $result->duration = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.duration') ?? '0', $prefix . '.duration');
                 break;
             case XdrSCValType::SCV_U128:
                 $result->u128 = XdrUInt128Parts::fromTxRep($map, $prefix . '.u128');
@@ -593,7 +593,7 @@ class XdrSCValBase {
             case XdrSCValType::SCV_VEC:
                 $vecPresent = TxRepHelper::getValue($map, $prefix . '.vec._present');
                 if ($vecPresent !== null && $vecPresent === 'true') {
-                    $vecLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.vec.len') ?? '0');
+                    $vecLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.vec.len') ?? '0', $prefix . '.vec.len');
                     $result->vec = [];
                     for ($i = 0; $i < $vecLen; $i++) {
                         $result->vec[] = XdrSCVal::fromTxRep($map, $prefix . '.vec[' . $i . ']');
@@ -603,7 +603,7 @@ class XdrSCValBase {
             case XdrSCValType::SCV_MAP:
                 $mapPresent = TxRepHelper::getValue($map, $prefix . '.map._present');
                 if ($mapPresent !== null && $mapPresent === 'true') {
-                    $mapLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.map.len') ?? '0');
+                    $mapLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.map.len') ?? '0', $prefix . '.map.len');
                     $result->map = [];
                     for ($i = 0; $i < $mapLen; $i++) {
                         $result->map[] = XdrSCMapEntry::fromTxRep($map, $prefix . '.map[' . $i . ']');

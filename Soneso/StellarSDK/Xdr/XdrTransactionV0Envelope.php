@@ -127,7 +127,7 @@ class XdrTransactionV0Envelope {
 
     public static function fromTxRep(array $map, string $prefix): XdrTransactionV0Envelope {
         $tx = XdrTransactionV0::fromTxRep($map, $prefix . '.tx');
-        $signaturesLen = TxRepHelper::parseInt(TxRepHelper::getValue($map, $prefix . '.signatures.len') ?? '0');
+        $signaturesLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.signatures.len') ?? '0', $prefix . '.signatures.len');
         $signatures = [];
         for ($i = 0; $i < $signaturesLen; $i++) {
             $signatures[] = XdrDecoratedSignature::fromTxRep($map, $prefix . '.signatures[' . $i . ']');
