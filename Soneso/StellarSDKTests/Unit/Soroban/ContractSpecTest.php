@@ -22,6 +22,7 @@ use Soneso\StellarSDK\Xdr\XdrSCSpecFunctionInputV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecFunctionV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecType;
 use Soneso\StellarSDK\Xdr\XdrSCSpecTypeDef;
+use Soneso\StellarSDK\Xdr\XdrSCSpecTypeBytesN;
 use Soneso\StellarSDK\Xdr\XdrSCSpecTypeOption;
 use Soneso\StellarSDK\Xdr\XdrSCSpecTypeVec;
 use Soneso\StellarSDK\Xdr\XdrSCSpecTypeTuple;
@@ -303,6 +304,11 @@ class ContractSpecTest extends TestCase
         $result = $spec->nativeToXdrSCVal(42, $typeDef);
         $this->assertEquals(XdrSCValType::SCV_U32, $result->type->value);
         $this->assertEquals(42, $result->u32);
+        foreach ([0 => '0000000300000000', 4294967295 => '00000003ffffffff'] as $input => $hex) {
+            $result = $spec->nativeToXdrSCVal($input, $typeDef);
+            self::assertSame($input, $result->u32);
+            self::assertSame($hex, bin2hex($result->encode()));
+        }
     }
 
     public function testNativeToXdrSCValConvertsI32(): void
@@ -313,6 +319,11 @@ class ContractSpecTest extends TestCase
         $result = $spec->nativeToXdrSCVal(-42, $typeDef);
         $this->assertEquals(XdrSCValType::SCV_I32, $result->type->value);
         $this->assertEquals(-42, $result->i32);
+        foreach ([-2147483648 => '0000000480000000', 2147483647 => '000000047fffffff'] as $input => $hex) {
+            $result = $spec->nativeToXdrSCVal($input, $typeDef);
+            self::assertSame($input, $result->i32);
+            self::assertSame($hex, bin2hex($result->encode()));
+        }
     }
 
     /** @dataProvider unsigned64Values */
@@ -823,15 +834,39 @@ class ContractSpecTest extends TestCase
         $this->assertEquals(42, $result->vec[1]->u32);
     }
 
-    public function testNativeToXdrSCValThrowsForNegativeU32(): void
+    /** @dataProvider invalid32Values */
+    public function testNativeToXdrSCValRejectsOutOfRange32(string $type, int $value, string $range): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(strtolower($type) . " value $value is outside $range");
+        (new ContractSpec([]))->nativeToXdrSCVal($value, new XdrSCSpecTypeDef(XdrSCSpecType::$type()));
+    }
+
+    public static function invalid32Values(): array
+    {
+        return [['U32', -1, '[0, 4294967295]'], ['U32', 4294967296, '[0, 4294967295]'],
+            ['I32', -2147483649, '[-2147483648, 2147483647]'],
+            ['I32', 2147483648, '[-2147483648, 2147483647]']];
+    }
+
+    public function testNativeToXdrSCValChecksBytesNLength(): void
     {
         $spec = new ContractSpec([]);
-        $typeDef = new XdrSCSpecTypeDef(XdrSCSpecType::U32());
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Negative integer value provided for u32');
-
-        $spec->nativeToXdrSCVal(-1, $typeDef);
+        foreach ([0 => [1], 32 => [31, 33]] as $length => $badLengths) {
+            $type = XdrSCSpecTypeDef::forBytesN(new XdrSCSpecTypeBytesN($length));
+            foreach ([str_repeat("\xA5", $length), str_repeat('é', intdiv($length, 2))] as $input) {
+                $value = $spec->nativeToXdrSCVal($input, $type);
+                self::assertSame(pack('N*', 13, $length) . $input, $value->encode());
+            }
+            foreach ($badLengths as $badLength) {
+                try {
+                    $spec->nativeToXdrSCVal(str_repeat('a', $badLength), $type);
+                    self::fail('Expected BytesN length rejection');
+                } catch (InvalidArgumentException $e) {
+                    self::assertSame("BytesN value has $badLength bytes, expected $length", $e->getMessage());
+                }
+            }
+        }
     }
 
     /** @dataProvider invalidUnsigned64Values */
