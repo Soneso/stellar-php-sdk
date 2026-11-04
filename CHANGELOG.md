@@ -8,7 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- TxRep parsing rejects a malformed integer or a value outside the field's XDR width with an `InvalidArgumentException` that names the field key and the text, replaces the text of a secret seed with `[redacted seed]`, and reads and writes uint64 values at or above 2^63 unsigned.
 - Binary XDR decoding of the self-containing types (`XdrSCVal`, `XdrClaimPredicate`, `XdrSCSpecTypeDef`, `XdrSorobanAuthorizedInvocation` and others) stops at 500 nested levels with an `InvalidArgumentException`, and a failed decode leaves the buffer's depth counter unchanged.
+- `ContractSpec::nativeToXdrSCVal` rejects a u32 or i32 integer outside its range and a `BytesN` string of another byte length with an `InvalidArgumentException` that names the value or length and the bound.
 
 ## [1.17.0] - 2026-10-24
 
@@ -26,7 +28,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `EventInfo::$inSuccessfulContractCall`: Stellar RPC 30 and later omit the field; the SDK still reads it from older servers.
 
 ### Fixed
-- TxRep parsing rejects a malformed integer or a value outside the field's XDR width with an `InvalidArgumentException` that names the field key and the text, replaces the text of a secret seed with `[redacted seed]`, and reads and writes uint64 values at or above 2^63 unsigned.
 - `InvokeContractHostFunction::toXdr` rejects an id that names no address with an `InvalidArgumentException` that names the id instead of raising a PHP Error.
 - `TransferServerService::transaction` rejects a SEP-6 response without a `transaction` object with an `InvalidArgumentException` that names the missing member instead of raising a PHP warning and a `TypeError`.
 - `TxRepHelper::unescapeString` passes a `\x` escape without two hex digits through literally without raising a PHP deprecation.

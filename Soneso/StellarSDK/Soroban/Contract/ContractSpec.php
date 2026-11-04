@@ -293,6 +293,7 @@ class ContractSpec
      *
      * Supported conversions include:
      * - Primitives: int, string, bool
+     * - u32, i32: ints within the type's range; BytesN: a binary string of exactly n bytes
      * - u64, timepoint, duration: non-negative ints or decimal strings through 18446744073709551615
      * - Collections: arrays to vectors, tuples, or maps
      * - BigInts: GMP resources or numeric strings for 128/256-bit integers
@@ -413,12 +414,15 @@ class ContractSpec
 
         if(is_int($val)) {
             if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_U32) {
-                if ($val < 0) {
-                    throw new InvalidArgumentException("Negative integer value provided for u32.");
+                if ($val < 0 || $val > 4294967295) {
+                    throw new InvalidArgumentException("u32 value $val is outside [0, 4294967295]");
                 }
                 return XdrSCVal::forU32($val);
             }
             if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_I32) {
+                if ($val < -2147483648 || $val > 2147483647) {
+                    throw new InvalidArgumentException("i32 value $val is outside [-2147483648, 2147483647]");
+                }
                 return XdrSCVal::forI32($val);
             }
             if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_I64) {
@@ -491,6 +495,13 @@ class ContractSpec
 
         if (is_string($val)) {
             if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_BYTES_N || $type->value === XdrSCSpecType::SC_SPEC_TYPE_BYTES) {
+                if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_BYTES_N && $ty->bytesN !== null) {
+                    $length = strlen($val);
+                    $expected = $ty->bytesN->n;
+                    if ($length !== $expected) {
+                        throw new InvalidArgumentException("BytesN value has $length bytes, expected $expected");
+                    }
+                }
                 return XdrSCVal::forBytes($val);
             }
             if ($type->value === XdrSCSpecType::SC_SPEC_TYPE_STRING) {
