@@ -29,13 +29,18 @@ class XdrSorobanAuthorizedInvocation {
     }
 
     public static function decode(XdrBuffer $xdr): XdrSorobanAuthorizedInvocation {
-        $function = XdrSorobanAuthorizedFunction::decode($xdr);
-        $subInvocations = [];
-        $subInvocationsSize = $xdr->readArrayLength();
-        for ($i = 0; $i < $subInvocationsSize; $i++) {
-            $subInvocations[] = XdrSorobanAuthorizedInvocation::decode($xdr);
+        $xdr->enterRecursion();
+        try {
+            $function = XdrSorobanAuthorizedFunction::decode($xdr);
+            $subInvocations = [];
+            $subInvocationsSize = $xdr->readArrayLength();
+            for ($i = 0; $i < $subInvocationsSize; $i++) {
+                $subInvocations[] = XdrSorobanAuthorizedInvocation::decode($xdr);
+            }
+            return new XdrSorobanAuthorizedInvocation($function, $subInvocations);
+        } finally {
+            $xdr->leaveRecursion();
         }
-        return new XdrSorobanAuthorizedInvocation($function, $subInvocations);
     }
 
     public function getFunction(): XdrSorobanAuthorizedFunction { return $this->function; }

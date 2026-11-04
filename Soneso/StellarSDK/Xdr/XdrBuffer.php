@@ -16,7 +16,7 @@ use phpseclib3\Math\BigInteger;
  * Provides an optional recursion-depth guard for XDR types that decode themselves
  * recursively (e.g. XdrSorobanDelegateSignature). Call enterRecursion() at the start
  * of each recursive call and leaveRecursion() on return. The guard throws
- * InvalidArgumentException when the depth exceeds RECURSION_LIMIT (128), preventing
+ * InvalidArgumentException when the depth exceeds DECODE_DEPTH_LIMIT (500), preventing
  * stack exhaustion from hostile deep-nesting in data received from the network.
  *
  * The guard counts true nesting depth, not array width or sequential fields, so wide
@@ -25,9 +25,12 @@ use phpseclib3\Math\BigInteger;
 class XdrBuffer
 {
     /**
-     * Maximum allowed decode recursion depth (prevents stack exhaustion from hostile data).
+     * Maximum nested Soroban delegate signatures.
      */
     public const RECURSION_LIMIT = 128;
+
+    /** Maximum active recursive type decodes on this buffer. */
+    public const DECODE_DEPTH_LIMIT = 500;
 
     protected string $xdrBytes;
     protected int $position; // Current position within the bytes
@@ -296,19 +299,19 @@ class XdrBuffer
     /**
      * Signals entry into one level of recursive XDR decoding.
      *
-     * Increments the depth counter and throws InvalidArgumentException when the limit
-     * is exceeded. Pair every call with a corresponding leaveRecursion() call.
+     * Checks the limit before incrementing. Pair every successful call with
+     * leaveRecursion(), including when decoding throws.
      *
-     * @throws InvalidArgumentException when depth exceeds RECURSION_LIMIT
+     * @throws InvalidArgumentException when depth exceeds DECODE_DEPTH_LIMIT
      */
     public function enterRecursion(): void
     {
-        $this->recursionDepth++;
-        if ($this->recursionDepth > self::RECURSION_LIMIT) {
+        if ($this->recursionDepth >= self::DECODE_DEPTH_LIMIT) {
             throw new InvalidArgumentException(
-                'XDR decode recursion limit (' . self::RECURSION_LIMIT . ') exceeded — possible hostile nesting'
+                'XDR decode recursion limit (' . self::DECODE_DEPTH_LIMIT . ') exceeded'
             );
         }
+        $this->recursionDepth++;
     }
 
     /**

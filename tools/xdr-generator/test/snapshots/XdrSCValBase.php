@@ -134,89 +134,94 @@ class XdrSCValBase {
     }
 
     public static function decode(XdrBuffer $xdr): static {
-        $result = new static(XdrSCValType::decode($xdr));
-        switch ($result->type->getValue()) {
-            case XdrSCValType::SCV_BOOL:
-                $result->b = $xdr->readBoolean();
-                break;
-            case XdrSCValType::SCV_VOID:
-                break;
-            case XdrSCValType::SCV_ERROR:
-                $result->error = XdrSCError::decode($xdr);
-                break;
-            case XdrSCValType::SCV_U32:
-                $result->u32 = $xdr->readUnsignedInteger32();
-                break;
-            case XdrSCValType::SCV_I32:
-                $result->i32 = $xdr->readInteger32();
-                break;
-            case XdrSCValType::SCV_U64:
-                $result->u64 = $xdr->readUnsignedInteger64();
-                break;
-            case XdrSCValType::SCV_I64:
-                $result->i64 = $xdr->readInteger64();
-                break;
-            case XdrSCValType::SCV_TIMEPOINT:
-                $result->timepoint = $xdr->readUnsignedInteger64();
-                break;
-            case XdrSCValType::SCV_DURATION:
-                $result->duration = $xdr->readUnsignedInteger64();
-                break;
-            case XdrSCValType::SCV_U128:
-                $result->u128 = XdrUInt128Parts::decode($xdr);
-                break;
-            case XdrSCValType::SCV_I128:
-                $result->i128 = XdrInt128Parts::decode($xdr);
-                break;
-            case XdrSCValType::SCV_U256:
-                $result->u256 = XdrUInt256Parts::decode($xdr);
-                break;
-            case XdrSCValType::SCV_I256:
-                $result->i256 = XdrInt256Parts::decode($xdr);
-                break;
-            case XdrSCValType::SCV_BYTES:
-                $result->bytes = XdrDataValueMandatory::decode($xdr);
-                break;
-            case XdrSCValType::SCV_STRING:
-                $result->str = $xdr->readString();
-                break;
-            case XdrSCValType::SCV_SYMBOL:
-                $result->sym = $xdr->readString();
-                break;
-            case XdrSCValType::SCV_VEC:
-                if ($xdr->readOptionalPresence('XdrSCVal.vec')) {
-                    $result->vec = [];
-                    $vecSize = $xdr->readArrayLength();
-                    for ($i = 0; $i < $vecSize; $i++) {
-                        $result->vec[] = XdrSCVal::decode($xdr);
+        $xdr->enterRecursion();
+        try {
+            $result = new static(XdrSCValType::decode($xdr));
+            switch ($result->type->getValue()) {
+                case XdrSCValType::SCV_BOOL:
+                    $result->b = $xdr->readBoolean();
+                    break;
+                case XdrSCValType::SCV_VOID:
+                    break;
+                case XdrSCValType::SCV_ERROR:
+                    $result->error = XdrSCError::decode($xdr);
+                    break;
+                case XdrSCValType::SCV_U32:
+                    $result->u32 = $xdr->readUnsignedInteger32();
+                    break;
+                case XdrSCValType::SCV_I32:
+                    $result->i32 = $xdr->readInteger32();
+                    break;
+                case XdrSCValType::SCV_U64:
+                    $result->u64 = $xdr->readUnsignedInteger64();
+                    break;
+                case XdrSCValType::SCV_I64:
+                    $result->i64 = $xdr->readInteger64();
+                    break;
+                case XdrSCValType::SCV_TIMEPOINT:
+                    $result->timepoint = $xdr->readUnsignedInteger64();
+                    break;
+                case XdrSCValType::SCV_DURATION:
+                    $result->duration = $xdr->readUnsignedInteger64();
+                    break;
+                case XdrSCValType::SCV_U128:
+                    $result->u128 = XdrUInt128Parts::decode($xdr);
+                    break;
+                case XdrSCValType::SCV_I128:
+                    $result->i128 = XdrInt128Parts::decode($xdr);
+                    break;
+                case XdrSCValType::SCV_U256:
+                    $result->u256 = XdrUInt256Parts::decode($xdr);
+                    break;
+                case XdrSCValType::SCV_I256:
+                    $result->i256 = XdrInt256Parts::decode($xdr);
+                    break;
+                case XdrSCValType::SCV_BYTES:
+                    $result->bytes = XdrDataValueMandatory::decode($xdr);
+                    break;
+                case XdrSCValType::SCV_STRING:
+                    $result->str = $xdr->readString();
+                    break;
+                case XdrSCValType::SCV_SYMBOL:
+                    $result->sym = $xdr->readString();
+                    break;
+                case XdrSCValType::SCV_VEC:
+                    if ($xdr->readOptionalPresence('XdrSCVal.vec')) {
+                        $result->vec = [];
+                        $vecSize = $xdr->readArrayLength();
+                        for ($i = 0; $i < $vecSize; $i++) {
+                            $result->vec[] = XdrSCVal::decode($xdr);
+                        }
                     }
-                }
-                break;
-            case XdrSCValType::SCV_MAP:
-                if ($xdr->readOptionalPresence('XdrSCVal.map')) {
-                    $result->map = [];
-                    $mapSize = $xdr->readArrayLength();
-                    for ($i = 0; $i < $mapSize; $i++) {
-                        $result->map[] = XdrSCMapEntry::decode($xdr);
+                    break;
+                case XdrSCValType::SCV_MAP:
+                    if ($xdr->readOptionalPresence('XdrSCVal.map')) {
+                        $result->map = [];
+                        $mapSize = $xdr->readArrayLength();
+                        for ($i = 0; $i < $mapSize; $i++) {
+                            $result->map[] = XdrSCMapEntry::decode($xdr);
+                        }
                     }
-                }
-                break;
-            case XdrSCValType::SCV_ADDRESS:
-                $result->address = XdrSCAddress::decode($xdr);
-                break;
-            case XdrSCValType::SCV_CONTRACT_INSTANCE:
-                $result->instance = XdrSCContractInstance::decode($xdr);
-                break;
-            case XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE:
-                break;
-            case XdrSCValType::SCV_LEDGER_KEY_NONCE:
-                $result->nonceKey = XdrSCNonceKey::decode($xdr);
-                break;
-            case XdrSCValType::SCV_EXECUTABLE_TAG:
-                $result->executableTag = $xdr->readString();
-                break;
+                    break;
+                case XdrSCValType::SCV_ADDRESS:
+                    $result->address = XdrSCAddress::decode($xdr);
+                    break;
+                case XdrSCValType::SCV_CONTRACT_INSTANCE:
+                    $result->instance = XdrSCContractInstance::decode($xdr);
+                    break;
+                case XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE:
+                    break;
+                case XdrSCValType::SCV_LEDGER_KEY_NONCE:
+                    $result->nonceKey = XdrSCNonceKey::decode($xdr);
+                    break;
+                case XdrSCValType::SCV_EXECUTABLE_TAG:
+                    $result->executableTag = $xdr->readString();
+                    break;
+            }
+            return $result;
+        } finally {
+            $xdr->leaveRecursion();
         }
-        return $result;
     }
 
     public function getType(): XdrSCValType { return $this->type; }

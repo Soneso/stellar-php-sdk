@@ -26,12 +26,17 @@ class XdrSCSpecTypeTuple {
     }
 
     public static function decode(XdrBuffer $xdr): XdrSCSpecTypeTuple {
-        $valueTypes = [];
-        $valueTypesSize = $xdr->readArrayLength();
-        for ($i = 0; $i < $valueTypesSize; $i++) {
-            $valueTypes[] = XdrSCSpecTypeDef::decode($xdr);
+        $xdr->enterRecursion();
+        try {
+            $valueTypes = [];
+            $valueTypesSize = $xdr->readArrayLength();
+            for ($i = 0; $i < $valueTypesSize; $i++) {
+                $valueTypes[] = XdrSCSpecTypeDef::decode($xdr);
+            }
+            return new XdrSCSpecTypeTuple($valueTypes);
+        } finally {
+            $xdr->leaveRecursion();
         }
-        return new XdrSCSpecTypeTuple($valueTypes);
     }
 
     public function getValueTypes(): array { return $this->valueTypes; }

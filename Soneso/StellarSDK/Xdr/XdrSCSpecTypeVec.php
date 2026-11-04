@@ -22,8 +22,13 @@ class XdrSCSpecTypeVec {
     }
 
     public static function decode(XdrBuffer $xdr): XdrSCSpecTypeVec {
-        $elementType = XdrSCSpecTypeDef::decode($xdr);
-        return new XdrSCSpecTypeVec($elementType);
+        $xdr->enterRecursion();
+        try {
+            $elementType = XdrSCSpecTypeDef::decode($xdr);
+            return new XdrSCSpecTypeVec($elementType);
+        } finally {
+            $xdr->leaveRecursion();
+        }
     }
 
     public function getElementType(): XdrSCSpecTypeDef { return $this->elementType; }

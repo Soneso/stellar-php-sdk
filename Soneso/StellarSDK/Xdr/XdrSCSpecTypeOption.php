@@ -22,8 +22,13 @@ class XdrSCSpecTypeOption {
     }
 
     public static function decode(XdrBuffer $xdr): XdrSCSpecTypeOption {
-        $valueType = XdrSCSpecTypeDef::decode($xdr);
-        return new XdrSCSpecTypeOption($valueType);
+        $xdr->enterRecursion();
+        try {
+            $valueType = XdrSCSpecTypeDef::decode($xdr);
+            return new XdrSCSpecTypeOption($valueType);
+        } finally {
+            $xdr->leaveRecursion();
+        }
     }
 
     public function getValueType(): XdrSCSpecTypeDef { return $this->valueType; }

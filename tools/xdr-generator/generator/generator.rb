@@ -427,45 +427,54 @@ class Generator < Xdrgen::Generators::Base
   def render_struct_decode(out, struct_name, class_name, fields, is_base)
     _, _, return_type, _ = resolve_class_info(struct_name)
     decode_class = is_base ? "static" : struct_name
-    is_recursive = defined?(RECURSIVE_STRUCT_TYPES) && RECURSIVE_STRUCT_TYPES.include?(struct_name)
-    out.puts "    public static function decode(XdrBuffer $xdr): #{return_type} {"
-    if is_recursive
-      out.puts "        $xdr->enterRecursion();"
-      out.puts "        try {"
-      indent = "    "
-    else
-      indent = ""
+    if struct_name == DELEGATE_DEPTH_TYPE
+      out.puts '    // Nested delegate signatures per buffer, capped at XdrBuffer::RECURSION_LIMIT.'
+      out.puts '    private static ?\\WeakMap $delegateDecodeDepth = null;'
     end
-    fields.each do |f|
-      if f[:is_ext_point]
-        out.puts "        #{indent}$xdr->readExtensionPoint('#{struct_name}');"
-      else
-        if is_recursive
-          # Temporarily redirect output to a buffer to add indentation
-          buf = StringIO.new
-          render_decode_field_php(buf, f[:name], f, struct_name)
-          buf.string.each_line { |line| out.puts "    #{line.rstrip}" }
+    out.puts "    public static function decode(XdrBuffer $xdr): #{return_type} {"
+    render_decode_guard(out, struct_name) do |out|
+      fields.each do |f|
+        if f[:is_ext_point]
+          out.puts "        $xdr->readExtensionPoint('#{struct_name}');"
         else
           render_decode_field_php(out, f[:name], f, struct_name)
         end
       end
-    end
-    # Build constructor call using non-ext fields, reordered to match constructor
-    # (required first, optional last)
-    constructor_fields = fields.reject { |f| f[:is_ext_point] }
-    required_fields = constructor_fields.reject { |f| f[:is_optional] }
-    optional_fields = constructor_fields.select { |f| f[:is_optional] }
-    ordered_fields = required_fields + optional_fields
-    args = ordered_fields.map { |f| "$#{f[:name]}" }.join(", ")
-    if is_recursive
-      out.puts "            return new #{decode_class}(#{args});"
-      out.puts "        } finally {"
-      out.puts "            $xdr->leaveRecursion();"
-      out.puts "        }"
-    else
+      # Build constructor call using non-ext fields, reordered to match constructor
+      # (required first, optional last)
+      constructor_fields = fields.reject { |f| f[:is_ext_point] }
+      required_fields = constructor_fields.reject { |f| f[:is_optional] }
+      optional_fields = constructor_fields.select { |f| f[:is_optional] }
+      ordered_fields = required_fields + optional_fields
+      args = ordered_fields.map { |f| "$#{f[:name]}" }.join(", ")
       out.puts "        return new #{decode_class}(#{args});"
     end
     out.puts "    }"
+  end
+
+  def render_decode_guard(out, type)
+    return yield(out) unless RECURSIVE_DECODE_TYPES.include?(type)
+
+    delegate = type == DELEGATE_DEPTH_TYPE
+    out.puts '        $xdr->enterRecursion();'
+    if delegate
+      out.puts '        self::$delegateDecodeDepth ??= new \\WeakMap();'
+      out.puts '        $depth = self::$delegateDecodeDepth[$xdr] ?? 0;'
+    end
+    out.puts '        try {'
+    if delegate
+      out.puts '            if ($depth >= XdrBuffer::RECURSION_LIMIT) {'
+      out.puts '                throw new InvalidArgumentException("XDR decode recursion limit (" . XdrBuffer::RECURSION_LIMIT . ") exceeded");'
+      out.puts '            }'
+      out.puts '            self::$delegateDecodeDepth[$xdr] = $depth + 1;'
+    end
+    buffer = StringIO.new
+    yield buffer
+    buffer.string.each_line { |line| out.puts "    #{line.rstrip}" }
+    out.puts '        } finally {'
+    out.puts '            self::$delegateDecodeDepth[$xdr] = $depth;' if delegate
+    out.puts '            $xdr->leaveRecursion();'
+    out.puts '        }'
   end
 
   # ---------------------------------------------------------------------------
@@ -636,47 +645,49 @@ class Generator < Xdrgen::Generators::Base
     decode_class = is_base ? "static" : union_name
     out.puts "    public static function decode(XdrBuffer $xdr): #{return_type} {"
 
-    if disc_info[:kind] == :int
-      out.puts "        $#{disc_info[:field_name]} = $xdr->readInteger32();"
-      out.puts "        $result = new #{decode_class}($#{disc_info[:field_name]});"
-    else
-      disc_type = disc_info[:php_name]
-      out.puts "        $result = new #{decode_class}(#{disc_type}::decode($xdr));"
-    end
+    render_decode_guard(out, union_name) do |out|
+      if disc_info[:kind] == :int
+        out.puts "        $#{disc_info[:field_name]} = $xdr->readInteger32();"
+        out.puts "        $result = new #{decode_class}($#{disc_info[:field_name]});"
+      else
+        disc_type = disc_info[:php_name]
+        out.puts "        $result = new #{decode_class}(#{disc_type}::decode($xdr));"
+      end
 
-    disc_value = if disc_info[:kind] == :enum
-      "$result->#{disc_info[:field_name]}->getValue()"
-    else
-      "$result->#{disc_info[:field_name]}"
-    end
-    out.puts "        switch (#{disc_value}) {"
+      disc_value = if disc_info[:kind] == :enum
+        "$result->#{disc_info[:field_name]}->getValue()"
+      else
+        "$result->#{disc_info[:field_name]}"
+      end
+      out.puts "        switch (#{disc_value}) {"
 
-    has_default = arms.any? { |a| a[:is_default] }
+      has_default = arms.any? { |a| a[:is_default] }
 
-    arms.each do |arm|
-      arm[:case_labels].each do |label|
-        if label == "default"
-          out.puts "            default:"
+      arms.each do |arm|
+        arm[:case_labels].each do |label|
+          if label == "default"
+            out.puts "            default:"
+          else
+            out.puts "            case #{label}:"
+          end
+        end
+
+        if arm[:void]
+          out.puts "                break;"
         else
-          out.puts "            case #{label}:"
+          render_decode_arm_value(out, "$result", arm, union_name)
+          out.puts "                break;"
         end
       end
 
-      if arm[:void]
-        out.puts "                break;"
-      else
-        render_decode_arm_value(out, "$result", arm, union_name)
-        out.puts "                break;"
+      if !has_default && union_default_reachable?(union, disc_info)
+        out.puts "            default:"
+        out.puts "                throw new InvalidArgumentException(\"Unknown #{union_name} discriminant: \" . #{disc_value});"
       end
-    end
 
-    if !has_default && union_default_reachable?(union, disc_info)
-      out.puts "            default:"
-      out.puts "                throw new InvalidArgumentException(\"Unknown #{union_name} discriminant: \" . #{disc_value});"
+      out.puts "        }"
+      out.puts "        return $result;"
     end
-
-    out.puts "        }"
-    out.puts "        return $result;"
     out.puts "    }"
   end
 

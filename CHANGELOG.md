@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Binary XDR decoding of the self-containing types (`XdrSCVal`, `XdrClaimPredicate`, `XdrSCSpecTypeDef`, `XdrSorobanAuthorizedInvocation` and others) stops at 500 nested levels with an `InvalidArgumentException`, and a failed decode leaves the buffer's depth counter unchanged.
+
 ## [1.17.0] - 2026-10-24
 
 ### Added

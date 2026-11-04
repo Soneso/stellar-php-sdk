@@ -25,9 +25,14 @@ class XdrSCMapEntry {
     }
 
     public static function decode(XdrBuffer $xdr): XdrSCMapEntry {
-        $key = XdrSCVal::decode($xdr);
-        $val = XdrSCVal::decode($xdr);
-        return new XdrSCMapEntry($key, $val);
+        $xdr->enterRecursion();
+        try {
+            $key = XdrSCVal::decode($xdr);
+            $val = XdrSCVal::decode($xdr);
+            return new XdrSCMapEntry($key, $val);
+        } finally {
+            $xdr->leaveRecursion();
+        }
     }
 
     public function getKey(): XdrSCVal { return $this->key; }
