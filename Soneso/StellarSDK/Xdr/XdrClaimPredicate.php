@@ -63,37 +63,42 @@ class XdrClaimPredicate {
     }
 
     public static function decode(XdrBuffer $xdr): XdrClaimPredicate {
-        $result = new XdrClaimPredicate(XdrClaimPredicateType::decode($xdr));
-        switch ($result->type->getValue()) {
-            case XdrClaimPredicateType::UNCONDITIONAL:
-                break;
-            case XdrClaimPredicateType::AND:
-                $result->andPredicates = [];
-                $andPredicatesSize = $xdr->readArrayLength();
-                for ($i = 0; $i < $andPredicatesSize; $i++) {
-                    $result->andPredicates[] = XdrClaimPredicate::decode($xdr);
-                }
-                break;
-            case XdrClaimPredicateType::OR:
-                $result->orPredicates = [];
-                $orPredicatesSize = $xdr->readArrayLength();
-                for ($i = 0; $i < $orPredicatesSize; $i++) {
-                    $result->orPredicates[] = XdrClaimPredicate::decode($xdr);
-                }
-                break;
-            case XdrClaimPredicateType::NOT:
-                if ($xdr->readOptionalPresence('XdrClaimPredicate.notPredicate')) {
-                    $result->notPredicate = XdrClaimPredicate::decode($xdr);
-                }
-                break;
-            case XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME:
-                $result->absBefore = $xdr->readInteger64();
-                break;
-            case XdrClaimPredicateType::BEFORE_RELATIVE_TIME:
-                $result->relBefore = $xdr->readInteger64();
-                break;
+        $xdr->enterRecursion();
+        try {
+            $result = new XdrClaimPredicate(XdrClaimPredicateType::decode($xdr));
+            switch ($result->type->getValue()) {
+                case XdrClaimPredicateType::UNCONDITIONAL:
+                    break;
+                case XdrClaimPredicateType::AND:
+                    $result->andPredicates = [];
+                    $andPredicatesSize = $xdr->readArrayLength();
+                    for ($i = 0; $i < $andPredicatesSize; $i++) {
+                        $result->andPredicates[] = XdrClaimPredicate::decode($xdr);
+                    }
+                    break;
+                case XdrClaimPredicateType::OR:
+                    $result->orPredicates = [];
+                    $orPredicatesSize = $xdr->readArrayLength();
+                    for ($i = 0; $i < $orPredicatesSize; $i++) {
+                        $result->orPredicates[] = XdrClaimPredicate::decode($xdr);
+                    }
+                    break;
+                case XdrClaimPredicateType::NOT:
+                    if ($xdr->readOptionalPresence('XdrClaimPredicate.notPredicate')) {
+                        $result->notPredicate = XdrClaimPredicate::decode($xdr);
+                    }
+                    break;
+                case XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME:
+                    $result->absBefore = $xdr->readInteger64();
+                    break;
+                case XdrClaimPredicateType::BEFORE_RELATIVE_TIME:
+                    $result->relBefore = $xdr->readInteger64();
+                    break;
+            }
+            return $result;
+        } finally {
+            $xdr->leaveRecursion();
         }
-        return $result;
     }
 
     public function getType(): XdrClaimPredicateType { return $this->type; }

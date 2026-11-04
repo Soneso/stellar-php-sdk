@@ -34,16 +34,21 @@ class XdrSCContractInstance {
     }
 
     public static function decode(XdrBuffer $xdr): XdrSCContractInstance {
-        $executable = XdrContractExecutable::decode($xdr);
-        $storage = null;
-        if ($xdr->readOptionalPresence('XdrSCContractInstance.storage')) {
-            $storage = [];
-            $storageSize = $xdr->readArrayLength();
-            for ($i = 0; $i < $storageSize; $i++) {
-                $storage[] = XdrSCMapEntry::decode($xdr);
+        $xdr->enterRecursion();
+        try {
+            $executable = XdrContractExecutable::decode($xdr);
+            $storage = null;
+            if ($xdr->readOptionalPresence('XdrSCContractInstance.storage')) {
+                $storage = [];
+                $storageSize = $xdr->readArrayLength();
+                for ($i = 0; $i < $storageSize; $i++) {
+                    $storage[] = XdrSCMapEntry::decode($xdr);
+                }
             }
+            return new XdrSCContractInstance($executable, $storage);
+        } finally {
+            $xdr->leaveRecursion();
         }
-        return new XdrSCContractInstance($executable, $storage);
     }
 
     public function getExecutable(): XdrContractExecutable { return $this->executable; }

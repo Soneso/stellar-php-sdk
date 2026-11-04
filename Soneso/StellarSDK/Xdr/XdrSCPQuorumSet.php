@@ -36,18 +36,23 @@ class XdrSCPQuorumSet {
     }
 
     public static function decode(XdrBuffer $xdr): XdrSCPQuorumSet {
-        $threshold = $xdr->readUnsignedInteger32();
-        $validators = [];
-        $validatorsSize = $xdr->readArrayLength();
-        for ($i = 0; $i < $validatorsSize; $i++) {
-            $validators[] = XdrNodeID::decode($xdr);
+        $xdr->enterRecursion();
+        try {
+            $threshold = $xdr->readUnsignedInteger32();
+            $validators = [];
+            $validatorsSize = $xdr->readArrayLength();
+            for ($i = 0; $i < $validatorsSize; $i++) {
+                $validators[] = XdrNodeID::decode($xdr);
+            }
+            $innerSets = [];
+            $innerSetsSize = $xdr->readArrayLength();
+            for ($i = 0; $i < $innerSetsSize; $i++) {
+                $innerSets[] = XdrSCPQuorumSet::decode($xdr);
+            }
+            return new XdrSCPQuorumSet($threshold, $validators, $innerSets);
+        } finally {
+            $xdr->leaveRecursion();
         }
-        $innerSets = [];
-        $innerSetsSize = $xdr->readArrayLength();
-        for ($i = 0; $i < $innerSetsSize; $i++) {
-            $innerSets[] = XdrSCPQuorumSet::decode($xdr);
-        }
-        return new XdrSCPQuorumSet($threshold, $validators, $innerSets);
     }
 
     public function getThreshold(): int { return $this->threshold; }

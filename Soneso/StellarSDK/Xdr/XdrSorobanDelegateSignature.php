@@ -31,9 +31,17 @@ class XdrSorobanDelegateSignature {
         return $bytes;
     }
 
+    // Nested delegate signatures per buffer, capped at XdrBuffer::RECURSION_LIMIT.
+    private static ?\WeakMap $delegateDecodeDepth = null;
     public static function decode(XdrBuffer $xdr): XdrSorobanDelegateSignature {
         $xdr->enterRecursion();
+        self::$delegateDecodeDepth ??= new \WeakMap();
+        $depth = self::$delegateDecodeDepth[$xdr] ?? 0;
         try {
+            if ($depth >= XdrBuffer::RECURSION_LIMIT) {
+                throw new InvalidArgumentException("XDR decode recursion limit (" . XdrBuffer::RECURSION_LIMIT . ") exceeded");
+            }
+            self::$delegateDecodeDepth[$xdr] = $depth + 1;
             $address = XdrSCAddress::decode($xdr);
             $signature = XdrSCVal::decode($xdr);
             $nestedDelegates = [];
@@ -43,6 +51,7 @@ class XdrSorobanDelegateSignature {
             }
             return new XdrSorobanDelegateSignature($address, $signature, $nestedDelegates);
         } finally {
+            self::$delegateDecodeDepth[$xdr] = $depth;
             $xdr->leaveRecursion();
         }
     }

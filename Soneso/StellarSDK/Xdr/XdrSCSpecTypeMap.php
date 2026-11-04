@@ -25,9 +25,14 @@ class XdrSCSpecTypeMap {
     }
 
     public static function decode(XdrBuffer $xdr): XdrSCSpecTypeMap {
-        $keyType = XdrSCSpecTypeDef::decode($xdr);
-        $valueType = XdrSCSpecTypeDef::decode($xdr);
-        return new XdrSCSpecTypeMap($keyType, $valueType);
+        $xdr->enterRecursion();
+        try {
+            $keyType = XdrSCSpecTypeDef::decode($xdr);
+            $valueType = XdrSCSpecTypeDef::decode($xdr);
+            return new XdrSCSpecTypeMap($keyType, $valueType);
+        } finally {
+            $xdr->leaveRecursion();
+        }
     }
 
     public function getKeyType(): XdrSCSpecTypeDef { return $this->keyType; }

@@ -132,19 +132,18 @@ SKIP_TYPES = %w[
 ].freeze
 
 # ---------------------------------------------------------------------------
-# RECURSIVE_STRUCT_TYPES
-# Struct types whose XDR decode method recurses into itself (directly or via a
-# field of the same type). The generator wraps the decode body with
-# XdrBuffer::enterRecursion / leaveRecursion so that hostile deeply-nested data
-# received from the network cannot overflow the PHP call stack.
-#
-# Each entry triggers an enterRecursion() at the start of decode() and a
-# leaveRecursion() in a finally block before the return. The cap is
-# XdrBuffer::RECURSION_LIMIT (128).
+# RECURSIVE_DECODE_TYPES
+# Recursive structs and unions share XdrBuffer::DECODE_DEPTH_LIMIT.
+# SCVec and SCMap are inlined arrays; their element decoders carry the guard.
 # ---------------------------------------------------------------------------
-RECURSIVE_STRUCT_TYPES = %w[
-  XdrSorobanDelegateSignature
+RECURSIVE_DECODE_TYPES = %w[
+  XdrSorobanDelegateSignature XdrSorobanAuthorizedInvocation XdrSCPQuorumSet
+  XdrClaimPredicate XdrSCVal XdrSCMapEntry XdrSCContractInstance XdrSCSpecTypeDef
+  XdrSCSpecTypeOption XdrSCSpecTypeResult XdrSCSpecTypeVec XdrSCSpecTypeMap XdrSCSpecTypeTuple
 ].freeze
+
+# The recursive type with an additional delegate-chain depth cap.
+DELEGATE_DEPTH_TYPE = 'XdrSorobanDelegateSignature'
 
 # ---------------------------------------------------------------------------
 # EXTENSION_POINT_FIELDS

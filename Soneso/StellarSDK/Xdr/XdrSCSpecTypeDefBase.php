@@ -76,51 +76,56 @@ class XdrSCSpecTypeDefBase {
     }
 
     public static function decode(XdrBuffer $xdr): static {
-        $result = new static(XdrSCSpecType::decode($xdr));
-        switch ($result->type->getValue()) {
-            case XdrSCSpecType::SC_SPEC_TYPE_VAL:
-            case XdrSCSpecType::SC_SPEC_TYPE_BOOL:
-            case XdrSCSpecType::SC_SPEC_TYPE_VOID:
-            case XdrSCSpecType::SC_SPEC_TYPE_ERROR:
-            case XdrSCSpecType::SC_SPEC_TYPE_U32:
-            case XdrSCSpecType::SC_SPEC_TYPE_I32:
-            case XdrSCSpecType::SC_SPEC_TYPE_U64:
-            case XdrSCSpecType::SC_SPEC_TYPE_I64:
-            case XdrSCSpecType::SC_SPEC_TYPE_TIMEPOINT:
-            case XdrSCSpecType::SC_SPEC_TYPE_DURATION:
-            case XdrSCSpecType::SC_SPEC_TYPE_U128:
-            case XdrSCSpecType::SC_SPEC_TYPE_I128:
-            case XdrSCSpecType::SC_SPEC_TYPE_U256:
-            case XdrSCSpecType::SC_SPEC_TYPE_I256:
-            case XdrSCSpecType::SC_SPEC_TYPE_BYTES:
-            case XdrSCSpecType::SC_SPEC_TYPE_STRING:
-            case XdrSCSpecType::SC_SPEC_TYPE_SYMBOL:
-            case XdrSCSpecType::SC_SPEC_TYPE_ADDRESS:
-            case XdrSCSpecType::SC_SPEC_TYPE_MUXED_ADDRESS:
-                break;
-            case XdrSCSpecType::SC_SPEC_TYPE_OPTION:
-                $result->option = XdrSCSpecTypeOption::decode($xdr);
-                break;
-            case XdrSCSpecType::SC_SPEC_TYPE_RESULT:
-                $result->result = XdrSCSpecTypeResult::decode($xdr);
-                break;
-            case XdrSCSpecType::SC_SPEC_TYPE_VEC:
-                $result->vec = XdrSCSpecTypeVec::decode($xdr);
-                break;
-            case XdrSCSpecType::SC_SPEC_TYPE_MAP:
-                $result->map = XdrSCSpecTypeMap::decode($xdr);
-                break;
-            case XdrSCSpecType::SC_SPEC_TYPE_TUPLE:
-                $result->tuple = XdrSCSpecTypeTuple::decode($xdr);
-                break;
-            case XdrSCSpecType::SC_SPEC_TYPE_BYTES_N:
-                $result->bytesN = XdrSCSpecTypeBytesN::decode($xdr);
-                break;
-            case XdrSCSpecType::SC_SPEC_TYPE_UDT:
-                $result->udt = XdrSCSpecTypeUDT::decode($xdr);
-                break;
+        $xdr->enterRecursion();
+        try {
+            $result = new static(XdrSCSpecType::decode($xdr));
+            switch ($result->type->getValue()) {
+                case XdrSCSpecType::SC_SPEC_TYPE_VAL:
+                case XdrSCSpecType::SC_SPEC_TYPE_BOOL:
+                case XdrSCSpecType::SC_SPEC_TYPE_VOID:
+                case XdrSCSpecType::SC_SPEC_TYPE_ERROR:
+                case XdrSCSpecType::SC_SPEC_TYPE_U32:
+                case XdrSCSpecType::SC_SPEC_TYPE_I32:
+                case XdrSCSpecType::SC_SPEC_TYPE_U64:
+                case XdrSCSpecType::SC_SPEC_TYPE_I64:
+                case XdrSCSpecType::SC_SPEC_TYPE_TIMEPOINT:
+                case XdrSCSpecType::SC_SPEC_TYPE_DURATION:
+                case XdrSCSpecType::SC_SPEC_TYPE_U128:
+                case XdrSCSpecType::SC_SPEC_TYPE_I128:
+                case XdrSCSpecType::SC_SPEC_TYPE_U256:
+                case XdrSCSpecType::SC_SPEC_TYPE_I256:
+                case XdrSCSpecType::SC_SPEC_TYPE_BYTES:
+                case XdrSCSpecType::SC_SPEC_TYPE_STRING:
+                case XdrSCSpecType::SC_SPEC_TYPE_SYMBOL:
+                case XdrSCSpecType::SC_SPEC_TYPE_ADDRESS:
+                case XdrSCSpecType::SC_SPEC_TYPE_MUXED_ADDRESS:
+                    break;
+                case XdrSCSpecType::SC_SPEC_TYPE_OPTION:
+                    $result->option = XdrSCSpecTypeOption::decode($xdr);
+                    break;
+                case XdrSCSpecType::SC_SPEC_TYPE_RESULT:
+                    $result->result = XdrSCSpecTypeResult::decode($xdr);
+                    break;
+                case XdrSCSpecType::SC_SPEC_TYPE_VEC:
+                    $result->vec = XdrSCSpecTypeVec::decode($xdr);
+                    break;
+                case XdrSCSpecType::SC_SPEC_TYPE_MAP:
+                    $result->map = XdrSCSpecTypeMap::decode($xdr);
+                    break;
+                case XdrSCSpecType::SC_SPEC_TYPE_TUPLE:
+                    $result->tuple = XdrSCSpecTypeTuple::decode($xdr);
+                    break;
+                case XdrSCSpecType::SC_SPEC_TYPE_BYTES_N:
+                    $result->bytesN = XdrSCSpecTypeBytesN::decode($xdr);
+                    break;
+                case XdrSCSpecType::SC_SPEC_TYPE_UDT:
+                    $result->udt = XdrSCSpecTypeUDT::decode($xdr);
+                    break;
+            }
+            return $result;
+        } finally {
+            $xdr->leaveRecursion();
         }
-        return $result;
     }
 
     public function getType(): XdrSCSpecType { return $this->type; }

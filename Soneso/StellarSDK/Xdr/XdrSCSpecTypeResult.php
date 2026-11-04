@@ -25,9 +25,14 @@ class XdrSCSpecTypeResult {
     }
 
     public static function decode(XdrBuffer $xdr): XdrSCSpecTypeResult {
-        $okType = XdrSCSpecTypeDef::decode($xdr);
-        $errorType = XdrSCSpecTypeDef::decode($xdr);
-        return new XdrSCSpecTypeResult($okType, $errorType);
+        $xdr->enterRecursion();
+        try {
+            $okType = XdrSCSpecTypeDef::decode($xdr);
+            $errorType = XdrSCSpecTypeDef::decode($xdr);
+            return new XdrSCSpecTypeResult($okType, $errorType);
+        } finally {
+            $xdr->leaveRecursion();
+        }
     }
 
     public function getOkType(): XdrSCSpecTypeDef { return $this->okType; }
