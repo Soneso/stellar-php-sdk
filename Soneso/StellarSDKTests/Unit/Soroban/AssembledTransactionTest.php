@@ -174,10 +174,12 @@ class AssembledTransactionTest extends TestCase
      *
      * Returns the mock handler so tests can assert the queue was fully consumed.
      */
-    private function injectMockedServer(AssembledTransaction $tx, array $responses): MockHandler
+    private function injectMockedServer(AssembledTransaction $tx, array $responses, array &$history = [], array $clientOptions = []): MockHandler
     {
         $mock = new MockHandler($responses);
-        $client = new Client(['handler' => HandlerStack::create($mock)]);
+        $stack = HandlerStack::create($mock);
+        $stack->push(\GuzzleHttp\Middleware::history($history));
+        $client = new Client(['handler' => $stack] + $clientOptions);
         $server = new SorobanServer($tx->options->clientOptions->rpcUrl, $client);
 
         $serverProperty = (new \ReflectionClass($tx))->getProperty('server');
@@ -855,9 +857,132 @@ class AssembledTransactionTest extends TestCase
             $this->createGetTransactionSuccessResponse(),
         ]);
 
+        $started = hrtime(true);
         $response = $tx->signAndSend();
+        $this->assertLessThan(1.0, (hrtime(true) - $started) / 1e9);
 
         $this->assertSame(GetTransactionResponse::STATUS_SUCCESS, $response->status);
+        $this->assertSame(0, $mock->count());
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('pollErrorKinds')]
+    public function testPollRecoversFromStatusError(bool $transport): void
+    {
+        $tx = $this->createWriteReadyAssembledTransaction();
+        $tx->options->methodOptions->timeoutInSeconds = 1;
+        $error = $transport
+            ? new \GuzzleHttp\Exception\ConnectException('status connection lost', new \GuzzleHttp\Psr7\Request('POST', self::TEST_RPC_URL))
+            : new Response(200, [], '{"error":{"code":-32000,"message":"status unavailable"}}');
+        $mock = $this->injectMockedServer($tx, [
+            $this->createSendTransactionStatusResponse('PENDING'), $error,
+            $this->createGetTransactionSuccessResponse(),
+        ]);
+        $this->assertSame(GetTransactionResponse::STATUS_SUCCESS, $tx->signAndSend()->status);
+        $this->assertSame(0, $mock->count());
+    }
+
+    public static function pollErrorKinds(): array
+    {
+        return ['transport' => [true], 'RPC' => [false]];
+    }
+
+    public function testPollDeadlineNamesLastErrorAndBoundsRequests(): void
+    {
+        $tx = $this->createWriteReadyAssembledTransaction();
+        $tx->options->methodOptions->timeoutInSeconds = 4;
+        $history = [];
+        $mock = $this->injectMockedServer($tx, [
+            $this->createSendTransactionStatusResponse('PENDING'),
+            new \GuzzleHttp\Exception\ConnectException('first error', new \GuzzleHttp\Psr7\Request('POST', self::TEST_RPC_URL)),
+            new Response(200, [], '{"error":{"code":-32001,"message":"last RPC error"}}'),
+            new Response(200, [], '{"result":{"status":"NOT_FOUND"}}'),
+        ], $history);
+        $started = hrtime(true);
+        try {
+            $tx->signAndSend();
+            $this->fail('Expected the polling deadline to expire');
+        } catch (Exception $e) {
+            $elapsed = (hrtime(true) - $started) / 1e9;
+            $this->assertGreaterThanOrEqual(4.0, $elapsed);
+            $this->assertLessThan(6.0, $elapsed);
+            $this->assertStringContainsString('Interrupted after waiting 4 seconds', $e->getMessage());
+            $this->assertStringContainsString('options->methodOptions->timeoutInSeconds', $e->getMessage());
+            $this->assertStringContainsString(str_repeat('ab', 32), $e->getMessage());
+            $this->assertStringContainsString('Last status request error: RPC error code: -32001, message: last RPC error', $e->getMessage());
+            $this->assertStringNotContainsString('first error', $e->getMessage());
+        }
+        $this->assertSame(0, $mock->count());
+        $this->assertCount(4, $history);
+        $timeouts = [];
+        foreach (array_slice($history, 1) as $entry) {
+            $options = $entry['options'];
+            $this->assertArrayHasKey('timeout', $options);
+            $this->assertArrayHasKey('connect_timeout', $options);
+            $this->assertGreaterThan(0, $options['timeout']);
+            $this->assertSame($options['timeout'], $options['connect_timeout']);
+            $timeouts[] = $options['timeout'];
+        }
+        $this->assertLessThan(4.0, $timeouts[0]);
+        $this->assertGreaterThan(3.0, $timeouts[0]);
+        $this->assertLessThan($timeouts[0], $timeouts[1]);
+        $this->assertSame(3.0, $timeouts[2]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('pollRequestExceptions')]
+    public function testPollDeadlineRetainsRequestError(Response|\Throwable $error, string $message): void
+    {
+        $tx = $this->createWriteReadyAssembledTransaction();
+        $tx->options->methodOptions->timeoutInSeconds = 0;
+        $history = [];
+        $this->injectMockedServer($tx, [
+            $this->createSendTransactionStatusResponse('PENDING'), $error,
+        ], $history, ['http_errors' => false]);
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Last status request error: ' . $message);
+        $tx->signAndSend();
+    }
+
+    public static function pollRequestExceptions(): array
+    {
+        return [
+            'GuzzleException' => [new class('status connection lost') extends Exception implements \GuzzleHttp\Exception\GuzzleException {}, 'status connection lost'],
+            'RuntimeException' => [new Response(503, [], 'status unavailable'), 'status unavailable'],
+            'InvalidArgumentException' => [new Response(200, [], '<html>unavailable</html>'), 'Error in json_decode: Syntax error'],
+        ];
+    }
+
+    public function testPollExpiredDeadlineWithoutError(): void
+    {
+        $tx = $this->createWriteReadyAssembledTransaction();
+        $tx->options->methodOptions->timeoutInSeconds = 0;
+        $history = [];
+        $this->injectMockedServer($tx, [
+            $this->createSendTransactionStatusResponse('PENDING'),
+            new Response(200, [], '{"result":{"status":"NOT_FOUND"}}'),
+        ], $history);
+        try {
+            $tx->signAndSend();
+            $this->fail('Expected the polling deadline to expire');
+        } catch (Exception $e) {
+            $this->assertStringContainsString('Interrupted after waiting 0 seconds', $e->getMessage());
+            $this->assertStringNotContainsString('Last status request error', $e->getMessage());
+        }
+        $options = $history[1]['options'];
+        $this->assertArrayHasKey('timeout', $options);
+        $this->assertArrayHasKey('connect_timeout', $options);
+        $this->assertSame(3.0, $options['timeout']);
+        $this->assertSame(3.0, $options['connect_timeout']);
+    }
+
+    public function testPollReturnsFailedStatus(): void
+    {
+        $tx = $this->createWriteReadyAssembledTransaction();
+        $tx->options->methodOptions->timeoutInSeconds = 0;
+        $mock = $this->injectMockedServer($tx, [
+            $this->createSendTransactionStatusResponse('PENDING'),
+            new Response(200, [], '{"result":{"status":"FAILED"}}'),
+        ]);
+        $this->assertSame(GetTransactionResponse::STATUS_FAILED, $tx->signAndSend()->status);
         $this->assertSame(0, $mock->count());
     }
 

@@ -7,10 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `AssembledTransaction` polls through `SorobanServer::getTransactionWithTimeout()`, so a `SorobanServer` subclass or test double that customizes the poll's status request overrides `getTransactionWithTimeout()`.
+
 ### Fixed
 - TxRep parsing rejects a malformed integer or a value outside the field's XDR width with an `InvalidArgumentException` that names the field key and the text, replaces the text of a secret seed with `[redacted seed]`, and reads and writes uint64 values at or above 2^63 unsigned.
 - Binary XDR decoding of the self-containing types (`XdrSCVal`, `XdrClaimPredicate`, `XdrSCSpecTypeDef`, `XdrSorobanAuthorizedInvocation` and others) stops at 500 nested levels with an `InvalidArgumentException`, and a failed decode leaves the buffer's depth counter unchanged.
 - `ContractSpec::nativeToXdrSCVal` rejects a u32 or i32 integer outside its range and a `BytesN` string of another byte length with an `InvalidArgumentException` that names the value or length and the bound.
+- `AssembledTransaction::send` and `signAndSend` poll every three seconds until `timeoutInSeconds`, retry status requests that fail in transport or with an RPC error, bound each request by the remaining time and the client's own limits, and name the last error when polling expires.
 
 ## [1.17.0] - 2026-10-24
 

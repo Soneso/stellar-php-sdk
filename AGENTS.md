@@ -14,7 +14,7 @@ php -d memory_limit=-1 vendor/bin/phpunit --testsuite generated --no-coverage
 composer analyse
 ```
 
-- The unit suite (about 9,000 tests) runs in under 10 seconds and needs no network. Pass `php -d memory_limit=-1`, because the suite exceeds PHP's default limit of 128 MB and the Composer scripts `composer test` and `composer test:coverage` inherit that limit. Pass `--no-coverage` unless you collect coverage.
+- The unit suite (about 9,000 tests) runs in under 30 seconds and needs no network; about 10 seconds of that are real waits in the Soroban polling tests. Pass `php -d memory_limit=-1`, because the suite exceeds PHP's default limit of 128 MB and the Composer scripts `composer test` and `composer test:coverage` inherit that limit. Pass `--no-coverage` unless you collect coverage.
 - The `generated` suite holds the generated XDR tests; the `integration` suite runs against live testnet and futurenet, is not part of CI, and needs the pcntl extension for the streaming tests:
 
 ```sh

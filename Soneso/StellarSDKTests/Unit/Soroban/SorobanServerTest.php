@@ -379,6 +379,43 @@ class SorobanServerTest extends TestCase
         $this->assertEquals('NOT_FOUND', $response->getStatus());
     }
 
+    #[\PHPUnit\Framework\Attributes\DataProvider('getTransactionClientTimeouts')]
+    public function testGetTransactionWithTimeoutRespectsClientTimeouts(array $limits, float $timeout, float $connectTimeout): void
+    {
+        $mock = new MockHandler([new Response(200, [], '{"result":{"status":"SUCCESS"}}')]);
+        $server = new SorobanServer(self::TEST_ENDPOINT, new Client(['handler' => $mock] + $limits));
+        $this->assertSame(GetTransactionResponse::STATUS_SUCCESS, $server->getTransactionWithTimeout('hash', 100.0)->status);
+        $options = $mock->getLastOptions();
+        $this->assertArrayHasKey('timeout', $options);
+        $this->assertArrayHasKey('connect_timeout', $options);
+        $this->assertSame($timeout, $options['timeout']);
+        $this->assertSame($connectTimeout, $options['connect_timeout']);
+    }
+
+    public static function getTransactionClientTimeouts(): array
+    {
+        return [
+            'tighter client' => [['timeout' => 5.0, 'connect_timeout' => 2.0], 5.0, 2.0],
+            'no client limits' => [[], 100.0, 100.0],
+            'looser client' => [['timeout' => 200.0, 'connect_timeout' => 150.0], 100.0, 100.0],
+        ];
+    }
+
+    public function testGetTransactionOneArgumentOverrideKeepsClientTimeouts(): void
+    {
+        $mock = new MockHandler([new Response(200, [], '{"result":{"status":"SUCCESS"}}')]);
+        $client = new Client(['handler' => $mock, 'timeout' => 9.0, 'connect_timeout' => 8.0]);
+        $server = new class(self::TEST_ENDPOINT, $client) extends SorobanServer {
+            public function getTransaction(string $transactionId): GetTransactionResponse
+            {
+                return parent::getTransaction($transactionId);
+            }
+        };
+        $this->assertSame(GetTransactionResponse::STATUS_SUCCESS, $server->getTransaction('hash')->status);
+        $this->assertSame(9.0, $mock->getLastOptions()['timeout']);
+        $this->assertSame(8.0, $mock->getLastOptions()['connect_timeout']);
+    }
+
     // getTransactions() Tests
 
     public function testGetTransactionsSuccess(): void

@@ -301,8 +301,36 @@ class SorobanServer
      * @throws GuzzleException if any request problem occurs.
      */
     public function getTransaction(string $transactionId) : GetTransactionResponse {
+        return $this->requestTransaction($transactionId, []);
+    }
+
+    /**
+     * Fetches transaction status bounded by the supplied timeout and the client's own limits.
+     *
+     * @internal Used by AssembledTransaction polling.
+     * @param string $transactionId The transaction hash.
+     * @param float $timeoutSeconds The positive timeout in seconds.
+     * @return GetTransactionResponse The transaction status response.
+     * @throws GuzzleException If the status request fails.
+     */
+    public function getTransactionWithTimeout(string $transactionId, float $timeoutSeconds): GetTransactionResponse {
+        $options = [];
+        foreach (['timeout', 'connect_timeout'] as $option) {
+            $clientTimeout = $this->httpClient->getConfig($option);
+            $options[$option] = $clientTimeout > 0 ? min($timeoutSeconds, $clientTimeout) : $timeoutSeconds;
+        }
+        return $this->requestTransaction($transactionId, $options);
+    }
+
+    /**
+     * @param string $transactionId The transaction hash.
+     * @param array<string,mixed> $options Guzzle per-request options.
+     * @return GetTransactionResponse The transaction status response.
+     * @throws GuzzleException If the status request fails.
+     */
+    private function requestTransaction(string $transactionId, array $options): GetTransactionResponse {
         $body = $this->prepareRequest(self::GET_TRANSACTION, ['hash' => $transactionId]);
-        $result = $this->request($body, self::GET_TRANSACTION);
+        $result = $this->request($body, self::GET_TRANSACTION, $options);
         if (!$result instanceof GetTransactionResponse) {
             throw new UnexpectedValueException('Expected GetTransactionResponse, got ' . get_class($result));
         }
@@ -632,12 +660,13 @@ class SorobanServer
      *
      * @param string $body The JSON-RPC 2.0 request body as JSON string
      * @param string $requestType The RPC method name (e.g., "simulateTransaction", "sendTransaction")
+     * @param array<string,mixed> $options Guzzle per-request options.
      * @return SorobanRpcResponse The parsed response object
      * @throws GuzzleException If the HTTP request fails
      */
-    private function request(string $body, string $requestType) : SorobanRpcResponse {
+    private function request(string $body, string $requestType, array $options = []) : SorobanRpcResponse {
         $request = new Request("POST", $this->endpoint, $this->headers, $body);
-        $response = $this->httpClient->send($request);
+        $response = $this->httpClient->send($request, $options);
         return $this->handleRpcResponse($response, $requestType);
     }
 

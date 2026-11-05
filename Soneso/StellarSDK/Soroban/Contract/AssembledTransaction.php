@@ -213,6 +213,8 @@ use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
  */
 class AssembledTransaction
 {
+    private const TRANSACTION_POLL_WAIT_SECONDS = 3.0;
+
     /**
      * @var TransactionBuilder|null The TransactionBuilder as constructed in `AssembledTransaction::build`
      * Feel free set `simulate: false` in the method options to modify
@@ -419,8 +421,8 @@ class AssembledTransaction
      *         - STATUS_SUCCESS: Transaction completed successfully
      *         - STATUS_FAILED: Transaction failed with error
      *         - STATUS_NOT_FOUND: Transaction timeout (throws exception before returning this)
-     * @throws Exception If signing fails, transaction is read-only without force, or timeout is exceeded
-     * @throws GuzzleException If the RPC request fails
+     * @throws Exception If signing fails, transaction is read-only without force, or polling expires before a terminal status
+     * @throws GuzzleException If the sendTransaction request fails
      * @see sign() For signing without sending
      * @see send() For sending an already-signed transaction
      */
@@ -438,8 +440,8 @@ class AssembledTransaction
      * until the transaction reaches a terminal state (SUCCESS, FAILED, or timeout).
      *
      * @return GetTransactionResponse The transaction result after completion
-     * @throws Exception If the transaction has not been signed, sending fails, or timeout is exceeded
-     * @throws GuzzleException If the RPC request fails
+     * @throws Exception If the transaction has not been signed, sending fails, or polling expires before a terminal status
+     * @throws GuzzleException If the sendTransaction request fails
      */
     public function send() :GetTransactionResponse {
         if ($this->signed === null) {
@@ -993,34 +995,52 @@ class AssembledTransaction
     /**
      * Polls the transaction status until it reaches a terminal state
      *
-     * Queries getTransaction immediately, then retries with exponential backoff
-     * (1 second initial delay, factor 1.5) until the transaction is found or the
-     * configured timeout is exceeded.
+     * Waits up to three seconds before each request after the first, never past the deadline.
+     * Each request is bounded by the remaining time and the client's limits; the
+     * final request at expiry gets up to three seconds. Status request errors are
+     * retained for the timeout exception while polling continues.
      *
      * @internal This is an internal helper method used by send()
      *
      * @param string $transactionId The hash of the transaction to poll
      * @return GetTransactionResponse The final transaction status
-     * @throws GuzzleException If the RPC request fails
-     * @throws Exception If the timeout is exceeded before the transaction completes
+     * @throws Exception If polling expires, including the last status request error when present
      */
     private function pollStatus(string $transactionId) : GetTransactionResponse {
-        $deadline = microtime(true) + $this->options->methodOptions->timeoutInSeconds;
-        $waitTimeSeconds = 1.0;
+        $timeout = $this->options->methodOptions->timeoutInSeconds;
+        $started = hrtime(true);
+        $firstRequest = true;
+        $lastError = null;
         while (true) {
-            $statusResponse = $this->server->getTransaction($transactionId);
-            if ($statusResponse->status !== GetTransactionResponse::STATUS_NOT_FOUND) {
-                return $statusResponse;
+            $remaining = $timeout - (hrtime(true) - $started) / 1e9;
+            $lastRequest = $remaining <= 0;
+            if (!$firstRequest && $remaining > 0) {
+                $lastRequest = $remaining <= self::TRANSACTION_POLL_WAIT_SECONDS;
+                usleep((int)(min(self::TRANSACTION_POLL_WAIT_SECONDS, $remaining) * 1000000));
             }
-            $remainingSeconds = $deadline - microtime(true);
-            if ($remainingSeconds <= 0) {
-                throw new Exception("Interrupted after waiting {$this->options->methodOptions->timeoutInSeconds}
-                seconds (options->timeoutInSeconds) for the transaction {$transactionId} to complete.");
+            $firstRequest = false;
+            $remaining = $timeout - (hrtime(true) - $started) / 1e9;
+            $lastRequest = $lastRequest || $remaining <= 0;
+            try {
+                $response = $this->server->getTransactionWithTimeout(
+                    $transactionId, $lastRequest ? self::TRANSACTION_POLL_WAIT_SECONDS : $remaining,
+                );
+                if ($response->error !== null) {
+                    $lastError = "RPC error code: {$response->error->code}, message: {$response->error->message}";
+                } elseif ($response->status === GetTransactionResponse::STATUS_SUCCESS
+                    || $response->status === GetTransactionResponse::STATUS_FAILED) {
+                    return $response;
+                }
+            } catch (GuzzleException|\RuntimeException|\InvalidArgumentException $error) {
+                $lastError = $error->getMessage();
             }
-            // Never sleep past the deadline.
-            usleep((int)(min($waitTimeSeconds, $remainingSeconds) * 1000000));
-            $waitTimeSeconds *= 1.5;
+            if ($lastRequest) {
+                break;
+            }
         }
+        throw new Exception("Interrupted after waiting {$timeout} seconds (options->methodOptions->timeoutInSeconds)"
+            . " for the transaction {$transactionId} to complete."
+            . ($lastError === null ? '' : " Last status request error: {$lastError}"));
     }
     /**
      * Fetches the source account from the ledger
