@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK\Soroban\Responses;
 
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryData;
+use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
@@ -73,7 +74,21 @@ class LedgerEntry
     }
 
     /**
-     * @return XdrSCVal The key of the ledger entry.
+     * Decodes the entry key as a ledger key.
+     *
+     * @return XdrLedgerKey The decoded ledger key.
+     * @throws \InvalidArgumentException If XDR data is malformed
+     */
+    public function getLedgerKeyXdr(): XdrLedgerKey
+    {
+        return XdrLedgerKey::fromBase64Xdr($this->key);
+    }
+
+    /**
+     * Decodes the entry's LedgerKey bytes as an SCVal.
+     *
+     * @deprecated The key is a ledger key, so the SCVal result does not represent it; use getLedgerKeyXdr().
+     * @return XdrSCVal The entry key interpreted as an SCVal.
      * @throws \InvalidArgumentException If XDR data is malformed
      */
     public function getKeyXdr(): XdrSCVal

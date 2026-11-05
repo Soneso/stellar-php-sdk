@@ -7,6 +7,8 @@
 namespace Soneso\StellarSDKTests\Unit\Soroban;
 
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
+use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Soroban\Responses\EventInfo;
 use Soneso\StellarSDK\Soroban\Responses\GetEventsResponse;
 use Soneso\StellarSDK\Soroban\Responses\GetFeeStatsResponse;
@@ -482,6 +484,34 @@ class SorobanResponseTest extends TestCase
         $this->assertEquals(12345, $entry->getLastModifiedLedgerSeq());
         $this->assertEquals(15000, $entry->getLiveUntilLedgerSeq());
         $this->assertEquals('AAAAAA==', $entry->getExt());
+    }
+
+    public function testLedgerEntryAccountKeyXdr(): void
+    {
+        $entry = LedgerEntry::fromJson([
+            'key' => 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==',
+            'xdr' => 'AAAAAA==',
+            'lastModifiedLedgerSeq' => 123,
+        ]);
+        $key = $entry->getLedgerKeyXdr();
+        $this->assertSame(XdrLedgerEntryType::ACCOUNT, $key->type->value);
+        $this->assertSame('GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF', $key->account->accountID->getAccountId());
+        $this->assertSame($entry->key, $key->toBase64Xdr());
+    }
+
+    public function testLedgerEntryContractDataKeyXdr(): void
+    {
+        $entry = LedgerEntry::fromJson([
+            'key' => 'AAAABgAAAAGrq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urqwAAAA8AAAAFc3RhdGUAAAAAAAAB',
+            'xdr' => 'AAAAAA==',
+            'lastModifiedLedgerSeq' => 124,
+        ]);
+        $key = $entry->getLedgerKeyXdr();
+        $this->assertSame(XdrLedgerEntryType::CONTRACT_DATA, $key->type->value);
+        $this->assertSame(str_repeat('ab', 32), $key->contractData->contract->contractId);
+        $this->assertSame('state', $key->contractData->key->sym);
+        $this->assertSame(XdrContractDataDurability::PERSISTENT, $key->contractData->durability->value);
+        $this->assertSame($entry->key, $key->toBase64Xdr());
     }
 
     public function testLedgerEntryMinimal(): void
