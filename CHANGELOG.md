@@ -7,8 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `LedgerEntry::getLedgerKeyXdr()` decodes the response key as an `XdrLedgerKey`.
+
 ### Changed
 - `AssembledTransaction` polls through `SorobanServer::getTransactionWithTimeout()`, so a `SorobanServer` subclass or test double that customizes the poll's status request overrides `getTransactionWithTimeout()`.
+
+### Deprecated
+- `LedgerEntry::getKeyXdr()` decodes the ledger key bytes as an `XdrSCVal`, which does not yield the key; use `getLedgerKeyXdr()`.
 
 ### Fixed
 - TxRep parsing rejects a malformed integer or a value outside the field's XDR width with an `InvalidArgumentException` that names the field key and the text, replaces the text of a secret seed with `[redacted seed]`, and reads and writes uint64 values at or above 2^63 unsigned.
