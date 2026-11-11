@@ -102,11 +102,12 @@ class SorobanClient
     /**
      * Creates a SorobanClient for an existing deployed contract
      *
-     * Reads the contract instance from the network and loads the specification for its
-     * executable. For a wasm executable or a CAP-85 external reference, the spec is parsed from
-     * the contract's WASM bytecode. A Stellar Asset Contract has no wasm, so it opens with the
-     * embedded spec (SACClient::specEntries()) without a further request. The spec is used for
-     * type-safe method invocation.
+     * Loads the contract specification with SorobanServer::loadContractInfoForContractId(), which
+     * reads the contract instance and parses the spec from the WASM bytecode of a wasm executable
+     * or a CAP-85 external reference. When that load finds no spec, the contract instance is read
+     * once more: a Stellar Asset Contract has no wasm and opens with the embedded spec
+     * (SACClient::specEntries()) after these two instance reads, and any other contract throws.
+     * The spec is used for type-safe method invocation.
      *
      * The contract ID must be a "C..." strkey or the contract hash as 64 hexadecimal characters.
      *
@@ -123,37 +124,20 @@ class SorobanClient
         if ($options->logger !== null) {
             $server->setLogger($options->logger);
         }
-        // One instance read decides the executable, so a Stellar Asset Contract needs no
-        // further request, and wasm and external reference instances send the same requests
-        // in the same order as SorobanServer::loadContractInfoForContractId().
+        $info = $server->loadContractInfoForContractId($options->contractId);
+        if ($info !== null) {
+            return new SorobanClient($info->specEntries, $options);
+        }
+        // The load returns null for a Stellar Asset Contract, which has no wasm, as it does for a
+        // missing contract or code entry. A second read of the contract instance tells them apart,
+        // so a Stellar Asset Contract opens after two instance reads.
         $instanceEntry = $server->getContractData($options->contractId,
             XdrSCVal::forLedgerKeyContractInstance(), XdrContractDataDurability::PERSISTENT());
         $executable = $instanceEntry?->getLedgerEntryDataXdr()->contractData?->val->instance?->executable;
-        $info = null;
-        if ($executable !== null) {
-            switch ($executable->type->value) {
-                case XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET:
-                    return new SorobanClient(SACClient::specEntries(), $options);
-                case XdrContractExecutableType::CONTRACT_EXECUTABLE_WASM:
-                    if ($executable->wasmIdHex !== null) {
-                        $info = $server->loadContractInfoForWasmId($executable->wasmIdHex);
-                    }
-                    break;
-                case XdrContractExecutableType::CONTRACT_EXECUTABLE_EXTERNAL_REF:
-                    if ($executable->externalRef !== null) {
-                        $wasmId = $server->loadWasmIdForExternalRef($executable->externalRef);
-                        if ($wasmId !== null) {
-                            $info = $server->loadContractInfoForWasmId($wasmId);
-                        }
-                    }
-                    break;
-            }
+        if ($executable?->type->value === XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET) {
+            return new SorobanClient(SACClient::specEntries(), $options);
         }
-        if ($info !== null) {
-            return new SorobanClient($info->specEntries, $options);
-        } else {
-            throw new Exception("Could not load contract info for the contract: {$options->contractId}");
-        }
+        throw new Exception("Could not load contract info for the contract: {$options->contractId}");
     }
 
     /**

@@ -12,10 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SACClient` opens a Stellar Asset Contract from an `Asset` or a contract id without an RPC request. It has typed `balance`, `transfer`, `transferAndSend`, `decimals`, `name`, and `symbol`, `toBaseUnits()` for decimal amounts, and a read-only mode without a keypair.
 - `Asset::getContractId()` derives the asset's Stellar Asset Contract id.
 - `SACSpec` embeds the Stellar Asset Contract spec at upstream commit 4f08d14.
-- `SorobanClient::forSpecEntries()` builds a client from spec entries without an RPC request. With `readOnly: true`, carried in `AssembledTransactionOptions::$readOnly`, its transactions simulate without loading the source account and refuse to sign.
+- `SorobanClient::forSpecEntries()` builds a client from spec entries without an RPC request. With `readOnly: true`, carried in `AssembledTransactionOptions::$readOnly`, its transactions simulate without loading the source account and refuse to sign and to send.
 
 ### Changed
-- `SorobanClient::forClientOptions` opens a Stellar Asset Contract with the embedded spec, where it threw `Could not load contract info for the contract`.
+- `SorobanClient::forClientOptions()` opens Stellar Asset Contracts with the embedded spec.
 - `AssembledTransaction` polls through `SorobanServer::getTransactionWithTimeout()`, so a `SorobanServer` subclass or test double that customizes the poll's status request overrides `getTransactionWithTimeout()`.
 
 ### Deprecated

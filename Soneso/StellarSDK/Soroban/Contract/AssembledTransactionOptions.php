@@ -32,7 +32,8 @@ class AssembledTransactionOptions
      * @param LoggerInterface|null $logger PSR-3 logger for debug output. Default: null (no logging).
      * @param bool $readOnly Whether the transaction is built for a source account without a keypair.
      *  When true, the transaction is built without loading the source account, carries sequence
-     *  number 1, and refuses to sign and to restore archived state, so it can only be simulated.
+     *  number 1, and refuses to sign, to send, and to restore archived state, so it can only
+     *  be simulated.
      *  Default: false.
      */
     public function __construct(

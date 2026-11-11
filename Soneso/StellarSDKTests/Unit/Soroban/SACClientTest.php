@@ -15,7 +15,6 @@ use GuzzleHttp\Psr7\Response;
 use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
 use RuntimeException;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypePoolShare;
@@ -25,11 +24,9 @@ use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperation;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
-use Soneso\StellarSDK\Soroban\Contract\AssembledTransaction;
 use Soneso\StellarSDK\Soroban\Contract\MethodOptions;
 use Soneso\StellarSDK\Soroban\Contract\SACClient;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
-use Soneso\StellarSDK\Soroban\Responses\SorobanRpcErrorResponse;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\Xdr\XdrAccountEntry;
@@ -385,11 +382,12 @@ class SACClientTest extends TestCase
         $this->assertSame('TESTASSET', $client->symbol());
         $this->assertSame(['simulateTransaction', 'simulateTransaction', 'simulateTransaction'],
             $this->requestMethods($history));
-        $functions = [];
-        foreach (array_keys($history) as $index) {
-            $functions[] = $this->simulatedInvocation($history, $index)->functionName;
+        foreach (['decimals', 'name', 'symbol'] as $index => $function) {
+            $invocation = $this->simulatedInvocation($history, $index);
+            $this->assertSame(self::NATIVE_TESTNET_ID, $invocation->contractId, $function);
+            $this->assertSame($function, $invocation->functionName);
+            $this->assertSame([], $invocation->arguments, $function);
         }
-        $this->assertSame(['decimals', 'name', 'symbol'], $functions);
     }
 
     public function testWrongResultArmThrows(): void
@@ -651,6 +649,28 @@ class SACClientTest extends TestCase
         }
     }
 
+    public function testTransferNamesASecretSeedAmountByKindOnly(): void
+    {
+        $seed = KeyPair::random()->getSecretSeed();
+        $this->assertNotNull($seed);
+        $mock = new MockHandler([]);
+        $history = [];
+        $keyPair = KeyPair::random();
+        $client = SACClient::forAsset(Asset::native(), $keyPair, Network::testnet(), self::TEST_RPC_URL, null,
+            $this->mockedServer($mock, $history));
+
+        try {
+            $client->transfer(Address::fromAccountId($keyPair->getAccountId()),
+                Address::fromAccountId(self::MUXED_ACCOUNT_BASE), $seed);
+            $this->fail('Accepted a secret seed as amount');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame('The transfer amount must be a whole number of base units, '
+                . 'got a secret seed (S...) instead of an amount', $e->getMessage());
+            $this->assertStringNotContainsString($seed, $e->getMessage());
+        }
+        $this->assertSame([], $history);
+    }
+
     public function testReadOnlyTransferWithRestorePreambleThrowsTheRefusal(): void
     {
         $mock = new MockHandler([$this->simulateResponse(XdrSCVal::forVoid(), true, true)]);
@@ -740,19 +760,32 @@ class SACClientTest extends TestCase
         $client->transferAndSend(Address::fromAccountId(self::MUXED_ACCOUNT_BASE), 1);
     }
 
-    public function testTransferAndSendThrowsOnErrorResponse(): void
+    public function testTransferAndSendThrowsWhenPollingReportsAnRpcError(): void
     {
         $keyPair = KeyPair::random();
-        $response = new GetTransactionResponse([]);
-        $response->error = new SorobanRpcErrorResponse([]);
-        $response->error->code = -32600;
-        $response->error->message = 'invalid request';
-        $client = $this->clientWithStubbedTransfer($keyPair, $response);
+        $mock = new MockHandler([
+            $this->accountResponse($keyPair->getAccountId()),
+            $this->simulateResponse(XdrSCVal::forVoid(), true),
+            $this->sendTransactionResponse(),
+            new Response(200, [], json_encode(['jsonrpc' => '2.0', 'id' => 1,
+                'error' => ['code' => -32600, 'message' => 'invalid request']])),
+        ]);
+        $history = [];
+        $client = SACClient::forAsset(Asset::native(), $keyPair, Network::testnet(), self::TEST_RPC_URL, null,
+            $this->mockedServer($mock, $history));
 
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessageMatches('/^' . preg_quote(
-            'invoke transfer failed with message: invalid request and code: -32600', '/') . '\z/');
-        $client->transferAndSend(Address::fromAccountId(self::MUXED_ACCOUNT_BASE), 1);
+        try {
+            $client->transferAndSend(Address::fromAccountId(self::MUXED_ACCOUNT_BASE), 1,
+                new MethodOptions(timeoutInSeconds: 0));
+            $this->fail('Returned although polling reported an RPC error');
+        } catch (Exception $e) {
+            $this->assertSame('Interrupted after waiting 0 seconds (options->methodOptions->timeoutInSeconds) '
+                . 'for the transaction ' . self::TX_HASH . ' to complete. '
+                . 'Last status request error: RPC error code: -32600, message: invalid request', $e->getMessage());
+        }
+        $this->assertSame(['getLedgerEntries', 'simulateTransaction', 'sendTransaction', 'getTransaction'],
+            $this->requestMethods($history));
+        $this->assertSame(0, $mock->count());
     }
 
     public function testReadOnlyTransferAndSendThrowsBeforeAnyRequest(): void
@@ -831,6 +864,21 @@ class SACClientTest extends TestCase
         }
     }
 
+    public function testToBaseUnitsNamesASecretSeedByKindOnly(): void
+    {
+        $seed = KeyPair::random()->getSecretSeed();
+        $this->assertNotNull($seed);
+
+        try {
+            SACClient::toBaseUnits($seed);
+            $this->fail('Accepted a secret seed as amount');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame('Invalid amount, got a secret seed (S...) instead of decimal digits with at most '
+                . '7 fractional digits, such as 12.5', $e->getMessage());
+            $this->assertStringNotContainsString($seed, $e->getMessage());
+        }
+    }
+
     // ---------------------------------------------------------------------
     // helpers
     // ---------------------------------------------------------------------
@@ -849,32 +897,6 @@ class SACClientTest extends TestCase
     {
         return SACClient::readOnlyForAsset(Asset::native(), Network::testnet(), self::TEST_RPC_URL, null,
             $this->mockedServer($mock, $history));
-    }
-
-    /**
-     * Keyed client whose transfer() returns a transaction that answers signAndSend() with the
-     * given response, for response shapes the polling never yields.
-     */
-    private function clientWithStubbedTransfer(KeyPair $keyPair, GetTransactionResponse $response): SACClient
-    {
-        $tx = $this->getMockBuilder(AssembledTransaction::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['signAndSend'])
-            ->getMock();
-        $tx->expects($this->once())->method('signAndSend')->willReturn($response);
-
-        $real = SACClient::forAsset(Asset::native(), $keyPair, Network::testnet(), self::TEST_RPC_URL);
-        $client = $this->getMockBuilder(SACClient::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['transfer'])
-            ->getMock();
-        $client->expects($this->once())->method('transfer')
-            ->with($this->callback(fn (Address $from) => $from->accountId === $keyPair->getAccountId()))
-            ->willReturn($tx);
-        $reflection = new ReflectionClass(SACClient::class);
-        $reflection->getProperty('sorobanClient')->setValue($client, $real->getSorobanClient());
-        $reflection->getProperty('readOnly')->setValue($client, false);
-        return $client;
     }
 
     /**

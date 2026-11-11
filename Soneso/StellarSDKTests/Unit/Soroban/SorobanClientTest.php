@@ -37,6 +37,7 @@ use Soneso\StellarSDK\Soroban\Contract\SACClient;
 use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SorobanRpcErrorResponse;
+use Soneso\StellarSDK\Soroban\SorobanContractInfo;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\Xdr\XdrAccountEntry;
@@ -835,13 +836,22 @@ class SorobanClientTest extends TestCase
     {
         $mock = new MockHandler([
             $this->emptyLedgerEntriesResponse(),
+            $this->emptyLedgerEntriesResponse(),
         ]);
-        $server = $this->createMockedServer($mock);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
 
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Could not load contract info for the contract');
-
-        SorobanClient::forClientOptions($this->createClientOptions(server: $server));
+        try {
+            SorobanClient::forClientOptions($this->createClientOptions(server: $server));
+            $this->fail('Expected an exception');
+        } catch (Exception $e) {
+            $this->assertSame('Could not load contract info for the contract: ' . self::TEST_CONTRACT_ID,
+                $e->getMessage());
+        }
+        $this->assertCount(2, $history);
+        $this->assertInstanceKeyRequest($history, 0);
+        $this->assertInstanceKeyRequest($history, 1);
+        $this->assertSame(0, $mock->count());
     }
 
     public function testForClientOptionsRejectsNonContractIdBeforeAnyRequest(): void
@@ -868,9 +878,10 @@ class SorobanClientTest extends TestCase
         $this->assertNull($mock->getLastRequest());
     }
 
-    public function testForClientOptionsOpensStellarAssetContractWithOneRequest(): void
+    public function testForClientOptionsOpensStellarAssetContractAfterTwoInstanceReads(): void
     {
         $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->instanceEntryDataWithExecutable(XdrContractExecutable::forToken())),
             $this->ledgerEntryResponse($this->instanceEntryDataWithExecutable(XdrContractExecutable::forToken())),
         ]);
         $history = [];
@@ -889,8 +900,33 @@ class SorobanClientTest extends TestCase
         $this->assertCount(30, $client->getSpecEntries());
         $this->assertSame($options, $client->getOptions());
         $this->assertSame(0, $mock->count());
-        $this->assertCount(1, $history);
+        $this->assertCount(2, $history);
         $this->assertInstanceKeyRequest($history, 0);
+        $this->assertInstanceKeyRequest($history, 1);
+    }
+
+    public function testForClientOptionsCallsTheServersContractInfoLoader(): void
+    {
+        $mock = new MockHandler([]);
+        $server = new class(self::TEST_RPC_URL, new Client(['handler' => HandlerStack::create($mock)]))
+            extends SorobanServer {
+            public ?SorobanContractInfo $info = null;
+            /** @var array<string> */
+            public array $loadedContractIds = [];
+
+            public function loadContractInfoForContractId(string $contractId): ?SorobanContractInfo
+            {
+                $this->loadedContractIds[] = $contractId;
+                return $this->info;
+            }
+        };
+        $server->info = new SorobanContractInfo(0, 0, $this->createSpecEntries(), []);
+
+        $client = SorobanClient::forClientOptions($this->createClientOptions(server: $server));
+
+        $this->assertSame(['hello', 'add'], $client->getMethodNames());
+        $this->assertSame([self::TEST_CONTRACT_ID], $server->loadedContractIds);
+        $this->assertNull($mock->getLastRequest());
     }
 
     public function testForClientOptionsWasmInstanceRequestsInstanceThenCode(): void
@@ -945,8 +981,10 @@ class SorobanClientTest extends TestCase
         $mock = new MockHandler([
             $this->ledgerEntryResponse($this->instanceEntryDataWithExecutable($executable)),
             $this->emptyLedgerEntriesResponse(),
+            $this->ledgerEntryResponse($this->instanceEntryDataWithExecutable($executable)),
         ]);
-        $server = $this->createMockedServer($mock);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
 
         try {
             SorobanClient::forClientOptions($this->createClientOptions(server: $server));
@@ -955,13 +993,23 @@ class SorobanClientTest extends TestCase
             $this->assertSame('Could not load contract info for the contract: ' . self::TEST_CONTRACT_ID,
                 $e->getMessage());
         }
+        $this->assertCount(3, $history);
+        $this->assertInstanceKeyRequest($history, 0);
+        $tagKey = $this->requestedLedgerKey($history, 1);
+        $this->assertSame(self::TEST_OWNER_ID_HEX, $tagKey->contractData->contract->contractId);
+        $this->assertSame(self::TEST_EXECUTABLE_TAG, $tagKey->contractData->key->executableTag);
+        $this->assertInstanceKeyRequest($history, 2);
         $this->assertSame(0, $mock->count());
     }
 
     public function testForClientOptionsThrowsForInstanceWithoutExecutable(): void
     {
-        $mock = new MockHandler([$this->ledgerEntryResponse($this->instanceKeyEntryData(XdrSCVal::forU32(1)))]);
-        $server = $this->createMockedServer($mock);
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->instanceKeyEntryData(XdrSCVal::forU32(1))),
+            $this->ledgerEntryResponse($this->instanceKeyEntryData(XdrSCVal::forU32(1))),
+        ]);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
 
         try {
             SorobanClient::forClientOptions($this->createClientOptions(server: $server));
@@ -970,6 +1018,9 @@ class SorobanClientTest extends TestCase
             $this->assertSame('Could not load contract info for the contract: ' . self::TEST_CONTRACT_ID,
                 $e->getMessage());
         }
+        $this->assertCount(2, $history);
+        $this->assertInstanceKeyRequest($history, 0);
+        $this->assertInstanceKeyRequest($history, 1);
         $this->assertSame(0, $mock->count());
     }
 

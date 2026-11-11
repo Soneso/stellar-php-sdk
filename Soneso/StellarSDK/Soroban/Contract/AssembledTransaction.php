@@ -447,9 +447,14 @@ class AssembledTransaction
      *
      * @return GetTransactionResponse The transaction result after completion
      * @throws Exception If the transaction has not been signed, sending fails, or polling expires before a terminal status
+     * @throws Exception If the transaction was built by a read-only client (AssembledTransactionOptions::$readOnly),
+     *  before any request, also when $signed was set by hand
      * @throws GuzzleException If the sendTransaction request fails
      */
     public function send() :GetTransactionResponse {
+        if ($this->options->readOnly) {
+            throw $this->readOnlyRefusal();
+        }
         if ($this->signed === null) {
             throw new Exception("The transaction has not yet been signed. Run `sign` first, or use `signAndSend` instead.");
         }
@@ -1084,7 +1089,7 @@ class AssembledTransaction
     }
 
     /**
-     * Builds the error for signing, or restoring state for, a transaction of a read-only client.
+     * Builds the error for signing, sending, or restoring state for, a transaction of a read-only client.
      *
      * @return Exception the refusal naming the source account
      */

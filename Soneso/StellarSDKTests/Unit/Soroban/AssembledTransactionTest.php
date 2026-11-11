@@ -1397,6 +1397,34 @@ class AssembledTransactionTest extends TestCase
         $this->assertSame(['simulateTransaction'], $this->readOnlyRequestMethods($history));
     }
 
+    public function testReadOnlySendRefusesHandSignedTransactionBeforeAnyRequest(): void
+    {
+        $accountId = KeyPair::random()->getAccountId();
+        $history = [];
+        $mock = new MockHandler([$this->readOnlySimulateResponse(true, false)]);
+        $tx = AssembledTransaction::build($this->readOnlyTestOptions($accountId, $mock, $history, true));
+        $this->assertNotNull($tx->tx);
+        $signed = clone $tx->tx;
+        $signed->sign(KeyPair::random(), $this->testNetwork);
+        $tx->signed = $signed;
+
+        $attempts = [
+            'send()' => fn () => $tx->send(),
+            'signAndSend()' => fn () => $tx->signAndSend(),
+        ];
+        foreach ($attempts as $label => $attempt) {
+            try {
+                $attempt();
+                $this->fail("$label did not throw");
+            } catch (Exception $e) {
+                $this->assertSame($this->readOnlyRefusalMessage($accountId), $e->getMessage(), $label);
+            }
+            $this->assertSame($signed, $tx->signed, $label);
+        }
+        $this->assertSame(['simulateTransaction'], $this->readOnlyRequestMethods($history));
+        $this->assertSame(0, $mock->count());
+    }
+
     public function testReadOnlyRestoreFootprintRefusesWithoutRequest(): void
     {
         $accountId = KeyPair::random()->getAccountId();

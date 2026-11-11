@@ -199,6 +199,10 @@ class SACClient
     public static function toBaseUnits(string $amount): GMP
     {
         if (preg_match('/^([0-9]+)(?:\.([0-9]{1,7}))?\z/', $amount, $matches) !== 1) {
+            if (StrKey::isValidSeed($amount)) {
+                throw new InvalidArgumentException('Invalid amount, got a secret seed (S...) instead of decimal '
+                    . 'digits with at most 7 fractional digits, such as 12.5');
+            }
             throw new InvalidArgumentException("Invalid amount '" . XdrJsonHelper::safePreview($amount)
                 . "': expected decimal digits with at most 7 fractional digits, such as 12.5");
         }
@@ -375,10 +379,6 @@ class SACClient
         }
         $from = Address::fromAccountId($this->sorobanClient->getOptions()->sourceAccountKeyPair->getAccountId());
         $response = $this->transfer($from, $to, $amount, $methodOptions)->signAndSend();
-        if ($response->error !== null) {
-            throw new Exception("invoke transfer failed with message: {$response->error->message} "
-                . "and code: {$response->error->code}");
-        }
         if ($response->getStatus() !== GetTransactionResponse::STATUS_SUCCESS) {
             throw new Exception("invoke transfer failed with result: {$response->resultXdr}");
         }
@@ -471,6 +471,10 @@ class SACClient
     {
         if (is_string($amount)) {
             if (preg_match('/^[0-9]+\z/', $amount) !== 1) {
+                if (StrKey::isValidSeed($amount)) {
+                    throw new InvalidArgumentException('The transfer amount must be a whole number of base units, '
+                        . 'got a secret seed (S...) instead of an amount');
+                }
                 throw new InvalidArgumentException("The transfer amount must be a whole number of base units, got '"
                     . XdrJsonHelper::safePreview($amount)
                     . "'; convert a decimal amount with SACClient::toBaseUnits()");

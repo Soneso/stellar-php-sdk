@@ -206,9 +206,10 @@ class SACClientTest extends TestCase
     #[Depends('testSacClient')]
     public function testTransferToMuxedContract(array $context): void
     {
-        if ($this->protocolVersion === null || $this->protocolVersion < 30) {
-            $this->markTestSkipped('The network reports protocol '
-                . ($this->protocolVersion === null ? 'unavailable' : (string)$this->protocolVersion)
+        $this->assertNotNull($this->protocolVersion,
+            'The getNetwork response of ' . $this->rpcUrl . ' carries no protocol version');
+        if ($this->protocolVersion < 30) {
+            $this->markTestSkipped('The network reports protocol ' . $this->protocolVersion
                 . '; muxed contract destinations need protocol 30.');
         }
         $asset = $context['asset'];
