@@ -331,6 +331,277 @@ $methodOptions = new MethodOptions(
 $result = $client->invokeMethod('expensive_op', [], methodOptions: $methodOptions);
 ```
 
+## Stellar Asset Contracts (SAC)
+
+Every classic asset, the native asset included, has a Stellar Asset Contract: the built-in token contract that lets Soroban contracts and accounts move the asset. Its contract id derives from the asset and the network, so you know it without a lookup. `SACClient` wraps the contract with typed calls. Amounts are i128 base units: a SAC has 7 decimals, so 1 unit of the asset is 10,000,000 base units.
+
+### Opening a SAC Client
+
+`Asset::getContractId()` returns the contract id ("C...") of an asset's SAC on a network. `SACClient::forAsset()` opens the client from the asset, and `SACClient::forContractId()` from an id you already have. Neither sends a request, because the client carries the contract spec.
+
+```php
+<?php
+
+use Soneso\StellarSDK\Asset;
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Contract\SACClient;
+
+$keyPair = KeyPair::fromSeed('SXXX...');
+$rpcUrl = 'https://soroban-testnet.stellar.org';
+$asset = Asset::createNonNativeAsset('TESTASSET', 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX');
+
+echo $asset->getContractId(Network::testnet()) . PHP_EOL;
+// CBEFNXB7GMEO2PKBCOSKRUQBDWAH4PVA2RIREKPV335KM7MBK2HRLRGB
+
+$sac = SACClient::forAsset($asset, $keyPair, Network::testnet(), $rpcUrl);
+
+// The same contract, opened by its id
+$sac = SACClient::forContractId(
+    'CBEFNXB7GMEO2PKBCOSKRUQBDWAH4PVA2RIREKPV335KM7MBK2HRLRGB',
+    $keyPair,
+    Network::testnet(),
+    $rpcUrl
+);
+```
+
+The id differs per network: on the public network, call `getContractId(Network::public())`. A liquidity pool share has no SAC, so `getContractId()` throws a `RuntimeException` for one. `SorobanClient::forClientOptions()` also opens a SAC by its id. For the functions without a typed method, such as `allowance` or `approve`, use `$sac->getSorobanClient()`.
+
+### Read-Only Client
+
+Reads need no keypair. `SACClient::readOnlyForAsset()` and `SACClient::readOnlyForContractId()` build their transactions for the placeholder source account `SACClient::READ_ONLY_SOURCE_ACCOUNT_ID`, and simulation needs no account entry for it.
+
+```php
+<?php
+
+use Soneso\StellarSDK\Asset;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Contract\SACClient;
+
+$xlm = SACClient::readOnlyForAsset(Asset::native(), Network::testnet(), 'https://soroban-testnet.stellar.org');
+
+echo $xlm->getContractId() . PHP_EOL; // CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC
+echo $xlm->decimals() . PHP_EOL;      // 7
+echo $xlm->name() . PHP_EOL;          // native
+echo $xlm->symbol() . PHP_EOL;        // native
+
+$balance = $xlm->balance(Address::fromAccountId('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX'));
+echo gmp_strval($balance) . PHP_EOL;
+```
+
+For an issued asset, `name()` returns `CODE:ISSUER` and `symbol()` the asset code.
+
+A read-only client can build a transfer, but it can't sign one: `sign()` and `signAndSend()` throw an `Exception` that names the placeholder account, and `transferAndSend()` throws before any request. Reads never restore archived state, on any client. When ledger entries a read needs are archived, the read throws a `RuntimeException` naming the contract and the function. To restore them, invoke the function through `getSorobanClient()` of a client opened with a funded account's keypair; `MethodOptions` restores archived state by default.
+
+### Reading a Balance
+
+`balance()` takes an account (G...) or contract (C...) address and returns the balance in base units as `GMP`. A contract without a balance reads 0. A missing account or trustline is not a zero balance: the simulation fails with the contract error, `Error(Contract, #6)` for a missing account and `Error(Contract, #13)` for a missing trustline.
+
+```php
+<?php
+
+use Soneso\StellarSDK\Asset;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Contract\SACClient;
+
+$sac = SACClient::readOnlyForAsset(
+    Asset::createNonNativeAsset('TESTASSET', 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'),
+    Network::testnet(),
+    'https://soroban-testnet.stellar.org'
+);
+
+// The holder arrives at runtime, so the read can fail
+$holderId = 'GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX';
+
+try {
+    $balance = $sac->balance(Address::fromAccountId($holderId));
+    echo gmp_strval($balance) . PHP_EOL; // 125000000 is 12.5 units
+} catch (\InvalidArgumentException $e) {
+    echo "Not a balance holder: {$e->getMessage()}\n";
+} catch (\Exception $e) {
+    if (str_contains($e->getMessage(), 'Error(Contract, #6)')) {
+        echo "The account does not exist\n";
+    } elseif (str_contains($e->getMessage(), 'Error(Contract, #13)')) {
+        echo "The account has no trustline for the asset\n";
+    } else {
+        echo "Balance read failed: {$e->getMessage()}\n";
+    }
+}
+
+// A contract holder
+$poolBalance = $sac->balance(Address::fromContractId('CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE'));
+```
+
+Balances belong to the base account, so a muxed holder is rejected before any request. `balance()` throws an `InvalidArgumentException` for an M... or W... address, and the message names the base account or contract to query. `MuxedAccount::fromAccountId($muxedId)->getEd25519AccountId()` returns the base account of an M... address.
+
+### Sending a Transfer
+
+`SACClient::toBaseUnits()` converts a decimal amount such as `'12.5'` to base units. It accepts digits with at most 7 fractional digits and throws an `InvalidArgumentException` for anything else. `transfer()` and `transferAndSend()` take the amount in base units as `GMP`, `int`, or a string of digits.
+
+`transferAndSend()` sends from the client's source account, signs, submits, and waits for the result:
+
+```php
+<?php
+
+use Soneso\StellarSDK\Asset;
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Contract\SACClient;
+
+$sac = SACClient::forAsset(
+    Asset::createNonNativeAsset('TESTASSET', 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'),
+    KeyPair::fromSeed('SXXX...'),
+    Network::testnet(),
+    'https://soroban-testnet.stellar.org'
+);
+
+$amount = SACClient::toBaseUnits('12.5'); // 125000000
+
+$response = $sac->transferAndSend(
+    Address::fromAccountId('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX'),
+    $amount
+);
+echo $response->txHash . PHP_EOL;
+```
+
+A failed transaction throws an `Exception` with the result XDR.
+
+The recipient can also be a muxed account (M...) or, on protocol 30 and later, a muxed contract (W...). The contract credits the base address, and the transfer event carries the muxed id as `to_muxed_id`. `transfer()` returns the simulated `AssembledTransaction`; with the source account as sender, `signAndSend()` submits it:
+
+```php
+<?php
+
+use Soneso\StellarSDK\Asset;
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\MuxedAccount;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Contract\SACClient;
+use Soneso\StellarSDK\Xdr\XdrContractEvent;
+
+$keyPair = KeyPair::fromSeed('SXXX...');
+$sac = SACClient::forAsset(
+    Asset::createNonNativeAsset('TESTASSET', 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'),
+    $keyPair,
+    Network::testnet(),
+    'https://soroban-testnet.stellar.org'
+);
+
+// Customer 4242 of an exchange account
+$muxedId = (new MuxedAccount('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX', 4242))->getAccountId();
+
+$tx = $sac->transfer(
+    Address::fromAccountId($keyPair->getAccountId()),
+    Address::fromMuxedAccountId($muxedId),
+    SACClient::toBaseUnits('25')
+);
+$response = $tx->signAndSend();
+
+// Events of the first (and only) operation
+$eventsXdr = $response->getEvents()?->contractEventsXdr[0] ?? [];
+foreach ($eventsXdr as $eventXdr) {
+    $body = XdrContractEvent::fromBase64Xdr($eventXdr)->body->v0;
+    if ($body !== null && ($body->topics[0]->sym ?? null) === 'transfer') {
+        $data = $body->data->toNative(); // ['amount' => GMP, 'to_muxed_id' => int]
+        echo $data['to_muxed_id'] . PHP_EOL; // 4242
+    }
+}
+```
+
+`transfer()` and `transferAndSend()` check the amount and the addresses before any request: a decimal string, a negative amount, or one above 2^127 - 1 throws an `InvalidArgumentException`.
+
+### Transfers Authorized by Another Account
+
+A transfer needs the authorization of its sender (`from`). When the sender is an account (G...) other than the source account, the sender signs its authorization entry and the source account submits. `needsNonInvokerSigningBy()` lists the accounts that still have to sign. See [Authorization](#authorization) for remote signing.
+
+```php
+<?php
+
+use Soneso\StellarSDK\Asset;
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Contract\SACClient;
+
+$alice = KeyPair::fromSeed('SALICE...'); // submits and pays the fee
+$bob = KeyPair::fromSeed('SBOB...');     // sends the tokens
+
+$sac = SACClient::forAsset(
+    Asset::createNonNativeAsset('TESTASSET', 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'),
+    $alice,
+    Network::testnet(),
+    'https://soroban-testnet.stellar.org'
+);
+
+$tx = $sac->transfer(
+    Address::fromAccountId($bob->getAccountId()),
+    Address::fromAccountId('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX'),
+    SACClient::toBaseUnits('10.5')
+);
+
+print_r($tx->needsNonInvokerSigningBy()); // [Bob's account id]
+
+$tx->signAuthEntries(signerKeyPair: $bob);
+$response = $tx->signAndSend();
+```
+
+A contract sender (C...) is authorized by the contract's own `__check_auth`. `sign()` does not block on its unsigned entry, and `signAuthEntries()` signs for accounts only. When the contract expects a signature value, write it into the contract's entry and store the entries with `setSorobanAuth()` before `signAndSend()`. Simulation leaves the entry's signature expiration ledger at 0, so set it first: the value the contract verifies covers the entry's authorization preimage, `$entry->buildPreimage(Network::testnet())`, and that preimage includes the expiration ledger.
+
+```php
+<?php
+
+use Soneso\StellarSDK\Asset;
+use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Network;
+use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Contract\SACClient;
+use Soneso\StellarSDK\Soroban\SorobanServer;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
+
+$rpcUrl = 'https://soroban-testnet.stellar.org';
+$walletId = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
+
+$sac = SACClient::forAsset(
+    Asset::createNonNativeAsset('TESTASSET', 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'),
+    KeyPair::fromSeed('SXXX...'),
+    Network::testnet(),
+    $rpcUrl
+);
+
+$tx = $sac->transfer(
+    Address::fromContractId($walletId),
+    Address::fromAccountId('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX'),
+    SACClient::toBaseUnits('5')
+);
+
+// The authorization stays valid for about 10 ledgers
+$expirationLedger = (new SorobanServer($rpcUrl))->getLatestLedger()->sequence + 10;
+
+$entries = $tx->tx->getOperations()[0]->getAuth();
+foreach ($entries as $entry) {
+    $credentials = $entry->credentials->getAddressCredentials();
+    if ($credentials !== null && $credentials->address->toStrKey() === $walletId) {
+        // Set the expiration before computing the signature: the preimage includes it
+        $credentials->signatureExpirationLedger = $expirationLedger;
+        $payload = hash('sha256', $entry->buildPreimage(Network::testnet())->encode(), true);
+
+        // Placeholder: replace with the value your wallet's __check_auth verifies for $payload;
+        // its form depends on the wallet contract
+        $credentials->signature = XdrSCVal::forVoid();
+    }
+}
+$tx->tx->setSorobanAuth($entries);
+
+$response = $tx->signAndSend();
+```
+
+Simulation does not run `__check_auth`, so the simulated resources and fee leave out its cost. When the wallet's check reads storage or does heavy work, the transaction may need higher resources than the simulation returned.
+
+An issued asset's SAC is deployed once per network before its first use; see [Deploy Stellar Asset Contract (SAC)](#deploy-stellar-asset-contract-sac). The native asset's SAC exists on every network.
+
 ## Installing and Deploying
 
 Put your contract on the network. Install uploads the WASM bytecode once; deploy creates contract instances from that code.
