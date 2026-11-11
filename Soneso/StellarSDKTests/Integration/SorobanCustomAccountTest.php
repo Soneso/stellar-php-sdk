@@ -26,13 +26,11 @@ use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDKTests\PrintLogger;
 use Soneso\StellarSDKTests\TestUtils;
-use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractCode;
-use Soneso\StellarSDK\Xdr\XdrLedgerKeyContractData;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanResources;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
@@ -201,19 +199,10 @@ class SorobanCustomAccountTest extends TestCase
         $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
+        // The recording-mode simulation returns the auth entries without running the
+        // account contract's __check_auth.
         $request = new SimulateTransactionRequest($transaction);
         $simulateResponse = $server->simulateTransaction($request);
-        $transactionData = $simulateResponse->getTransactionData();
-
-        // add some resources because preflight can not take __check_auth into account
-        $transactionData->resources->diskReadBytes *= 3;
-        $transactionData->resources->instructions *= 4;
-        $transactionData->resourceFee += 1500800;
-        $simulateResponse->minResourceFee += 1500800;
-
-        // set the transaction data  + fee and sign
-        $transaction->setSorobanTransactionData($transactionData);
-        $transaction->addResourceFee($simulateResponse->minResourceFee);
 
         $auth = $simulateResponse->getSorobanAuth();
         $this->assertNotNull($auth);
@@ -234,6 +223,17 @@ class SorobanCustomAccountTest extends TestCase
             }
         }
         $transaction->setSorobanAuth($auth);
+
+        // The enforcing re-simulation of the signed transaction runs __check_auth and returns
+        // the footprint, resources and fee the submitted transaction needs.
+        $enforceRequest = new SimulateTransactionRequest(transaction: $transaction, authMode: 'enforce');
+        $enforceResponse = $server->simulateTransaction($enforceRequest);
+        $this->assertNull($enforceResponse->error);
+        $this->assertNull($enforceResponse->resultError);
+        $this->assertNotNull($enforceResponse->getTransactionData());
+        $this->assertNotNull($enforceResponse->minResourceFee);
+        $transaction->setSorobanTransactionData($enforceResponse->getTransactionData());
+        $transaction->addResourceFee($enforceResponse->minResourceFee);
         $transaction->sign($submitterKp, $this->network);
 
         // send the transaction
@@ -276,32 +276,10 @@ class SorobanCustomAccountTest extends TestCase
         $transaction = (new TransactionBuilder($account))
             ->addOperation($op)->build();
 
+        // The recording-mode simulation returns the auth entries without running the
+        // account contract's __check_auth.
         $request = new SimulateTransactionRequest($transaction);
         $simulateResponse = $server->simulateTransaction($request);
-        $transactionData = $simulateResponse->getTransactionData();
-
-        // add some resources because preflight can not take __check_auth into account
-        $transactionData->resources->diskReadBytes *= 3;
-        $transactionData->resources->instructions *= 4;
-        $transactionData->resourceFee += 1500800;
-        $simulateResponse->minResourceFee += 1500800;
-
-        // we need to extend the footprint, so that __check_auth can read from storage
-        $readOwnersKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
-        $addr = Address::fromContractId($accContractId)->toXdr();
-        $readOwnersKey->contractData = new XdrLedgerKeyContractData($addr, XdrSCVal::forSymbol("Owners"),
-            XdrContractDataDurability::PERSISTENT());
-
-        $readLimitKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_DATA());
-        $readLimitKey->contractData = new XdrLedgerKeyContractData($addr, XdrSCVal::forSymbol("SpendMax"),
-            XdrContractDataDurability::PERSISTENT());
-
-        array_push($transactionData->resources->footprint->readOnly , $readOwnersKey);
-        array_push($transactionData->resources->footprint->readOnly , $readLimitKey);
-
-        // set the transaction data  + fee and sign
-        $transaction->setSorobanTransactionData($transactionData);
-        $transaction->addResourceFee($simulateResponse->minResourceFee);
 
         $auth = $simulateResponse->getSorobanAuth();
         $this->assertNotNull($auth);
@@ -326,6 +304,24 @@ class SorobanCustomAccountTest extends TestCase
         }
         $transaction->setSorobanAuth($auth);
 
+        // The enforcing re-simulation of the signed transaction runs __check_auth and returns
+        // the footprint, resources and fee the submitted transaction needs.
+        $enforceRequest = new SimulateTransactionRequest(transaction: $transaction, authMode: 'enforce');
+        $enforceResponse = $server->simulateTransaction($enforceRequest);
+        $this->assertNull($enforceResponse->error);
+        if (!$expectSuccess) {
+            // __check_auth rejects a transfer above the spend limit without every owner's
+            // signature with the account contract's error NOT_ENOUGH_SIGNERS (3).
+            $this->assertNotNull($enforceResponse->resultError);
+            $this->assertStringStartsWith('HostError: Error(Auth, InvalidAction)', $enforceResponse->resultError);
+            $this->assertStringContainsString('Error(Contract, #3)', $enforceResponse->resultError);
+            return;
+        }
+        $this->assertNull($enforceResponse->resultError);
+        $this->assertNotNull($enforceResponse->getTransactionData());
+        $this->assertNotNull($enforceResponse->minResourceFee);
+        $transaction->setSorobanTransactionData($enforceResponse->getTransactionData());
+        $transaction->addResourceFee($enforceResponse->minResourceFee);
         $transaction->sign($submitterKp, $this->network);
 
         // send the transaction
@@ -334,14 +330,7 @@ class SorobanCustomAccountTest extends TestCase
 
         // poll until status is success or error
         $statusResponse = $this->pollStatus($server, $sendResponse->hash);
-        /*if ($statusResponse->status == GetTransactionResponse::STATUS_FAILED) {
-            print("ERR RESULT XDR: " . $statusResponse->resultXdr . PHP_EOL);
-        }*/
-        if ($expectSuccess) {
-            $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
-        } else {
-            $this->assertEquals(GetTransactionResponse::STATUS_FAILED, $statusResponse->status);
-        }
+        $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse->status);
     }
 
     private function deployContract(SorobanServer $server, String $pathToCode, KeyPair $submitterKp, ?array $constructorArgs = null) : array {
