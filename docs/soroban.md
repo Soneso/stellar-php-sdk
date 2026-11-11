@@ -438,7 +438,7 @@ Balances belong to the base account, so a muxed holder is rejected before any re
 
 ### Sending a Transfer
 
-`SACClient::toBaseUnits()` converts a decimal amount such as `'12.5'` to base units. It accepts digits with at most 7 fractional digits and throws an `InvalidArgumentException` for anything else. `transfer()` and `transferAndSend()` take the amount in base units as `GMP`, `int`, or a string of digits.
+`SACClient::toBaseUnits()` converts a decimal amount such as `'12.5'` to base units. It accepts digits with at most 7 fractional digits up to `17014118346046923173168730371588.4105727`, the largest i128 amount, and throws an `InvalidArgumentException` for anything else, including a larger value. `transfer()` and `transferAndSend()` take the amount in base units as `GMP`, `int`, or a string of digits.
 
 `transferAndSend()` sends from the client's source account, signs, submits, and waits for the result:
 
@@ -548,57 +548,9 @@ $tx->signAuthEntries(signerKeyPair: $bob);
 $response = $tx->signAndSend();
 ```
 
-A contract sender (C...) is authorized by the contract's own `__check_auth`. `sign()` does not block on its unsigned entry, and `signAuthEntries()` signs for accounts only. When the contract expects a signature value, write it into the contract's entry and store the entries with `setSorobanAuth()` before `signAndSend()`. Simulation leaves the entry's signature expiration ledger at 0, so set it first: the value the contract verifies covers the entry's authorization preimage, `$entry->buildPreimage(Network::testnet())`, and that preimage includes the expiration ledger.
+A contract sender (C...) is authorized by the contract's own `__check_auth`. `sign()` does not block on its unsigned entry, and `signAuthEntries()` signs for accounts only. When the contract expects a signature value, complete its entry before `signAndSend()`. The entries are in `$tx->tx->getOperations()[0]->getAuth()`, and the contract's entry is the one whose `$entry->credentials->getAddressCredentials()` holds the contract's address. Simulation leaves the entry's signature expiration ledger at 0. Set `signatureExpirationLedger` on those credentials before you compute the signature payload, the SHA-256 hash of `$entry->buildPreimage(Network::testnet())->encode()`, because the preimage includes the expiration ledger. Obtain the value the wallet's `__check_auth` verifies for that payload, in the form the wallet contract defines, and write it to the credentials' `signature`. Then attach the completed entries with `$tx->tx->setSorobanAuth($entries)`.
 
-```php
-<?php
-
-use Soneso\StellarSDK\Asset;
-use Soneso\StellarSDK\Crypto\KeyPair;
-use Soneso\StellarSDK\Network;
-use Soneso\StellarSDK\Soroban\Address;
-use Soneso\StellarSDK\Soroban\Contract\SACClient;
-use Soneso\StellarSDK\Soroban\SorobanServer;
-use Soneso\StellarSDK\Xdr\XdrSCVal;
-
-$rpcUrl = 'https://soroban-testnet.stellar.org';
-$walletId = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
-
-$sac = SACClient::forAsset(
-    Asset::createNonNativeAsset('TESTASSET', 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'),
-    KeyPair::fromSeed('SXXX...'),
-    Network::testnet(),
-    $rpcUrl
-);
-
-$tx = $sac->transfer(
-    Address::fromContractId($walletId),
-    Address::fromAccountId('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX'),
-    SACClient::toBaseUnits('5')
-);
-
-// The authorization stays valid for about 10 ledgers
-$expirationLedger = (new SorobanServer($rpcUrl))->getLatestLedger()->sequence + 10;
-
-$entries = $tx->tx->getOperations()[0]->getAuth();
-foreach ($entries as $entry) {
-    $credentials = $entry->credentials->getAddressCredentials();
-    if ($credentials !== null && $credentials->address->toStrKey() === $walletId) {
-        // Set the expiration before computing the signature: the preimage includes it
-        $credentials->signatureExpirationLedger = $expirationLedger;
-        $payload = hash('sha256', $entry->buildPreimage(Network::testnet())->encode(), true);
-
-        // Placeholder: replace with the value your wallet's __check_auth verifies for $payload;
-        // its form depends on the wallet contract
-        $credentials->signature = XdrSCVal::forVoid();
-    }
-}
-$tx->tx->setSorobanAuth($entries);
-
-$response = $tx->signAndSend();
-```
-
-Simulation does not run `__check_auth`, so the simulated resources and fee leave out its cost. When the wallet's check reads storage or does heavy work, the transaction may need higher resources than the simulation returned.
+The first simulation runs in recording mode and does not run `__check_auth`, so its resources and fee leave out the wallet's check and the ledger entries it reads. After attaching the completed entries, re-simulate in enforcing mode: pass `new SimulateTransactionRequest(transaction: $tx->tx, authMode: 'enforce')` to `SorobanServer::simulateTransaction()` and check that the response carries no `error` and no `resultError`. Apply its transaction data with `$tx->tx->setSorobanTransactionData($response->getTransactionData())` and replace the total fee with `$tx->tx->setFee($tx->options->methodOptions->fee + $response->getMinResourceFee())`; the signed authorization entries stay attached. Then sign and submit with `$tx->signAndSend()`. [Protocol 27 Credentials (CAP-71)](#protocol-27-credentials-cap-71) describes the enforcing re-simulation.
 
 An issued asset's SAC is deployed once per network before its first use; see [Deploy Stellar Asset Contract (SAC)](#deploy-stellar-asset-contract-sac). The native asset's SAC exists on every network.
 
