@@ -17,6 +17,7 @@ use Soneso\StellarSDK\AssetTypeNative;
 use Soneso\StellarSDK\AssetTypePoolShare;
 use Soneso\StellarSDK\ChangeTrustOperation;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
@@ -331,5 +332,38 @@ class AssetTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('construct AssetTypePoolShare directly');
         Asset::create(Asset::TYPE_POOL_SHARE);
+    }
+
+    public function testGetContractIdVectors(): void
+    {
+        $this->assertSame('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
+            Asset::native()->getContractId(Network::testnet()));
+        $this->assertSame('CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA',
+            Asset::native()->getContractId(Network::public()));
+        $this->assertSame('CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75',
+            Asset::createNonNativeAsset('USDC', 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN')
+                ->getContractId(Network::public()));
+        $this->assertSame('CBEFNXB7GMEO2PKBCOSKRUQBDWAH4PVA2RIREKPV335KM7MBK2HRLRGB',
+            Asset::createNonNativeAsset('TESTASSET', 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX')
+                ->getContractId(Network::testnet()));
+    }
+
+    public function testGetContractIdDiffersPerNetwork(): void
+    {
+        $asset = Asset::createNonNativeAsset('USDC', 'GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN');
+        $testnetId = $asset->getContractId(Network::testnet());
+        $publicId = $asset->getContractId(Network::public());
+        $this->assertTrue(StrKey::isValidContractId($testnetId));
+        $this->assertNotSame($testnetId, $publicId);
+    }
+
+    public function testGetContractIdRejectsPoolShare(): void
+    {
+        $poolShare = new AssetTypePoolShare(Asset::createNonNativeAsset('USDC', self::POOL_X),
+            Asset::createNonNativeAsset('USDC', self::POOL_Y));
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessageMatches('/^' . preg_quote('A liquidity pool share has no Stellar Asset Contract; '
+            . 'getContractId() takes the native asset or an issued asset', '/') . '\z/');
+        $poolShare->getContractId(Network::testnet());
     }
 }

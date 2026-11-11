@@ -13,11 +13,14 @@ use Soneso\StellarSDK\CreateContractWithConstructorHostFunction;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\ContractAddressGuard;
 use Soneso\StellarSDK\Soroban\Exceptions\SorobanContractParserException;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
+use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
 use Soneso\StellarSDK\Xdr\XdrContractExecutableExternalRef;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
@@ -59,18 +62,27 @@ class SorobanClient
     private array $methodNames = array();
 
     /**
+     * @var bool Whether the transactions this client builds are read-only
+     * (AssembledTransactionOptions::$readOnly)
+     */
+    private bool $readOnly;
+
+    /**
      * Private constructor for SorobanClient
      *
-     * Use the static factory methods SorobanClient::forClientOptions or SorobanClient::deploy
-     * to create instances. The constructor extracts method names from the spec entries.
+     * Use the static factory methods SorobanClient::forClientOptions, SorobanClient::forSpecEntries
+     * or SorobanClient::deploy to create instances. The constructor extracts method names from the
+     * spec entries.
      *
-     * @param array<XdrSCSpecEntry> $specEntries Contract specification from parsed WASM bytecode
+     * @param array<XdrSCSpecEntry> $specEntries Contract specification entries
      * @param ClientOptions $options Client configuration
+     * @param bool $readOnly Whether the transactions this client builds are read-only
      */
-    private function __construct(array $specEntries, ClientOptions $options)
+    private function __construct(array $specEntries, ClientOptions $options, bool $readOnly = false)
     {
         $this->specEntries = $specEntries;
         $this->options = $options;
+        $this->readOnly = $readOnly;
 
         foreach ($this->specEntries as $entry) {
             switch ($entry->type->value) {
@@ -90,8 +102,12 @@ class SorobanClient
     /**
      * Creates a SorobanClient for an existing deployed contract
      *
-     * Loads the contract specification from the network by fetching and parsing the contract's
-     * WASM bytecode. The spec is used for type-safe method invocation.
+     * Loads the contract specification with SorobanServer::loadContractInfoForContractId(), which
+     * reads the contract instance and parses the spec from the WASM bytecode of a wasm executable
+     * or a CAP-85 external reference. When that load finds no spec, the contract instance is read
+     * once more: a Stellar Asset Contract has no wasm and opens with the embedded spec
+     * (SACClient::specEntries()) after these two instance reads, and any other contract throws.
+     * The spec is used for type-safe method invocation.
      *
      * The contract ID must be a "C..." strkey or the contract hash as 64 hexadecimal characters.
      *
@@ -100,8 +116,10 @@ class SorobanClient
      * @throws \InvalidArgumentException If the contract ID is not a contract address, before any request
      * @throws GuzzleException If the RPC request fails
      * @throws Exception If the contract is not found or spec parsing fails
+     * @see SACClient For typed calls on a Stellar Asset Contract
      */
     public static function forClientOptions(ClientOptions $options) : SorobanClient {
+        ContractAddressGuard::requireContractId($options->contractId, ContractAddressGuard::CONTRACT_TO_LOAD);
         $server = $options->server ?? new SorobanServer($options->rpcUrl);
         if ($options->logger !== null) {
             $server->setLogger($options->logger);
@@ -109,9 +127,37 @@ class SorobanClient
         $info = $server->loadContractInfoForContractId($options->contractId);
         if ($info !== null) {
             return new SorobanClient($info->specEntries, $options);
-        } else {
-            throw new Exception("Could not load contract info for the contract: {$options->contractId}");
         }
+        // The load returns null for a Stellar Asset Contract, which has no wasm, as it does for a
+        // missing contract or code entry. A second read of the contract instance tells them apart,
+        // so a Stellar Asset Contract opens after two instance reads.
+        $instanceEntry = $server->getContractData($options->contractId,
+            XdrSCVal::forLedgerKeyContractInstance(), XdrContractDataDurability::PERSISTENT());
+        $executable = $instanceEntry?->getLedgerEntryDataXdr()->contractData?->val->instance?->executable;
+        if ($executable?->type->value === XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET) {
+            return new SorobanClient(SACClient::specEntries(), $options);
+        }
+        throw new Exception("Could not load contract info for the contract: {$options->contractId}");
+    }
+
+    /**
+     * Creates a SorobanClient from contract specification entries without a request
+     *
+     * Use it when the spec is known in advance, such as the embedded spec of a Stellar Asset
+     * Contract. The contract ID is checked when a method is invoked.
+     *
+     * A read-only client builds transactions for a source account without a keypair: they
+     * simulate without loading the source account, and refuse to sign and to restore archived
+     * state (AssembledTransactionOptions::$readOnly).
+     *
+     * @param array<XdrSCSpecEntry> $specEntries Contract specification entries
+     * @param ClientOptions $options Client configuration including contract ID, network, and RPC URL
+     * @param bool $readOnly Whether the transactions this client builds are read-only (default: false)
+     * @return SorobanClient The client for the contract
+     * @see SACClient For typed calls on a Stellar Asset Contract
+     */
+    public static function forSpecEntries(array $specEntries, ClientOptions $options, bool $readOnly = false) : SorobanClient {
+        return new SorobanClient($specEntries, $options, $readOnly);
     }
 
 
@@ -428,7 +474,8 @@ class SorobanClient
             methodOptions: $methodOptions ?? new MethodOptions(),
             method: $name,
             arguments: $args,
-            logger: $this->options->logger);
+            logger: $this->options->logger,
+            readOnly: $this->readOnly);
         return AssembledTransaction::build($options);
     }
 

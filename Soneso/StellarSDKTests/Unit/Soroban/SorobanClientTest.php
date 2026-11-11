@@ -33,9 +33,11 @@ use Soneso\StellarSDK\Soroban\Contract\DeployFromExternalRefRequest;
 use Soneso\StellarSDK\Soroban\Contract\DeployRequest;
 use Soneso\StellarSDK\Soroban\Contract\InstallRequest;
 use Soneso\StellarSDK\Soroban\Contract\MethodOptions;
+use Soneso\StellarSDK\Soroban\Contract\SACClient;
 use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SorobanRpcErrorResponse;
+use Soneso\StellarSDK\Soroban\SorobanContractInfo;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\Xdr\XdrAccountEntry;
@@ -64,6 +66,7 @@ use Soneso\StellarSDK\Xdr\XdrSCSpecTypeDef;
 use Soneso\StellarSDK\Xdr\XdrSCSpecType;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTStructV0;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
+use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
 use Soneso\StellarSDK\Xdr\XdrSorobanResources;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
@@ -833,13 +836,22 @@ class SorobanClientTest extends TestCase
     {
         $mock = new MockHandler([
             $this->emptyLedgerEntriesResponse(),
+            $this->emptyLedgerEntriesResponse(),
         ]);
-        $server = $this->createMockedServer($mock);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
 
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Could not load contract info for the contract');
-
-        SorobanClient::forClientOptions($this->createClientOptions(server: $server));
+        try {
+            SorobanClient::forClientOptions($this->createClientOptions(server: $server));
+            $this->fail('Expected an exception');
+        } catch (Exception $e) {
+            $this->assertSame('Could not load contract info for the contract: ' . self::TEST_CONTRACT_ID,
+                $e->getMessage());
+        }
+        $this->assertCount(2, $history);
+        $this->assertInstanceKeyRequest($history, 0);
+        $this->assertInstanceKeyRequest($history, 1);
+        $this->assertSame(0, $mock->count());
     }
 
     public function testForClientOptionsRejectsNonContractIdBeforeAnyRequest(): void
@@ -866,9 +878,254 @@ class SorobanClientTest extends TestCase
         $this->assertNull($mock->getLastRequest());
     }
 
+    public function testForClientOptionsOpensStellarAssetContractAfterTwoInstanceReads(): void
+    {
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->instanceEntryDataWithExecutable(XdrContractExecutable::forToken())),
+            $this->ledgerEntryResponse($this->instanceEntryDataWithExecutable(XdrContractExecutable::forToken())),
+        ]);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
+        $options = $this->createClientOptions(KeyPair::random(), $server);
+
+        $client = SorobanClient::forClientOptions($options);
+
+        $names = $client->getMethodNames();
+        sort($names, SORT_STRING);
+        $this->assertSame([
+            'admin', 'allowance', 'approve', 'authorized', 'balance', 'burn', 'burn_from', 'clawback',
+            'decimals', 'mint', 'name', 'set_admin', 'set_authorized', 'symbol', 'transfer',
+            'transfer_from', 'trust',
+        ], $names);
+        $this->assertCount(30, $client->getSpecEntries());
+        $this->assertSame($options, $client->getOptions());
+        $this->assertSame(0, $mock->count());
+        $this->assertCount(2, $history);
+        $this->assertInstanceKeyRequest($history, 0);
+        $this->assertInstanceKeyRequest($history, 1);
+    }
+
+    public function testForClientOptionsCallsTheServersContractInfoLoader(): void
+    {
+        $mock = new MockHandler([]);
+        $server = new class(self::TEST_RPC_URL, new Client(['handler' => HandlerStack::create($mock)]))
+            extends SorobanServer {
+            public ?SorobanContractInfo $info = null;
+            /** @var array<string> */
+            public array $loadedContractIds = [];
+
+            public function loadContractInfoForContractId(string $contractId): ?SorobanContractInfo
+            {
+                $this->loadedContractIds[] = $contractId;
+                return $this->info;
+            }
+        };
+        $server->info = new SorobanContractInfo(0, 0, $this->createSpecEntries(), []);
+
+        $client = SorobanClient::forClientOptions($this->createClientOptions(server: $server));
+
+        $this->assertSame(['hello', 'add'], $client->getMethodNames());
+        $this->assertSame([self::TEST_CONTRACT_ID], $server->loadedContractIds);
+        $this->assertNull($mock->getLastRequest());
+    }
+
+    public function testForClientOptionsWasmInstanceRequestsInstanceThenCode(): void
+    {
+        $wasmHash = hash('sha256', 'test-wasm', true);
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->contractInstanceEntryData($wasmHash)),
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $this->createContractByteCode('hello'))),
+        ]);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
+
+        $client = SorobanClient::forClientOptions($this->createClientOptions(server: $server));
+
+        $this->assertSame(['hello'], $client->getMethodNames());
+        $this->assertCount(2, $history);
+        $this->assertInstanceKeyRequest($history, 0);
+        $this->assertSame($wasmHash, $this->requestedLedgerKey($history, 1)->contractCode->hash);
+        $this->assertSame(0, $mock->count());
+    }
+
+    public function testForClientOptionsExternalRefInstanceRequestsInstanceTagEntryAndCode(): void
+    {
+        $wasmHash = hash('sha256', 'test-wasm', true);
+        $executable = XdrContractExecutable::forExternalRef(
+            Address::fromContractId(self::TEST_OWNER_ID_HEX)->toXdr(), self::TEST_EXECUTABLE_TAG);
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->instanceEntryDataWithExecutable($executable)),
+            $this->ledgerEntryResponse($this->executableTagEntryData(
+                self::TEST_OWNER_ID_HEX, self::TEST_EXECUTABLE_TAG, XdrSCVal::forBytes($wasmHash))),
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $this->createContractByteCode('hello'))),
+        ]);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
+
+        $client = SorobanClient::forClientOptions($this->createClientOptions(server: $server));
+
+        $this->assertSame(['hello'], $client->getMethodNames());
+        $this->assertCount(3, $history);
+        $this->assertInstanceKeyRequest($history, 0);
+        $tagKey = $this->requestedLedgerKey($history, 1);
+        $this->assertSame(self::TEST_OWNER_ID_HEX, $tagKey->contractData->contract->contractId);
+        $this->assertSame(self::TEST_EXECUTABLE_TAG, $tagKey->contractData->key->executableTag);
+        $this->assertSame($wasmHash, $this->requestedLedgerKey($history, 2)->contractCode->hash);
+        $this->assertSame(0, $mock->count());
+    }
+
+    public function testForClientOptionsThrowsWhenExternalRefDoesNotResolve(): void
+    {
+        $executable = XdrContractExecutable::forExternalRef(
+            Address::fromContractId(self::TEST_OWNER_ID_HEX)->toXdr(), self::TEST_EXECUTABLE_TAG);
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->instanceEntryDataWithExecutable($executable)),
+            $this->emptyLedgerEntriesResponse(),
+            $this->ledgerEntryResponse($this->instanceEntryDataWithExecutable($executable)),
+        ]);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
+
+        try {
+            SorobanClient::forClientOptions($this->createClientOptions(server: $server));
+            $this->fail('Expected an exception');
+        } catch (Exception $e) {
+            $this->assertSame('Could not load contract info for the contract: ' . self::TEST_CONTRACT_ID,
+                $e->getMessage());
+        }
+        $this->assertCount(3, $history);
+        $this->assertInstanceKeyRequest($history, 0);
+        $tagKey = $this->requestedLedgerKey($history, 1);
+        $this->assertSame(self::TEST_OWNER_ID_HEX, $tagKey->contractData->contract->contractId);
+        $this->assertSame(self::TEST_EXECUTABLE_TAG, $tagKey->contractData->key->executableTag);
+        $this->assertInstanceKeyRequest($history, 2);
+        $this->assertSame(0, $mock->count());
+    }
+
+    public function testForClientOptionsThrowsForInstanceWithoutExecutable(): void
+    {
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->instanceKeyEntryData(XdrSCVal::forU32(1))),
+            $this->ledgerEntryResponse($this->instanceKeyEntryData(XdrSCVal::forU32(1))),
+        ]);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
+
+        try {
+            SorobanClient::forClientOptions($this->createClientOptions(server: $server));
+            $this->fail('Expected an exception');
+        } catch (Exception $e) {
+            $this->assertSame('Could not load contract info for the contract: ' . self::TEST_CONTRACT_ID,
+                $e->getMessage());
+        }
+        $this->assertCount(2, $history);
+        $this->assertInstanceKeyRequest($history, 0);
+        $this->assertInstanceKeyRequest($history, 1);
+        $this->assertSame(0, $mock->count());
+    }
+
+    public function testForSpecEntriesSendsNoRequestAndCarriesEntriesAndOptions(): void
+    {
+        $mock = new MockHandler([]);
+        $server = $this->createMockedServer($mock);
+        $specEntries = $this->createSpecEntries();
+        $options = $this->createClientOptions(KeyPair::random(), $server);
+
+        $client = SorobanClient::forSpecEntries($specEntries, $options);
+
+        $this->assertSame($specEntries, $client->getSpecEntries());
+        $this->assertSame($options, $client->getOptions());
+        $this->assertSame(['hello', 'add'], $client->getMethodNames());
+        $this->assertNull($mock->getLastRequest());
+    }
+
+    public function testForSpecEntriesReadOnlyReachesTransactionOptions(): void
+    {
+        $mock = new MockHandler([$this->simulateResponse(XdrSCVal::forVoid())]);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
+        $client = SorobanClient::forSpecEntries($this->createSpecEntries(),
+            $this->createClientOptions(KeyPair::fromAccountId(SACClient::READ_ONLY_SOURCE_ACCOUNT_ID), $server), true);
+
+        $tx = $client->buildInvokeMethodTx('hello');
+
+        $this->assertTrue($tx->options->readOnly);
+        $this->assertSame(['simulateTransaction'], $this->requestMethods($history));
+        $this->assertSame(0, $mock->count());
+    }
+
+    public function testForSpecEntriesReadOnlyDefaultsToFalse(): void
+    {
+        $mock = new MockHandler([
+            $this->accountEntryResponse(),
+            $this->simulateResponse(XdrSCVal::forVoid()),
+        ]);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
+        $client = SorobanClient::forSpecEntries($this->createSpecEntries(), $this->createClientOptions(server: $server));
+
+        $tx = $client->buildInvokeMethodTx('hello');
+
+        $this->assertFalse($tx->options->readOnly);
+        $this->assertSame(['getLedgerEntries', 'simulateTransaction'], $this->requestMethods($history));
+        $this->assertSame(0, $mock->count());
+    }
+
     // ---------------------------------------------------------------------
     // helpers
     // ---------------------------------------------------------------------
+
+    /**
+     * Asserts that the recorded request at the given position reads the persistent
+     * contract instance entry of the test contract.
+     */
+    private function assertInstanceKeyRequest(array $history, int $index): void
+    {
+        $key = $this->requestedLedgerKey($history, $index);
+        $this->assertNotNull($key->contractData);
+        $this->assertSame(StrKey::decodeContractIdHex(self::TEST_CONTRACT_ID),
+            $key->contractData->contract->getCanonicalContractIdHex());
+        $this->assertSame(XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE, $key->contractData->key->type->value);
+        $this->assertSame(XdrContractDataDurability::PERSISTENT, $key->contractData->durability->value);
+    }
+
+    /**
+     * The JSON-RPC method names of the recorded requests, in order.
+     *
+     * @return array<string>
+     */
+    private function requestMethods(array $history): array
+    {
+        return array_map(
+            fn (array $entry) => json_decode((string)$entry['request']->getBody(), true)['method'],
+            $history,
+        );
+    }
+
+    /**
+     * CONTRACT_DATA ledger entry holding the test contract's instance with the given executable.
+     */
+    private function instanceEntryDataWithExecutable(XdrContractExecutable $executable): XdrLedgerEntryData
+    {
+        return $this->instanceKeyEntryData(XdrSCVal::forContractInstance(new XdrSCContractInstance($executable)));
+    }
+
+    /**
+     * CONTRACT_DATA ledger entry under the test contract's instance key holding the given value.
+     */
+    private function instanceKeyEntryData(XdrSCVal $instanceValue): XdrLedgerEntryData
+    {
+        $dataEntry = new XdrContractDataEntry(
+            new XdrExtensionPoint(0),
+            Address::fromContractId(self::TEST_CONTRACT_ID)->toXdr(),
+            XdrSCVal::forLedgerKeyContractInstance(),
+            XdrContractDataDurability::PERSISTENT(),
+            $instanceValue,
+        );
+        $entryData = new XdrLedgerEntryData(XdrLedgerEntryType::CONTRACT_DATA());
+        $entryData->contractData = $dataEntry;
+        return $entryData;
+    }
 
     /**
      * Creates a SorobanClient through its private constructor.

@@ -8,10 +8,16 @@
 namespace Soneso\StellarSDK;
 
 use InvalidArgumentException;
+use RuntimeException;
 use Soneso\StellarSDK\Constants\StellarConstants;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Xdr\XdrAsset;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimage;
+use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
+use Soneso\StellarSDK\Xdr\XdrHashIDPreimage;
+use Soneso\StellarSDK\Xdr\XdrHashIDPreimageContractID;
 use Soneso\StellarSDK\Xdr\XdrTrustlineAsset;
 
 /**
@@ -291,5 +297,32 @@ abstract class Asset {
     public function toXdrTrustlineAsset(): XdrTrustlineAsset
     {
         return XdrTrustlineAsset::fromXdrAsset($this->toXdr());
+    }
+
+    /**
+     * Derives the contract id of this asset's Stellar Asset Contract on the given network
+     *
+     * The id is the sha256 of the contract id preimage built from the network id and this
+     * asset, so it is known without a request and before the contract is deployed. The
+     * native asset has a Stellar Asset Contract on every network; an issued asset's contract
+     * exists once it has been deployed on that network.
+     *
+     * @param Network $network the network the contract lives on
+     * @return string the contract id as a "C..." strkey
+     * @throws RuntimeException if this asset is a liquidity pool share, which has no Stellar Asset Contract
+     * @see \Soneso\StellarSDK\Soroban\Contract\SACClient::forAsset()
+     */
+    public function getContractId(Network $network): string
+    {
+        if ($this->getType() === Asset::TYPE_POOL_SHARE) {
+            throw new RuntimeException("A liquidity pool share has no Stellar Asset Contract; "
+                . "getContractId() takes the native asset or an issued asset");
+        }
+        $networkId = hash('sha256', $network->getNetworkPassphrase(), true);
+        $preimage = new XdrHashIDPreimage(XdrEnvelopeType::ENVELOPE_TYPE_CONTRACT_ID());
+        $preimage->contractID = new XdrHashIDPreimageContractID($networkId,
+            XdrContractIDPreimage::forAsset($this->toXdr()));
+        $contractIdHex = bin2hex(hash('sha256', $preimage->encode(), true));
+        return StrKey::encodeContractIdHex($contractIdHex);
     }
 }

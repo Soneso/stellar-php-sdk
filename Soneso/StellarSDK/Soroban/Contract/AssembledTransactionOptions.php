@@ -30,6 +30,11 @@ class AssembledTransactionOptions
      * @param string $method The name of the contract method to call.
      * @param array<XdrSCVal>|null $arguments Arguments to pass to the method call.
      * @param LoggerInterface|null $logger PSR-3 logger for debug output. Default: null (no logging).
+     * @param bool $readOnly Whether the transaction is built for a source account without a keypair.
+     *  When true, the transaction is built without loading the source account, carries sequence
+     *  number 1, and refuses to sign, to send, and to restore archived state, so it can only
+     *  be simulated.
+     *  Default: false.
      */
     public function __construct(
         public ClientOptions $clientOptions,
@@ -37,6 +42,7 @@ class AssembledTransactionOptions
         public string $method,
         public ?array $arguments = null,
         public ?LoggerInterface $logger = null,
+        public bool $readOnly = false,
     ) {
     }
 

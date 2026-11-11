@@ -33,6 +33,7 @@ use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
+use phpseclib3\Math\BigInteger;
 
 /**
  * High-level transaction builder for Soroban smart contract interactions
@@ -359,6 +360,8 @@ class AssembledTransaction
      *                          Requires source account keypair with private key. Default: null (uses method options)
      * @return void
      * @throws Exception If simulation fails or automatic restore is unsuccessful
+     * @throws Exception If a restore would run and the transaction was built by a read-only client
+     *  (AssembledTransactionOptions::$readOnly), which has no keypair to sign the restore with
      * @throws GuzzleException If the RPC request fails
      * @see getSimulationData() For accessing the simulation results
      */
@@ -379,6 +382,9 @@ class AssembledTransaction
             useUpgradedAuth: $this->options->methodOptions->useUpgradedAuth,
         ));
         if ($shouldRestore && $this->simulationResponse->restorePreamble !== null) {
+            if ($this->options->readOnly) {
+                throw $this->readOnlyRefusal();
+            }
             if ($this->options->clientOptions->sourceAccountKeyPair->getPrivateKey() === null) {
                 throw new Exception('Source account keypair has no private key, but needed for automatic restore.');
             }
@@ -441,9 +447,14 @@ class AssembledTransaction
      *
      * @return GetTransactionResponse The transaction result after completion
      * @throws Exception If the transaction has not been signed, sending fails, or polling expires before a terminal status
+     * @throws Exception If the transaction was built by a read-only client (AssembledTransactionOptions::$readOnly),
+     *  before any request, also when $signed was set by hand
      * @throws GuzzleException If the sendTransaction request fails
      */
     public function send() :GetTransactionResponse {
+        if ($this->options->readOnly) {
+            throw $this->readOnlyRefusal();
+        }
         if ($this->signed === null) {
             throw new Exception("The transaction has not yet been signed. Run `sign` first, or use `signAndSend` instead.");
         }
@@ -498,6 +509,8 @@ class AssembledTransaction
      * @param bool $force Force signing even if it is a read-only call (default: false)
      * @return void Sets the $signed property to the signed transaction clone
      * @throws Exception If the private key is missing, transaction requires multiple signers, or is read-only without force
+     * @throws Exception If the transaction was built by a read-only client (AssembledTransactionOptions::$readOnly),
+     *  also with force or a keypair override
      * @see signAuthEntries() For signing authorization entries in multi-signature workflows
      * @see signAndSend() For signing and sending in a single operation
      */
@@ -508,6 +521,9 @@ class AssembledTransaction
         if (!$force && $this->isReadCall()) {
             throw new Exception( "This is a read call. It requires no signature or sending. " .
                 "Use `force: true` to sign and send anyway.");
+        }
+        if ($this->options->readOnly) {
+            throw $this->readOnlyRefusal();
         }
         $signerKp = $sourceAccountKeyPair !== null ? $sourceAccountKeyPair: $this->options->clientOptions->sourceAccountKeyPair;
         if ($signerKp->getPrivateKey() === null) {
@@ -983,8 +999,13 @@ class AssembledTransaction
      * @return GetTransactionResponse The result of the restore transaction
      * @throws GuzzleException If the RPC request fails
      * @throws Exception If the source account has no private key or the restore fails
+     * @throws Exception If the transaction was built by a read-only client (AssembledTransactionOptions::$readOnly),
+     *  before any request
      */
     public function restoreFootprint(RestorePreamble $restorePreamble) : GetTransactionResponse {
+        if ($this->options->readOnly) {
+            throw $this->readOnlyRefusal();
+        }
 
         $restoreTx = self::buildFootprintRestoreTransaction($this->options,
             $restorePreamble->transactionData, $restorePreamble->minResourceFee);
@@ -1046,6 +1067,9 @@ class AssembledTransaction
      * Fetches the source account from the ledger
      *
      * Retrieves the account data including the current sequence number from the RPC server.
+     * A read-only transaction is only simulated, and simulation needs no account entry, so it
+     * uses the source account at sequence number 0 without a request; the builder increments
+     * it to 1.
      *
      * @internal This is an internal helper method used during transaction construction
      *
@@ -1054,11 +1078,25 @@ class AssembledTransaction
      * @throws GuzzleException If the RPC request fails
      */
     private function getSourceAccount(): Account {
+        if ($this->options->readOnly) {
+            return new Account($this->options->clientOptions->sourceAccountKeyPair->getAccountId(), new BigInteger(0));
+        }
         $account = $this->server->getAccount($this->options->clientOptions->sourceAccountKeyPair->getAccountId());
         if ($account === null) {
             throw new Exception("Account {$this->options->clientOptions->sourceAccountKeyPair->getAccountId()} not found");
         }
         return $account;
+    }
+
+    /**
+     * Builds the error for signing, sending, or restoring state for, a transaction of a read-only client.
+     *
+     * @return Exception the refusal naming the source account
+     */
+    private function readOnlyRefusal(): Exception {
+        $accountId = $this->options->clientOptions->sourceAccountKeyPair->getAccountId();
+        return new Exception("This transaction was built by a read-only client for source account {$accountId}, "
+            . "which has no keypair to sign with; build it from a client opened with the submitting account's keypair");
     }
 
 }
