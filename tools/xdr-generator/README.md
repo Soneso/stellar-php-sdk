@@ -6,7 +6,7 @@ Generates PHP XDR types from Stellar's `.x` definition files using the [xdrgen](
 
 - Docker (for Makefile targets)
 - Ruby, PHP, and the Composer dependencies in `vendor/` on the host, for the SEP-51 round-trip test emission that `make xdr-update` runs outside Docker
-- Ruby 3.x and Bundler (only if running the generator without Docker)
+- Ruby 3.2 or later and Bundler (only if running the generator without Docker)
 
 ## Usage
 
