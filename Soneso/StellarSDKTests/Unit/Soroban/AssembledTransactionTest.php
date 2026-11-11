@@ -29,6 +29,7 @@ use Soneso\StellarSDK\Soroban\Contract\AssembledTransactionOptions;
 use Soneso\StellarSDK\Soroban\Contract\ClientOptions;
 use Soneso\StellarSDK\Soroban\Contract\MethodOptions;
 use Soneso\StellarSDK\Soroban\Contract\SimulateHostFunctionResult;
+use Soneso\StellarSDK\Soroban\Responses\RestorePreamble;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SimulateTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SorobanRpcErrorResponse;
@@ -52,6 +53,12 @@ use Soneso\StellarSDK\Xdr\XdrExtensionPoint;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
+use Soneso\StellarSDK\Xdr\XdrLedgerKeyAccount;
+use Soneso\StellarSDK\Xdr\XdrAccountID;
+use Soneso\StellarSDK\Xdr\XdrAccountEntry;
+use Soneso\StellarSDK\Xdr\XdrAccountEntryExt;
+use Soneso\StellarSDK\Xdr\XdrLedgerEntryData;
+use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
 use Psr\Log\NullLogger;
 
 class AssembledTransactionTest extends TestCase
@@ -1325,5 +1332,230 @@ class AssembledTransactionTest extends TestCase
         $this->assertSame($network, $options->network);
         $this->assertEquals($rpcUrl, $options->rpcUrl);
         $this->assertSame($logger, $options->logger);
+    }
+
+    // ---------------------------------------------------------------------
+    // read-only transactions
+    // ---------------------------------------------------------------------
+
+    private const ZERO_ACCOUNT_ID = 'GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF';
+
+    public function testAssembledTransactionOptionsReadOnlyDefaultsToFalse(): void
+    {
+        $options = new AssembledTransactionOptions(
+            clientOptions: $this->createClientOptions(),
+            methodOptions: new MethodOptions(),
+            method: 'test',
+        );
+        $this->assertFalse($options->readOnly);
+    }
+
+    public function testReadOnlyBuildSendsOnlySimulateWithSourceAtSequenceOne(): void
+    {
+        $accountId = KeyPair::random()->getAccountId();
+        $history = [];
+        $mock = new MockHandler([$this->readOnlySimulateResponse(false, false)]);
+
+        $tx = AssembledTransaction::build($this->readOnlyTestOptions($accountId, $mock, $history, true));
+
+        $this->assertSame(['simulateTransaction'], $this->readOnlyRequestMethods($history));
+        $this->assertSame(0, $mock->count());
+        $this->assertNotNull($tx->tx);
+        $this->assertSame($accountId, $tx->tx->getSourceAccount()->getAccountId());
+        $this->assertSame('1', $tx->tx->getSequenceNumber()->toString());
+        $body = json_decode((string)$history[0]['request']->getBody(), true);
+        $sent = Transaction::fromEnvelopeBase64XdrString($body['params']['transaction']);
+        $this->assertInstanceOf(Transaction::class, $sent);
+        $this->assertSame($accountId, $sent->getSourceAccount()->getAccountId());
+        $this->assertSame('1', $sent->getSequenceNumber()->toString());
+    }
+
+    public function testReadOnlySignRefusesWriteTransaction(): void
+    {
+        $accountId = KeyPair::random()->getAccountId();
+        $history = [];
+        $mock = new MockHandler([$this->readOnlySimulateResponse(true, false)]);
+        $tx = AssembledTransaction::build($this->readOnlyTestOptions($accountId, $mock, $history, true));
+        $this->assertFalse($tx->isReadCall());
+
+        $attempts = [
+            'sign()' => fn () => $tx->sign(),
+            'sign(force: true)' => fn () => $tx->sign(force: true),
+            'sign(keypair)' => fn () => $tx->sign(KeyPair::random()),
+            'signAndSend()' => fn () => $tx->signAndSend(),
+            'signAndSend(keypair, force)' => fn () => $tx->signAndSend(KeyPair::random(), true),
+        ];
+        foreach ($attempts as $label => $attempt) {
+            try {
+                $attempt();
+                $this->fail("$label did not throw");
+            } catch (Exception $e) {
+                $this->assertSame($this->readOnlyRefusalMessage($accountId), $e->getMessage(), $label);
+            }
+            $this->assertNull($tx->signed, $label);
+        }
+        $this->assertSame(['simulateTransaction'], $this->readOnlyRequestMethods($history));
+    }
+
+    public function testReadOnlyRestoreFootprintRefusesWithoutRequest(): void
+    {
+        $accountId = KeyPair::random()->getAccountId();
+        $history = [];
+        $mock = new MockHandler([]);
+        $tx = AssembledTransaction::build($this->readOnlyTestOptions($accountId, $mock, $history, true,
+            new MethodOptions(simulate: false)));
+
+        try {
+            $tx->restoreFootprint(new RestorePreamble($this->createMockTransactionData(), 50));
+            $this->fail('restoreFootprint did not throw');
+        } catch (Exception $e) {
+            $this->assertSame($this->readOnlyRefusalMessage($accountId), $e->getMessage());
+        }
+        $this->assertSame([], $history);
+    }
+
+    public function testReadOnlySimulateWithRestorePreambleRefusesBeforePrivateKeyCheck(): void
+    {
+        $accountId = KeyPair::random()->getAccountId();
+        $history = [];
+        $mock = new MockHandler([$this->readOnlySimulateResponse(true, true)]);
+
+        try {
+            AssembledTransaction::build($this->readOnlyTestOptions($accountId, $mock, $history, true));
+            $this->fail('build did not throw');
+        } catch (Exception $e) {
+            $this->assertSame($this->readOnlyRefusalMessage($accountId), $e->getMessage());
+        }
+        $this->assertSame(['simulateTransaction'], $this->readOnlyRequestMethods($history));
+    }
+
+    public function testReadOnlySimulateWithRestoreOffKeepsPreamble(): void
+    {
+        $accountId = KeyPair::random()->getAccountId();
+        $history = [];
+        $mock = new MockHandler([$this->readOnlySimulateResponse(false, true)]);
+
+        $tx = AssembledTransaction::build($this->readOnlyTestOptions($accountId, $mock, $history, true,
+            new MethodOptions(restore: false)));
+
+        $this->assertNotNull($tx->simulationResponse);
+        $this->assertNotNull($tx->simulationResponse->restorePreamble);
+        $this->assertSame(['simulateTransaction'], $this->readOnlyRequestMethods($history));
+    }
+
+    public function testReadOnlySignAfterReadSimulationKeepsReadCallMessage(): void
+    {
+        $history = [];
+        $mock = new MockHandler([$this->readOnlySimulateResponse(false, false)]);
+        $tx = AssembledTransaction::build($this->readOnlyTestOptions(KeyPair::random()->getAccountId(), $mock,
+            $history, true));
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessageMatches('/^' . preg_quote('This is a read call. It requires no signature or sending. '
+            . 'Use `force: true` to sign and send anyway.', '/') . '\z/');
+        $tx->sign();
+    }
+
+    public function testZeroKeySourceWithoutReadOnlyLoadsAccountFirst(): void
+    {
+        $history = [];
+        $mock = new MockHandler([
+            $this->readOnlyAccountResponse(self::ZERO_ACCOUNT_ID),
+            $this->readOnlySimulateResponse(false, false),
+        ]);
+
+        $tx = AssembledTransaction::build($this->readOnlyTestOptions(self::ZERO_ACCOUNT_ID, $mock, $history, false));
+
+        $this->assertSame(['getLedgerEntries', 'simulateTransaction'], $this->readOnlyRequestMethods($history));
+        $body = json_decode((string)$history[0]['request']->getBody(), true);
+        $key = XdrLedgerKey::fromBase64Xdr($body['params']['keys'][0]);
+        $this->assertNotNull($key->account);
+        $this->assertSame(self::ZERO_ACCOUNT_ID, $key->account->accountID->getAccountId());
+        $this->assertNotNull($tx->tx);
+        $this->assertSame('124', $tx->tx->getSequenceNumber()->toString());
+    }
+
+    private function readOnlyRefusalMessage(string $accountId): string
+    {
+        return "This transaction was built by a read-only client for source account {$accountId}, which has no "
+            . "keypair to sign with; build it from a client opened with the submitting account's keypair";
+    }
+
+    private function readOnlyTestOptions(string $accountId, MockHandler $mock, array &$history, bool $readOnly,
+                                         ?MethodOptions $methodOptions = null): AssembledTransactionOptions
+    {
+        $stack = HandlerStack::create($mock);
+        $stack->push(\GuzzleHttp\Middleware::history($history));
+        $server = new SorobanServer(self::TEST_RPC_URL, new Client(['handler' => $stack]));
+        $clientOptions = new ClientOptions(
+            sourceAccountKeyPair: KeyPair::fromAccountId($accountId),
+            contractId: self::TEST_CONTRACT_ID,
+            network: $this->testNetwork,
+            rpcUrl: self::TEST_RPC_URL,
+            server: $server,
+        );
+        return new AssembledTransactionOptions(
+            clientOptions: $clientOptions,
+            methodOptions: $methodOptions ?? new MethodOptions(),
+            method: 'transfer',
+            arguments: [XdrSCVal::forU32(1)],
+            readOnly: $readOnly,
+        );
+    }
+
+    /**
+     * @return array<string>
+     */
+    private function readOnlyRequestMethods(array $history): array
+    {
+        return array_map(
+            fn (array $entry) => json_decode((string)$entry['request']->getBody(), true)['method'],
+            $history,
+        );
+    }
+
+    private function readOnlySimulateResponse(bool $writeCall, bool $restorePreamble): Response
+    {
+        $readWrite = [];
+        if ($writeCall) {
+            $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::ACCOUNT());
+            $ledgerKey->account = new XdrLedgerKeyAccount(new XdrAccountID(self::TEST_ACCOUNT_ID));
+            $readWrite[] = $ledgerKey;
+        }
+        $transactionData = new XdrSorobanTransactionData(new XdrSorobanTransactionDataExt(0),
+            new XdrSorobanResources(new XdrLedgerFootprint([], $readWrite), 0, 0, 0), 0);
+        $result = [
+            'minResourceFee' => '100',
+            'latestLedger' => 1000,
+            'transactionData' => $transactionData->toBase64Xdr(),
+            'results' => [['auth' => [], 'xdr' => XdrSCVal::forVoid()->toBase64Xdr()]],
+        ];
+        if ($restorePreamble) {
+            $result['restorePreamble'] = [
+                'transactionData' => $this->createMockTransactionData()->toBase64Xdr(),
+                'minResourceFee' => '50',
+            ];
+        }
+        return new Response(200, [], json_encode(['jsonrpc' => '2.0', 'id' => 1, 'result' => $result]));
+    }
+
+    private function readOnlyAccountResponse(string $accountId): Response
+    {
+        $entryData = new XdrLedgerEntryData(XdrLedgerEntryType::ACCOUNT());
+        $entryData->account = new XdrAccountEntry(
+            accountID: new XdrAccountID($accountId),
+            balance: new BigInteger(100000000),
+            seqNum: new XdrSequenceNumber(new BigInteger(123)),
+            numSubEntries: 0,
+            flags: 0,
+            homeDomain: '',
+            thresholds: "\x01\x00\x00\x00",
+            signers: [],
+            ext: new XdrAccountEntryExt(0),
+        );
+        return new Response(200, [], json_encode(['jsonrpc' => '2.0', 'id' => 1, 'result' => [
+            'entries' => [['key' => 'AAAAAA==', 'xdr' => $entryData->toBase64Xdr(), 'lastModifiedLedgerSeq' => 1000]],
+            'latestLedger' => 1000,
+        ]]));
     }
 }
