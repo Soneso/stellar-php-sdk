@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK\Xdr;
 use InvalidArgumentException;
 use JsonException;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 class XdrSCAddressBase {
 
@@ -118,7 +119,9 @@ class XdrSCAddressBase {
      *
      * A contract id is accepted as its strkey form "C..." or as the bare hash in
      * hexadecimal. Every reader of the field resolves it through here, so none takes
-     * what another refuses.
+     * what another refuses. A value that starts with "S" or "s", the first letter of a
+     * secret seed, is neither spelling, and the error names it by its kind without
+     * showing it.
      *
      * @return string the contract id as 64 lower case hexadecimal characters
      * @throws InvalidArgumentException when the field is unset, holds a string that is
@@ -128,6 +131,12 @@ class XdrSCAddressBase {
         $value = $this->contractId;
         if ($value === null || $value === '') {
             throw new InvalidArgumentException('Contract id is not set');
+        }
+        $seedKind = SecretSeedRedaction::seedKind($value);
+        if ($seedKind !== null) {
+            throw new InvalidArgumentException(
+                'Contract id must be a "C..." strkey or a hexadecimal string, ' . $seedKind . ' given'
+            );
         }
         if (strlen($value) === self::CONTRACT_STRKEY_LENGTH && $value[0] === 'C') {
             // The base32 and hexadecimal alphabets share A-F and 2-7, so a string of
@@ -170,7 +179,9 @@ class XdrSCAddressBase {
      * A pool id is accepted as its strkey form "L..." or as the bare hash in
      * hexadecimal. PoolID is a plain 32-byte hash on the wire with no discriminant
      * ahead of it, so there is no prefixed spelling to accept. Every reader of the
-     * field resolves it through here, so none takes what another refuses.
+     * field resolves it through here, so none takes what another refuses. A value that
+     * starts with "S" or "s", the first letter of a secret seed, is neither spelling,
+     * and the error names it by its kind without showing it.
      *
      * @return string the pool id as 64 lower case hexadecimal characters
      * @throws InvalidArgumentException when the field is unset, holds a string that is
@@ -180,6 +191,12 @@ class XdrSCAddressBase {
         $value = $this->liquidityPoolId;
         if ($value === null || $value === '') {
             throw new InvalidArgumentException('Liquidity pool id is not set');
+        }
+        $seedKind = SecretSeedRedaction::seedKind($value);
+        if ($seedKind !== null) {
+            throw new InvalidArgumentException(
+                'Liquidity pool id must be an "L..." strkey or a hexadecimal string, ' . $seedKind . ' given'
+            );
         }
         if (strlen($value) === self::LIQUIDITY_POOL_STRKEY_LENGTH && $value[0] === 'L') {
             // Requiring the version letter here leaves a hexadecimal id of the same

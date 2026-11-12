@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK\Xdr;
 
 use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * @phpstan-consistent-constructor
@@ -52,10 +53,11 @@ class XdrTrustlineAsset extends XdrTrustlineAssetBase
 
         // A 64-character hex string with no colon is treated as a pool ID.
         if (strlen($raw) === 64 && strpos($raw, ':') === false) {
-            $bytes = hex2bin($raw);
+            $bytes = ctype_xdigit($raw) ? hex2bin($raw) : false;
             if ($bytes === false) {
                 throw new InvalidArgumentException(
-                    'Invalid trustline asset: expected 64-char hex pool ID but got invalid hex: ' . $raw
+                    'Invalid trustline asset: expected 64-char hex pool ID but got invalid hex: '
+                        . SecretSeedRedaction::keyForMessage($raw)
                 );
             }
             $result = new static(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE));
@@ -65,21 +67,25 @@ class XdrTrustlineAsset extends XdrTrustlineAssetBase
 
         $parts = explode(':', $raw, 2);
         if (count($parts) !== 2) {
-            throw new InvalidArgumentException('Invalid trustline asset: ' . $raw);
+            throw new InvalidArgumentException('Invalid trustline asset: ' . SecretSeedRedaction::redactSecretSeeds($raw));
         }
 
         $code = trim($parts[0]);
         $issuer = trim($parts[1]);
 
         if (!StrKey::isValidAccountId($issuer)) {
-            throw new InvalidArgumentException('Invalid trustline asset issuer: ' . $issuer);
+            throw new InvalidArgumentException(
+                'Invalid trustline asset issuer: ' . SecretSeedRedaction::keyForMessage($issuer)
+            );
         }
 
         $issuerId = XdrAccountID::fromAccountId($issuer);
         $codeLen = strlen($code);
 
         if ($codeLen === 0 || $codeLen > 12) {
-            throw new InvalidArgumentException('Asset code length must be 1–12 characters: ' . $code);
+            throw new InvalidArgumentException(
+                'Asset code length must be 1–12 characters: ' . SecretSeedRedaction::redactSecretSeeds($code)
+            );
         }
 
         if ($codeLen <= 4) {

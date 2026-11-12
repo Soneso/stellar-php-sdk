@@ -45,46 +45,6 @@ class XdrSCAddress extends XdrSCAddressBase
     }
 
     /**
-     * Returns the contract id as 64 lower case hexadecimal characters, as
-     * XdrSCAddressBase::getCanonicalContractIdHex() does. A field that starts with "S"
-     * or "s", the first letter of a secret seed, is neither spelling, and the error names
-     * it by its kind without showing it.
-     *
-     * @return string the contract id as 64 lower case hexadecimal characters
-     * @throws InvalidArgumentException when the field is unset, holds a string that is
-     * neither a "C..." strkey nor hexadecimal, or has a length matching neither shape
-     */
-    public function getCanonicalContractIdHex(): string {
-        $kind = SecretSeedRedaction::seedKind($this->contractId ?? '');
-        if ($kind !== null) {
-            throw new InvalidArgumentException(
-                'Contract id must be a "C..." strkey or a hexadecimal string, ' . $kind . ' given'
-            );
-        }
-        return parent::getCanonicalContractIdHex();
-    }
-
-    /**
-     * Returns the liquidity pool id as 64 lower case hexadecimal characters, as
-     * XdrSCAddressBase::getCanonicalLiquidityPoolIdHex() does. A field that starts with
-     * "S" or "s", the first letter of a secret seed, is neither spelling, and the error
-     * names it by its kind without showing it.
-     *
-     * @return string the pool id as 64 lower case hexadecimal characters
-     * @throws InvalidArgumentException when the field is unset, holds a string that is
-     * neither an "L..." strkey nor hexadecimal, or has a length matching neither shape
-     */
-    public function getCanonicalLiquidityPoolIdHex(): string {
-        $kind = SecretSeedRedaction::seedKind($this->liquidityPoolId ?? '');
-        if ($kind !== null) {
-            throw new InvalidArgumentException(
-                'Liquidity pool id must be an "L..." strkey or a hexadecimal string, ' . $kind . ' given'
-            );
-        }
-        return parent::getCanonicalLiquidityPoolIdHex();
-    }
-
-    /**
      * Accepts hex or strkey values ("C...")
      * @param string $contractId hex or "C..."
      * @return XdrSCAddress

@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK\Xdr;
 
 use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * @phpstan-consistent-constructor
@@ -63,21 +64,27 @@ class XdrChangeTrustAsset extends XdrChangeTrustAssetBase
 
         $parts = explode(':', $raw, 2);
         if (count($parts) !== 2) {
-            throw new InvalidArgumentException('Invalid change trust asset: ' . $raw);
+            throw new InvalidArgumentException(
+                'Invalid change trust asset: ' . SecretSeedRedaction::redactSecretSeeds($raw)
+            );
         }
 
         $code = trim($parts[0]);
         $issuer = trim($parts[1]);
 
         if (!StrKey::isValidAccountId($issuer)) {
-            throw new InvalidArgumentException('Invalid change trust asset issuer: ' . $issuer);
+            throw new InvalidArgumentException(
+                'Invalid change trust asset issuer: ' . SecretSeedRedaction::keyForMessage($issuer)
+            );
         }
 
         $issuerId = XdrAccountID::fromAccountId($issuer);
         $codeLen = strlen($code);
 
         if ($codeLen === 0 || $codeLen > 12) {
-            throw new InvalidArgumentException('Asset code length must be 1–12 characters: ' . $code);
+            throw new InvalidArgumentException(
+                'Asset code length must be 1–12 characters: ' . SecretSeedRedaction::redactSecretSeeds($code)
+            );
         }
 
         if ($codeLen <= 4) {

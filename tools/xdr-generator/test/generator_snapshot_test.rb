@@ -324,6 +324,23 @@ class GeneratorSnapshotTest < Minitest::Test
         "XdrSCAddressBase.php must define #{resolver}()")
     end
 
+    # A value that starts with "S" or "s" may be a secret seed: each resolver
+    # names it by its kind before any message that previews the value.
+    assert_includes base_contents, "use Soneso\\StellarSDK\\Soroban\\SecretSeedRedaction;",
+      "XdrSCAddressBase.php must import SecretSeedRedaction"
+    {
+      "getCanonicalContractIdHex" => 'Contract id must be a "C..." strkey or a hexadecimal string, ',
+      "getCanonicalLiquidityPoolIdHex" => 'Liquidity pool id must be an "L..." strkey or a hexadecimal string, ',
+    }.each do |resolver, message|
+      body = base_contents[/^    public function #{resolver}\(\): string \{.*?^    \}/m].to_s
+      assert_match(/\$seedKind = SecretSeedRedaction::seedKind\(\$value\);\s+if \(\$seedKind !== null\) \{\s+throw new InvalidArgumentException\(\s+'#{Regexp.escape(message)}' \. \$seedKind \. ' given'\s+\);/,
+        body, "XdrSCAddressBase.php #{resolver}() must name a value that starts with S by its kind")
+      seed_check = body.index('SecretSeedRedaction::seedKind(')
+      preview = body.index('XdrJsonHelper::safePreview(')
+      assert seed_check && preview && seed_check < preview,
+        "XdrSCAddressBase.php #{resolver}() must check for a seed before it previews the value"
+    end
+
     {
       "encode" => [
         /\$bytes \.= XdrEncoder::opaqueFixed\(pack\('H\*', \$this->getCanonicalContractIdHex\(\)\), 32\);/,
@@ -380,6 +397,14 @@ class GeneratorSnapshotTest < Minitest::Test
       "XdrContractExecutableBase.php must define getCanonicalWasmIdHex()")
     assert_match(/private static function canonicalWasmIdHex\(\?string \$value\): string/, base_contents,
       "XdrContractExecutableBase.php must define canonicalWasmIdHex()")
+
+    # A field that starts with "S" or "s" may be a secret seed: the accessor
+    # names it by its kind before the resolver could preview it.
+    assert_includes base_contents, "use Soneso\\StellarSDK\\Soroban\\SecretSeedRedaction;",
+      "XdrContractExecutableBase.php must import SecretSeedRedaction"
+    accessor = base_contents[/^    public function getCanonicalWasmIdHex\(\): string \{.*?^    \}/m].to_s
+    assert_match(/\$seedKind = SecretSeedRedaction::seedKind\(\$this->wasmIdHex \?\? ''\);\s+if \(\$seedKind !== null\) \{\s+throw new InvalidArgumentException\('Wasm hash must be a hexadecimal string, ' \. \$seedKind \. ' given'\);\s+\}\s+return self::canonicalWasmIdHex\(\$this->wasmIdHex\);/,
+      accessor, "XdrContractExecutableBase.php getCanonicalWasmIdHex() must name a value that starts with S by its kind")
 
     {
       "encode" => /\$bytes \.= XdrEncoder::opaqueFixed\(pack\('H\*', \$this->getCanonicalWasmIdHex\(\)\), 32\);/,

@@ -41,7 +41,9 @@ class XdrAllowTrustOperationAsset extends XdrAllowTrustOperationAssetBase
 
         $codeLen = strlen($code);
         if ($codeLen === 0 || $codeLen > 12) {
-            throw new InvalidArgumentException('Asset code length must be 1–12 characters: ' . $code);
+            throw new InvalidArgumentException(
+                'Asset code length must be 1–12 characters: ' . SecretSeedRedaction::redactSecretSeeds($code)
+            );
         }
 
         if ($codeLen <= 4) {

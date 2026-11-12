@@ -30,6 +30,7 @@ use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\MuxedContract;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\Federation\Federation;
+use Soneso\StellarSDK\SEP\TxRep\TxRep;
 use Soneso\StellarSDK\SignedPayloadSigner;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Contract\ClientOptions;
@@ -48,11 +49,13 @@ use Soneso\StellarSDK\Soroban\SorobanDelegateDescriptor;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\Util\StellarAmount;
 use Soneso\StellarSDK\Xdr\TxRepHelper;
+use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrAllowTrustOperationAsset;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
 use Soneso\StellarSDK\Xdr\XdrContractExecutable;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrJsonHelper;
+use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCContractInstance;
 use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
@@ -132,6 +135,58 @@ class SecretSeedMessagesTest extends TestCase
         $entry = new XdrSCSpecEntry(new XdrSCSpecEntryKind(XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_UNION_V0));
         $entry->udtUnionV0 = new XdrSCSpecUDTUnionV0('', '', 'Option', [$case]);
         return new ContractSpec([$entry]);
+    }
+
+    /**
+     * TxRep texts the public TxRep parser reads an asset from: a change trust operation, the
+     * revoke sponsorship of a trust line, and a footprint holding a trust line key. Each holds
+     * `{asset}` in place of the asset value.
+     *
+     * @return array<string, string>
+     */
+    private static function txRepAssetTemplates(): array
+    {
+        $account = self::account();
+        $head = "type: ENVELOPE_TYPE_TX\ntx.sourceAccount: $account\ntx.fee: 100\ntx.seqNum: 2\n"
+            . "tx.cond.type: PRECOND_NONE\ntx.memo.type: MEMO_NONE\ntx.operations.len: 1\n"
+            . "tx.operations[0].sourceAccount._present: false\n";
+        $revoke = 'tx.operations[0].body.revokeSponsorshipOp';
+        $footprint = 'tx.sorobanData.resources.footprint';
+        return [
+            'change trust' => $head
+                . "tx.operations[0].body.type: CHANGE_TRUST\n"
+                . "tx.operations[0].body.changeTrustOp.line: {asset}\n"
+                . "tx.operations[0].body.changeTrustOp.limit: 100000000000\n"
+                . "tx.ext.v: 0\nsignatures.len: 0",
+            'revoke sponsorship trust line' => $head
+                . "tx.operations[0].body.type: REVOKE_SPONSORSHIP\n"
+                . "$revoke.type: REVOKE_SPONSORSHIP_LEDGER_ENTRY\n"
+                . "$revoke.ledgerKey.type: TRUSTLINE\n"
+                . "$revoke.ledgerKey.trustLine.accountID: $account\n"
+                . "$revoke.ledgerKey.trustLine.asset: {asset}\n"
+                . "tx.ext.v: 0\nsignatures.len: 0",
+            'footprint trust line' => $head
+                . "tx.operations[0].body.type: RESTORE_FOOTPRINT\n"
+                . "tx.operations[0].body.restoreFootprintOp.ext.v: 0\n"
+                . "tx.ext.v: 1\ntx.sorobanData.ext.v: 0\n"
+                . "$footprint.readOnly.len: 1\n"
+                . "$footprint.readOnly[0].type: TRUSTLINE\n"
+                . "$footprint.readOnly[0].trustLine.accountID: $account\n"
+                . "$footprint.readOnly[0].trustLine.asset: {asset}\n"
+                . "$footprint.readWrite.len: 0\n"
+                . "tx.sorobanData.resources.instructions: 0\n"
+                . "tx.sorobanData.resources.diskReadBytes: 0\n"
+                . "tx.sorobanData.resources.writeBytes: 0\n"
+                . "tx.sorobanData.resourceFee: 0\nsignatures.len: 0",
+        ];
+    }
+
+    /**
+     * Parses $template with $asset in place of `{asset}` through the public TxRep parser.
+     */
+    private static function parseTxRepAsset(string $template, string $asset): string
+    {
+        return TxRep::transactionEnvelopeXdrBase64FromTxRep(str_replace('{asset}', $asset, $template));
     }
 
     private static function mockedClient(array $responses, array &$history): Client
@@ -274,6 +329,8 @@ class SecretSeedMessagesTest extends TestCase
     }
 
     #[DataProvider('keyPositionSites')]
+    #[DataProvider('txRepAssetKeySites')]
+    #[DataProvider('txRepAccountKeySites')]
     public function testKeyPositionNamesTheKindOnly(Closure $call, Closure $message, string $otherInput,
         string $otherMessage): void
     {
@@ -305,6 +362,62 @@ class SecretSeedMessagesTest extends TestCase
         $other = str_pad('XYZ', 64);
         $error = $this->thrown(fn (string $v) => TxRepHelper::parseTrustlineAsset($v), $other, 'other input');
         $this->assertSame($prefix . $other, $error->getMessage());
+    }
+
+    public function testMuxedAccountFromTxRepNamesTheKindOnly(): void
+    {
+        // The message keeps the first letter of the value, which the reader trims, and names
+        // the value by its kind.
+        $key = 'tx.operations[0].body.paymentOp.destination';
+        $parse = fn (string $v) => XdrMuxedAccount::fromTxRep([$key => $v], $key);
+        $prefix = 'Unrecognized muxed account address prefix "';
+        $variants = SecretSeedVariants::create();
+        foreach ($variants->variants as $name => $variant) {
+            $error = $this->thrown($parse, $variant['input'], $name);
+            $this->assertInstanceOf(InvalidArgumentException::class, $error, $name);
+            $this->assertSame($prefix . trim($variant['input'])[0] . '": ' . $variant['kind'], $error->getMessage(),
+                $name);
+            $variants->assertNotShown($error, $name);
+        }
+        $error = $this->thrown($parse, 'XYZ', 'other input');
+        $this->assertInstanceOf(InvalidArgumentException::class, $error);
+        $this->assertSame($prefix . 'X": XYZ', $error->getMessage());
+    }
+
+    public function testTxRepPoolIdOfTrustlineAssetNamesAValueStartingWithS(): void
+    {
+        // The public TxRep parser reads a trust line asset of exactly 64 characters without a
+        // colon as a pool id. It trims the value, so a seed reaches the hex check only with
+        // other characters after it, and the error names it as a value starting with S. A value
+        // that is not hexadecimal is rejected by the exception alone, without a PHP warning.
+        $prefix = 'Invalid trustline asset: expected 64-char hex pool ID but got invalid hex: ';
+        $templates = self::txRepAssetTemplates();
+        $variants = SecretSeedVariants::create();
+        $raised = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$raised): bool {
+            $raised[] = $errstr;
+            return true;
+        });
+        try {
+            foreach (['revoke sponsorship trust line', 'footprint trust line'] as $site) {
+                $parse = fn (string $v) => self::parseTxRepAsset($templates[$site], $v);
+                foreach ($variants->variants as $name => $variant) {
+                    $context = $site . ', ' . $name;
+                    $error = $this->thrown($parse, str_pad(trim($variant['input']), 64, 'Z'), $context);
+                    $this->assertInstanceOf(InvalidArgumentException::class, $error, $context);
+                    $this->assertSame($prefix . SecretSeedVariants::VALUE_STARTING_WITH_S, $error->getMessage(),
+                        $context);
+                    $variants->assertNotShown($error, $context);
+                }
+                $other = str_repeat('Z', 64);
+                $error = $this->thrown($parse, $other, $site . ', other input');
+                $this->assertInstanceOf(InvalidArgumentException::class, $error, $site);
+                $this->assertSame($prefix . $other, $error->getMessage(), $site);
+            }
+        } finally {
+            restore_error_handler();
+        }
+        $this->assertSame([], $raised);
     }
 
     public function testSignedPayloadSignerNamesASeedWithoutShowingIt(): void
@@ -588,9 +701,81 @@ class SecretSeedMessagesTest extends TestCase
         return $sites;
     }
 
+    /**
+     * The asset issuer the public TxRep parser reads, in the shape of keyPositionSites().
+     *
+     * @return array<string, array{Closure(string): mixed, Closure(string): string, string, string}>
+     */
+    public static function txRepAssetKeySites(): array
+    {
+        $sites = [];
+        foreach (self::txRepAssetTemplates() as $name => $template) {
+            $issuer = $name === 'change trust' ? 'Invalid change trust asset issuer: ' : 'Invalid trustline asset issuer: ';
+            $sites['TxRep ' . $name . ' issuer'] = [
+                fn (string $v) => self::parseTxRepAsset($template, 'USD:' . $v),
+                fn (string $kind) => $issuer . $kind,
+                'XYZ', $issuer . 'XYZ',
+            ];
+        }
+        return $sites;
+    }
+
+    /**
+     * The account id XdrAccountID reads from a TxRep map, in the shape of keyPositionSites().
+     *
+     * @return array<string, array{Closure(string): mixed, Closure(string): string, string, string}>
+     */
+    public static function txRepAccountKeySites(): array
+    {
+        $key = 'tx.operations[0].body.createAccountOp.destination';
+        $invalid = 'Invalid account ID in TxRep for key "' . $key . '": ';
+        return [
+            'XdrAccountID::fromTxRep' => [
+                fn (string $v) => XdrAccountID::fromTxRep([$key => $v], $key),
+                fn (string $kind) => $invalid . $kind,
+                'XYZ', $invalid . 'XYZ',
+            ],
+        ];
+    }
+
+    /**
+     * The asset value and asset code the public TxRep parser reads, and the asset code of an
+     * allow trust asset read from a TxRep map, in the shape of otherPositionSites(). The parser
+     * trims each value, so leading blanks do not reach the message.
+     *
+     * @return array<string, array{Closure(string): mixed, Closure(string): string, string, string, class-string}>
+     */
+    public static function txRepAssetOtherSites(): array
+    {
+        $codeLength = 'Asset code length must be 1–12 characters: ';
+        $account = self::account();
+        $sites = [];
+        foreach (self::txRepAssetTemplates() as $name => $template) {
+            $invalid = $name === 'change trust' ? 'Invalid change trust asset: ' : 'Invalid trustline asset: ';
+            $sites['TxRep ' . $name . ' value'] = [
+                fn (string $v) => self::parseTxRepAsset($template, $v),
+                fn (string $text) => $invalid . ltrim($text),
+                'USD', $invalid . 'USD', InvalidArgumentException::class,
+            ];
+            $sites['TxRep ' . $name . ' code'] = [
+                fn (string $v) => self::parseTxRepAsset($template, $v . ':' . $account),
+                fn (string $text) => $codeLength . ltrim($text),
+                'ABCDEFGHIJKLM', $codeLength . 'ABCDEFGHIJKLM', InvalidArgumentException::class,
+            ];
+        }
+        $key = 'tx.operations[0].body.allowTrustOp.asset';
+        $sites['XdrAllowTrustOperationAsset::fromTxRep'] = [
+            fn (string $v) => XdrAllowTrustOperationAsset::fromTxRep([$key => $v], $key),
+            fn (string $text) => $codeLength . ltrim($text),
+            'ABCDEFGHIJKLM', $codeLength . 'ABCDEFGHIJKLM', InvalidArgumentException::class,
+        ];
+        return $sites;
+    }
+
     #[DataProvider('otherPositionSites')]
     #[DataProvider('jsonHelperSites')]
     #[DataProvider('txRepFieldKeySites')]
+    #[DataProvider('txRepAssetOtherSites')]
     public function testOtherPositionReplacesWhatMayBeASeed(Closure $call, Closure $message, string $otherInput,
         string $otherMessage, string $exceptionClass): void
     {
@@ -835,6 +1020,22 @@ class SecretSeedMessagesTest extends TestCase
         $this->assertSame('SEED:' . $g,
             TxRepHelper::formatTrustlineAsset(TxRepHelper::parseTrustlineAsset('SEED:' . $g)));
         $this->assertSame($hex, TxRepHelper::formatTrustlineAsset(TxRepHelper::parseTrustlineAsset($hex)));
+        foreach (self::txRepAssetTemplates() as $name => $template) {
+            $assets = $name === 'change trust' ? ['SEED:' . $g, 'native'] : ['SEED:' . $g, 'SEEDLONG:' . $g, $hex];
+            foreach ($assets as $asset) {
+                $this->assertSame(str_replace('{asset}', $asset === 'native' ? 'XLM' : $asset, $template),
+                    TxRep::fromTransactionEnvelopeXdrBase64(self::parseTxRepAsset($template, $asset)), $name);
+            }
+        }
+        $accountKey = 'tx.operations[0].body.paymentOp.destination';
+        $this->assertSame($g, XdrAccountID::fromTxRep([$accountKey => $g], $accountKey)->getAccountId());
+        foreach ([$g, $m] as $address) {
+            $this->assertSame($address,
+                TxRepHelper::formatMuxedAccount(XdrMuxedAccount::fromTxRep([$accountKey => $address], $accountKey)));
+        }
+        $allowTrustKey = 'tx.operations[0].body.allowTrustOp.asset';
+        $this->assertSame('SEED', TxRepHelper::formatAllowTrustAsset(
+            XdrAllowTrustOperationAsset::fromTxRep([$allowTrustKey => 'SEED'], $allowTrustKey)));
         $this->assertSame($g, TxRepHelper::formatAccountId(TxRepHelper::parseAccountId($g)));
         $this->assertSame($m, TxRepHelper::formatMuxedAccount(TxRepHelper::parseMuxedAccount($m)));
         $this->assertSame($g, TxRepHelper::formatSignerKey(TxRepHelper::parseSignerKey($g)));

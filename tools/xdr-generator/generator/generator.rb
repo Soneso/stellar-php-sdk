@@ -511,6 +511,7 @@ class Generator < Xdrgen::Generators::Base
     imports << "use JsonException;" if emits_sep51_methods
     imports << "use phpseclib3\\Math\\BigInteger;" if needs_bigint
     imports << "use Soneso\\StellarSDK\\Crypto\\StrKey;" if needs_strkey
+    imports << "use Soneso\\StellarSDK\\Soroban\\SecretSeedRedaction;" if arm_storage_helpers_name_seeds?(union_name)
 
     out.puts GENERATED_HEADER
     out.puts ""
@@ -595,6 +596,13 @@ class Generator < Xdrgen::Generators::Base
 
     write_php_block(out, helpers, "    ")
     out.puts ""
+  end
+
+  # True when the type's ARM_STORAGE_HELPERS members call SecretSeedRedaction,
+  # which the union then imports.
+  def arm_storage_helpers_name_seeds?(union_name)
+    helpers = arm_storage_helpers(union_name)
+    !helpers.nil? && helpers.include?('SecretSeedRedaction::')
   end
 
   def render_union_encode(out, union_name, class_name, disc_info, arms)
