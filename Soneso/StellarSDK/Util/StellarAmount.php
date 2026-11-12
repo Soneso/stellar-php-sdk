@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK\Util;
 
 use Soneso\StellarSDK\Constants\StellarConstants;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use phpseclib3\Math\BigInteger;
 
@@ -94,6 +95,15 @@ class StellarAmount
     private static function zero(): BigInteger
     {
         return self::$zeroCache ??= new BigInteger('0');
+    }
+
+    /**
+     * Returns the first 64 characters of a refused amount string for an error message, after
+     * anything in it that may be a secret seed is replaced.
+     */
+    private static function preview(string $decimalAmount): string
+    {
+        return substr(SecretSeedRedaction::redactSecretSeeds($decimalAmount), 0, 64);
     }
 
     /**
@@ -186,7 +196,7 @@ class StellarAmount
         // both 1005 and 100.5 and the intended one cannot be recovered from the string.
         if (str_contains($decimalAmount, ',')) {
             throw new \InvalidArgumentException(
-                'Amount must not contain a comma: ' . substr($decimalAmount, 0, 64));
+                'Amount must not contain a comma: ' . self::preview($decimalAmount));
         }
 
         // Surrounding whitespace is padding: an amount read from a file or a CSV cell carries a
@@ -210,7 +220,7 @@ class StellarAmount
         // before a trailing newline.
         if (preg_match('/^(\d+(\.\d*)?|\.\d+)$/D', $amountStr) !== 1) {
             throw new \InvalidArgumentException(
-                'Amount is not a decimal number: ' . substr($decimalAmount, 0, 64));
+                'Amount is not a decimal number: ' . self::preview($decimalAmount));
         }
 
         $parts = explode('.', $amountStr);
@@ -231,7 +241,7 @@ class StellarAmount
                 if (strlen($fraction) > 7) {
                     throw new \InvalidArgumentException(
                         'Amount cannot have more than 7 decimal places: '
-                        . substr($decimalAmount, 0, 64));
+                        . self::preview($decimalAmount));
                 }
                 $unscaledAmount = $unscaledAmount->add(
                     new BigInteger(str_pad($fraction, 7, '0', STR_PAD_RIGHT)));

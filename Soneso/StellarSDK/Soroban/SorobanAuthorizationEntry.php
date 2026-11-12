@@ -291,7 +291,8 @@ class SorobanAuthorizationEntry
             $matched = $this->appendSignatureToMatchingNodes($signer, $payload, $forAddress, 0);
             if (!$matched) {
                 throw new InvalidArgumentException(
-                    'forAddress "' . $forAddress . '" matched no node in this authorization entry'
+                    'forAddress "' . SecretSeedRedaction::keyForMessage($forAddress)
+                        . '" matched no node in this authorization entry'
                 );
             }
         }
@@ -621,7 +622,8 @@ class SorobanAuthorizationEntry
             return \Soneso\StellarSDK\Xdr\XdrSCAddress::forContractId(StrKey::decodeContractIdHex($strkey));
         }
         throw new InvalidArgumentException(
-            'Delegate address must be a G- or C-prefixed strkey; got: ' . $strkey
+            'Delegate address must be a G- or C-prefixed strkey; got: '
+                . SecretSeedRedaction::keyForMessage($strkey)
         );
     }
 

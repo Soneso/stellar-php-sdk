@@ -11,6 +11,7 @@ use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\LiquidityPools\LiquidityPoolResponse;
 use Soneso\StellarSDK\Responses\LiquidityPools\LiquidityPoolsPageResponse;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * Builds requests for the liquidity pools endpoint in Horizon
@@ -65,9 +66,11 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder
      * Requests <code>GET /liquidity_pools/{liquidity_pool_id}</code>
      * @param string $liquidityPoolID (liquidity_pool_id) of the liquidity pool to fetch
      * @throws HorizonRequestException
+     * @throws \InvalidArgumentException If $liquidityPoolID starts with "S" or "s", before any request is sent
      */
     public function forPoolId(string $liquidityPoolID) : LiquidityPoolResponse
     {
+        SecretSeedRedaction::requireNotSecretSeed($liquidityPoolID, 'liquidityPoolID');
         $idHex = $liquidityPoolID;
         if (str_starts_with($idHex, "L")) {
             $idHex = StrKey::decodeLiquidityPoolIdHex($idHex);
@@ -93,9 +96,11 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder
      *
      * @param string $accountId Account ID to filter liquidity pools
      * @return LiquidityPoolsRequestBuilder current instance
+     * @throws \InvalidArgumentException If $accountId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs LiquidityPools
      */
     public function forAccount(string $accountId) : LiquidityPoolsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($accountId, 'accountId');
         $this->queryParameters[LiquidityPoolsRequestBuilder::ACCOUNT_PARAMETER_NAME] = $accountId;
         return $this;
     }

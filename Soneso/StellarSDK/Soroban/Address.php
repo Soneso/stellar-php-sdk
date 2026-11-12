@@ -241,7 +241,7 @@ class Address
         if (StrKey::isValidLiquidityPoolId($strKey)) {
             return Address::fromLiquidityPoolId($strKey);
         }
-        throw new InvalidArgumentException('Not a valid address strkey: ' . $strKey);
+        throw new InvalidArgumentException('Not a valid address strkey: ' . SecretSeedRedaction::keyForMessage($strKey));
     }
 
     /**

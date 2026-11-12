@@ -7,6 +7,7 @@ use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\PaymentPath\PathsPageResponse;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * Builds requests for the find paths endpoint in Horizon (deprecated)
@@ -65,8 +66,10 @@ class FindPathsRequestBuilder extends RequestBuilder {
      *
      * @param string $account The Stellar account ID that will receive the payment
      * @return FindPathsRequestBuilder This builder for method chaining
+     * @throws \InvalidArgumentException If $account starts with "S" or "s", before any request is sent
      */
     public function forDestinationAccount(string $account) : FindPathsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($account, 'account');
         $this->queryParameters[FindPathsRequestBuilder::DESTINATION_ACCOUNT_PARAMETER_NAME] = $account;
         return $this;
     }
@@ -76,8 +79,10 @@ class FindPathsRequestBuilder extends RequestBuilder {
      *
      * @param string $account The Stellar account ID that will send the payment
      * @return FindPathsRequestBuilder This builder for method chaining
+     * @throws \InvalidArgumentException If $account starts with "S" or "s", before any request is sent
      */
     public function forSourceAccount(string $account) : FindPathsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($account, 'account');
         $this->queryParameters[FindPathsRequestBuilder::SOURCE_ACCOUNT_PARAMETER_NAME] = $account;
         return $this;
     }
@@ -98,8 +103,10 @@ class FindPathsRequestBuilder extends RequestBuilder {
      *
      * @param Asset $asset The asset that the destination account will receive
      * @return FindPathsRequestBuilder This builder for method chaining
+     * @throws \InvalidArgumentException If the issuer of $asset starts with "S" or "s", before any request is sent
      */
     public function forDestinationAsset(Asset $asset) : FindPathsRequestBuilder {
+        SecretSeedRedaction::requireAssetIssuerNotSecretSeed($asset, 'asset');
         $this->queryParameters[FindPathsRequestBuilder::DESTINATION_ASSET_TYPE_PARAMETER_NAME] = $asset->getType();
         if ($asset instanceof AssetTypeCreditAlphanum) {
             $this->queryParameters[FindPathsRequestBuilder::DESTINATION_ASSET_CODE_PARAMETER_NAME] = $asset->getCode();

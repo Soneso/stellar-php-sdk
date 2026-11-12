@@ -9,6 +9,7 @@ use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Transaction\TransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionsPageResponse;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
 
 /**
@@ -79,9 +80,11 @@ class TransactionsRequestBuilder extends RequestBuilder
      * @param string $transactionId Hash of the transaction to fetch
      * @return TransactionResponse The transaction details including operations, memo, and XDR
      * @throws HorizonRequestException If the transaction does not exist or request fails
+     * @throws InvalidArgumentException If $transactionId starts with "S" or "s", before any request is sent
      */
     public function transaction(string $transactionId): TransactionResponse
     {
+        SecretSeedRedaction::requireNotSecretSeed($transactionId, 'transactionId');
         $this->setSegments("transactions", $transactionId);
         return parent::executeRequest($this->buildUrl(), RequestType::SINGLE_TRANSACTION);
     }
@@ -95,9 +98,11 @@ class TransactionsRequestBuilder extends RequestBuilder
      *
      * @param string $accountId Public key of the account to filter by (G-address)
      * @return TransactionsRequestBuilder This instance for method chaining
+     * @throws InvalidArgumentException If $accountId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Transactions for Account
      */
     public function forAccount(string $accountId) : TransactionsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($accountId, 'accountId');
         $this->setSegments("accounts", $accountId, "transactions");
         return $this;
     }
@@ -149,9 +154,11 @@ class TransactionsRequestBuilder extends RequestBuilder
      *
      * @param string $liquidityPoolId The liquidity pool ID (L-address or hex format)
      * @return TransactionsRequestBuilder This instance for method chaining
+     * @throws InvalidArgumentException If $liquidityPoolId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Transactions for Liquidity Pool
      */
     public function forLiquidityPool(string $liquidityPoolId) : TransactionsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($liquidityPoolId, 'liquidityPoolId');
         $idHex = $liquidityPoolId;
         if (str_starts_with($idHex, "L")) {
             $idHex = StrKey::decodeLiquidityPoolIdHex($idHex);

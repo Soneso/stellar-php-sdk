@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK\Soroban\Contract;
 use InvalidArgumentException;
 use RuntimeException;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrInt256Parts;
 use Soneso\StellarSDK\Xdr\XdrJsonHelper;
@@ -223,7 +224,7 @@ class ContractSpec
     public function funcArgsToXdrSCValues(string $name, array $args): array {
         $func = $this->getFunc($name);
         if ($func === null) {
-            throw new InvalidArgumentException("Function $name does not exist.");
+            throw new InvalidArgumentException('Function ' . SecretSeedRedaction::redactSecretSeeds($name) . ' does not exist.');
         }
         /**
          * @var array<XdrSCVal> $result
@@ -545,9 +546,9 @@ class ContractSpec
                 // Validation failures fall through to the diagnostic below, which names the parameter type and value.
             }
         }
-        // Secret seed strings are redacted from conversion diagnostics.
+        // Anything that may be a secret seed is redacted from conversion diagnostics.
         $display = is_string($value)
-            ? var_export(preg_replace('/S[A-Z2-7]{55}/i', '[redacted seed]', $value), true)
+            ? var_export(SecretSeedRedaction::redactSecretSeeds($value), true)
             : (is_scalar($value) || $value === null ? var_export($value, true) : get_debug_type($value));
         throw new InvalidArgumentException("Invalid {$type} value {$display}; "
             . "expected an integer or decimal string in [0, 18446744073709551615]");
@@ -576,7 +577,9 @@ class ContractSpec
             try {
                 $address = Address::fromStrKey($val);
             } catch (InvalidArgumentException $e) {
-                throw new InvalidArgumentException("Invalid address format: $val; $expected");
+                throw new InvalidArgumentException(
+                    'Invalid address format: ' . SecretSeedRedaction::keyForMessage($val) . '; ' . $expected
+                );
             }
         } else if ($val instanceof Address) {
             $address = $val;
@@ -629,7 +632,7 @@ class ContractSpec
     private function nativeToUdt(mixed $val, string $name) : XdrSCVal {
         $entry = $this->findEntry($name);
         if ($entry === null) {
-            throw new InvalidArgumentException("entry not found for $name");
+            throw new InvalidArgumentException('entry not found for ' . SecretSeedRedaction::redactSecretSeeds($name));
         }
         if ($entry->type->value === XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ENUM_V0 && $entry->udtEnumV0 !== null) {
             if (!is_int($val)) {
@@ -759,7 +762,9 @@ class ContractSpec
             }
         }
         if ($caseFound === null) {
-            throw new InvalidArgumentException("no such enum entry: $entryName in $union->name");
+            throw new InvalidArgumentException(
+                'no such enum entry: ' . SecretSeedRedaction::redactSecretSeeds($entryName) . ' in ' . $union->name
+            );
         }
         $key = XdrSCVal::forSymbol($entryName);
         if ($caseFound->voidCase !== null) {

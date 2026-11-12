@@ -28,6 +28,13 @@ use Soneso\StellarSDK\StellarSDK;
  * - limit(): Control the number of records returned
  * - order(): Sort results in ascending or descending order
  *
+ * A method that puts an account id, an asset issuer, a transaction hash, or a claimable
+ * balance or liquidity pool id into the request URL throws an \InvalidArgumentException
+ * for a value that starts with "S" or "s", the first letter of a secret seed, before any
+ * request is sent, so a seed passed by mistake never reaches the server. No valid value of
+ * these parameters starts with that letter. Other values, such as data entry names, asset
+ * codes and cursors, go to the server as given.
+ *
  * @package Soneso\StellarSDK\Requests
  * @see https://developers.stellar.org Stellar developer docs Horizon API documentation
  */

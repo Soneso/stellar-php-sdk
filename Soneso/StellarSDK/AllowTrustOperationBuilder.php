@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK;
 
 use InvalidArgumentException;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * Builder for creating AllowTrust operations.
@@ -49,7 +50,7 @@ class AllowTrustOperationBuilder
     ) {
         $len = strlen($assetCode);
         if ($len <= 0 || $len > 12) {
-            throw new InvalidArgumentException("invalid asset code: ". $assetCode);
+            throw new InvalidArgumentException("invalid asset code: " . SecretSeedRedaction::redactSecretSeeds($assetCode));
         }
     }
 

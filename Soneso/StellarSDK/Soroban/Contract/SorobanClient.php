@@ -16,6 +16,7 @@ use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\ContractAddressGuard;
 use Soneso\StellarSDK\Soroban\Exceptions\SorobanContractParserException;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\UploadContractWasmHostFunction;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
@@ -248,7 +249,8 @@ class SorobanClient
      * executable owner, the tag, constructor args, and salt
      * @return SorobanClient The client for the newly deployed contract
      * @throws Exception If the reference does not resolve (the owner holds no entry under
-     * the tag), if deployment fails, or if the contract ID cannot be extracted
+     * the tag; the message shows the tag with anything that may be a secret seed replaced),
+     * if deployment fails, or if the contract ID cannot be extracted
      * @throws \InvalidArgumentException If the reference is malformed (the owner is not a
      * contract address, or the tag entry does not hold a 32-byte wasm hash)
      * @throws GuzzleException If the RPC request fails
@@ -265,7 +267,7 @@ class SorobanClient
         if ($wasmId === null) {
             throw new Exception("external reference does not resolve: owner contract "
                 . $deployRequest->executableOwner->toStrKey()
-                . " holds no entry under tag " . $deployRequest->tag);
+                . " holds no entry under tag " . SecretSeedRedaction::redactSecretSeeds($deployRequest->tag));
         }
 
         // Load the spec from the resolved code before deploying: the code entry
@@ -467,7 +469,7 @@ class SorobanClient
      */
     public function buildInvokeMethodTx(string $name, ?array $args = null, ?MethodOptions $methodOptions = null) : AssembledTransaction {
         if(!in_array($name, $this->methodNames)) {
-            throw new Exception("Method '$name' does not exist");
+            throw new Exception("Method '" . SecretSeedRedaction::redactSecretSeeds($name) . "' does not exist");
         }
         $options = new AssembledTransactionOptions(
             clientOptions: $this->options,

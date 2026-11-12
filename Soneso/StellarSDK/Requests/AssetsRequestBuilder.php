@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK\Requests;
 use GuzzleHttp\Client;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Asset\AssetsPageResponse;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * Builds requests for the assets endpoint in Horizon
@@ -83,8 +84,10 @@ class AssetsRequestBuilder  extends RequestBuilder
      *
      * @param string $assetIssuer The Stellar account ID (public key) of the asset issuer
      * @return AssetsRequestBuilder This builder for method chaining
+     * @throws \InvalidArgumentException If $assetIssuer starts with "S" or "s", before any request is sent
      */
     public function forAssetIssuer(string $assetIssuer) : AssetsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($assetIssuer, 'assetIssuer');
         $this->queryParameters[AssetsRequestBuilder::ASSET_ISSUER_PARAMETER_NAME] = $assetIssuer;
         return $this;
     }

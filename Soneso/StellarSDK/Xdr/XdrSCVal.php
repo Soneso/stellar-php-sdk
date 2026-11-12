@@ -8,8 +8,10 @@ namespace Soneso\StellarSDK\Xdr;
 
 use GMP;
 use InvalidArgumentException;
+use JsonException;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\ScValHostOrder;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 
 class XdrSCVal extends XdrSCValBase
@@ -145,7 +147,10 @@ class XdrSCVal extends XdrSCValBase
 
     /**
      * Builds a map sorted by Soroban host key order.
-     * @throws InvalidArgumentException if two keys compare equal
+     * @throws InvalidArgumentException if two keys compare equal. The message prints the key as
+     *     XDR base64. A key whose string, symbol, bytes or tag content holds anything that may be
+     *     a secret seed is printed as XDR JSON with that content replaced, since every encoding of
+     *     the original would carry it; when that form cannot be built, the key is not shown.
      * @param array<XdrSCMapEntry> $map
      * @return XdrSCVal
      */
@@ -153,12 +158,115 @@ class XdrSCVal extends XdrSCValBase
         usort($map, static fn(XdrSCMapEntry $a, XdrSCMapEntry $b): int => ScValHostOrder::compare($a->key, $b->key));
         for ($i = 1; $i < count($map); $i++) {
             if (ScValHostOrder::compare($map[$i - 1]->key, $map[$i]->key) === 0) {
-                throw new InvalidArgumentException('Duplicate SCMap key (XDR base64): ' . $map[$i]->key->toBase64Xdr());
+                throw new InvalidArgumentException(self::duplicateMapKeyMessage($map[$i]->key));
             }
         }
         $result = new XdrSCVal(XdrSCValType::MAP());
         $result->map = $map;
         return $result;
+    }
+
+    /**
+     * Returns the error message for a duplicate map key. A key whose content holds nothing that
+     * may be a secret seed is printed as XDR base64. Otherwise a copy of the key gets that content
+     * replaced before it is serialized and is printed as XDR JSON, so no encoding of the original
+     * content reaches the message. A copy that cannot be decoded or encoded as JSON, such as one
+     * nested deeper than the JSON encoder allows, is not shown.
+     */
+    private static function duplicateMapKeyMessage(XdrSCVal $key) : string {
+        if (!self::redactContent($key, false)) {
+            return 'Duplicate SCMap key (XDR base64): ' . $key->toBase64Xdr();
+        }
+        try {
+            $copy = XdrSCVal::fromBase64Xdr($key->toBase64Xdr());
+            self::redactContent($copy, true);
+            return 'Duplicate SCMap key (XDR JSON): ' . $copy->toJson();
+        } catch (InvalidArgumentException|JsonException) {
+            return 'Duplicate SCMap key (not shown, it may hold a secret seed)';
+        }
+    }
+
+    /**
+     * Applies SecretSeedRedaction::redactSecretSeeds() to the content of every string, symbol,
+     * bytes and executable tag value in $root, nested vector, map and contract instance storage
+     * values included, and to the tag of a contract instance's external executable. The content
+     * is replaced in place only when $replace is true. The walk keeps its own stack, so the
+     * nesting depth of $root cannot exhaust the call stack.
+     *
+     * @return bool whether any content holds something that may be a secret seed
+     */
+    private static function redactContent(XdrSCVal $root, bool $replace) : bool {
+        $found = false;
+        $redact = static function (string $content) use (&$found): string {
+            $redacted = SecretSeedRedaction::redactSecretSeeds($content);
+            if ($redacted !== $content) {
+                $found = true;
+            }
+            return $redacted;
+        };
+        $pending = [$root];
+        while ($pending !== [] && ($replace || !$found)) {
+            $value = array_pop($pending);
+            switch ($value->type->value) {
+                case XdrSCValType::SCV_STRING:
+                    if ($value->str !== null) {
+                        $redacted = $redact($value->str);
+                        if ($replace) {
+                            $value->str = $redacted;
+                        }
+                    }
+                    break;
+                case XdrSCValType::SCV_SYMBOL:
+                    if ($value->sym !== null) {
+                        $redacted = $redact($value->sym);
+                        if ($replace) {
+                            $value->sym = $redacted;
+                        }
+                    }
+                    break;
+                case XdrSCValType::SCV_EXECUTABLE_TAG:
+                    if ($value->executableTag !== null) {
+                        $redacted = $redact($value->executableTag);
+                        if ($replace) {
+                            $value->executableTag = $redacted;
+                        }
+                    }
+                    break;
+                case XdrSCValType::SCV_BYTES:
+                    if ($value->bytes !== null) {
+                        $redacted = $redact($value->bytes->value);
+                        if ($replace) {
+                            $value->bytes->value = $redacted;
+                        }
+                    }
+                    break;
+                case XdrSCValType::SCV_VEC:
+                    foreach ($value->vec ?? [] as $element) {
+                        $pending[] = $element;
+                    }
+                    break;
+                case XdrSCValType::SCV_MAP:
+                    foreach ($value->map ?? [] as $entry) {
+                        $pending[] = $entry->key;
+                        $pending[] = $entry->val;
+                    }
+                    break;
+                case XdrSCValType::SCV_CONTRACT_INSTANCE:
+                    $externalRef = $value->instance?->executable->externalRef;
+                    if ($externalRef !== null) {
+                        $redacted = $redact($externalRef->tag);
+                        if ($replace) {
+                            $externalRef->tag = $redacted;
+                        }
+                    }
+                    foreach ($value->instance->storage ?? [] as $entry) {
+                        $pending[] = $entry->key;
+                        $pending[] = $entry->val;
+                    }
+                    break;
+            }
+        }
+        return $found;
     }
 
     public static function forContractInstance(XdrSCContractInstance $instance) : XdrSCVal {

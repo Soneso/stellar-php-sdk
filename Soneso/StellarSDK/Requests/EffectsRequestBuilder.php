@@ -12,6 +12,7 @@ use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Effects\EffectResponse;
 use Soneso\StellarSDK\Responses\Effects\EffectsPageResponse;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * Builds requests for the effects endpoint in Horizon
@@ -71,9 +72,11 @@ class EffectsRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /accounts/{account}/effects</code>
      * @param string $accountId ID of the account for which to get effects.
      * @return EffectsRequestBuilder
+     * @throws \InvalidArgumentException If $accountId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Effects for Account
      */
     public function forAccount(string $accountId) : EffectsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($accountId, 'accountId');
         $this->setSegments("accounts", $accountId, "effects");
         return $this;
     }
@@ -94,9 +97,11 @@ class EffectsRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /transactions/{transactionId}/effects</code>
      * @param string $transactionId Transaction ID for which to get effects.
      * @return EffectsRequestBuilder
+     * @throws \InvalidArgumentException If $transactionId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Effect for Transaction
      */
     public function forTransaction(string $transactionId) : EffectsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($transactionId, 'transactionId');
         $this->setSegments("transactions", $transactionId, "effects");
         return $this;
     }
@@ -105,9 +110,11 @@ class EffectsRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /liquidity_pools/{poolID}/effects</code>
      * @param string $liquidityPoolId Liquidity pool for which to get effects.
      * @return EffectsRequestBuilder
+     * @throws \InvalidArgumentException If $liquidityPoolId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Effects for Liquidity Pool
      */
     public function forLiquidityPool(string $liquidityPoolId) : EffectsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($liquidityPoolId, 'liquidityPoolId');
         $idHex = $liquidityPoolId;
         if (str_starts_with($idHex, "L")) {
             $idHex = StrKey::decodeLiquidityPoolIdHex($idHex);

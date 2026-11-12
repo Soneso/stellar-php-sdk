@@ -21,6 +21,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\ContractAddressGuard;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrJsonHelper;
@@ -203,7 +204,8 @@ class SACClient
                 throw new InvalidArgumentException('Invalid amount, got a secret seed (S...) instead of decimal '
                     . 'digits with at most 7 fractional digits, such as 12.5');
             }
-            throw new InvalidArgumentException("Invalid amount '" . XdrJsonHelper::safePreview($amount)
+            throw new InvalidArgumentException("Invalid amount '"
+                . XdrJsonHelper::safePreview(SecretSeedRedaction::redactSecretSeeds($amount))
                 . "': expected decimal digits with at most 7 fractional digits, such as 12.5");
         }
         $fraction = str_pad($matches[2] ?? '', self::DECIMALS, '0', STR_PAD_RIGHT);
@@ -476,7 +478,7 @@ class SACClient
                         . 'got a secret seed (S...) instead of an amount');
                 }
                 throw new InvalidArgumentException("The transfer amount must be a whole number of base units, got '"
-                    . XdrJsonHelper::safePreview($amount)
+                    . XdrJsonHelper::safePreview(SecretSeedRedaction::redactSecretSeeds($amount))
                     . "'; convert a decimal amount with SACClient::toBaseUnits()");
             }
             $value = gmp_init($amount, 10);

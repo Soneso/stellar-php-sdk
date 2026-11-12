@@ -10,6 +10,7 @@ namespace Soneso\StellarSDK;
 use InvalidArgumentException;
 use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 
 /**
@@ -107,7 +108,7 @@ class SignedPayloadSigner
                 'a signed payload signer takes an ed25519 account id (G...), not a secret seed (S...)'
             );
         }
-        throw new InvalidArgumentException('invalid ed25519 account id: ' . $accountId);
+        throw new InvalidArgumentException('invalid ed25519 account id: ' . SecretSeedRedaction::keyForMessage($accountId));
     }
 
 }

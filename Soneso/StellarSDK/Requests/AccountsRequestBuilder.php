@@ -15,6 +15,7 @@ use Soneso\StellarSDK\Responses\Account\AccountResponse;
 use Soneso\StellarSDK\Responses\Account\AccountDataValueResponse;
 use Soneso\StellarSDK\Responses\Account\AccountsPageResponse;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * Builds requests for the accounts endpoint in Horizon
@@ -82,9 +83,11 @@ class AccountsRequestBuilder extends RequestBuilder
      * @param string $accountId Public key of the account to fetch (G-address)
      * @return AccountResponse The account details including balances, signers, and data
      * @throws HorizonRequestException If the account does not exist or request fails
+     * @throws \InvalidArgumentException If $accountId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Account Details
      */
     public function account(string $accountId) : AccountResponse {
+      SecretSeedRedaction::requireNotSecretSeed($accountId, 'accountId');
       $this->setSegments("accounts", $accountId);
       return parent::executeRequest($this->buildUrl(),RequestType::SINGLE_ACCOUNT);
     }
@@ -96,9 +99,11 @@ class AccountsRequestBuilder extends RequestBuilder
      * @param string $key The data entry key to fetch
      * @return AccountDataValueResponse
      * @throws HorizonRequestException
+     * @throws \InvalidArgumentException If $accountId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Account data details
      */
     public function accountData(string $accountId, string $key) : AccountDataValueResponse {
+        SecretSeedRedaction::requireNotSecretSeed($accountId, 'accountId');
         $this->setSegments("accounts", $accountId, "data", $key);
         return parent::executeRequest($this->buildUrl(), RequestType::ACCOUNT_DATA_VALUE);
     }
@@ -132,10 +137,12 @@ class AccountsRequestBuilder extends RequestBuilder
      * @param callable|null $callback Callback function to receive AccountResponse objects
      * @throws GuzzleException
      * @throws HorizonRequestException
+     * @throws \InvalidArgumentException If $accountId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Account details
      */
     public function streamAccount(string $accountId, ?callable $callback = null)
     {
+        SecretSeedRedaction::requireNotSecretSeed($accountId, 'accountId');
         $this->setSegments("accounts", $accountId);
         $this->getAndStream($this->buildUrl(), function($rawData) use ($callback) {
             $parsedObject = AccountResponse::fromJson($rawData);
@@ -170,10 +177,12 @@ class AccountsRequestBuilder extends RequestBuilder
      * @param callable|null $callback Callback function to receive AccountDataValueResponse objects
      * @throws GuzzleException
      * @throws HorizonRequestException
+     * @throws \InvalidArgumentException If $accountId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Account data details
      */
     public function streamAccountData(string $accountId, string $key, ?callable $callback = null): void
     {
+        SecretSeedRedaction::requireNotSecretSeed($accountId, 'accountId');
         $this->setSegments("accounts", $accountId, "data", $key);
         $this->getAndStream($this->buildUrl(), function($rawData) use ($callback) {
             $parsedObject = AccountDataValueResponse::fromJson($rawData);
@@ -190,8 +199,10 @@ class AccountsRequestBuilder extends RequestBuilder
      * @param string $signer Public key of the signer to filter by (G-address)
      * @return AccountsRequestBuilder This instance for method chaining
      * @throws \RuntimeException If another filter (asset, liquidity_pool, sponsor) is already set
+     * @throws \InvalidArgumentException If $signer starts with "S" or "s", before any request is sent
      */
     public function forSigner(string $signer) : AccountsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($signer, 'signer');
 
         if (array_key_exists(AccountsRequestBuilder::ASSET_PARAMETER_NAME, $this->queryParameters)) {
             throw new \RuntimeException("cannot set both asset and signer");
@@ -216,8 +227,10 @@ class AccountsRequestBuilder extends RequestBuilder
      * @param AssetTypeCreditAlphaNum $asset The asset to filter by (cannot be native XLM)
      * @return AccountsRequestBuilder This instance for method chaining
      * @throws \RuntimeException If another filter (signer, liquidity_pool, sponsor) is already set
+     * @throws \InvalidArgumentException If the issuer of $asset starts with "S" or "s", before any request is sent
      */
     public function forAsset(AssetTypeCreditAlphaNum $asset) : AccountsRequestBuilder {
+        SecretSeedRedaction::requireAssetIssuerNotSecretSeed($asset, 'asset');
 
         if (array_key_exists(AccountsRequestBuilder::SIGNER_PARAMETER_NAME, $this->queryParameters)) {
             throw new \RuntimeException("cannot set both asset and signer");
@@ -242,8 +255,10 @@ class AccountsRequestBuilder extends RequestBuilder
      * @param string $liquidityPoolId The liquidity pool ID (L-address or hex format)
      * @return AccountsRequestBuilder This instance for method chaining
      * @throws \RuntimeException If another filter (signer, asset, sponsor) is already set
+     * @throws \InvalidArgumentException If $liquidityPoolId starts with "S" or "s", before any request is sent
      */
     public function forLiquidityPool(string $liquidityPoolId) : AccountsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($liquidityPoolId, 'liquidityPoolId');
 
         if (array_key_exists(AccountsRequestBuilder::SIGNER_PARAMETER_NAME, $this->queryParameters)) {
             throw new \RuntimeException("cannot set both liquidity_pool and signer");
@@ -272,8 +287,10 @@ class AccountsRequestBuilder extends RequestBuilder
      * @param string $sponsor Public key of the sponsor account (G-address)
      * @return AccountsRequestBuilder This instance for method chaining
      * @throws \RuntimeException If another filter (signer, asset, liquidity_pool) is already set
+     * @throws \InvalidArgumentException If $sponsor starts with "S" or "s", before any request is sent
      */
     public function forSponsor(string $sponsor) : AccountsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($sponsor, 'sponsor');
         if (array_key_exists(AccountsRequestBuilder::SIGNER_PARAMETER_NAME, $this->queryParameters)) {
             throw new \RuntimeException("cannot set both sponsor and signer");
         }

@@ -8,6 +8,7 @@ use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\ClaimableBalances\ClaimableBalanceResponse;
 use Soneso\StellarSDK\Responses\ClaimableBalances\ClaimableBalancesPageResponse;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
 
 /**
@@ -83,8 +84,10 @@ class ClaimableBalancesRequestBuilder  extends RequestBuilder
      * Returns all claimable balances sponsored by a given account.
      * @param string $sponsor Account ID of the sponsor.
      * @return ClaimableBalancesRequestBuilder current instance
+     * @throws InvalidArgumentException If $sponsor starts with "S" or "s", before any request is sent
      */
     public function forSponsor(string $sponsor) : ClaimableBalancesRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($sponsor, 'sponsor');
         $this->queryParameters[ClaimableBalancesRequestBuilder::SPONSOR_PARAMETER_NAME] = $sponsor;
         return $this;
     }
@@ -93,8 +96,10 @@ class ClaimableBalancesRequestBuilder  extends RequestBuilder
      * Returns all claimable balances which hold a given asset.
      * @param Asset $asset The asset held by the claimable balance.
      * @return ClaimableBalancesRequestBuilder current instance.
+     * @throws InvalidArgumentException If the issuer of $asset starts with "S" or "s", before any request is sent
      */
     public function forAsset(Asset $asset) : ClaimableBalancesRequestBuilder {
+        SecretSeedRedaction::requireAssetIssuerNotSecretSeed($asset, 'asset');
         $this->queryParameters[ClaimableBalancesRequestBuilder::ASSET_PARAMETER_NAME] = Asset::canonicalForm($asset);
         return $this;
     }
@@ -103,8 +108,10 @@ class ClaimableBalancesRequestBuilder  extends RequestBuilder
      * Returns all claimable balances which can be claimed by a given account id.
      * @param string $claimant Account ID of the address which can claim the claimable balance.
      * @return ClaimableBalancesRequestBuilder current instance.
+     * @throws InvalidArgumentException If $claimant starts with "S" or "s", before any request is sent
      */
     public function forClaimant(string $claimant) : ClaimableBalancesRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($claimant, 'claimant');
         $this->queryParameters[ClaimableBalancesRequestBuilder::CLAIMANT_PARAMETER_NAME] = $claimant;
         return $this;
     }

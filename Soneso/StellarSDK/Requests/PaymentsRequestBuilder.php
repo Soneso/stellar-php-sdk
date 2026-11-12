@@ -11,6 +11,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Operations\OperationResponse;
 use Soneso\StellarSDK\Responses\Operations\OperationsPageResponse;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * Builds requests for the payments endpoint in Horizon
@@ -75,9 +76,11 @@ class PaymentsRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /accounts/{account}/payments</code>
      * @param string $accountId ID of the account for which to get payments.
      * @return PaymentsRequestBuilder
+     * @throws \InvalidArgumentException If $accountId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Payments for Account
      */
     public function forAccount(string $accountId) : PaymentsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($accountId, 'accountId');
         $this->setSegments("accounts", $accountId, "payments");
         return $this;
     }
@@ -97,9 +100,11 @@ class PaymentsRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /transactions/{transactionId}/payments</code>
      * @param string $transactionId Transaction ID for which to get payments.
      * @return PaymentsRequestBuilder
+     * @throws \InvalidArgumentException If $transactionId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Payments for Transaction
      */
     public function forTransaction(string $transactionId) : PaymentsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($transactionId, 'transactionId');
         $this->setSegments("transactions", $transactionId, "payments");
         return $this;
     }

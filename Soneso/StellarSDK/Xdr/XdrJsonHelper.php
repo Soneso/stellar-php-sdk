@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK\Xdr;
 
 use InvalidArgumentException;
 use JsonException;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * Primitive SEP-51 (XDR-JSON) helper methods.
@@ -753,7 +754,8 @@ final class XdrJsonHelper
      * @param string                  $aliasKey     The additional key accepted on input.
      * @param string                  $typeName     The PHP class the object is being decoded into.
      * @return array<array-key, mixed> $value with any alias entry moved to $canonicalKey.
-     * @throws InvalidArgumentException When both spellings are present.
+     * @throws InvalidArgumentException When both spellings are present. The message names both
+     *     keys and the type, each with anything that may be a secret seed replaced.
      * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md
      */
     public static function normalizeFieldAlias(
@@ -766,9 +768,11 @@ final class XdrJsonHelper
             return $value;
         }
         if (array_key_exists($canonicalKey, $value)) {
+            $canonicalLabel = SecretSeedRedaction::redactSecretSeeds($canonicalKey);
             throw new InvalidArgumentException(
-                "Duplicate field '" . $canonicalKey . "' for " . $typeName
-                . ": '" . $canonicalKey . "' and its input alias '" . $aliasKey
+                "Duplicate field '" . $canonicalLabel . "' for "
+                . SecretSeedRedaction::redactSecretSeeds($typeName) . ": '" . $canonicalLabel
+                . "' and its input alias '" . SecretSeedRedaction::redactSecretSeeds($aliasKey)
                 . "' cannot both be supplied"
             );
         }
@@ -790,9 +794,11 @@ final class XdrJsonHelper
      * SEP-0051 says any object SHOULD allow for tooling annotation. Callers strip it
      * before reaching this method, so it never appears in $value.
      *
-     * Keys are echoed through {@see self::safePreview} because they originate in
-     * caller-supplied JSON; the reported list is capped so a document carrying many
-     * unknown keys cannot inflate the message.
+     * Keys are echoed through {@see SecretSeedRedaction::redactSecretSeeds} and then
+     * {@see self::safePreview} because they originate in caller-supplied JSON, so a key
+     * that may be a secret seed is replaced before the cap; the reported list is capped
+     * so a document carrying many unknown keys cannot inflate the message. The type name
+     * is echoed through {@see SecretSeedRedaction::redactSecretSeeds} as well.
      *
      * @param array<array-key, mixed> $value        The decoded JSON object, `$schema` already removed.
      * @param list<string>            $declaredKeys The type's declared field keys, in IDL order.
@@ -810,7 +816,7 @@ final class XdrJsonHelper
         // helper receives the string form of every key it reports.
         $previews = array_map(
             static function ($key): string {
-                return "'" . self::safePreview((string) $key, 40) . "'";
+                return "'" . self::safePreview(SecretSeedRedaction::redactSecretSeeds((string) $key), 40) . "'";
             },
             array_slice(array_values($unknown), 0, self::UNKNOWN_FIELD_REPORT_LIMIT)
         );
@@ -820,7 +826,8 @@ final class XdrJsonHelper
         }
         throw new InvalidArgumentException(
             'Unknown field' . (count($unknown) === 1 ? '' : 's')
-            . ' in JSON input for ' . $typeName . ': ' . implode(', ', $previews)
+            . ' in JSON input for ' . SecretSeedRedaction::redactSecretSeeds($typeName) . ': '
+            . implode(', ', $previews)
         );
     }
 
@@ -882,7 +889,8 @@ final class XdrJsonHelper
      * scan reaches first; both outcomes reject the document.
      *
      * @param string $json The raw JSON document.
-     * @throws InvalidArgumentException When an object in $json repeats a key.
+     * @throws InvalidArgumentException When an object in $json repeats a key. The message
+     *     previews the key with anything that may be a secret seed replaced before the cap.
      * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md
      */
     public static function rejectDuplicateKeys(string $json): void
@@ -951,7 +959,8 @@ final class XdrJsonHelper
                     }
                     if (isset($frames[$depth - 1][$key])) {
                         throw new InvalidArgumentException(
-                            "Duplicate key in JSON input: '" . self::safePreview($key, 40) . "'"
+                            "Duplicate key in JSON input: '"
+                            . self::safePreview(SecretSeedRedaction::redactSecretSeeds($key), 40) . "'"
                         );
                     }
                     $frames[$depth - 1][$key] = true;
@@ -1146,7 +1155,8 @@ final class XdrJsonHelper
      *
      * @param string $decimal Unsigned base-10 string in [0, 2^64-1].
      * @return int PHP signed int (may be negative for values above PHP_INT_MAX).
-     * @throws InvalidArgumentException On any validation failure.
+     * @throws InvalidArgumentException On any validation failure. A message that previews the
+     *     input replaces anything in it that may be a secret seed before the preview cap.
      */
     public static function wrapUnsignedToSignedInt(string $decimal): int
     {
@@ -1158,7 +1168,7 @@ final class XdrJsonHelper
         if (!ctype_digit($decimal)) {
             throw new InvalidArgumentException(
                 'wrapUnsignedToSignedInt: input must be unsigned decimal digits; got "'
-                . self::safePreview($decimal) . '"'
+                . self::safePreview(SecretSeedRedaction::redactSecretSeeds($decimal)) . '"'
             );
         }
         $gmp = gmp_init($decimal, 10);
@@ -1214,7 +1224,8 @@ final class XdrJsonHelper
      * Leading zeros are accepted. No whitespace, no scientific notation,
      * no "+" prefix, no decimal points.
      *
-     * @throws InvalidArgumentException On format violation.
+     * @throws InvalidArgumentException On format violation. The message previews $s with
+     *     anything that may be a secret seed replaced before the preview cap.
      */
     private static function validateInt64String(string $s): void
     {
@@ -1233,7 +1244,7 @@ final class XdrJsonHelper
         if (!ctype_digit($digits)) {
             throw new InvalidArgumentException(
                 'SEP-51 int64 string must contain only decimal digits (with optional leading minus); '
-                . 'got "' . self::safePreview($s) . '"'
+                . 'got "' . self::safePreview(SecretSeedRedaction::redactSecretSeeds($s)) . '"'
             );
         }
     }
@@ -1244,7 +1255,8 @@ final class XdrJsonHelper
      * Used for uint64 values and for the lo/loHi/loLo limbs of signed 256-bit types
      * (which are uint64-ranged even though stored as PHP signed ints).
      *
-     * @throws InvalidArgumentException On format violation.
+     * @throws InvalidArgumentException On format violation. The message previews $s with
+     *     anything that may be a secret seed replaced before the preview cap.
      */
     private static function validateUint64String(string $s): void
     {
@@ -1254,7 +1266,7 @@ final class XdrJsonHelper
         if (!ctype_digit($s)) {
             throw new InvalidArgumentException(
                 'SEP-51 uint64 string must contain only decimal digits (no sign); got "'
-                . self::safePreview($s) . '"'
+                . self::safePreview(SecretSeedRedaction::redactSecretSeeds($s)) . '"'
             );
         }
     }
