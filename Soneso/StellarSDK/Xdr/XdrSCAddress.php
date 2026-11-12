@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK\Xdr;
 use Exception;
 use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * SCAddress union, with the factory methods that take an id in the spelling the
@@ -39,7 +40,7 @@ class XdrSCAddress extends XdrSCAddressBase
             $res->muxedAccount = XdrMuxedAccountMed25519::decodeInverted($xdrBuffer);
             return $res;
         } else {
-            throw new InvalidArgumentException("invalid account id: " . $accountId);
+            throw new InvalidArgumentException("invalid account id: " . SecretSeedRedaction::keyForMessage($accountId));
         }
     }
 

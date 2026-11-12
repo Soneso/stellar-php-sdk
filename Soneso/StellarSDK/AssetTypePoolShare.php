@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDK;
 
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Xdr\XdrAsset;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
@@ -79,7 +80,8 @@ class AssetTypePoolShare extends Asset
             );
         }
         if ($order > 0) {
-            throw new \RuntimeException("Assets " . Asset::canonicalForm($assetA) . " and " . Asset::canonicalForm($assetB) . " are in wrong order. " .
+            throw new \RuntimeException("Assets " . SecretSeedRedaction::redactSecretSeeds(Asset::canonicalForm($assetA))
+                . " and " . SecretSeedRedaction::redactSecretSeeds(Asset::canonicalForm($assetB)) . " are in wrong order. " .
                 "Sort by type, code bytes, then raw issuer public key bytes.");
         }
 

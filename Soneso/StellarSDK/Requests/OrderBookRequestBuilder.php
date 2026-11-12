@@ -14,6 +14,7 @@ use Soneso\StellarSDK\AssetTypeCreditAlphanum;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Operations\OperationsPageResponse;
 use Soneso\StellarSDK\Responses\OrderBook\OrderBookResponse;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * Builds requests for the order book endpoint in Horizon
@@ -75,8 +76,10 @@ class OrderBookRequestBuilder extends RequestBuilder
      *
      * @param Asset $buyingAsset the buying asset
      * @return OrderBookRequestBuilder current instance
+     * @throws \InvalidArgumentException If the issuer of $buyingAsset starts with "S" or "s", before any request is sent
      */
     public function forBuyingAsset(Asset $buyingAsset) : OrderBookRequestBuilder {
+        SecretSeedRedaction::requireAssetIssuerNotSecretSeed($buyingAsset, 'buyingAsset');
         $this->queryParameters[OrderBookRequestBuilder::BUYING_ASSET_TYPE_PARAMETER_NAME] = $buyingAsset->getType();
         if ($buyingAsset instanceof AssetTypeCreditAlphanum) {
             $this->queryParameters[OrderBookRequestBuilder::BUYING_ASSET_CODE_PARAMETER_NAME] = $buyingAsset->getCode();
@@ -90,8 +93,10 @@ class OrderBookRequestBuilder extends RequestBuilder
      *
      * @param Asset $sellingAsset the selling asset
      * @return OrderBookRequestBuilder current instance
+     * @throws \InvalidArgumentException If the issuer of $sellingAsset starts with "S" or "s", before any request is sent
      */
     public function forSellingAsset(Asset $sellingAsset) : OrderBookRequestBuilder {
+        SecretSeedRedaction::requireAssetIssuerNotSecretSeed($sellingAsset, 'sellingAsset');
         $this->queryParameters[OrderBookRequestBuilder::SELLING_ASSET_TYPE_PARAMETER_NAME] = $sellingAsset->getType();
         if ($sellingAsset instanceof AssetTypeCreditAlphanum) {
             $this->queryParameters[OrderBookRequestBuilder::SELLING_ASSET_CODE_PARAMETER_NAME] = $sellingAsset->getCode();

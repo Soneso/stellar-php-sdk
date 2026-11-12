@@ -13,6 +13,7 @@ use Soneso\StellarSDK\AssetTypeCreditAlphanum;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\TradeAggregations\TradeAggregationsPageResponse;
 use Soneso\StellarSDK\Responses\Trades\TradesPageResponse;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * Builds requests for the trade aggregations endpoint in Horizon
@@ -80,8 +81,10 @@ class TradeAggregationsRequestBuilder extends RequestBuilder
      *
      * @param Asset $baseAsset The base asset for the trading pair
      * @return TradeAggregationsRequestBuilder This builder for method chaining
+     * @throws \InvalidArgumentException If the issuer of $baseAsset starts with "S" or "s", before any request is sent
      */
     public function forBaseAsset(Asset $baseAsset) : TradeAggregationsRequestBuilder {
+        SecretSeedRedaction::requireAssetIssuerNotSecretSeed($baseAsset, 'baseAsset');
         $this->queryParameters[TradeAggregationsRequestBuilder::BASE_ASSET_TYPE_PARAMETER_NAME] = $baseAsset->getType();
         if ($baseAsset instanceof AssetTypeCreditAlphanum) {
             $this->queryParameters[TradeAggregationsRequestBuilder::BASE_ASSET_CODE_PARAMETER_NAME] = $baseAsset->getCode();
@@ -95,8 +98,10 @@ class TradeAggregationsRequestBuilder extends RequestBuilder
      *
      * @param Asset $counterAsset
      * @return TradeAggregationsRequestBuilder current instance
+     * @throws \InvalidArgumentException If the issuer of $counterAsset starts with "S" or "s", before any request is sent
      */
     public function forCounterAsset(Asset $counterAsset) : TradeAggregationsRequestBuilder {
+        SecretSeedRedaction::requireAssetIssuerNotSecretSeed($counterAsset, 'counterAsset');
         $this->queryParameters[TradeAggregationsRequestBuilder::COUNTER_ASSET_TYPE_PARAMETER_NAME] = $counterAsset->getType();
         if ($counterAsset instanceof AssetTypeCreditAlphanum) {
             $this->queryParameters[TradeAggregationsRequestBuilder::COUNTER_ASSET_CODE_PARAMETER_NAME] = $counterAsset->getCode();

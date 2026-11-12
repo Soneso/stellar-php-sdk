@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK\Xdr;
 
 use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * ClaimableBalanceID union override that stores $hash as hexadecimal rather than
@@ -148,9 +149,12 @@ class XdrClaimableBalanceID extends XdrClaimableBalanceIDBase
             }
         }
         if (!ctype_xdigit($value)) {
+            // A value that starts with "S" or "s", the first letter of a secret seed, is
+            // named by its kind and not shown.
+            $kind = SecretSeedRedaction::seedKind($value);
             throw new InvalidArgumentException(
-                'Claimable balance id must be a "B..." strkey or a hexadecimal string,'
-                . ' "' . XdrJsonHelper::safePreview($value) . '" given'
+                'Claimable balance id must be a "B..." strkey or a hexadecimal string, '
+                . ($kind ?? '"' . XdrJsonHelper::safePreview($value) . '"') . ' given'
             );
         }
         // Hexadecimal is case insensitive; lower case is the canonical spelling, so

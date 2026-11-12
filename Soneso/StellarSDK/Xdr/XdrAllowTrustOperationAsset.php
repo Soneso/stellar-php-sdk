@@ -3,6 +3,7 @@
 namespace Soneso\StellarSDK\Xdr;
 
 use InvalidArgumentException;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * @phpstan-consistent-constructor
@@ -40,7 +41,9 @@ class XdrAllowTrustOperationAsset extends XdrAllowTrustOperationAssetBase
 
         $codeLen = strlen($code);
         if ($codeLen === 0 || $codeLen > 12) {
-            throw new InvalidArgumentException('Asset code length must be 1–12 characters: ' . $code);
+            throw new InvalidArgumentException(
+                'Asset code length must be 1–12 characters: ' . SecretSeedRedaction::redactSecretSeeds($code)
+            );
         }
 
         if ($codeLen <= 4) {
@@ -57,7 +60,7 @@ class XdrAllowTrustOperationAsset extends XdrAllowTrustOperationAssetBase
     public static function fromAlphaNumAssetCode(string $assetCode) : XdrAllowTrustOperationAsset {
         $len = strlen($assetCode);
         if ($len <= 0 || $len > 12) {
-            throw new InvalidArgumentException("invalid asset code ". $assetCode);
+            throw new InvalidArgumentException("invalid asset code " . SecretSeedRedaction::redactSecretSeeds($assetCode));
         }
         $type = $len > 4 ? XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12 : XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4;
         $result = new XdrAllowTrustOperationAsset(new XdrAssetType($type));

@@ -11,6 +11,7 @@ use InvalidArgumentException;
 use RuntimeException;
 use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Xdr\XdrAsset;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
@@ -72,7 +73,8 @@ abstract class Asset {
      * @param string|null $code Asset code (required for non-native assets)
      * @param string|null $issuer Issuer account ID (required for non-native assets)
      * @return Asset The created asset
-     * @throws \RuntimeException If parameters are invalid or type is unsupported
+     * @throws \RuntimeException If parameters are invalid or type is unsupported. The message for
+     *     an unsupported type shows $type with anything that may be a secret seed replaced.
      * @see AssetTypePoolShare For liquidity pool share assets
      */
     public static function create(string $type, ?string $code = null, ?string $issuer = null) : Asset {
@@ -94,7 +96,7 @@ abstract class Asset {
             throw new \RuntimeException(
                 "pool share assets are composed of two assets and can not be created from a code and issuer; construct AssetTypePoolShare directly");
         }
-        throw new \RuntimeException("unsupported asset type: " . $type);
+        throw new \RuntimeException("unsupported asset type: " . SecretSeedRedaction::redactSecretSeeds($type));
     }
 
     /**

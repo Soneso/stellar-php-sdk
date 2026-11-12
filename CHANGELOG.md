@@ -22,10 +22,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `LedgerEntry::getKeyXdr()` decodes the ledger key bytes as an `XdrSCVal`, which does not yield the key; use `getLedgerKeyXdr()`.
 
 ### Fixed
-- TxRep parsing rejects a malformed integer or a value outside the field's XDR width with an `InvalidArgumentException` that names the field key and the text, replaces the text of a secret seed with `[redacted seed]`, and reads and writes uint64 values at or above 2^63 unsigned.
+- TxRep parsing rejects a malformed integer or a value outside the field's XDR width with an `InvalidArgumentException` that names the field key and the text, replaces anything in the text that may be a secret seed with `a secret seed (S...)`, and reads and writes uint64 values at or above 2^63 unsigned.
 - Binary XDR decoding of the self-containing types (`XdrSCVal`, `XdrClaimPredicate`, `XdrSCSpecTypeDef`, `XdrSorobanAuthorizedInvocation` and others) stops at 500 nested levels with an `InvalidArgumentException`, and a failed decode leaves the buffer's depth counter unchanged.
 - `ContractSpec::nativeToXdrSCVal` rejects a u32 or i32 integer outside its range and a `BytesN` string of another byte length with an `InvalidArgumentException` that names the value or length and the bound.
 - `AssembledTransaction::send` and `signAndSend` poll every three seconds until `timeoutInSeconds`, retry status requests that fail in transport or with an RPC error, bound each request by the remaining time and the client's own limits, and name the last error when polling expires.
+- Errors for an invalid address, id, signer key, wasm hash, or hex string leave out a value that starts with `S` or `s`. They name it as `a secret seed (S...)` or as a value starting with S. Errors that show other caller text replace each run of 40 or more letters and digits that starts with `S` or `s` with `a secret seed (S...)`. This also covers a seed with a changed, missing, or added character. Such text includes amounts, asset codes and types, federation addresses, executable tags, duplicate map keys, pool share assets, SEP-51 JSON numbers and keys, and TxRep values and field keys. It also includes the names of Soroban functions, methods, and enum cases. The `ContractSpec` u64, timepoint, and duration conversion errors use `a secret seed (S...)` in place of `[redacted seed]`.
+- `TxRepHelper::parseTrustlineAsset` and `TxRep::transactionEnvelopeXdrBase64FromTxRep` throw only an `InvalidArgumentException` for a trust line asset of 64 characters that is not a hexadecimal pool id, and raise no PHP warning before it.
+
+### Security
+- The Horizon request builders, the `StellarSDK` methods that use them, and the FriendBot helpers throw an `InvalidArgumentException` before any request for a value that starts with `S` or `s`. This holds for an account id, signer, sponsor, claimant, asset issuer, liquidity pool id, or transaction hash, so a secret seed passed by mistake is not sent.
 
 ## [1.17.0] - 2026-10-24
 

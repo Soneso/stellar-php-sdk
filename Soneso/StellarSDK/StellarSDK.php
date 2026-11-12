@@ -364,6 +364,7 @@ class StellarSDK
      * @param string $accountId The account ID (public key starting with G) to query
      * @return AccountResponse Account details including balances, sequence number, and signers
      * @throws HorizonRequestException If the account is not found or the request fails
+     * @throws \InvalidArgumentException If $accountId starts with "S" or "s", before any request is sent
      */
     public function requestAccount(string $accountId) : AccountResponse {
         return $this->accounts()->account($accountId);
@@ -378,6 +379,7 @@ class StellarSDK
      * @param string $accountId The account ID (public key) to check
      * @return bool True if the account exists, false otherwise
      * @throws HorizonRequestException If the request fails for reasons other than account not found
+     * @throws \InvalidArgumentException If $accountId starts with "S" or "s", before any request is sent
      */
     public function accountExists(string $accountId) : bool {
         try {
@@ -408,6 +410,7 @@ class StellarSDK
      * @param string $transactionId The transaction hash to query
      * @return TransactionResponse Transaction details including operations and result
      * @throws HorizonRequestException If the transaction is not found or the request fails
+     * @throws \InvalidArgumentException If $transactionId starts with "S" or "s", before any request is sent
      */
     public function requestTransaction(string $transactionId) : TransactionResponse {
         return $this->transactions()->transaction($transactionId);
@@ -454,6 +457,7 @@ class StellarSDK
      * @param string $poolId The id of the pool to request.
      * @return LiquidityPoolResponse The details of the pool.
      * @throws HorizonRequestException
+     * @throws \InvalidArgumentException If $poolId starts with "S" or "s", before any request is sent
      */
     public function requestLiquidityPool(string $poolId) : LiquidityPoolResponse {
         return $this->liquidityPools()->forPoolId($poolId);

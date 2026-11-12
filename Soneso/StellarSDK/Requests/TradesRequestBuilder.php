@@ -14,6 +14,7 @@ use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Trades\TradeResponse;
 use Soneso\StellarSDK\Responses\Trades\TradesPageResponse;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * Builds requests for the trades endpoint in Horizon
@@ -114,8 +115,10 @@ class TradesRequestBuilder extends RequestBuilder
      *
      * @param Asset $baseAsset
      * @return TradesRequestBuilder current instance
+     * @throws \InvalidArgumentException If the issuer of $baseAsset starts with "S" or "s", before any request is sent
      */
     public function forBaseAsset(Asset $baseAsset) : TradesRequestBuilder {
+        SecretSeedRedaction::requireAssetIssuerNotSecretSeed($baseAsset, 'baseAsset');
         $this->queryParameters[TradesRequestBuilder::BASE_ASSET_TYPE_PARAMETER_NAME] = $baseAsset->getType();
         if ($baseAsset instanceof AssetTypeCreditAlphanum) {
             $this->queryParameters[TradesRequestBuilder::BASE_ASSET_CODE_PARAMETER_NAME] = $baseAsset->getCode();
@@ -129,8 +132,10 @@ class TradesRequestBuilder extends RequestBuilder
      *
      * @param Asset $counterAsset
      * @return TradesRequestBuilder current instance
+     * @throws \InvalidArgumentException If the issuer of $counterAsset starts with "S" or "s", before any request is sent
      */
     public function forCounterAsset(Asset $counterAsset) : TradesRequestBuilder {
+        SecretSeedRedaction::requireAssetIssuerNotSecretSeed($counterAsset, 'counterAsset');
         $this->queryParameters[TradesRequestBuilder::COUNTER_ASSET_TYPE_PARAMETER_NAME] = $counterAsset->getType();
         if ($counterAsset instanceof AssetTypeCreditAlphanum) {
             $this->queryParameters[TradesRequestBuilder::COUNTER_ASSET_CODE_PARAMETER_NAME] = $counterAsset->getCode();
@@ -143,9 +148,11 @@ class TradesRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /liquidity_pools/{poolID}/trades</code>
      * @param string $liquidityPoolId Liquidity pool for which to get trades
      * @return TradesRequestBuilder
+     * @throws \InvalidArgumentException If $liquidityPoolId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Trades for Liquidity Pool
      */
     public function forLiquidityPool(string $liquidityPoolId) : TradesRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($liquidityPoolId, 'liquidityPoolId');
         $idHex = $liquidityPoolId;
         if (str_starts_with($idHex, "L")) {
             $idHex = StrKey::decodeLiquidityPoolIdHex($idHex);
@@ -158,9 +165,11 @@ class TradesRequestBuilder extends RequestBuilder
      * Builds request to <code>GET /accounts/{accountId}/trades</code>
      * @param string $accountId
      * @return TradesRequestBuilder
+     * @throws \InvalidArgumentException If $accountId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Trades for Account
      */
     public function forAccount(string $accountId) : TradesRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($accountId, 'accountId');
         $this->setSegments("accounts", $accountId, "trades");
         return $this;
     }

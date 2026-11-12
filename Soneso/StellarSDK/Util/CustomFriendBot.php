@@ -11,6 +11,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Request;
 use Soneso\StellarSDK\Constants\NetworkConstants;
 use Soneso\StellarSDK\Requests\RequestBuilder;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * Utility for funding accounts using a custom FriendBot endpoint
@@ -52,9 +53,11 @@ class CustomFriendBot
      * @param string $accountId The Stellar account ID (56-character public key starting with 'G') to fund
      * @return bool True if funding succeeded, false otherwise
      * @throws GuzzleException If the HTTP request fails
+     * @throws \InvalidArgumentException If $accountId starts with "S" or "s", before any request is sent
      */
     public function fundAccount(string $accountId, ?Client $httpClient = null): bool
     {
+        SecretSeedRedaction::requireNotSecretSeed($accountId, 'accountId');
         $httpClient = $httpClient ?? new Client();
         $url = $this->friendBotUrl . "?addr=" . urlencode($accountId);
         $request = new Request('GET', $url, RequestBuilder::HEADERS);

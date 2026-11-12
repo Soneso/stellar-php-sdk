@@ -771,7 +771,7 @@ class TxRepExtendedTest extends TestCase {
             $this->numericEnvelope(['tx.fee' => $seed]);
             self::fail('Accepted a secret seed for tx.fee');
         } catch (\InvalidArgumentException $e) {
-            self::assertSame('Cannot parse integer for tx.fee: [redacted seed]', $e->getMessage());
+            self::assertSame('Cannot parse integer for tx.fee: a secret seed (S...)', $e->getMessage());
             self::assertStringNotContainsString($seed, $e->getMessage());
         }
     }

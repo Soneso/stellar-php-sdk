@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK\Xdr;
 
 use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * @phpstan-consistent-constructor
@@ -43,7 +44,9 @@ class XdrAccountID extends XdrAccountIDBase
             throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
         }
         if (!StrKey::isValidAccountId($raw)) {
-            throw new InvalidArgumentException('Invalid account ID in TxRep for key "' . $prefix . '": ' . $raw);
+            throw new InvalidArgumentException(
+                'Invalid account ID in TxRep for key "' . $prefix . '": ' . SecretSeedRedaction::keyForMessage($raw)
+            );
         }
         return new static($raw);
     }

@@ -11,6 +11,7 @@ use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\MuxedAccount;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * Shared utility functions for TxRep (SEP-0011) encoding and decoding.
@@ -167,7 +168,7 @@ class TxRepHelper
         }
 
         if (!ctype_xdigit($h)) {
-            throw new InvalidArgumentException('Invalid hex string: ' . $hex);
+            throw new InvalidArgumentException('Invalid hex string: ' . SecretSeedRedaction::keyForMessage($hex));
         }
 
         return (string)hex2bin($h);
@@ -339,7 +340,7 @@ class TxRepHelper
 
     /**
      * Parse an unsigned 32-bit integer token.
-     * A secret seed in the text is replaced by `[redacted seed]` in errors.
+     * Anything in the text or the key that may be a secret seed is replaced by `a secret seed (S...)` in errors.
      * @param string $s Decimal or hexadecimal integer text.
      * @param string $key Full TxRep field key for errors.
      * @return int Value in [0, 4294967295].
@@ -352,7 +353,7 @@ class TxRepHelper
 
     /**
      * Parse a signed 32-bit integer token.
-     * A secret seed in the text is replaced by `[redacted seed]` in errors.
+     * Anything in the text or the key that may be a secret seed is replaced by `a secret seed (S...)` in errors.
      * @param string $s Decimal or hexadecimal integer text.
      * @param string $key Full TxRep field key for errors.
      * @return int Value in [-2147483648, 2147483647].
@@ -365,7 +366,7 @@ class TxRepHelper
 
     /**
      * Parse an unsigned 64-bit integer token into signed PHP storage bits.
-     * A secret seed in the text is replaced by `[redacted seed]` in errors.
+     * Anything in the text or the key that may be a secret seed is replaced by `a secret seed (S...)` in errors.
      * @param string $s Decimal or hexadecimal integer text.
      * @param string $key Full TxRep field key for errors.
      * @return int Storage value, negative for inputs at or above 2^63.
@@ -378,7 +379,7 @@ class TxRepHelper
 
     /**
      * Parse a signed 64-bit integer token.
-     * A secret seed in the text is replaced by `[redacted seed]` in errors.
+     * Anything in the text or the key that may be a secret seed is replaced by `a secret seed (S...)` in errors.
      * @param string $s Decimal or hexadecimal integer text.
      * @param string $key Full TxRep field key for errors.
      * @return int Value in [-2^63, 2^63-1].
@@ -391,14 +392,23 @@ class TxRepHelper
 
     private static function displayIntegerInput(string $s): string
     {
-        return preg_replace('/S[A-Z2-7]{55}/i', '[redacted seed]', $s);
+        return SecretSeedRedaction::redactSecretSeeds($s);
+    }
+
+    /**
+     * Returns the " for <key>" part of an integer error, empty without a key. The key is
+     * caller text, so anything in it that may be a secret seed is replaced.
+     */
+    private static function integerKeyLabel(?string $key): string
+    {
+        return $key === null ? '' : ' for ' . SecretSeedRedaction::redactSecretSeeds($key);
     }
 
     private static function parseIntegerToken(string $s, ?string $key): BigInteger
     {
         if (preg_match('/\A([+-]?)(?:0[xX]([0-9a-fA-F]+)|([0-9]+))\z/', trim($s), $parts) !== 1) {
             $display = self::displayIntegerInput($s);
-            throw new InvalidArgumentException('Cannot parse integer' . ($key === null ? '' : " for $key") . ": $display");
+            throw new InvalidArgumentException('Cannot parse integer' . self::integerKeyLabel($key) . ": $display");
         }
         $hex = $parts[2] !== '';
         $value = new BigInteger($hex ? $parts[2] : $parts[3], $hex ? 16 : 10);
@@ -410,7 +420,7 @@ class TxRepHelper
         $value = self::parseIntegerToken($s, $key);
         if ($value->compare(new BigInteger($min)) < 0 || $value->compare(new BigInteger($max)) > 0) {
             $display = self::displayIntegerInput($s);
-            throw new InvalidArgumentException("Integer value $display" . ($key === null ? '' : " for $key") . " is outside [$min, $max]");
+            throw new InvalidArgumentException("Integer value $display" . self::integerKeyLabel($key) . " is outside [$min, $max]");
         }
         return $unsigned64 ? XdrJsonHelper::stringToUint64($value->toString()) : (int)$value->toString();
     }
@@ -458,7 +468,7 @@ class TxRepHelper
         $decimal = trim($decimal);
 
         if (!is_numeric($decimal)) {
-            throw new InvalidArgumentException('Cannot parse amount: ' . $decimal);
+            throw new InvalidArgumentException('Cannot parse amount: ' . SecretSeedRedaction::redactSecretSeeds($decimal));
         }
 
         $parts = explode('.', $decimal);
@@ -503,7 +513,7 @@ class TxRepHelper
     public static function parseAccountId(string $strKey): XdrAccountID
     {
         if (!StrKey::isValidAccountId($strKey)) {
-            throw new InvalidArgumentException('Invalid account ID: ' . $strKey);
+            throw new InvalidArgumentException('Invalid account ID: ' . SecretSeedRedaction::keyForMessage($strKey));
         }
 
         return XdrAccountID::fromAccountId($strKey);
@@ -539,7 +549,9 @@ class TxRepHelper
         try {
             $ma = MuxedAccount::fromAccountId($strKey);
         } catch (Exception $e) {
-            throw new InvalidArgumentException('Invalid muxed account: ' . $strKey, 0, $e);
+            throw new InvalidArgumentException(
+                'Invalid muxed account: ' . SecretSeedRedaction::keyForMessage($strKey), 0, $e
+            );
         }
 
         return $ma->toXdr();
@@ -600,21 +612,23 @@ class TxRepHelper
 
         $parts = explode(':', $value, 2);
         if (count($parts) !== 2) {
-            throw new InvalidArgumentException('Invalid asset: ' . $value);
+            throw new InvalidArgumentException('Invalid asset: ' . SecretSeedRedaction::redactSecretSeeds($value));
         }
 
         $code = trim($parts[0]);
         $issuer = trim($parts[1]);
 
         if (!StrKey::isValidAccountId($issuer)) {
-            throw new InvalidArgumentException('Invalid asset issuer: ' . $issuer);
+            throw new InvalidArgumentException('Invalid asset issuer: ' . SecretSeedRedaction::keyForMessage($issuer));
         }
 
         $issuerId = XdrAccountID::fromAccountId($issuer);
         $codeLen = strlen($code);
 
         if ($codeLen === 0 || $codeLen > 12) {
-            throw new InvalidArgumentException('Asset code length must be 1–12 characters: ' . $code);
+            throw new InvalidArgumentException(
+                'Asset code length must be 1–12 characters: ' . SecretSeedRedaction::redactSecretSeeds($code)
+            );
         }
 
         if ($codeLen <= 4) {
@@ -691,21 +705,27 @@ class TxRepHelper
 
         $parts = explode(':', $value, 2);
         if (count($parts) !== 2) {
-            throw new InvalidArgumentException('Invalid change trust asset: ' . $value);
+            throw new InvalidArgumentException(
+                'Invalid change trust asset: ' . SecretSeedRedaction::redactSecretSeeds($value)
+            );
         }
 
         $code = trim($parts[0]);
         $issuer = trim($parts[1]);
 
         if (!StrKey::isValidAccountId($issuer)) {
-            throw new InvalidArgumentException('Invalid change trust asset issuer: ' . $issuer);
+            throw new InvalidArgumentException(
+                'Invalid change trust asset issuer: ' . SecretSeedRedaction::keyForMessage($issuer)
+            );
         }
 
         $issuerId = XdrAccountID::fromAccountId($issuer);
         $codeLen = strlen($code);
 
         if ($codeLen === 0 || $codeLen > 12) {
-            throw new InvalidArgumentException('Asset code length must be 1–12 characters: ' . $code);
+            throw new InvalidArgumentException(
+                'Asset code length must be 1–12 characters: ' . SecretSeedRedaction::redactSecretSeeds($code)
+            );
         }
 
         if ($codeLen <= 4) {
@@ -784,10 +804,11 @@ class TxRepHelper
 
         // A 64-character hex string (with no colon) is treated as a pool ID.
         if (strlen($value) === 64 && strpos($value, ':') === false) {
-            $bytes = hex2bin($value);
+            $bytes = ctype_xdigit($value) ? hex2bin($value) : false;
             if ($bytes === false) {
                 throw new InvalidArgumentException(
-                    'Invalid trustline asset: expected 64-char hex pool ID but got invalid hex: ' . $value
+                    'Invalid trustline asset: expected 64-char hex pool ID but got invalid hex: '
+                        . SecretSeedRedaction::keyForMessage($value)
                 );
             }
             $result = new XdrTrustlineAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE));
@@ -797,21 +818,25 @@ class TxRepHelper
 
         $parts = explode(':', $value, 2);
         if (count($parts) !== 2) {
-            throw new InvalidArgumentException('Invalid trustline asset: ' . $value);
+            throw new InvalidArgumentException('Invalid trustline asset: ' . SecretSeedRedaction::redactSecretSeeds($value));
         }
 
         $code = trim($parts[0]);
         $issuer = trim($parts[1]);
 
         if (!StrKey::isValidAccountId($issuer)) {
-            throw new InvalidArgumentException('Invalid trustline asset issuer: ' . $issuer);
+            throw new InvalidArgumentException(
+                'Invalid trustline asset issuer: ' . SecretSeedRedaction::keyForMessage($issuer)
+            );
         }
 
         $issuerId = XdrAccountID::fromAccountId($issuer);
         $codeLen = strlen($code);
 
         if ($codeLen === 0 || $codeLen > 12) {
-            throw new InvalidArgumentException('Asset code length must be 1–12 characters: ' . $code);
+            throw new InvalidArgumentException(
+                'Asset code length must be 1–12 characters: ' . SecretSeedRedaction::redactSecretSeeds($code)
+            );
         }
 
         if ($codeLen <= 4) {
@@ -931,7 +956,7 @@ class TxRepHelper
             return $signer;
         }
 
-        throw new InvalidArgumentException('Unknown signer key prefix: ' . $value);
+        throw new InvalidArgumentException('Unknown signer key prefix: ' . SecretSeedRedaction::keyForMessage($value));
     }
 
     /**
@@ -982,7 +1007,9 @@ class TxRepHelper
         $codeLen = strlen($code);
 
         if ($codeLen === 0 || $codeLen > 12) {
-            throw new InvalidArgumentException('Asset code length must be 1–12 characters: ' . $code);
+            throw new InvalidArgumentException(
+                'Asset code length must be 1–12 characters: ' . SecretSeedRedaction::redactSecretSeeds($code)
+            );
         }
 
         if ($codeLen <= 4) {

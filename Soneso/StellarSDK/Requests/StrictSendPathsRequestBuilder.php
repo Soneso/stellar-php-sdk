@@ -11,6 +11,7 @@ use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\PaymentPath\PathsPageResponse;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * Builds requests for the strict send paths endpoint in Horizon
@@ -69,26 +70,38 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
      *
      * @param string $account The Stellar account ID that will receive the payment
      * @return StrictSendPathsRequestBuilder This builder for method chaining
+     * @throws \InvalidArgumentException If $account starts with "S" or "s", before any request is sent
      */
     public function forDestinationAccount(string $account) : StrictSendPathsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($account, 'account');
         $this->queryParameters[StrictSendPathsRequestBuilder::DESTINATION_ACCOUNT_PARAMETER_NAME] = $account;
         return $this;
     }
 
+    /**
+     * @throws \InvalidArgumentException If $account starts with "S" or "s", before any request is sent
+     */
     public function forSourceAccount(string $account) : StrictSendPathsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($account, 'account');
         $this->queryParameters[StrictSendPathsRequestBuilder::SOURCE_ACCOUNT_PARAMETER_NAME] = $account;
         return $this;
     }
 
+    /**
+     * @throws \InvalidArgumentException If the issuer of an asset in $assets starts with "S" or "s", before any
+     *     request is sent; the message names the asset by its zero-based position in $assets
+     */
     public function forDestinationAssets(array $assets) : StrictSendPathsRequestBuilder {
         if (array_key_exists(StrictSendPathsRequestBuilder::DESTINATION_ACCOUNT_PARAMETER_NAME, $this->queryParameters)) {
             throw new \RuntimeException("cannot set both destination_assets and destination_account");
         }
         $canonical = array();
-        foreach ($assets as $asset) {
+        // The position, not the caller's array key, names the asset, so the message holds no caller text.
+        foreach (array_values($assets) as $position => $asset) {
             if (!$asset instanceof Asset) {
                 throw new \RuntimeException("invalid parameter, not an asset (see class Asset)");
             }
+            SecretSeedRedaction::requireAssetIssuerNotSecretSeed($asset, 'assets[' . $position . ']');
             array_push($canonical, Asset::canonicalForm($asset));
         }
         $this->queryParameters[StrictSendPathsRequestBuilder::DESTINATION_ASSETS_PARAMETER_NAME] = implode(",", $canonical);
@@ -100,7 +113,11 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
         return $this;
     }
 
+    /**
+     * @throws \InvalidArgumentException If the issuer of $asset starts with "S" or "s", before any request is sent
+     */
     public function forSourceAsset(Asset $asset) : StrictSendPathsRequestBuilder {
+        SecretSeedRedaction::requireAssetIssuerNotSecretSeed($asset, 'asset');
         $this->queryParameters[StrictSendPathsRequestBuilder::SOURCE_ASSET_TYPE_PARAMETER_NAME] = $asset->getType();
         if ($asset instanceof AssetTypeCreditAlphanum) {
             $this->queryParameters[StrictSendPathsRequestBuilder::SOURCE_ASSET_CODE_PARAMETER_NAME] = $asset->getCode();

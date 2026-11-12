@@ -11,6 +11,7 @@ use GuzzleHttp\Client;
 use InvalidArgumentException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Util\UrlValidator;
 
 /**
@@ -39,7 +40,7 @@ class Federation {
      */
     public static function resolveStellarAddress(string $address, ?Client $httpClient = null) : FederationResponse {
         if (!str_contains($address, "*")) {
-            throw new InvalidArgumentException("Invalid federation address: " . $address);
+            throw new InvalidArgumentException("Invalid federation address: " . SecretSeedRedaction::redactSecretSeeds($address));
         }
 
         $array = explode("*",$address);

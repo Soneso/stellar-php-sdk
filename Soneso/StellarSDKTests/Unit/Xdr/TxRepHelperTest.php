@@ -1265,6 +1265,35 @@ class TxRepHelperTest extends TestCase
         TxRepHelper::parseTrustlineAsset('UNKNOWN');
     }
 
+    public function testParseTrustlineAssetRejectsNonHexPoolIdWithoutAWarning(): void
+    {
+        // A 64-character value without a colon is read as a pool id. One that is not
+        // hexadecimal is rejected by the exception alone, without a PHP warning before it.
+        $prefix = 'Invalid trustline asset: expected 64-char hex pool ID but got invalid hex: ';
+        $values = [str_repeat('Z', 64), str_pad('XYZ', 64), str_repeat('a', 63) . 'g'];
+        $messages = [];
+        $raised = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$raised): bool {
+            $raised[] = $errstr;
+            return true;
+        });
+        try {
+            foreach ($values as $value) {
+                try {
+                    TxRepHelper::parseTrustlineAsset($value);
+                    $messages[] = 'no exception';
+                } catch (InvalidArgumentException $e) {
+                    $messages[] = $e->getMessage();
+                }
+            }
+        } finally {
+            restore_error_handler();
+        }
+        $this->assertSame([], $raised);
+        $expected = array_map(static fn (string $value): string => $prefix . $value, $values);
+        $this->assertSame($expected, $messages);
+    }
+
     // ---------------------------------------------------------------------------
     // formatSignerKey() — error branches
     // ---------------------------------------------------------------------------
@@ -1433,7 +1462,7 @@ class TxRepHelperTest extends TestCase
                 self::fail('Accepted a secret seed in ' . $method);
             } catch (InvalidArgumentException $e) {
                 self::assertSame('Cannot parse integer' . ($keys === [] ? '' : ' for tx.value')
-                    . ': [redacted seed]', $e->getMessage());
+                    . ': a secret seed (S...)', $e->getMessage());
                 self::assertStringNotContainsString($seed, $e->getMessage());
             }
         }
@@ -1443,8 +1472,10 @@ class TxRepHelperTest extends TestCase
                 TxRepHelper::parseInt($seed . $suffix);
                 self::fail('Accepted a token containing a secret seed');
             } catch (InvalidArgumentException $e) {
-                self::assertSame('Cannot parse integer: [redacted seed]' . $suffix, $e->getMessage());
+                // The suffix extends the run of letters and digits, so the whole run is replaced.
+                self::assertSame('Cannot parse integer: a secret seed (S...)', $e->getMessage());
                 self::assertStringNotContainsString($seed, $e->getMessage());
+                self::assertStringNotContainsString(strtolower($seed), $e->getMessage());
             }
         }
         self::assertSame('18446744073709551616', TxRepHelper::parseBigInt('0x10000000000000000')->toString());

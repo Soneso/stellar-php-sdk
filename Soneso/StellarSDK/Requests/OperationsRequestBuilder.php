@@ -13,6 +13,7 @@ use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Operations\OperationResponse;
 use Soneso\StellarSDK\Responses\Operations\OperationsPageResponse;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
 
 /**
@@ -99,9 +100,11 @@ class OperationsRequestBuilder extends RequestBuilder
      *
      * @param string $accountId Public key of the account to filter by (G-address)
      * @return OperationsRequestBuilder This instance for method chaining
+     * @throws InvalidArgumentException If $accountId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Operations for Account
      */
     public function forAccount(string $accountId) : OperationsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($accountId, 'accountId');
         $this->setSegments("accounts", $accountId, "operations");
         return $this;
     }
@@ -152,9 +155,11 @@ class OperationsRequestBuilder extends RequestBuilder
      *
      * @param string $transactionId The transaction hash
      * @return OperationsRequestBuilder This instance for method chaining
+     * @throws InvalidArgumentException If $transactionId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Operations for Transaction
      */
     public function forTransaction(string $transactionId) : OperationsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($transactionId, 'transactionId');
         $this->setSegments("transactions", $transactionId, "operations");
         return $this;
     }
@@ -169,9 +174,11 @@ class OperationsRequestBuilder extends RequestBuilder
      *
      * @param string $liquidityPoolId The liquidity pool ID (L-address or hex format)
      * @return OperationsRequestBuilder This instance for method chaining
+     * @throws InvalidArgumentException If $liquidityPoolId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Operations for Liquidity Pool
      */
     public function forLiquidityPool(string $liquidityPoolId) : OperationsRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($liquidityPoolId, 'liquidityPoolId');
         $idHex = $liquidityPoolId;
         if (str_starts_with($idHex, "L")) {
             $idHex = StrKey::decodeLiquidityPoolIdHex($idHex);

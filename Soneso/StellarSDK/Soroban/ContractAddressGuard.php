@@ -52,17 +52,19 @@ final class ContractAddressGuard
     /**
      * Builds the error for an id that names no address of any kind. The id is arbitrary input,
      * so the message echoes it escaped and bounded; a strkey of a known kind is plain base32.
-     * A secret seed ("S...") is named by its kind only and never echoed.
+     * An id that starts with "S" or "s", the first letter of a secret seed, is named by its
+     * kind only and never echoed.
      *
      * @param string $id the id given
      * @param string $subject the role of the id, as the message names it
-     * @return InvalidArgumentException the error naming the id, or the kind for a secret seed
+     * @return InvalidArgumentException the error naming the id, or the kind for an id starting with "S" or "s"
      */
     public static function notAnAddress(string $id, string $subject): InvalidArgumentException
     {
-        if (StrKey::isValidSeed($id)) {
+        $kind = SecretSeedRedaction::seedKind($id);
+        if ($kind !== null) {
             return new InvalidArgumentException($subject
-                . ' must be a contract (C...) address, got a secret seed (S...) instead of an address');
+                . ' must be a contract (C...) address, got ' . $kind . ' instead of an address');
         }
         return new InvalidArgumentException($subject . ' must be a contract (C...) address: '
             . XdrJsonHelper::safePreview($id));

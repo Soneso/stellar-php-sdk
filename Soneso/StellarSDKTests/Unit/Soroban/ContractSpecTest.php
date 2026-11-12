@@ -898,7 +898,8 @@ class ContractSpecTest extends TestCase
             (new ContractSpec([]))->nativeToXdrSCVal('invalid ' . $seed, XdrSCSpecTypeDef::TIMEPOINT());
         } catch (InvalidArgumentException $e) {
             $this->assertStringContainsString('Invalid timepoint value', $e->getMessage());
-            $this->assertStringContainsString('[redacted seed]', $e->getMessage());
+            $this->assertSame("Invalid timepoint value 'invalid a secret seed (S...)'; expected an integer or decimal "
+                . 'string in [0, 18446744073709551615]', $e->getMessage());
             $this->assertStringNotContainsString($seed, $e->getMessage());
             $this->assertNull($e->getPrevious());
             return;

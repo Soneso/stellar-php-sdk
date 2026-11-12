@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK\Xdr;
 use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * @phpstan-consistent-constructor
@@ -109,6 +110,8 @@ class XdrMuxedAccount extends XdrMuxedAccountBase
             return new static(null, $med25519);
         }
 
-        throw new InvalidArgumentException('Unrecognized muxed account address prefix "' . $firstChar . '": ' . $raw);
+        throw new InvalidArgumentException(
+            'Unrecognized muxed account address prefix "' . $firstChar . '": ' . SecretSeedRedaction::keyForMessage($raw)
+        );
     }
 }

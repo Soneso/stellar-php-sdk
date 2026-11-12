@@ -59,7 +59,9 @@ ARM_STORAGE_OVERRIDES = {
 # Class members the overrides above call, keyed by <PhpUnionName>. Emitted into
 # the generated class so it resolves its own fields: the canonicalisation has
 # one implementation, reached alike by the generated readers and by the
-# hand-written wrapper that inherits it.
+# hand-written wrapper that inherits it. The resolvers name a value that starts
+# with "S" or "s", which may be a secret seed, by its kind through
+# SecretSeedRedaction; a type whose members call it imports it.
 #
 # Bodies are written unindented; the emitter indents them to the class body.
 # ---------------------------------------------------------------------------
@@ -91,7 +93,9 @@ ARM_STORAGE_HELPERS = {
      *
      * A contract id is accepted as its strkey form "C..." or as the bare hash in
      * hexadecimal. Every reader of the field resolves it through here, so none takes
-     * what another refuses.
+     * what another refuses. A value that starts with "S" or "s", the first letter of a
+     * secret seed, is neither spelling, and the error names it by its kind without
+     * showing it.
      *
      * @return string the contract id as 64 lower case hexadecimal characters
      * @throws InvalidArgumentException when the field is unset, holds a string that is
@@ -101,6 +105,12 @@ ARM_STORAGE_HELPERS = {
         $value = $this->contractId;
         if ($value === null || $value === '') {
             throw new InvalidArgumentException('Contract id is not set');
+        }
+        $seedKind = SecretSeedRedaction::seedKind($value);
+        if ($seedKind !== null) {
+            throw new InvalidArgumentException(
+                'Contract id must be a "C..." strkey or a hexadecimal string, ' . $seedKind . ' given'
+            );
         }
         if (strlen($value) === self::CONTRACT_STRKEY_LENGTH && $value[0] === 'C') {
             // The base32 and hexadecimal alphabets share A-F and 2-7, so a string of
@@ -143,7 +153,9 @@ ARM_STORAGE_HELPERS = {
      * A pool id is accepted as its strkey form "L..." or as the bare hash in
      * hexadecimal. PoolID is a plain 32-byte hash on the wire with no discriminant
      * ahead of it, so there is no prefixed spelling to accept. Every reader of the
-     * field resolves it through here, so none takes what another refuses.
+     * field resolves it through here, so none takes what another refuses. A value that
+     * starts with "S" or "s", the first letter of a secret seed, is neither spelling,
+     * and the error names it by its kind without showing it.
      *
      * @return string the pool id as 64 lower case hexadecimal characters
      * @throws InvalidArgumentException when the field is unset, holds a string that is
@@ -153,6 +165,12 @@ ARM_STORAGE_HELPERS = {
         $value = $this->liquidityPoolId;
         if ($value === null || $value === '') {
             throw new InvalidArgumentException('Liquidity pool id is not set');
+        }
+        $seedKind = SecretSeedRedaction::seedKind($value);
+        if ($seedKind !== null) {
+            throw new InvalidArgumentException(
+                'Liquidity pool id must be an "L..." strkey or a hexadecimal string, ' . $seedKind . ' given'
+            );
         }
         if (strlen($value) === self::LIQUIDITY_POOL_STRKEY_LENGTH && $value[0] === 'L') {
             // Requiring the version letter here leaves a hexadecimal id of the same
@@ -190,13 +208,18 @@ ARM_STORAGE_HELPERS = {
      * characters.
      *
      * Every reader of the field resolves it through here, so none takes what another
-     * refuses.
+     * refuses. A field that starts with "S" or "s", the first letter of a secret seed,
+     * is not hexadecimal, and the error names it by its kind without showing it.
      *
      * @return string the wasm hash as 64 lower case hexadecimal characters
      * @throws InvalidArgumentException when the field is unset, or holds a string that
      * is not 64 hexadecimal characters
      */
     public function getCanonicalWasmIdHex(): string {
+        $seedKind = SecretSeedRedaction::seedKind($this->wasmIdHex ?? '');
+        if ($seedKind !== null) {
+            throw new InvalidArgumentException('Wasm hash must be a hexadecimal string, ' . $seedKind . ' given');
+        }
         return self::canonicalWasmIdHex($this->wasmIdHex);
     }
 

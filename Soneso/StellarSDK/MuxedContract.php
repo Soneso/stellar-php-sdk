@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK;
 use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Xdr\XdrMuxedContract;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
@@ -57,7 +58,8 @@ class MuxedContract
             $contractIdHex = XdrSCAddress::forContractId($contractId)->getCanonicalContractIdHex();
         } catch (InvalidArgumentException $e) {
             throw new InvalidArgumentException(
-                'Invalid contract id "' . $contractId . '": ' . $e->getMessage(), 0, $e
+                'Invalid contract id "' . SecretSeedRedaction::keyForMessage($contractId) . '": '
+                    . $e->getMessage(), 0, $e
             );
         }
         $this->contractId = StrKey::encodeContractIdHex($contractIdHex);
@@ -80,7 +82,8 @@ class MuxedContract
             return self::fromXdrSCAddress(XdrSCAddress::forMuxedContractId($address));
         }
         throw new InvalidArgumentException(
-            'Expected a contract (C...) or muxed contract (W...) address, got: ' . $address
+            'Expected a contract (C...) or muxed contract (W...) address, got: '
+                . SecretSeedRedaction::keyForMessage($address)
         );
     }
 

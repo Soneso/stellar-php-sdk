@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use Soneso\StellarSDK\Crypto\CryptoKeyType;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccountMed25519;
@@ -142,7 +143,7 @@ class MuxedAccount
         } else if ("M" == $firstChar) {
             return static::fromMed25519AccountId($accountId);
         } else {
-            throw new InvalidArgumentException("invalid accountId: " . $accountId);
+            throw new InvalidArgumentException("invalid accountId: " . SecretSeedRedaction::keyForMessage($accountId));
         }
     }
 

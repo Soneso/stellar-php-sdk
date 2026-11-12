@@ -14,6 +14,7 @@ use Soneso\StellarSDK\AssetTypeCreditAlphanum;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
 use Soneso\StellarSDK\Responses\Offers\OfferResponse;
 use Soneso\StellarSDK\Responses\Offers\OffersPageResponse;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * Builds requests for the offers endpoint in Horizon
@@ -91,9 +92,11 @@ class OffersRequestBuilder  extends RequestBuilder
      * Builds request to <code>GET /accounts/{account}/offers</code>
      * @param string $accountId ID of the account for which to get payments.
      * @return OffersRequestBuilder
+     * @throws \InvalidArgumentException If $accountId starts with "S" or "s", before any request is sent
      * @see https://developers.stellar.org Stellar developer docs Offers for Account
      */
     public function forAccount(string $accountId) : OffersRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($accountId, 'accountId');
         $this->setSegments("accounts", $accountId, "offers");
         return $this;
     }
@@ -102,8 +105,10 @@ class OffersRequestBuilder  extends RequestBuilder
      * Returns all offers sponsored by a given account.
      * @param string $sponsor Account ID of the sponsor.
      * @return OffersRequestBuilder current instance
+     * @throws \InvalidArgumentException If $sponsor starts with "S" or "s", before any request is sent
      */
     public function forSponsor(string $sponsor) : OffersRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($sponsor, 'sponsor');
         $this->queryParameters[OffersRequestBuilder::SPONSOR_PARAMETER_NAME] = $sponsor;
         return $this;
     }
@@ -112,8 +117,10 @@ class OffersRequestBuilder  extends RequestBuilder
      * Returns all offers where the given account is the seller.
      * @param string $seller Account ID of the offer creator.
      * @return OffersRequestBuilder current instance
+     * @throws \InvalidArgumentException If $seller starts with "S" or "s", before any request is sent
      */
     public function forSeller(string $seller) : OffersRequestBuilder {
+        SecretSeedRedaction::requireNotSecretSeed($seller, 'seller');
         $this->queryParameters[OffersRequestBuilder::SELLER_PARAMETER_NAME] = $seller;
         return $this;
     }
@@ -123,8 +130,10 @@ class OffersRequestBuilder  extends RequestBuilder
      *
      * @param Asset $asset The asset being sold.
      * @return OffersRequestBuilder current instance
+     * @throws \InvalidArgumentException If the issuer of $asset starts with "S" or "s", before any request is sent
      */
     public function forSellingAsset(Asset $asset) : OffersRequestBuilder {
+        SecretSeedRedaction::requireAssetIssuerNotSecretSeed($asset, 'asset');
         $this->queryParameters[OffersRequestBuilder::SELLING_ASSET_TYPE_PARAMETER_NAME] = $asset->getType();
         if ($asset instanceof AssetTypeCreditAlphanum) {
             $this->queryParameters[OffersRequestBuilder::SELLING_ASSET_CODE_PARAMETER_NAME] = $asset->getCode();
@@ -138,8 +147,10 @@ class OffersRequestBuilder  extends RequestBuilder
      *
      * @param Asset $asset The asset being bought.
      * @return OffersRequestBuilder current instance
+     * @throws \InvalidArgumentException If the issuer of $asset starts with "S" or "s", before any request is sent
      */
     public function forBuyingAsset(Asset $asset) : OffersRequestBuilder {
+        SecretSeedRedaction::requireAssetIssuerNotSecretSeed($asset, 'asset');
         $this->queryParameters[OffersRequestBuilder::BUYING_ASSET_TYPE_PARAMETER_NAME] = $asset->getType();
         if ($asset instanceof AssetTypeCreditAlphanum) {
             $this->queryParameters[OffersRequestBuilder::BUYING_ASSET_CODE_PARAMETER_NAME] = $asset->getCode();
