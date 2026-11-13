@@ -24,7 +24,7 @@ Every script exits non-zero and writes no file when an upstream fetch fails. The
 - an unreadable `VersionByte`, `StrKey` or StrKey unit test file (SEP generator)
 - an unreadable SEP-51 evidence file, or an evidence pattern that matches no line of it (SEP generator)
 - an RPC method without a response definition, or whose response embeds a struct that no fetched go-stellar-sdk protocol file declares (RPC extractor)
-- a stellar-rpc release whose `go.mod` pins no go-stellar-sdk module, or whose `jsonrpc.go` method registrations differ from the extractor's method list (RPC extractor)
+- a stellar-rpc release whose `go.mod` pins no go-stellar-sdk module, or whose method registrations cannot be read or differ from the extractor's method list (RPC extractor)
 - a missing `SorobanServer.php` or `Soroban/Responses` directory in the SDK (RPC generator)
 - an unreadable SDK version (all three generators)
 
@@ -59,7 +59,9 @@ python tools/matrix-generator/rpc/extract_rpc_methods.py
 python tools/matrix-generator/rpc/generate_rpc_matrix.py
 ```
 
-By default the extractor uses the newest stable stellar-rpc release: the highest `vX.Y.Z` tag by semver among releases that are neither drafts nor prereleases. It reads the request and response definitions from the go-stellar-sdk version that the release's `go.mod` pins, and compares its method list with the methods that the release's `jsonrpc.go` registers. Releases before v25.0.0 pin no go-stellar-sdk module, so an override to one of them fails. The generator cites the release the extractor recorded, with its published date and URL.
+By default the extractor uses the newest stable stellar-rpc release: the highest `vX.Y.Z` tag by semver among releases that are neither drafts nor prereleases. It reads the request and response definitions from the go-stellar-sdk version that the release's `go.mod` pins, and compares its method list with the methods that the release registers. Releases before v25.0.0 pin no go-stellar-sdk module, so an override to one of them fails. The generator cites the release the extractor recorded, with its published date and URL.
+
+The extractor reads the registered methods from the `LimitsByMethod` map literal of `cmd/stellar-rpc/internal/rpcv1/jsonrpc.go` or, when GitHub answers HTTP 404 for that file at the release tag, from the `methodName` handler list of `cmd/stellar-rpc/internal/jsonrpc.go`. The run fails when the file holds not exactly one such block or an empty one, when an entry names no method as a `protocol.<Name>MethodName` constant, or when such a constant appears outside the block.
 
 `extract_rpc_methods.py` options:
 - `--rpc-version VERSION` -- extract from a specific stellar-rpc release tagged `vX.Y.Z` or `vX.Y.Z-suffix`; it must exist and must not be a draft (a prerelease is accepted)
@@ -133,6 +135,8 @@ compatibility/
 4. **Coverage** is computed per endpoint/method/feature and rendered into Markdown tables.
 
 ## Tests
+
+The two `stellar-rpc-*.go` files in `tests/fixtures/` are copies of the stellar-rpc method registration files at v30.0.0 and v30.0.1.
 
 ```bash
 python3 -m unittest discover -s tools/matrix-generator/tests
