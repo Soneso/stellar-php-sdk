@@ -29,6 +29,7 @@ use Soneso\StellarSDK\Soroban\Contract\AssembledTransactionOptions;
 use Soneso\StellarSDK\Soroban\Contract\ClientOptions;
 use Soneso\StellarSDK\Soroban\Contract\MethodOptions;
 use Soneso\StellarSDK\Soroban\Contract\SimulateHostFunctionResult;
+use Soneso\StellarSDK\Soroban\Responses\ContractErrorProvenance;
 use Soneso\StellarSDK\Soroban\Responses\RestorePreamble;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SimulateTransactionResponse;
@@ -543,6 +544,115 @@ class AssembledTransactionTest extends TestCase
         $this->expectExceptionMessage('Transaction simulation failed');
 
         $tx->getSimulationData();
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('capturedSimulationFailures')]
+    public function testSimulationFailureReportsCapturedContractErrors(array $json, int $count, ?array $expected, string $suffix): void
+    {
+        $tx = $this->buildSimulationResponse($json);
+        $this->assertCount($count, $json['result']['events']);
+        SimulationFailureFixtures::assertFailure($this->simulationFailure($tx), $json['result']['events'], $expected,
+            'Transaction simulation failed: ' . $json['result']['error'] . $suffix);
+    }
+
+    public static function capturedSimulationFailures(): iterable
+    {
+        return SimulationFailureFixtures::captures();
+    }
+
+    public function testSimulationErrorSkipsMalformedEntriesIndividually(): void
+    {
+        $valid = SimulationFailureFixtures::event(3114, SimulationFailureFixtures::VERIFIER);
+        $events = ['%%%', $valid, 'AAAA', SimulationFailureFixtures::event(3016, SimulationFailureFixtures::ACCOUNT), $valid];
+        $tx = $this->buildSimulationResponse(['result' => ['error' => SimulationFailureFixtures::AUTH, 'events' => $events]]);
+        SimulationFailureFixtures::assertFailure($this->simulationFailure($tx), $events,
+            [3114, ContractErrorProvenance::DIAGNOSTIC_EVENTS, SimulationFailureFixtures::VERIFIER],
+            'Transaction simulation failed: HostError: Error(Auth, InvalidAction)' . SimulationFailureFixtures::VERIFIER_SUFFIX);
+    }
+
+    public function testSimulationFailureReportsAnEventWithoutContractId(): void
+    {
+        $events = [SimulationFailureFixtures::event(id: null)];
+        $tx = $this->buildSimulationResponse(['result' => ['error' => SimulationFailureFixtures::CONTEXT, 'events' => $events]]);
+        SimulationFailureFixtures::assertFailure($this->simulationFailure($tx), $events,
+            [3201, ContractErrorProvenance::DIAGNOSTIC_EVENTS, null],
+            'Transaction simulation failed: HostError: Error(Context, InvalidAction) (contract error in diagnostic events: Error(Contract, #3201))');
+    }
+
+    public function testSimulationExceptionKeepsAnIndependentSnapshot(): void
+    {
+        $json = SimulationFailureFixtures::capture('case-a');
+        $tx = $this->buildSimulationResponse($json);
+        $error = $this->simulationFailure($tx);
+        $tx->simulationResponse->events = SimulationFailureFixtures::capture('case-b2-unregistered')['result']['events'];
+        $tx->simulationResponse->resultError = SimulationFailureFixtures::AUTH;
+        SimulationFailureFixtures::assertReport([3016, ContractErrorProvenance::DIAGNOSTIC_EVENTS, SimulationFailureFixtures::ACCOUNT],
+            $tx->simulationResponse->reportedContractError());
+        SimulationFailureFixtures::assertFailure($error, $json['result']['events'],
+            [3201, ContractErrorProvenance::DIAGNOSTIC_EVENTS, SimulationFailureFixtures::POLICY],
+            'Transaction simulation failed: HostError: Error(Context, InvalidAction)' . SimulationFailureFixtures::POLICY_SUFFIX);
+    }
+
+    public function testSimulationFailureCarriesTheRpcErrorAndKeepsOtherFailures(): void
+    {
+        $json = ['jsonrpc' => '2.0', 'id' => 1, 'error' => ['code' => -32602, 'message' => 'Invalid params', 'data' => ['field' => 'transaction']]];
+        $tx = $this->buildSimulationResponse($json);
+        SimulationFailureFixtures::assertFailure($this->simulationFailure($tx), [], null,
+            'Transaction simulation failed: JSON-RPC error -32602: Invalid params', $tx->simulationResponse->error);
+        $this->assertSame($json, $tx->simulationResponse->error->getJsonResponse());
+        $this->assertSame(['field' => 'transaction'], $tx->simulationResponse->error->data);
+        $tx->simulationResponse->error = new SorobanRpcErrorResponse([]);
+        SimulationFailureFixtures::assertFailure($this->simulationFailure($tx), [], null,
+            'Transaction simulation failed: JSON-RPC error null: null', $tx->simulationResponse->error);
+        $tx = $this->buildSimulationResponse(['result' => ['events' => [SimulationFailureFixtures::event()]]]);
+        SimulationFailureFixtures::assertFailure($this->simulationFailure($tx), [], null, 'Transaction simulation failed: ');
+        $cause = new \RuntimeException('connection closed');
+        $transport = new \GuzzleHttp\Exception\RequestException('transport failed', new \GuzzleHttp\Psr7\Request('POST', self::TEST_RPC_URL), null, $cause);
+        foreach ([$transport, '{'] as $input) {
+            try {
+                $this->buildSimulationResponse($input);
+                $this->fail('Expected an RPC failure');
+            } catch (Exception $error) {
+                if ($input === $transport) {
+                    $this->assertSame($transport, $error);
+                    $this->assertSame($cause, $error->getPrevious());
+                } else {
+                    $this->assertSame(InvalidArgumentException::class, get_class($error));
+                    $this->assertSame('Error in json_decode: Syntax error', $error->getMessage());
+                }
+            }
+        }
+        $tx->simulationResponse = null;
+        $error = $this->simulationFailure($tx);
+        $this->assertSame(Exception::class, get_class($error));
+        $this->assertSame('Transaction has not yet been simulated', $error->getMessage());
+        $tx = $this->buildSimulationResponse(['result' => ['minResourceFee' => '100',
+            'transactionData' => $this->createMockTransactionData()->toBase64Xdr()]]);
+        $this->assertSame(XdrSCValType::SCV_VOID, $tx->getSimulationData()->returnedValue->type->getValue());
+    }
+
+    private function buildSimulationResponse(array|string|\Throwable $response): AssembledTransaction
+    {
+        $reply = $response instanceof \Throwable ? $response : new Response(200, [],
+            is_array($response) ? json_encode($response, JSON_THROW_ON_ERROR) : $response);
+        $mock = new MockHandler([$this->readOnlyAccountResponse(self::TEST_ACCOUNT_ID), $reply]);
+        $history = [];
+        try {
+            return AssembledTransaction::build($this->readOnlyTestOptions(self::TEST_ACCOUNT_ID, $mock, $history, false));
+        } finally {
+            $this->assertSame(['getLedgerEntries', 'simulateTransaction'], $this->readOnlyRequestMethods($history));
+            $this->assertSame(0, $mock->count());
+        }
+    }
+
+    private function simulationFailure(AssembledTransaction $tx): Exception
+    {
+        try {
+            $tx->getSimulationData();
+        } catch (Exception $error) {
+            return $error;
+        }
+        $this->fail('Expected a simulation failure');
     }
 
     public function testGetSimulationDataCachesResult(): void

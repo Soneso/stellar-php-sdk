@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDKTests\Unit\Soroban;
 
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Soroban\Responses\ContractErrorProvenance;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SendTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SimulateTransactionResult;
@@ -16,7 +17,12 @@ use Soneso\StellarSDK\Soroban\Responses\SorobanRpcErrorResponse;
 use Soneso\StellarSDK\Soroban\Responses\TransactionEvents;
 use Soneso\StellarSDK\Soroban\Responses\SimulateTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\LedgerEntryChange;
+use Soneso\StellarSDK\Soroban\Responses\ReportedContractError;
 use Soneso\StellarSDK\Soroban\Responses\RestorePreamble;
+use Soneso\StellarSDK\Xdr\XdrContractEventType;
+use Soneso\StellarSDK\Xdr\XdrSCError;
+use Soneso\StellarSDK\Xdr\XdrSCErrorCode;
+use Soneso\StellarSDK\Xdr\XdrSCErrorType;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
@@ -429,6 +435,116 @@ class SorobanResponsesTest extends TestCase
         $this->assertEquals(123456, $response->getLatestLedger());
         $this->assertEquals('HostError: something went wrong', $response->getResultError());
         $this->assertNull($response->getResults());
+    }
+
+    /** @dataProvider contractErrorHeaders */
+    public function testReportedContractErrorUsesTheLeadingHeader(?string $header, ?array $events, ?array $expected): void
+    {
+        $response = SimulateTransactionResponse::fromJson(['result' => ['error' => $header, 'events' => $events]]);
+        try {
+            $reported = $response->reportedContractError();
+        } catch (\Throwable $error) {
+            $this->fail('Contract error extraction must not throw: ' . $error->getMessage());
+        }
+        SimulationFailureFixtures::assertReport($expected, $reported);
+        $this->assertSame($header, $response->resultError);
+        $this->assertSame($events, $response->events);
+    }
+
+    public static function contractErrorHeaders(): iterable
+    {
+        $event = SimulationFailureFixtures::capture('case-a')['result']['events'][6];
+        $host = ContractErrorProvenance::HOST_ERROR;
+        $diagnostic = [3201, ContractErrorProvenance::DIAGNOSTIC_EVENTS, SimulationFailureFixtures::POLICY];
+        $captured = SimulationFailureFixtures::capture('case-c2-sac-negative-transfer')['result']['error'];
+        foreach (['captured header' => $captured, 'whitespace' => " \tHostError:  Error( Contract , #0008 ) \t",
+                  'optional prefix' => 'Error(Contract, #8)', 'CR' => $captured . "\rtail",
+                  'LF' => $captured . "\ntail", 'CRLF' => $captured . "\r\ntail"] as $label => $header) {
+            yield $label => [$header, [$event], [8, $host, null]];
+        }
+        foreach (['absent error' => null, 'empty error' => '', 'arbitrary text' => 'arbitrary text',
+                  'storage' => 'Error(Storage, MissingValue)', 'vm' => 'Error(Vm, InvalidAction)',
+                  'space before parenthesis' => 'Error (Contract, #8)', 'trailing junk' => 'Error(Contract, #8) junk',
+                  'leading blank line' => "\n" . $captured] as $label => $header) {
+            yield $label => [$header, [$event], null];
+        }
+        yield 'context' => [SimulationFailureFixtures::CONTEXT, [$event], $diagnostic];
+        yield 'auth' => [SimulationFailureFixtures::AUTH, [$event], $diagnostic];
+        yield 'absent events' => [SimulationFailureFixtures::CONTEXT, null, null];
+        yield 'empty events' => [SimulationFailureFixtures::AUTH, [], null];
+        yield 'text log only' => [SimulationFailureFixtures::AUTH . "\nEvent log: Error(Contract, #3016)", null, null];
+        foreach (['zero' => ['#0', 0], 'maximum' => ['#4294967295', 4294967295],
+                  'padded maximum' => ['#00004294967295', 4294967295]] as $label => [$text, $code]) {
+            yield $label => ["Error(Contract, $text)", [$event], [$code, $host, null]];
+        }
+        foreach (['negative' => '#-1', 'plus sign' => '#+1', 'overflow' => '#4294967296',
+                  'long overflow' => '#99999999999999999999', 'missing digits' => '#', 'fraction' => '#1.0'] as $label => $text) {
+            yield $label => ["Error(Contract, $text)", [$event], null];
+        }
+    }
+
+    /** @dataProvider contractErrorEvents */
+    public function testReportedContractErrorSelectsTheEarliestQualifyingEvent(array $events, ?array $expected): void
+    {
+        $response = SimulateTransactionResponse::fromJson(['result' => ['error' => SimulationFailureFixtures::CONTEXT, 'events' => $events]]);
+        try {
+            $reported = $response->reportedContractError();
+        } catch (\Throwable $error) {
+            $this->fail('Contract error extraction must not throw: ' . $error->getMessage());
+        }
+        SimulationFailureFixtures::assertReport($expected, $reported);
+        $this->assertSame(SimulationFailureFixtures::CONTEXT, $response->resultError);
+        $this->assertSame($events, $response->events);
+    }
+
+    public static function contractErrorEvents(): iterable
+    {
+        $symbol = XdrSCVal::forSymbol('error');
+        $error = SimulationFailureFixtures::contractError(3201);
+        $crypto = new XdrSCError(XdrSCErrorType::SCE_CRYPTO());
+        $crypto->code = XdrSCErrorCode::SCEC_INVALID_INPUT();
+        foreach (['invalid base64' => '%%%', 'truncated XDR' => 'AAAA',
+                  'unknown body' => SimulationFailureFixtures::event(bodyVersion: 1),
+                  'contract event' => SimulationFailureFixtures::event(type: XdrContractEventType::CONTRACT_EVENT_TYPE_CONTRACT),
+                  'no topics' => SimulationFailureFixtures::event(topics: []),
+                  'one topic' => SimulationFailureFixtures::event(topics: [$symbol]),
+                  'three topics' => SimulationFailureFixtures::event(topics: [$symbol, $error, $error]),
+                  'string topic' => SimulationFailureFixtures::event(topics: [XdrSCVal::forString('error'), $error]),
+                  'other symbol' => SimulationFailureFixtures::event(topics: [XdrSCVal::forSymbol('other'), $error]),
+                  'integer topic' => SimulationFailureFixtures::event(topics: [$symbol, XdrSCVal::forU32(3201)]),
+                  'crypto error' => SimulationFailureFixtures::event(topics: [$symbol, XdrSCVal::forError($crypto)]),
+                  'data only' => SimulationFailureFixtures::event(topics: [], data: $error)] as $label => $event) {
+            yield $label => [[$event], null];
+        }
+        $policy = SimulationFailureFixtures::event();
+        $verifier = SimulationFailureFixtures::event(3114, SimulationFailureFixtures::VERIFIER);
+        $provenance = ContractErrorProvenance::DIAGNOSTIC_EVENTS;
+        $expectedPolicy = [3201, $provenance, SimulationFailureFixtures::POLICY];
+        yield 'qualifying event' => [[$policy], $expectedPolicy];
+        yield 'successful call first' => [[SimulationFailureFixtures::event(3114, SimulationFailureFixtures::VERIFIER, true), $policy], $expectedPolicy];
+        yield 'absent contract ID' => [[SimulationFailureFixtures::event(id: null)], [3201, $provenance, null]];
+        yield 'verifier first' => [[$verifier, $policy, $verifier], [3114, $provenance, SimulationFailureFixtures::VERIFIER]];
+        yield 'policy first' => [[$policy, $verifier, $verifier], $expectedPolicy];
+        yield 'zero' => [[SimulationFailureFixtures::event(0)], [0, $provenance, SimulationFailureFixtures::POLICY]];
+        yield 'maximum' => [[SimulationFailureFixtures::event(4294967295)], [4294967295, $provenance, SimulationFailureFixtures::POLICY]];
+    }
+
+    /** @dataProvider reportedContractErrorCodes */
+    public function testReportedContractErrorEnforcesUnsignedBounds(int $code, ?string $message): void
+    {
+        if ($message !== null) {
+            $this->expectException(\InvalidArgumentException::class);
+            $this->expectExceptionMessageMatches('/\A' . preg_quote($message, '/') . '\z/');
+        }
+        $value = new ReportedContractError($code, ContractErrorProvenance::HOST_ERROR);
+        SimulationFailureFixtures::assertReport([$code, ContractErrorProvenance::HOST_ERROR, null], $value);
+    }
+
+    public static function reportedContractErrorCodes(): array
+    {
+        return ['zero' => [0, null], 'maximum' => [4294967295, null],
+            'negative' => [-1, 'Contract error code -1 must be between 0 and 4294967295'],
+            'overflow' => [4294967296, 'Contract error code 4294967296 must be between 0 and 4294967295']];
     }
 
     public function testSimulateTransactionResponseFromJsonWithRpcError(): void

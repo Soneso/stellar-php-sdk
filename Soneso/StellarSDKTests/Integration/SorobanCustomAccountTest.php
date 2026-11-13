@@ -18,6 +18,7 @@ use Soneso\StellarSDK\RestoreFootprintOperationBuilder;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
+use Soneso\StellarSDK\Soroban\Responses\ContractErrorProvenance;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SendTransactionResponse;
 use Soneso\StellarSDK\Soroban\SorobanServer;
@@ -314,7 +315,11 @@ class SorobanCustomAccountTest extends TestCase
             // signature with the account contract's error NOT_ENOUGH_SIGNERS (3).
             $this->assertNotNull($enforceResponse->resultError);
             $this->assertStringStartsWith('HostError: Error(Auth, InvalidAction)', $enforceResponse->resultError);
-            $this->assertStringContainsString('Error(Contract, #3)', $enforceResponse->resultError);
+            $reported = $enforceResponse->reportedContractError();
+            $this->assertNotNull($reported);
+            $this->assertSame(3, $reported->getCode());
+            $this->assertSame(ContractErrorProvenance::DIAGNOSTIC_EVENTS, $reported->getProvenance());
+            $this->assertSame($invokerAddress->toStrKey(), $reported->getContractId());
             return;
         }
         $this->assertNull($enforceResponse->resultError);

@@ -26,6 +26,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Contract\MethodOptions;
 use Soneso\StellarSDK\Soroban\Contract\SACClient;
+use Soneso\StellarSDK\Soroban\Exceptions\SorobanSimulationException;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\Transaction;
@@ -309,7 +310,7 @@ class SACClientTest extends TestCase
             $client->balance(Address::fromAccountId(KeyPair::random()->getAccountId()));
             $this->fail('Returned a balance for a missing account');
         } catch (Exception $e) {
-            $this->assertSame(Exception::class, get_class($e));
+            $this->assertSame(SorobanSimulationException::class, get_class($e));
             $this->assertSame('Transaction simulation failed: HostError: Error(Contract, #6)', $e->getMessage());
         }
         $this->assertSame(['simulateTransaction'], $this->requestMethods($history));

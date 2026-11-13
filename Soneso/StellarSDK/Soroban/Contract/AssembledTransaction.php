@@ -17,6 +17,7 @@ use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperation;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\RestoreFootprintOperationBuilder;
+use Soneso\StellarSDK\Soroban\Exceptions\SorobanSimulationException;
 use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\RestorePreamble;
@@ -299,8 +300,13 @@ class AssembledTransaction
      *
      * The contract id must be a "C..." strkey or the contract hash as 64 hexadecimal characters.
      *
+     * Invocation simulation failures are retained on the returned transaction and raised by
+     * getSimulationData(), isReadCall() or sign() without force. Automatic restore simulation
+     * failures propagate immediately as SorobanSimulationException with structured data.
+     *
      * @param AssembledTransactionOptions $options Configuration including contract id, method name, and arguments
      * @return AssembledTransaction The assembled and optionally simulated transaction
+     * @throws SorobanSimulationException If an automatic restore simulation fails, carrying events and a reported contract error
      * @throws \InvalidArgumentException If the contract id is not a contract address, before any request
      * @throws GuzzleException If fetching the account or simulation fails
      * @throws Exception If transaction construction fails
@@ -320,9 +326,14 @@ class AssembledTransaction
      * UploadContractWasmHostFunction for installing contract code.
      * An InvokeContractHostFunction must name a "C..." strkey or 64 hexadecimal characters.
      *
+     * Invocation simulation failures are retained on the returned transaction and raised by
+     * getSimulationData(), isReadCall() or sign() without force. Automatic restore simulation
+     * failures propagate immediately as SorobanSimulationException with structured data.
+     *
      * @param InvokeHostFunctionOperation $operation The host function operation to include in the transaction
      * @param AssembledTransactionOptions $options Configuration for the transaction
      * @return AssembledTransaction The assembled and optionally simulated transaction
+     * @throws SorobanSimulationException If an automatic restore simulation fails, carrying events and a reported contract error
      * @throws \InvalidArgumentException If an invoked contract id is not a contract address, before any request
      * @throws GuzzleException If fetching the account or simulation fails
      * @throws Exception If transaction construction fails
@@ -354,12 +365,17 @@ class AssembledTransaction
      * resource fees, and authorization entries. If restore is enabled and a restore preamble is
      * returned, it will automatically restore the footprint and re-simulate.
      *
+     * Invocation simulation failures are retained in simulationResponse until getSimulationData(),
+     * isReadCall() or sign() without force validates them. Automatic restore simulation failures
+     * propagate immediately with their events and reported contract error.
+     *
      * @param bool|null $restore Whether to automatically restore expired ledger entries. If null, uses the
      *                          restore setting from method options. If true, automatically handles archived
      *                          entries by building and executing a RestoreFootprint transaction before re-simulating.
      *                          Requires source account keypair with private key. Default: null (uses method options)
      * @return void
-     * @throws Exception If simulation fails or automatic restore is unsuccessful
+     * @throws SorobanSimulationException If an automatic restore simulation fails, carrying its structured failure data
+     * @throws Exception If the transaction is not assembled or automatic restore is unsuccessful
      * @throws Exception If a restore would run and the transaction was built by a read-only client
      *  (AssembledTransactionOptions::$readOnly), which has no keypair to sign the restore with
      * @throws GuzzleException If the RPC request fails
@@ -427,6 +443,7 @@ class AssembledTransaction
      *         - STATUS_SUCCESS: Transaction completed successfully
      *         - STATUS_FAILED: Transaction failed with error
      *         - STATUS_NOT_FOUND: Transaction timeout (throws exception before returning this)
+     * @throws SorobanSimulationException If simulation validation fails during signing when force is false
      * @throws Exception If signing fails, transaction is read-only without force, or polling expires before a terminal status
      * @throws GuzzleException If the sendTransaction request fails
      * @see sign() For signing without sending
@@ -508,6 +525,7 @@ class AssembledTransaction
      * @param KeyPair|null $sourceAccountKeyPair The keypair with private key to sign with (overrides options)
      * @param bool $force Force signing even if it is a read-only call (default: false)
      * @return void Sets the $signed property to the signed transaction clone
+     * @throws SorobanSimulationException If simulation validation fails when force is false
      * @throws Exception If the private key is missing, transaction requires multiple signers, or is read-only without force
      * @throws Exception If the transaction was built by a read-only client (AssembledTransactionOptions::$readOnly),
      *  also with force or a keypair override
@@ -908,6 +926,7 @@ class AssembledTransaction
      * don't require signing or submission to the network.
      *
      * @return bool True if the transaction is read-only, false if it modifies state
+     * @throws SorobanSimulationException If the simulation fails or transaction data is missing
      * @throws Exception If the transaction has not been simulated
      */
     public function isReadCall() : bool {
@@ -926,8 +945,12 @@ class AssembledTransaction
      * Returns the parsed simulation data including the returned value, transaction data,
      * and authorization entries. This method caches the result after first call.
      *
+     * A failed response raises SorobanSimulationException with its event snapshot, heuristic
+     * contract-error selection and original JSON-RPC error when present.
+     *
      * @return SimulateHostFunctionResult The simulation result with return value and transaction data
-     * @throws Exception If the transaction has not been simulated or simulation failed
+     * @throws SorobanSimulationException If the simulation fails or transaction data is missing
+     * @throws Exception If the transaction has not been simulated or requires restoration
      */
     public function getSimulationData() : SimulateHostFunctionResult {
         if ($this->simulationResult !== null) {
@@ -937,7 +960,19 @@ class AssembledTransaction
             throw new Exception("Transaction has not yet been simulated");
         }
         if ($this->simulationResponse->error !== null || $this->simulationResponse->resultError !== null || $this->simulationResponse->transactionData === null) {
-            throw new Exception("Transaction simulation failed: {$this->simulationResponse->resultError}");
+            $response = $this->simulationResponse;
+            $reason = $response->resultError;
+            if ($reason === null && $response->error !== null) {
+                $code = $response->error->code ?? 'null';
+                $message = $response->error->message ?? 'null';
+                $reason = "JSON-RPC error {$code}: {$message}";
+            }
+            throw new SorobanSimulationException(
+                "Transaction simulation failed: {$reason}",
+                $response->resultError !== null ? ($response->events ?? []) : [],
+                $response->reportedContractError(),
+                $response->error
+            );
         }
         if ($this->simulationResponse->restorePreamble !== null) {
             throw new Exception("You need to restore some contract state before you can invoke this method.\n" .
@@ -997,6 +1032,7 @@ class AssembledTransaction
      *
      * @param RestorePreamble $restorePreamble The restore data from simulation including footprint and fees
      * @return GetTransactionResponse The result of the restore transaction
+     * @throws SorobanSimulationException If the restore simulation fails, carrying its events and reported contract error
      * @throws GuzzleException If the RPC request fails
      * @throws Exception If the source account has no private key or the restore fails
      * @throws Exception If the transaction was built by a read-only client (AssembledTransactionOptions::$readOnly),

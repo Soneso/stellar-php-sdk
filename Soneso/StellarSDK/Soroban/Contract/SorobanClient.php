@@ -15,6 +15,7 @@ use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\ContractAddressGuard;
 use Soneso\StellarSDK\Soroban\Exceptions\SorobanContractParserException;
+use Soneso\StellarSDK\Soroban\Exceptions\SorobanSimulationException;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Soroban\SorobanServer;
@@ -173,6 +174,7 @@ class SorobanClient
      *
      * @param DeployRequest $deployRequest Deployment parameters including WASM hash, constructor args, and salt
      * @return SorobanClient The client for the newly deployed contract
+     * @throws SorobanSimulationException If an invocation or automatic restore simulation fails
      * @throws Exception If deployment fails or contract ID cannot be extracted
      * @throws GuzzleException If the RPC request fails
      */
@@ -248,6 +250,7 @@ class SorobanClient
      * @param DeployFromExternalRefRequest $deployRequest Deployment parameters including the
      * executable owner, the tag, constructor args, and salt
      * @return SorobanClient The client for the newly deployed contract
+     * @throws SorobanSimulationException If an invocation or automatic restore simulation fails
      * @throws Exception If the reference does not resolve (the owner holds no entry under
      * the tag; the message shows the tag with anything that may be a secret seed replaced),
      * if deployment fails, or if the contract ID cannot be extracted
@@ -330,6 +333,7 @@ class SorobanClient
      * @param InstallRequest $installRequest Installation parameters including WASM bytes
      * @param bool $force Force transaction submission even if code is already installed (default: false)
      * @return string The WASM hash (hex-encoded) of the installed contract code
+     * @throws SorobanSimulationException If simulation validation fails, including an automatic restore simulation
      * @throws GuzzleException If the RPC request fails
      * @throws Exception If installation fails or WASM hash cannot be extracted
      */
@@ -426,6 +430,7 @@ class SorobanClient
      * @param bool $force Force signing and sending even for read-only calls (default: false)
      * @param MethodOptions|null $methodOptions Options for simulation, fees, and timeouts (optional)
      * @return XdrSCVal The method return value as an XDR SCVal
+     * @throws SorobanSimulationException If simulation validation fails, including an automatic restore simulation
      * @throws GuzzleException If the RPC request fails
      * @throws Exception If the method does not exist or invocation fails
      */
@@ -460,10 +465,15 @@ class SorobanClient
      * when you need to inspect the transaction, sign authorization entries for multi-signature
      * workflows, or manually control the signing and sending process.
      *
+     * Invocation simulation failures are retained on the returned transaction and raised by
+     * AssembledTransaction::getSimulationData(), isReadCall() or sign() without force. Automatic restore simulation
+     * failures propagate immediately as SorobanSimulationException with structured data.
+     *
      * @param string $name The name of the contract method to invoke
      * @param array|null $args Array of XDR SCVal arguments for the method (optional)
      * @param MethodOptions|null $methodOptions Options for simulation, fees, and timeouts (optional)
      * @return AssembledTransaction The assembled transaction ready for signing and sending
+     * @throws SorobanSimulationException If an automatic restore simulation fails, carrying its structured failure data
      * @throws GuzzleException If the RPC request fails
      * @throws Exception If the method does not exist or transaction building fails
      */

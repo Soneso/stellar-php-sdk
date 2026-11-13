@@ -6,8 +6,13 @@
 
 namespace Soneso\StellarSDK\Soroban\Responses;
 
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Soroban\Footprint;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
+use Soneso\StellarSDK\Xdr\XdrContractEventType;
+use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
+use Soneso\StellarSDK\Xdr\XdrSCErrorType;
+use Soneso\StellarSDK\Xdr\XdrSCValType;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 
 /**
@@ -58,6 +63,75 @@ class SimulateTransactionResponse extends SorobanRpcResponse
      * @var string|null Error details explaining why the invoke host function call failed
      */
     public ?string $resultError = null;
+
+    /**
+     * Selects a contract error from the current failure fields without raising.
+     *
+     * A contract-error header wins. For Context or Auth headers, the earliest
+     * diagnostic event of a failed call with exactly the symbol error and a typed
+     * contract error as its topics is selected. Undecodable entries are skipped.
+     * Selection is a heuristic: earlier caught or rolled-back errors and multiple
+     * failing contracts can affect it, and foreign codes can collide with known
+     * error tables. A selected event does not prove causation. Without RPC debug
+     * events, only a contract-error header supplies a code.
+     *
+     * @return ReportedContractError|null The selected immutable value, or null when none qualifies
+     * @see ReportedContractError
+     */
+    public function reportedContractError(): ?ReportedContractError
+    {
+        if ($this->resultError === null) {
+            return null;
+        }
+        $lines = preg_split('/\r\n|\r|\n/', $this->resultError, 2);
+        if ($lines === false || preg_match('~^\s*(?:HostError:\s*)?Error\(\s*([A-Za-z]+)\s*,\s*([^()]*?)\s*\)\s*$~D', $lines[0], $header) !== 1) {
+            return null;
+        }
+        if ($header[1] === 'Contract') {
+            $code = self::parseContractErrorCode($header[2]);
+            return $code === null ? null : new ReportedContractError($code, ContractErrorProvenance::HOST_ERROR);
+        }
+        if ($header[1] !== 'Context' && $header[1] !== 'Auth') {
+            return null;
+        }
+        foreach ($this->events ?? [] as $encoded) {
+            try {
+                $diagnostic = XdrDiagnosticEvent::fromBase64Xdr($encoded);
+                $event = $diagnostic->event;
+                $body = $event->body->v0;
+                if ($diagnostic->inSuccessfulContractCall !== false ||
+                    $event->type->getValue() !== XdrContractEventType::CONTRACT_EVENT_TYPE_DIAGNOSTIC ||
+                    $body === null || count($body->topics) !== 2) {
+                    continue;
+                }
+                [$symbol, $value] = $body->topics;
+                if ($symbol->type->getValue() !== XdrSCValType::SCV_SYMBOL || $symbol->sym !== 'error' ||
+                    $value->type->getValue() !== XdrSCValType::SCV_ERROR || $value->error === null ||
+                    $value->error->type->getValue() !== XdrSCErrorType::SCE_CONTRACT ||
+                    $value->error->contractCode === null) {
+                    continue;
+                }
+                $contractId = $event->hash === null ? null : StrKey::encodeContractId($event->hash);
+                return new ReportedContractError($value->error->contractCode,
+                    ContractErrorProvenance::DIAGNOSTIC_EVENTS, $contractId);
+            } catch (\Throwable) {
+                continue;
+            }
+        }
+        return null;
+    }
+
+    private static function parseContractErrorCode(string $text): ?int
+    {
+        if (preg_match('/\A#[0-9]+\z/', $text) !== 1) {
+            return null;
+        }
+        $digits = ltrim(substr($text, 1), '0');
+        if (strlen($digits) > 10 || (strlen($digits) === 10 && strcmp($digits, '4294967295') > 0)) {
+            return null;
+        }
+        return $digits === '' ? 0 : (int)$digits;
+    }
 
     /**
      * Creates an instance from JSON-RPC response data
