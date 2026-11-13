@@ -17,10 +17,15 @@ use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Constants\NetworkConstants;
+use Soneso\StellarSDK\CreateContractWithConstructorHostFunction;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\ExtendFootprintTTLOperation;
 use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperation;
 use Soneso\StellarSDK\InvokeHostFunctionOperationBuilder;
+use Soneso\StellarSDK\LedgerBounds;
+use Soneso\StellarSDK\Memo;
+use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\RestoreFootprintOperation;
 use Soneso\StellarSDK\Soroban\Address;
@@ -35,10 +40,14 @@ use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SimulateTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\SorobanRpcErrorResponse;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
+use Soneso\StellarSDK\Soroban\SorobanAuthorizedFunction;
+use Soneso\StellarSDK\Soroban\SorobanAuthorizedInvocation;
+use Soneso\StellarSDK\Soroban\SorobanCredentials;
 use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
+use Soneso\StellarSDK\TransactionPreconditions;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
@@ -635,7 +644,7 @@ class AssembledTransactionTest extends TestCase
     {
         $reply = $response instanceof \Throwable ? $response : new Response(200, [],
             is_array($response) ? json_encode($response, JSON_THROW_ON_ERROR) : $response);
-        $mock = new MockHandler([$this->readOnlyAccountResponse(self::TEST_ACCOUNT_ID), $reply]);
+        $mock = new MockHandler([$this->accountResponse(self::TEST_ACCOUNT_ID, 123), $reply]);
         $history = [];
         try {
             return AssembledTransaction::build($this->readOnlyTestOptions(self::TEST_ACCOUNT_ID, $mock, $history, false));
@@ -1598,7 +1607,7 @@ class AssembledTransactionTest extends TestCase
     {
         $history = [];
         $mock = new MockHandler([
-            $this->readOnlyAccountResponse(self::ZERO_ACCOUNT_ID),
+            $this->accountResponse(self::ZERO_ACCOUNT_ID, 123),
             $this->readOnlySimulateResponse(false, false),
         ]);
 
@@ -1677,13 +1686,13 @@ class AssembledTransactionTest extends TestCase
         return new Response(200, [], json_encode(['jsonrpc' => '2.0', 'id' => 1, 'result' => $result]));
     }
 
-    private function readOnlyAccountResponse(string $accountId): Response
+    private function accountResponse(string $accountId, int $sequence): Response
     {
         $entryData = new XdrLedgerEntryData(XdrLedgerEntryType::ACCOUNT());
         $entryData->account = new XdrAccountEntry(
             accountID: new XdrAccountID($accountId),
             balance: new BigInteger(100000000),
-            seqNum: new XdrSequenceNumber(new BigInteger(123)),
+            seqNum: new XdrSequenceNumber(new BigInteger($sequence)),
             numSubEntries: 0,
             flags: 0,
             homeDomain: '',
@@ -1695,5 +1704,437 @@ class AssembledTransactionTest extends TestCase
             'entries' => [['key' => 'AAAAAA==', 'xdr' => $entryData->toBase64Xdr(), 'lastModifiedLedgerSeq' => 1000]],
             'latestLedger' => 1000,
         ]]));
+    }
+
+    private const FAILED_RESTORE_RESULT_XDR = 'AAAAAAAAE+z/////AAAAAQAAAAAAAAAa/////gAAAAA=';
+    private const CALLER_SOURCE_ID = 'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ';
+    private const RESTORE_REQUESTS = ['getLedgerEntries', 'simulateTransaction', 'sendTransaction', 'getTransaction',
+        'getLedgerEntries'];
+
+    public function testSuccessfulRestoreReSimulatesOnTheCurrentSequenceNumber(): void
+    {
+        $history = [];
+        $mock = new MockHandler([
+            $this->accountResponse(self::TEST_ACCOUNT_ID, 123456789),
+            $this->simulation($this->sorobanData(11000, [self::ZERO_ACCOUNT_ID]), [$this->authEntry('first')], true),
+            ...$this->restoreResponses(123456789),
+            $this->simulation($this->sorobanData(12000, [self::TEST_ACCOUNT_ID]), [$this->authEntry('again')]),
+        ]);
+
+        $tx = AssembledTransaction::build($this->restoreOptions($mock, $history, new MethodOptions()));
+
+        $this->assertSame(['getLedgerEntries', 'simulateTransaction', ...self::RESTORE_REQUESTS, 'simulateTransaction'],
+            $this->readOnlyRequestMethods($history));
+        $this->assertSame(0, $mock->count());
+        $this->assertInstanceOf(RestoreFootprintOperation::class,
+            $this->requestedTransaction($history, 4)->getOperations()[0]);
+        $this->assertSame('123456791', $this->requestedTransaction($history, 7)->getSequenceNumber()->toString());
+        $this->assertNotNull($tx->tx);
+        $this->assertSame('123456791', $tx->tx->getSequenceNumber()->toString());
+        $this->assertSame(12100, $tx->tx->getFee());
+        $this->assertSame($this->sorobanData(12000, [self::TEST_ACCOUNT_ID])->toBase64Xdr(),
+            $tx->tx->getSorobanTransactionData()?->toBase64Xdr());
+        $this->assertSame([$this->authEntry('again')->toBase64Xdr()], $this->authOf($tx->tx));
+        $this->assertSame(12000, $tx->simulationResponse?->minResourceFee);
+        $this->assertNull($tx->simulationResponse?->restorePreamble);
+    }
+
+    public function testSuccessfulRestoreReSimulatesTheBuildWithOpOperation(): void
+    {
+        $history = [];
+        $mock = new MockHandler([
+            $this->accountResponse(self::TEST_ACCOUNT_ID, 123456789),
+            $this->simulation($this->sorobanData(11000, []), [], true),
+            ...$this->restoreResponses(123456789),
+            $this->simulation($this->sorobanData(12000, [self::TEST_ACCOUNT_ID])),
+        ]);
+        $deploy = new CreateContractWithConstructorHostFunction(Address::fromAccountId(self::TEST_ACCOUNT_ID),
+            str_repeat('ab', 32), [XdrSCVal::forU32(7)], str_repeat("\x05", 32));
+
+        // The options name no contract, as for a deployment.
+        $tx = AssembledTransaction::buildWithOp(new InvokeHostFunctionOperation($deploy),
+            $this->restoreOptions($mock, $history, new MethodOptions(), 'ignored', '__constructor'));
+
+        $this->assertSame(0, $mock->count());
+        foreach (['request' => $this->requestedTransaction($history, 7), 'tx' => $tx->tx] as $label => $transaction) {
+            $this->assertSame('123456791', $transaction?->getSequenceNumber()->toString(), $label);
+            $function = $transaction?->getOperations()[0]->function;
+            $this->assertInstanceOf(CreateContractWithConstructorHostFunction::class, $function, $label);
+            $this->assertSame(str_repeat('ab', 32), $function->wasmId, $label);
+            $this->assertSame(str_repeat("\x05", 32), $function->salt, $label);
+            $this->assertSame(7, $function->constructorArgs[0]->u32, $label);
+        }
+    }
+
+    public function testSuccessfulRestoreKeepsTheCallerBuiltRawWithItsMuxedSourceAndAuth(): void
+    {
+        $history = [];
+        $mock = new MockHandler([
+            $this->accountResponse(self::TEST_ACCOUNT_ID, 123456789),
+            $this->simulation($this->sorobanData(11000, []), [], true),
+            ...$this->restoreResponses(123456789, sourceAfter: self::CALLER_SOURCE_ID),
+            $this->simulation($this->sorobanData(12000, [self::TEST_ACCOUNT_ID]), [$this->authEntry('again')]),
+        ]);
+        $tx = AssembledTransaction::build($this->restoreOptions($mock, $history, new MethodOptions(simulate: false)));
+        $caller = $this->authEntry('caller');
+        $operation = (new InvokeHostFunctionOperationBuilder(new InvokeContractHostFunction(self::TEST_CONTRACT_ID,
+            'custom_call', [XdrSCVal::forU32(7)]), [$caller]))->build();
+        $tx->raw = (new TransactionBuilder(new Account(self::CALLER_SOURCE_ID, new BigInteger(555), 42)))
+            ->addOperation($operation);
+
+        $tx->simulate();
+
+        $this->assertSame(0, $mock->count());
+        $accountRequest = json_decode((string)$history[6]['request']->getBody(), true);
+        $this->assertSame(self::CALLER_SOURCE_ID,
+            XdrLedgerKey::fromBase64Xdr($accountRequest['params']['keys'][0])->account?->accountID->getAccountId());
+        foreach (['request' => $this->requestedTransaction($history, 7), 'tx' => $tx->tx] as $label => $transaction) {
+            $this->assertSame('123456791', $transaction?->getSequenceNumber()->toString(), $label);
+            $this->assertSame(42, $transaction?->getSourceAccount()->getId(), $label);
+            $this->assertSame(self::CALLER_SOURCE_ID, $transaction?->getSourceAccount()->getEd25519AccountId(), $label);
+            $function = $transaction?->getOperations()[0]->function;
+            $this->assertInstanceOf(InvokeContractHostFunction::class, $function, $label);
+            $this->assertSame('custom_call', $function->functionName, $label);
+            $this->assertSame(7, $function->arguments[0]->u32, $label);
+        }
+        $this->assertSame([$caller->toBase64Xdr()], $this->authOf($this->requestedTransaction($history, 7)));
+        $this->assertSame([$this->authEntry('again')->toBase64Xdr()], $this->authOf($tx->tx));
+        $this->assertNotSame($operation, $tx->tx?->getOperations()[0]);
+        $this->assertSame([$caller], $operation->auth);
+    }
+
+    public function testSuccessfulRestoreNamesTheMissingSourceAccountOfTheTransaction(): void
+    {
+        $history = [];
+        $restore = $this->restoreResponses(123456789);
+        $restore[4] = new Response(200, [], json_encode(['jsonrpc' => '2.0', 'id' => 1,
+            'result' => ['entries' => [], 'latestLedger' => 1000]]));
+        $mock = new MockHandler([
+            $this->accountResponse(self::TEST_ACCOUNT_ID, 123456789),
+            $this->simulation($this->sorobanData(11000, []), [], true),
+            ...$restore,
+        ]);
+        $tx = AssembledTransaction::build($this->restoreOptions($mock, $history, new MethodOptions(simulate: false)));
+        $tx->raw = (new TransactionBuilder(new Account(self::CALLER_SOURCE_ID, new BigInteger(555))))
+            ->addOperation((new InvokeHostFunctionOperationBuilder(new InvokeContractHostFunction(
+                self::TEST_CONTRACT_ID, 'custom_call')))->build());
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessageMatches('/^' . preg_quote('Account ' . self::CALLER_SOURCE_ID . ' not found', '/')
+            . '\z/');
+        $tx->simulate();
+    }
+
+    public function testSimulateWithRestoreTrueRestoresEachPreambleWhenTheOptionIsFalse(): void
+    {
+        $history = [];
+        $mock = new MockHandler([
+            $this->accountResponse(self::TEST_ACCOUNT_ID, 100),
+            $this->simulation($this->sorobanData(11000, []), [], true),
+            ...$this->restoreResponses(100),
+            $this->simulation($this->sorobanData(11000, []), [], true),
+            ...$this->restoreResponses(101),
+            $this->simulation($this->sorobanData(12000, [self::TEST_ACCOUNT_ID])),
+        ]);
+        $tx = AssembledTransaction::build($this->restoreOptions($mock, $history,
+            new MethodOptions(simulate: false, restore: false)));
+
+        $tx->simulate(true);
+
+        $this->assertSame(['getLedgerEntries', 'simulateTransaction', ...self::RESTORE_REQUESTS, 'simulateTransaction',
+            ...self::RESTORE_REQUESTS, 'simulateTransaction'], $this->readOnlyRequestMethods($history));
+        $this->assertSame(0, $mock->count());
+        $this->assertSame('103', $tx->tx?->getSequenceNumber()->toString());
+        $this->assertNull($tx->simulationResponse?->restorePreamble);
+    }
+
+    public function testSuccessfulRestoreKeepsTheMemoPreconditionsAndInclusionFee(): void
+    {
+        $history = [];
+        $mock = new MockHandler([
+            $this->accountResponse(self::TEST_ACCOUNT_ID, 123456789),
+            $this->simulation($this->sorobanData(11000, []), [], true),
+            ...$this->restoreResponses(123456789),
+            $this->simulation($this->sorobanData(12000, [self::TEST_ACCOUNT_ID])),
+        ]);
+        $tx = AssembledTransaction::build($this->restoreOptions($mock, $history, new MethodOptions(simulate: false)));
+        $preconditions = new TransactionPreconditions();
+        $preconditions->setTimeBounds(new TimeBounds(new DateTime('@1700000000'), new DateTime('@1900000000')));
+        $preconditions->setLedgerBounds(new LedgerBounds(1000, 2000));
+        $tx->raw?->addMemo(Memo::text('order 7'))->setPreconditions($preconditions)->setMaxOperationFee(200000);
+
+        $tx->simulate();
+
+        $this->assertSame(0, $mock->count());
+        $requested = $this->requestedTransaction($history, 7);
+        $this->assertSame(200000, $requested->getFee());
+        foreach (['request' => $requested, 'tx' => $tx->tx] as $label => $transaction) {
+            $this->assertSame('123456791', $transaction?->getSequenceNumber()->toString(), $label);
+            $this->assertSame('order 7', $transaction?->getMemo()->getValue(), $label);
+            $this->assertSame(1000, $transaction?->getPreconditions()?->getLedgerBounds()?->getMinLedger(), $label);
+            $this->assertSame(2000, $transaction?->getPreconditions()?->getLedgerBounds()?->getMaxLedger(), $label);
+            $this->assertSame(1700000000, $transaction?->getTimeBounds()?->getMinTime()->getTimestamp(), $label);
+            $this->assertSame(1900000000, $transaction?->getTimeBounds()?->getMaxTime()->getTimestamp(), $label);
+        }
+        $this->assertSame(212000, $tx->tx?->getFee());
+    }
+
+    public function testSuccessfulRestoreAfterAnEarlierSimulationStartsFromItsInclusionFee(): void
+    {
+        $history = [];
+        $first = $this->sorobanData(11000, [self::ZERO_ACCOUNT_ID]);
+        $mock = new MockHandler([
+            $this->accountResponse(self::TEST_ACCOUNT_ID, 123456789),
+            $this->simulation($first, [$this->authEntry('first')]),
+            $this->simulation($first, [$this->authEntry('first')], true),
+            ...$this->restoreResponses(123456789),
+            $this->simulation($this->sorobanData(12000, [self::TEST_ACCOUNT_ID]), [$this->authEntry('again')]),
+        ]);
+        $tx = AssembledTransaction::build($this->restoreOptions($mock, $history, new MethodOptions()));
+        $this->assertSame(11100, $tx->tx?->getFee());
+        $this->assertSame($first->toBase64Xdr(), $tx->getSimulationData()->transactionData->toBase64Xdr());
+
+        $tx->simulate();
+
+        $this->assertSame(0, $mock->count());
+        $requested = $this->requestedTransaction($history, 8);
+        $this->assertSame('123456791', $requested->getSequenceNumber()->toString());
+        $this->assertSame(100, $requested->getFee());
+        $this->assertSame($this->sorobanData(0, [self::ZERO_ACCOUNT_ID])->toBase64Xdr(),
+            $requested->getSorobanTransactionData()?->toBase64Xdr());
+        $this->assertSame([], $this->authOf($requested));
+        $again = $this->sorobanData(12000, [self::TEST_ACCOUNT_ID])->toBase64Xdr();
+        $this->assertSame(12100, $tx->tx?->getFee());
+        $this->assertSame($again, $tx->tx?->getSorobanTransactionData()?->toBase64Xdr());
+        $this->assertSame([$this->authEntry('again')->toBase64Xdr()], $this->authOf($tx->tx));
+        $this->assertSame($again, $tx->getSimulationData()->transactionData->toBase64Xdr());
+    }
+
+    public function testSuccessfulRestoresInARowKeepTheInclusionFeeOfAnEarlierSimulation(): void
+    {
+        $history = [];
+        $mock = new MockHandler([
+            $this->accountResponse(self::TEST_ACCOUNT_ID, 123456789),
+            $this->simulation($this->contractCodeData(11000)),
+            $this->simulation($this->contractCodeData(11000), [], true),
+            ...$this->restoreResponses(123456789),
+            $this->simulation($this->contractCodeData(11000), [], true),
+            ...$this->restoreResponses(123456790),
+            $this->simulation($this->contractCodeData(12000)),
+        ]);
+        $tx = AssembledTransaction::build($this->restoreOptions($mock, $history, new MethodOptions(simulate: false)));
+        $tx->tx = new Transaction(MuxedAccount::fromAccountId(self::TEST_ACCOUNT_ID), new BigInteger(555),
+            [new ExtendFootprintTTLOperation(10000)], null, null, 200000, $this->contractCodeData(0));
+        $tx->simulate();
+        $this->assertSame(211000, $tx->tx->getFee());
+        $carried = $tx->tx->getSorobanTransactionData();
+
+        $tx->simulate();
+
+        $this->assertSame(0, $mock->count());
+        $requests = [8 => $this->requestedTransaction($history, 8), 14 => $this->requestedTransaction($history, 14)];
+        foreach ($requests as $index => $requested) {
+            $this->assertSame(200000, $requested->getFee(), "request $index");
+        }
+        $this->assertSame(212000, $tx->tx->getFee());
+        $this->assertSame('123456791', $requests[8]->getSequenceNumber()->toString());
+        $this->assertSame('123456792', $requests[14]->getSequenceNumber()->toString());
+        foreach ($requests as $index => $requested) {
+            $this->assertSame($this->contractCodeData(0)->toBase64Xdr(),
+                $requested->getSorobanTransactionData()?->toBase64Xdr(), "request $index");
+        }
+        $this->assertSame($this->contractCodeData(12000)->toBase64Xdr(),
+            $tx->tx->getSorobanTransactionData()?->toBase64Xdr());
+        $this->assertSame($this->contractCodeData(11000)->toBase64Xdr(), $carried?->toBase64Xdr());
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('carriedResourceFees')]
+    public function testSuccessfulRestoreSubtractsOnlyACoveredResourceFee(int $fee, int $resourceFee, int $requestFee,
+                                                                         int $finalFee): void
+    {
+        $history = [];
+        $mock = new MockHandler([
+            $this->accountResponse(self::TEST_ACCOUNT_ID, 123456789),
+            $this->simulation($this->sorobanData(11000, []), [], true),
+            ...$this->restoreResponses(123456789),
+            $this->simulation($this->sorobanData(12000, [self::TEST_ACCOUNT_ID])),
+        ]);
+        $tx = AssembledTransaction::build($this->restoreOptions($mock, $history, new MethodOptions(simulate: false)));
+        $tx->tx = $tx->raw?->build();
+        $tx->tx?->setFee($fee);
+        $tx->tx?->setSorobanTransactionData($this->sorobanData($resourceFee, []));
+
+        $tx->simulate();
+
+        $this->assertSame($requestFee, $this->requestedTransaction($history, 7)->getFee());
+        $this->assertSame($finalFee, $tx->tx?->getFee());
+    }
+
+    public static function carriedResourceFees(): array
+    {
+        return ['fee below the resource fee' => [100, 5000, 100, 12100],
+            'fee equal to the resource fee' => [5000, 5000, 0, 12000]];
+    }
+
+    public function testSuccessfulRestoreReSimulatesAnExtendFootprintTTLWithItsFootprint(): void
+    {
+        $history = [];
+        $footprint = $this->contractCodeData(0);
+        $mock = new MockHandler([
+            $this->accountResponse(self::TEST_ACCOUNT_ID, 123456789),
+            $this->simulation($this->contractCodeData(11000), [], true),
+            ...$this->restoreResponses(123456789),
+            $this->simulation($this->contractCodeData(12000)),
+        ]);
+        $tx = AssembledTransaction::build($this->restoreOptions($mock, $history, new MethodOptions(simulate: false)));
+        $tx->tx = new Transaction(MuxedAccount::fromAccountId(self::TEST_ACCOUNT_ID), new BigInteger(555),
+            [new ExtendFootprintTTLOperation(10000)], null, null, 100, $footprint);
+
+        $tx->simulate();
+
+        $requested = $this->requestedTransaction($history, 7);
+        $this->assertSame('123456791', $requested->getSequenceNumber()->toString());
+        $extend = $requested->getOperations()[0];
+        $this->assertInstanceOf(ExtendFootprintTTLOperation::class, $extend);
+        $this->assertSame(10000, $extend->getExtendTo());
+        $this->assertSame($footprint->toBase64Xdr(), $requested->getSorobanTransactionData()?->toBase64Xdr());
+        $this->assertSame($this->contractCodeData(12000)->toBase64Xdr(),
+            $tx->tx?->getSorobanTransactionData()?->toBase64Xdr());
+        $this->assertSame(12100, $tx->tx?->getFee());
+    }
+
+    public function testFailedRestoreThrowsTheAutomaticRestoreFailedMessageWithoutReSimulation(): void
+    {
+        $history = [];
+        $mock = new MockHandler([
+            $this->accountResponse(self::TEST_ACCOUNT_ID, 123456789),
+            $this->simulation($this->sorobanData(11000, []), [], true),
+            ...$this->restoreResponses(123456789, false),
+        ]);
+
+        try {
+            AssembledTransaction::build($this->restoreOptions($mock, $history, new MethodOptions()));
+            $this->fail('A failed restore was accepted');
+        } catch (Exception $e) {
+            $this->assertSame("Automatic restore failed! You set 'restore: true' but the \n" . str_repeat(' ', 12)
+                . 'attempted restore did not work. Status: FAILED , transaction result xdr: '
+                . self::FAILED_RESTORE_RESULT_XDR, $e->getMessage());
+        }
+        $this->assertSame(['getLedgerEntries', 'simulateTransaction', 'getLedgerEntries', 'simulateTransaction',
+            'sendTransaction', 'getTransaction'], $this->readOnlyRequestMethods($history));
+        $this->assertSame(0, $mock->count());
+    }
+
+    private function restoreOptions(MockHandler $mock, array &$history, MethodOptions $methodOptions,
+                                    string $contractId = self::TEST_CONTRACT_ID,
+                                    string $method = 'test'): AssembledTransactionOptions
+    {
+        $stack = HandlerStack::create($mock);
+        $stack->push(\GuzzleHttp\Middleware::history($history));
+        $clientOptions = new ClientOptions(sourceAccountKeyPair: $this->testKeyPairWithSecret, contractId: $contractId,
+            network: $this->testNetwork, rpcUrl: self::TEST_RPC_URL,
+            server: new SorobanServer(self::TEST_RPC_URL, new Client(['handler' => $stack])));
+        return new AssembledTransactionOptions(clientOptions: $clientOptions, methodOptions: $methodOptions,
+            method: $method, arguments: []);
+    }
+
+    /**
+     * The responses of one restore of the source account at the given sequence number: the account, the
+     * restore simulation, its submission and status, and for a successful restore the account of the
+     * transaction's source after it.
+     *
+     * @return array<Response>
+     */
+    private function restoreResponses(int $sequence, bool $succeeds = true,
+                                      string $sourceAfter = self::TEST_ACCOUNT_ID): array
+    {
+        $responses = [
+            $this->accountResponse(self::TEST_ACCOUNT_ID, $sequence),
+            $this->simulation($this->sorobanData(50, [], [self::TEST_ACCOUNT_ID])),
+            $this->createSendTransactionStatusResponse('PENDING'),
+        ];
+        if (!$succeeds) {
+            return [...$responses, new Response(200, [], json_encode(['jsonrpc' => '2.0', 'id' => 1,
+                'result' => ['status' => 'FAILED', 'resultXdr' => self::FAILED_RESTORE_RESULT_XDR]]))];
+        }
+        return [...$responses, $this->createGetTransactionSuccessResponse(),
+            $this->accountResponse($sourceAfter, $sequence + 1)];
+    }
+
+    /**
+     * A successful simulation whose minimum resource fee is the resource fee of its data.
+     *
+     * @param array<SorobanAuthorizationEntry> $auth
+     */
+    private function simulation(XdrSorobanTransactionData $data, array $auth = [], bool $restorePreamble = false): Response
+    {
+        $result = [
+            'minResourceFee' => (string)$data->resourceFee,
+            'latestLedger' => 1000,
+            'transactionData' => $data->toBase64Xdr(),
+            'results' => [['auth' => array_map(fn (SorobanAuthorizationEntry $entry) => $entry->toBase64Xdr(), $auth),
+                'xdr' => XdrSCVal::forVoid()->toBase64Xdr()]],
+        ];
+        if ($restorePreamble) {
+            $result['restorePreamble'] = ['transactionData' => $this->createMockTransactionData()->toBase64Xdr(),
+                'minResourceFee' => '5000'];
+        }
+        return new Response(200, [], json_encode(['jsonrpc' => '2.0', 'id' => 1, 'result' => $result]));
+    }
+
+    /**
+     * @param array<string> $readOnly account ids of the read-only footprint
+     * @param array<string> $readWrite account ids of the read-write footprint
+     */
+    private function sorobanData(int $resourceFee, array $readOnly, array $readWrite = []): XdrSorobanTransactionData
+    {
+        $keys = fn (array $accountIds) => array_map(function (string $accountId): XdrLedgerKey {
+            $key = new XdrLedgerKey(XdrLedgerEntryType::ACCOUNT());
+            $key->account = new XdrLedgerKeyAccount(new XdrAccountID($accountId));
+            return $key;
+        }, $accountIds);
+        return $this->sorobanDataForKeys($resourceFee, $keys($readOnly), $keys($readWrite));
+    }
+
+    /**
+     * @param array<XdrLedgerKey> $readOnly
+     * @param array<XdrLedgerKey> $readWrite
+     */
+    private function sorobanDataForKeys(int $resourceFee, array $readOnly, array $readWrite = []): XdrSorobanTransactionData
+    {
+        return new XdrSorobanTransactionData(new XdrSorobanTransactionDataExt(0),
+            new XdrSorobanResources(new XdrLedgerFootprint($readOnly, $readWrite), 0, 0, 0), $resourceFee);
+    }
+
+    /**
+     * Soroban data whose read-only footprint holds one contract code entry.
+     */
+    private function contractCodeData(int $resourceFee): XdrSorobanTransactionData
+    {
+        return $this->sorobanDataForKeys($resourceFee, [XdrLedgerKey::forContractCode(str_repeat("\x01", 32))]);
+    }
+
+    private function authEntry(string $function): SorobanAuthorizationEntry
+    {
+        return new SorobanAuthorizationEntry(SorobanCredentials::forSourceAccount(), new SorobanAuthorizedInvocation(
+            SorobanAuthorizedFunction::forContractFunction(Address::fromContractId(self::TEST_CONTRACT_ID), $function)));
+    }
+
+    private function requestedTransaction(array $history, int $index): Transaction
+    {
+        $body = json_decode((string)$history[$index]['request']->getBody(), true);
+        $transaction = Transaction::fromEnvelopeBase64XdrString($body['params']['transaction']);
+        $this->assertInstanceOf(Transaction::class, $transaction);
+        return $transaction;
+    }
+
+    /**
+     * @return array<string> the auth entries of the transaction's invoke host function operation, as base64 XDR
+     */
+    private function authOf(?Transaction $transaction): array
+    {
+        $operation = $transaction?->getOperations()[0];
+        $this->assertInstanceOf(InvokeHostFunctionOperation::class, $operation);
+        return array_map(fn (SorobanAuthorizationEntry $entry) => $entry->toBase64Xdr(), $operation->auth);
     }
 }
