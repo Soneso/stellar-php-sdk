@@ -20,6 +20,7 @@ use Soneso\StellarSDK\MuxedContract;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\ContractAddressGuard;
+use Soneso\StellarSDK\Soroban\Exceptions\SorobanSimulationException;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Soroban\SorobanServer;
@@ -247,11 +248,11 @@ class SACClient
      *
      * @param Address $holder an account (G...) or contract (C...) address
      * @return GMP the balance in base units
+     * @throws SorobanSimulationException if the simulation fails, carrying its structured failure data
      * @throws InvalidArgumentException if the holder is a muxed account (M...) or muxed contract
      *  (W...) address, naming its base, or another kind of address, before any request
      * @throws RuntimeException if needed ledger entries are archived, or the contract returns
      *  another type than i128
-     * @throws Exception if the simulation fails, carrying the contract error
      * @throws GuzzleException if an RPC request fails
      */
     public function balance(Address $holder): GMP
@@ -281,9 +282,9 @@ class SACClient
      * Reads the number of decimals of the asset, which is 7 for every Stellar Asset Contract
      *
      * @return int the number of decimals
+     * @throws SorobanSimulationException if the simulation fails, carrying its structured failure data
      * @throws RuntimeException if needed ledger entries are archived, or the contract returns
      *  another type than u32
-     * @throws Exception if the simulation fails
      * @throws GuzzleException if an RPC request fails
      */
     public function decimals(): int
@@ -299,9 +300,9 @@ class SACClient
      * Reads the name of the asset: "CODE:ISSUER" for an issued asset, "native" for the native asset
      *
      * @return string the name
+     * @throws SorobanSimulationException if the simulation fails, carrying its structured failure data
      * @throws RuntimeException if needed ledger entries are archived, or the contract returns
      *  another type than string
-     * @throws Exception if the simulation fails
      * @throws GuzzleException if an RPC request fails
      */
     public function name(): string
@@ -313,9 +314,9 @@ class SACClient
      * Reads the symbol of the asset: the asset code, or "native" for the native asset
      *
      * @return string the symbol
+     * @throws SorobanSimulationException if the simulation fails, carrying its structured failure data
      * @throws RuntimeException if needed ledger entries are archived, or the contract returns
      *  another type than string
-     * @throws Exception if the simulation fails
      * @throws GuzzleException if an RPC request fails
      */
     public function symbol(): string
@@ -334,6 +335,10 @@ class SACClient
      * $tx->tx->setSorobanAuth() before signAndSend(). A muxed destination is credited to its
      * base address, and the transfer event carries its id.
      *
+     * Invocation simulation failures are retained on the returned transaction and raised by
+     * AssembledTransaction::getSimulationData(), isReadCall() or sign() without force. Automatic restore simulation
+     * failures propagate immediately as SorobanSimulationException with structured data.
+     *
      * @param Address $from the sender, an account (G...) or contract (C...) address
      * @param Address $to the recipient, an account (G...), muxed account (M...), contract (C...)
      *  or muxed contract (W...) address
@@ -341,9 +346,10 @@ class SACClient
      *  holds decimal digits only
      * @param MethodOptions|null $methodOptions options for simulation, fees, and timeouts (optional)
      * @return AssembledTransaction the simulated transaction
+     * @throws SorobanSimulationException if an automatic restore simulation fails, carrying its structured failure data
      * @throws InvalidArgumentException if the amount is not a whole number of base units in
      *  range, or an address is of a kind the parameter does not take, before any request
-     * @throws Exception if the simulation fails, or a restore would run on a read-only client
+     * @throws Exception if a restore would run on a read-only client or automatic restore is unsuccessful
      * @throws GuzzleException if an RPC request fails
      * @see AssembledTransaction::signAuthEntries()
      * @see toBaseUnits()
@@ -366,6 +372,7 @@ class SACClient
      *  holds decimal digits only
      * @param MethodOptions|null $methodOptions options for simulation, fees, and timeouts (optional)
      * @return GetTransactionResponse the successful transaction response
+     * @throws SorobanSimulationException if an invocation or automatic restore simulation fails
      * @throws Exception if the client is read-only (before any request), or the transaction
      *  fails or does not succeed
      * @throws InvalidArgumentException if the amount or the recipient is invalid, before any request

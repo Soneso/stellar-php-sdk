@@ -36,6 +36,7 @@ use Soneso\StellarSDK\Soroban\Contract\MethodOptions;
 use Soneso\StellarSDK\Soroban\Contract\SACClient;
 use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
+use Soneso\StellarSDK\Soroban\Responses\RestorePreamble;
 use Soneso\StellarSDK\Soroban\Responses\SorobanRpcErrorResponse;
 use Soneso\StellarSDK\Soroban\SorobanContractInfo;
 use Soneso\StellarSDK\Soroban\SorobanServer;
@@ -105,6 +106,96 @@ class SorobanClientTest extends TestCase
     {
         error_reporting(E_ALL);
         $this->testNetwork = Network::testnet();
+    }
+
+    /** @dataProvider simulationFailureRoutes */
+    public function testSimulationFailurePropagatesThroughClientRoutes(string $route, array $json, int $count, ?array $expected, string $suffix): void
+    {
+        $failure = new Response(200, [], json_encode($json, JSON_THROW_ON_ERROR));
+        $success = $this->simulateResponse(XdrSCVal::forVoid(), true);
+        $successResult = json_decode((string)$success->getBody(), true)['result'];
+        $restorePreamble = ['transactionData' => $successResult['transactionData'], 'minResourceFee' => '100'];
+        $queue = [$this->accountEntryResponse(), $failure];
+        $methods = ['getLedgerEntries', 'simulateTransaction'];
+        if ($route === 'deploy') {
+            array_unshift($queue, $this->ledgerEntryResponse($this->contractCodeEntryData(
+                hex2bin(self::TEST_WASM_HASH), $this->createContractByteCode('hello'))));
+            array_unshift($methods, 'getLedgerEntries');
+        } elseif ($route === 'balance') {
+            $queue = [$failure];
+            $methods = ['simulateTransaction'];
+        } elseif ($route === 'resimulate') {
+            $queue = [$this->accountEntryResponse(), $success, $failure];
+            $methods[] = 'simulateTransaction';
+        } elseif ($route === 'restoreFootprint') {
+            $queue = [$this->accountEntryResponse(), $this->accountEntryResponse(), $failure];
+            array_unshift($methods, 'getLedgerEntries');
+        } elseif ($route === 'automatic restore') {
+            $queue = [$this->accountEntryResponse(), $this->jsonRpcResponse($successResult + ['restorePreamble' => $restorePreamble]),
+                $this->accountEntryResponse(), $success, $this->sendTransactionResponse(),
+                $this->getTransactionRpcResponse(GetTransactionResponse::STATUS_SUCCESS, XdrSCVal::forVoid()),
+                $this->accountEntryResponse(), $failure];
+            $methods = ['getLedgerEntries', 'simulateTransaction', 'getLedgerEntries', 'simulateTransaction',
+                'sendTransaction', 'getTransaction', 'getLedgerEntries', 'simulateTransaction'];
+        }
+        $mock = new MockHandler($queue);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
+        $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
+        $client = SorobanClient::forSpecEntries($this->createSpecEntries(), $this->createClientOptions($keyPair, $server));
+        $error = null;
+        try {
+            if ($route === 'install') {
+                SorobanClient::install($this->createInstallRequest($keyPair, $server));
+            } elseif ($route === 'deploy') {
+                SorobanClient::deploy(new DeployRequest(sourceAccountKeyPair: $keyPair, network: $this->testNetwork,
+                    rpcUrl: self::TEST_RPC_URL, wasmHash: self::TEST_WASM_HASH, server: $server));
+            } elseif ($route === 'invokeMethod') {
+                $client->invokeMethod('hello');
+            } elseif ($route === 'balance') {
+                SACClient::readOnlyForContractId(self::TEST_CONTRACT_ID, $this->testNetwork, self::TEST_RPC_URL,
+                    server: $server)->balance(Address::fromAccountId(self::TEST_ACCOUNT_ID));
+            } else {
+                $tx = $client->buildInvokeMethodTx('hello', methodOptions: new MethodOptions(simulate: $route !== 'restoreFootprint'));
+                if ($route === 'restoreFootprint') {
+                    $tx->restoreFootprint(RestorePreamble::fromJson($restorePreamble));
+                } elseif ($route === 'resimulate') {
+                    $this->assertSame(XdrSCValType::SCV_VOID, $tx->getSimulationData()->returnedValue->type->getValue());
+                    $tx->simulate();
+                    $tx->getSimulationData();
+                } elseif ($route === 'automatic restore') {
+                    $tx->getSimulationData();
+                } else {
+                    $tx->$route();
+                }
+            }
+        } catch (Exception $caught) {
+            $error = $caught;
+        }
+        $this->assertNotNull($error);
+        $this->assertCount($count, $json['result']['events']);
+        SimulationFailureFixtures::assertFailure($error, $json['result']['events'], $expected,
+            'Transaction simulation failed: ' . $json['result']['error'] . $suffix);
+        $this->assertSame($methods, $this->requestMethods($history));
+        $this->assertSame(0, $mock->count());
+        $submissions = array_filter($history, fn($item) => json_decode((string)$item['request']->getBody(), true)['method'] === 'sendTransaction');
+        $this->assertCount($route === 'automatic restore' ? 1 : 0, $submissions);
+        foreach ($submissions as $item) {
+            $envelope = json_decode((string)$item['request']->getBody(), true)['params']['transaction'];
+            $this->assertInstanceOf(\Soneso\StellarSDK\RestoreFootprintOperation::class,
+                AbstractTransaction::fromEnvelopeBase64XdrString($envelope)->getOperations()[0]);
+        }
+    }
+
+    public static function simulationFailureRoutes(): iterable
+    {
+        $captures = iterator_to_array(SimulationFailureFixtures::captures());
+        foreach (['getSimulationData', 'isReadCall', 'sign', 'signAndSend', 'resimulate', 'install', 'deploy',
+                  'invokeMethod', 'balance', 'restoreFootprint', 'automatic restore'] as $route) {
+            $capture = $route === 'balance' ? 'asset header' :
+                (in_array($route, ['resimulate', 'invokeMethod', 'automatic restore'], true) ? 'registered signature' : 'constructor');
+            yield $route => [$route, ...$captures[$capture . ' 30.0.1']];
+        }
     }
 
     // ---------------------------------------------------------------------

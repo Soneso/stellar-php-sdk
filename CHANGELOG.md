@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `ReportedContractError` and `SimulateTransactionResponse::reportedContractError()` return an immutable code, provenance and optional emitting contract ID selected from the host header or diagnostic events.
+- `SorobanSimulationException` carries an immutable base64 diagnostic-event snapshot, the reported contract error and the original JSON-RPC error when a Soroban client simulation fails.
 - `LedgerEntry::getLedgerKeyXdr()` decodes the response key as an `XdrLedgerKey`.
 - `SACClient` opens a Stellar Asset Contract from an `Asset` or a contract id without an RPC request. It has typed `balance`, `transfer`, `transferAndSend`, `decimals`, `name`, and `symbol`, `toBaseUnits()` for decimal amounts, and a read-only mode without a keypair.
 - `Asset::getContractId()` derives the asset's Stellar Asset Contract id.
@@ -22,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `LedgerEntry::getKeyXdr()` decodes the ledger key bytes as an `XdrSCVal`, which does not yield the key; use `getLedgerKeyXdr()`.
 
 ### Fixed
+- Soroban client simulation failures include reported contract errors hidden by constructor or authorization failures in their messages when diagnostic events provide them.
+- Soroban client JSON-RPC simulation failures name the RPC code and message and retain the original RPC error.
 - TxRep parsing rejects a malformed integer or a value outside the field's XDR width with an `InvalidArgumentException` that names the field key and the text, replaces anything in the text that may be a secret seed with `a secret seed (S...)`, and reads and writes uint64 values at or above 2^63 unsigned.
 - Binary XDR decoding of the self-containing types (`XdrSCVal`, `XdrClaimPredicate`, `XdrSCSpecTypeDef`, `XdrSorobanAuthorizedInvocation` and others) stops at 500 nested levels with an `InvalidArgumentException`, and a failed decode leaves the buffer's depth counter unchanged.
 - `ContractSpec::nativeToXdrSCVal` rejects a u32 or i32 integer outside its range and a `BytesN` string of another byte length with an `InvalidArgumentException` that names the value or length and the bound.
