@@ -9,6 +9,7 @@ namespace Soneso\StellarSDK\Soroban\Contract;
 use GuzzleHttp\Exception\GuzzleException;
 use Exception;
 use DateTime;
+use Soneso\StellarSDK\AbstractOperation;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Constants\NetworkConstants;
 use Soneso\StellarSDK\Constants\StellarConstants;
@@ -235,9 +236,8 @@ class AssembledTransaction
     public ?TransactionBuilder $raw = null;
 
     /**
-     * The Transaction as it was built with `$raw->build()` right before
-     * simulation. Once this is set, modifying `$raw` will have no effect unless
-     * you call `$tx->simulate()` again.
+     * The transaction that simulate() simulates and sign() signs. simulate() builds it from `$raw`
+     * while it is null; after a successful automatic restore it holds the rebuilt transaction.
      */
     public ?Transaction $tx = null;
 
@@ -362,8 +362,17 @@ class AssembledTransaction
      *
      * Calls the Soroban RPC simulateTransaction method to get resource fees and footprint data.
      * The simulation results are applied to the transaction, including soroban transaction data,
-     * resource fees, and authorization entries. If restore is enabled and a restore preamble is
-     * returned, it will automatically restore the footprint and re-simulate.
+     * resource fees, and authorization entries.
+     *
+     * When restore is enabled and the response carries a restore preamble, a restore transaction is
+     * signed and sent with the source account keypair of the client options. After its success the
+     * transaction is rebuilt on the current sequence number of its own source account, with its
+     * operations, memo, preconditions, inclusion fee and Soroban data, and simulated again with the
+     * same restore decision. When the transaction carries Soroban data, the inclusion fee is the fee
+     * less the data's resource fee if the fee covers it, the rebuilt data has a resource fee of zero,
+     * and the rebuilt transaction has no auth entries. When the restore transaction ends with a
+     * status other than success, an Exception names its status and result XDR; other errors of the
+     * restore propagate unchanged.
      *
      * Invocation simulation failures are retained in simulationResponse until getSimulationData(),
      * isReadCall() or sign() without force validates them. Automatic restore simulation failures
@@ -375,7 +384,7 @@ class AssembledTransaction
      *                          Requires source account keypair with private key. Default: null (uses method options)
      * @return void
      * @throws SorobanSimulationException If an automatic restore simulation fails, carrying its structured failure data
-     * @throws Exception If the transaction is not assembled or automatic restore is unsuccessful
+     * @throws Exception If the transaction is not assembled or the restore transaction ends with a status other than success
      * @throws Exception If a restore would run and the transaction was built by a read-only client
      *  (AssembledTransactionOptions::$readOnly), which has no keypair to sign the restore with
      * @throws GuzzleException If the RPC request fails
@@ -406,18 +415,8 @@ class AssembledTransaction
             }
             $result = $this->restoreFootprint($this->simulationResponse->restorePreamble);
             if ($result->status === GetTransactionResponse::STATUS_SUCCESS) {
-                $sourceAccount = $this->getSourceAccount();
-
-                $this->raw = new TransactionBuilder(sourceAccount: $sourceAccount);
-                $this->raw->setTimeBounds(new TimeBounds((new DateTime())->modify("- " . NetworkConstants::DEFAULT_TIME_BOUNDS_OFFSET_SECONDS . " seconds"),
-                    (new DateTime())->modify("+ " . $this->options->methodOptions->timeoutInSeconds ." seconds")));
-
-                $invokeContractHostFunction = new InvokeContractHostFunction($this->options->clientOptions->contractId,
-                    $this->options->method, $this->options->arguments);
-                $builder = new InvokeHostFunctionOperationBuilder($invokeContractHostFunction);
-
-                $this->raw->addOperation($builder->build());
-                $this->simulate();
+                $this->tx = $this->rebuiltOnCurrentSequence($this->tx);
+                $this->simulate($shouldRestore);
                 return;
             }
             throw new Exception("Automatic restore failed! You set 'restore: true' but the 
@@ -1100,6 +1099,42 @@ class AssembledTransaction
             . ($lastError === null ? '' : " Last status request error: {$lastError}"));
     }
     /**
+     * Returns a copy of the transaction on the current sequence number of its source account
+     *
+     * The copy keeps the source with its muxed id, the memo and the preconditions, and holds copies
+     * of the operations. Without Soroban data the copy's fee is the fee. With Soroban data the copy
+     * holds a copy of the data with a resource fee of zero, its fee is the fee less the data's
+     * resource fee when the fee covers it and the fee otherwise, and its invoke host function
+     * operations have no auth entries.
+     *
+     * @param Transaction $transaction The transaction to copy
+     * @return Transaction The copy on the next sequence number of its source account
+     * @throws Exception If the source account is not found
+     * @throws GuzzleException If the RPC request fails
+     */
+    private function rebuiltOnCurrentSequence(Transaction $transaction): Transaction {
+        $source = $transaction->getSourceAccount();
+        $account = $this->getSourceAccount($source->getEd25519AccountId());
+        $fee = $transaction->getFee();
+        $data = $transaction->getSorobanTransactionData();
+        if ($data !== null) {
+            if ($fee >= $data->resourceFee) {
+                $fee -= $data->resourceFee;
+            }
+            $data = XdrSorobanTransactionData::fromBase64Xdr($data->toBase64Xdr());
+            $data->setResourceFee(0);
+        }
+        $operations = array_map(fn (AbstractOperation $operation) => AbstractOperation::fromXdr($operation->toXdr()),
+            $transaction->getOperations());
+        $rebuilt = new Transaction($source, $account->getIncrementedSequenceNumber(), $operations,
+            $transaction->getMemo(), $transaction->getPreconditions(), $fee, $data);
+        if ($data !== null) {
+            $rebuilt->setSorobanAuth([]);
+        }
+        return $rebuilt;
+    }
+
+    /**
      * Fetches the source account from the ledger
      *
      * Retrieves the account data including the current sequence number from the RPC server.
@@ -1109,17 +1144,20 @@ class AssembledTransaction
      *
      * @internal This is an internal helper method used during transaction construction
      *
+     * @param string|null $accountId The account (G...) to fetch; the account of the source account
+     *  keypair of the client options when null
      * @return Account The source account object
      * @throws Exception If the account is not found
      * @throws GuzzleException If the RPC request fails
      */
-    private function getSourceAccount(): Account {
+    private function getSourceAccount(?string $accountId = null): Account {
+        $accountId = $accountId ?? $this->options->clientOptions->sourceAccountKeyPair->getAccountId();
         if ($this->options->readOnly) {
-            return new Account($this->options->clientOptions->sourceAccountKeyPair->getAccountId(), new BigInteger(0));
+            return new Account($accountId, new BigInteger(0));
         }
-        $account = $this->server->getAccount($this->options->clientOptions->sourceAccountKeyPair->getAccountId());
+        $account = $this->server->getAccount($accountId);
         if ($account === null) {
-            throw new Exception("Account {$this->options->clientOptions->sourceAccountKeyPair->getAccountId()} not found");
+            throw new Exception("Account {$accountId} not found");
         }
         return $account;
     }
