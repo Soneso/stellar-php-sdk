@@ -248,8 +248,8 @@ class ContractSpec
     /**
      * Finds a spec entry by name across all entry types
      *
-     * Searches for a function, struct, union, enum, error enum, or event with the given name
-     * and returns the matching spec entry.
+     * Searches functions, structs, unions, enums, error enums, and events in spec order
+     * and returns the first entry with the given name.
      *
      * @param string $name The name of the entry to find
      * @return XdrSCSpecEntry|null The spec entry or null if not found
@@ -301,6 +301,9 @@ class ContractSpec
      * - Addresses: Address objects or strkeys; an Address parameter takes G or C, a
      *   MuxedAddress parameter also M or W
      * - UDTs: Custom structs, unions, and enums
+     *
+     * A user-defined type converts with the first struct, union, or enum entry of its name
+     * and skips any function, event, or error enum of that name.
      *
      * @param mixed $val The native PHP value to convert
      * @param XdrSCSpecTypeDef $ty The expected Soroban type from the contract spec
@@ -630,7 +633,7 @@ class ContractSpec
      * @throws InvalidArgumentException If struct field values don't match field types
      */
     private function nativeToUdt(mixed $val, string $name) : XdrSCVal {
-        $entry = $this->findEntry($name);
+        $entry = $this->findUdtEntry($name);
         if ($entry === null) {
             throw new InvalidArgumentException('entry not found for ' . SecretSeedRedaction::redactSecretSeeds($name));
         }
@@ -652,6 +655,29 @@ class ContractSpec
         } else {
             throw new InvalidArgumentException("failed to parse udt $name");
         }
+    }
+
+    /**
+     * Returns the first struct, union, or enum entry with the given name. Without one,
+     * returns the entry findEntry() finds, so the caller distinguishes an absent name from
+     * an entry of another kind.
+     *
+     * @param string $name The name of the user-defined type
+     * @return XdrSCSpecEntry|null The spec entry or null if no entry has that name
+     */
+    private function findUdtEntry(string $name) : ?XdrSCSpecEntry {
+        foreach ($this->entries as $entry) {
+            $udtName = match ($entry->type->value) {
+                XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_STRUCT_V0 => $entry->udtStructV0?->name,
+                XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_UNION_V0 => $entry->udtUnionV0?->name,
+                XdrSCSpecEntryKind::SC_SPEC_ENTRY_UDT_ENUM_V0 => $entry->udtEnumV0?->name,
+                default => null,
+            };
+            if ($udtName === $name) {
+                return $entry;
+            }
+        }
+        return $this->findEntry($name);
     }
 
     /**
