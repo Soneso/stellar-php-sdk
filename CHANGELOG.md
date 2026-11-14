@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.18.0] - 2026-11-14
+
 ### Added
 - `ReportedContractError` and `SimulateTransactionResponse::reportedContractError()` return an immutable code, provenance and optional emitting contract ID selected from the host header or diagnostic events.
 - `SorobanSimulationException` carries an immutable base64 diagnostic-event snapshot, the reported contract error and the original JSON-RPC error when a Soroban client simulation fails.
@@ -18,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - `SorobanClient::forClientOptions()` opens Stellar Asset Contracts with the embedded spec.
-- `AssembledTransaction` polls through `SorobanServer::getTransactionWithTimeout()`, so a `SorobanServer` subclass or test double that customizes the poll's status request overrides `getTransactionWithTimeout()`.
+- The user documentation and the agent skill describe the Stellar Asset Contract client and reading the reported contract error of a failed simulation from `SorobanSimulationException`. The skill lists that exception in its exception hierarchy and names the messages the TxRep parser throws. After a restore, its example says to rebuild the original transaction from a freshly loaded account.
 
 ### Deprecated
 - `LedgerEntry::getKeyXdr()` decodes the ledger key bytes as an `XdrSCVal`, which does not yield the key; use `getLedgerKeyXdr()`.
