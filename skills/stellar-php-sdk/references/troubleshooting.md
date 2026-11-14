@@ -13,6 +13,9 @@
 \ErrorException
   └── SorobanContractParserException  # WASM bytecode parsing errors
 
+\Exception
+  └── SorobanSimulationException      # Failed Soroban client simulations
+
 GuzzleHttp\Exception\GuzzleException  # Network/HTTP transport failures
   ├── RequestException                # Request-level failures
   │   └── BadResponseException        # 4xx/5xx HTTP responses
@@ -266,6 +269,10 @@ if ($simResponse->error !== null) {
 // Check for simulation-level errors (contract execution failure)
 if ($simResponse->resultError !== null) {
     $errorDetail = $simResponse->resultError;
+    // Contract error code or null. On stellar-rpc 30.0.1 the code of a constructor or
+    // __check_auth failure sits behind Error(Context, ...) or Error(Auth, ...), and
+    // this reads it from the diagnostic events.
+    $contractErrorCode = $simResponse->reportedContractError()?->getCode();
     // Common causes:
     // - Contract function does not exist
     // - Wrong argument types or count
@@ -329,7 +336,8 @@ if ($simResponse->restorePreamble !== null) {
     }
 
     if ($txResponse->status === GetTransactionResponse::STATUS_SUCCESS) {
-        // Now re-simulate and submit the original transaction
+        // The restore consumed a sequence number: rebuild the original transaction from a
+        // fresh $server->getAccount(), then simulate, sign, and send it
     }
 }
 ```

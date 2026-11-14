@@ -3,8 +3,8 @@
 **Status:** ✅ Supported  
 **SEP Version:** 2.0.1  
 **SEP Status:** Draft  
-**SDK Version:** 1.17.0  
-**Generated:** 2026-10-24 17:03 UTC  
+**SDK Version:** 1.18.0  
+**Generated:** 2026-11-14 12:24 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md)
 
 ## Overall Coverage
@@ -29,20 +29,20 @@ Mapping of XDR primitive and composite types to JSON as defined in SEP-0051 §XD
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| `Integer (32-bit)` | ✅ Supported | Native PHP int; json_encode emits a JSON number. Generated struct fromJsonValue checks is_int/is_string. `tools/xdr-generator/generator/generator.rb:2935` |
-| `Unsigned Integer (32-bit)` | ✅ Supported | Native PHP int; json_encode emits a JSON number. Same path as int32. `tools/xdr-generator/generator/generator.rb:2935` |
-| `Hyper Integer (64-bit)` | ✅ Supported | JSON string (base-10). JSON number accepted on input for backward compatibility. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:231` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:258` |
-| `Unsigned Hyper Integer (64-bit)` | ✅ Supported | JSON string (base-10). JSON number accepted on input for backward compatibility. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:289` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:321` |
-| `Boolean` | ✅ Supported | JSON true/false via PHP native bool. `tools/xdr-generator/generator/generator.rb:4015` |
-| `Opaque Data (Fixed Length)` | ✅ Supported | Lowercase hex string via XdrJsonHelper::bytesToHex/hexToBytes. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:184` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:204` |
-| `Opaque Data (Variable Length)` | ✅ Supported | Lowercase hex string via XdrJsonHelper::bytesToHex/hexToBytes. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:184` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:204` (same helpers as fixed-length opaque) |
-| `String` | ✅ Supported | Escape ladder per SEP-0051 §Strings: NUL->\0, TAB->\t, LF->\n, CR->\r, backslash->\\, printable ASCII verbatim, others->\xNN. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:64` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:109` |
-| `Arrays (Fixed Length)` | ✅ Supported | JSON array; elements encoded according to element type. Generator emits PHP array via foreach/toJsonValue on each element. `tools/xdr-generator/generator/generator.rb:709` |
-| `Arrays (Variable Length)` | ✅ Supported | JSON array; elements encoded according to element type. Same generator path as fixed-length arrays. `tools/xdr-generator/generator/generator.rb:931` |
+| `Integer (32-bit)` | ✅ Supported | Native PHP int; json_encode emits a JSON number. Generated struct fromJsonValue checks is_int/is_string. `tools/xdr-generator/generator/generator.rb:2977` |
+| `Unsigned Integer (32-bit)` | ✅ Supported | Native PHP int; json_encode emits a JSON number. Same path as int32. `tools/xdr-generator/generator/generator.rb:2977` |
+| `Hyper Integer (64-bit)` | ✅ Supported | JSON string (base-10). JSON number accepted on input for backward compatibility. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:232` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:259` |
+| `Unsigned Hyper Integer (64-bit)` | ✅ Supported | JSON string (base-10). JSON number accepted on input for backward compatibility. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:290` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:322` |
+| `Boolean` | ✅ Supported | JSON true/false via PHP native bool. `tools/xdr-generator/generator/generator.rb:4057` |
+| `Opaque Data (Fixed Length)` | ✅ Supported | Lowercase hex string via XdrJsonHelper::bytesToHex/hexToBytes. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:185` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:205` |
+| `Opaque Data (Variable Length)` | ✅ Supported | Lowercase hex string via XdrJsonHelper::bytesToHex/hexToBytes. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:185` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:205` (same helpers as fixed-length opaque) |
+| `String` | ✅ Supported | Escape ladder per SEP-0051 §Strings: NUL->\0, TAB->\t, LF->\n, CR->\r, backslash->\\, printable ASCII verbatim, others->\xNN. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:65` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:110` |
+| `Arrays (Fixed Length)` | ✅ Supported | JSON array; elements encoded according to element type. Generator emits PHP array via foreach/toJsonValue on each element. `tools/xdr-generator/generator/generator.rb:728` |
+| `Arrays (Variable Length)` | ✅ Supported | JSON array; elements encoded according to element type. Same generator path as fixed-length arrays. `tools/xdr-generator/generator/generator.rb:950` |
 | `Enum` | ✅ Supported | snake_case string derived from the original XDR identifiers by the rs-stellar-xdr rule: byte-wise shared prefix truncated to its last underscore and stripped, then heck UpperCamelCase + serde snake_case. Algorithm in `tools/xdr-generator/generator/json_helpers.rb:148`; word segmentation in `tools/xdr-generator/generator/json_helpers.rb:86`. Single-member enums emit the full name; digit-leading remainders prepend the first prefix character. Names emitted by SDK releases up to 1.11.x are accepted as deprecated fromJson input aliases. |
-| `Struct` | ✅ Supported | JSON object with snake_case keys; generated by xdr-generator for all *Base.php struct files. `tools/xdr-generator/generator/generator.rb:2935`. Decoding is closed over the declared field keys: every one is required and any other key is rejected, $schema excepted. Closure at `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:803`. The seven structs declaring a `type` field also accept the `type_` spelling of that key on input; either spelling counts as the one declared key and supplying both is rejected. Alias fold at `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:759` |
-| `Discriminated Union` | ✅ Supported | Four sub-arm shapes supported: void arm (JSON string), non-void arm (JSON object), multi-void (JSON string for each void case), int-cased (discriminant-name + integer). Union emitter at `tools/xdr-generator/generator/generator.rb:3339`; $schema strip at `tools/xdr-generator/generator/generator.rb:2930`. After the strip an object input must carry exactly one key and that key must name an arm. |
-| `Void` | ✅ Supported | Void union arms render as the discriminant string (JSON string). Void in struct context is omitted. `tools/xdr-generator/generator/generator.rb:3339` |
+| `Struct` | ✅ Supported | JSON object with snake_case keys; generated by xdr-generator for all *Base.php struct files. `tools/xdr-generator/generator/generator.rb:2977`. Decoding is closed over the declared field keys: every one is required and any other key is rejected, $schema excepted. Closure at `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:809`. The seven structs declaring a `type` field also accept the `type_` spelling of that key on input; either spelling counts as the one declared key and supplying both is rejected. Alias fold at `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:761` |
+| `Discriminated Union` | ✅ Supported | Four sub-arm shapes supported: void arm (JSON string), non-void arm (JSON object), multi-void (JSON string for each void case), int-cased (discriminant-name + integer). Union emitter at `tools/xdr-generator/generator/generator.rb:3381`; $schema strip at `tools/xdr-generator/generator/generator.rb:2972`. After the strip an object input must carry exactly one key and that key must name an arm. |
+| `Void` | ✅ Supported | Void union arms render as the discriminant string (JSON string). Void in struct context is omitted. `tools/xdr-generator/generator/generator.rb:3381` |
 | `Optional Data` | ✅ Supported | JSON null when unset; payload encoded per contained type when set. `tools/xdr-generator/generator/generator.rb:254` |
 
 ## Stellar-Specific Types
@@ -51,7 +51,7 @@ Stellar XDR types with dedicated JSON representations per SEP-0051 §Stellar-Spe
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| `AccountID / PublicKey / NodeID (G-strkey)` | ✅ Supported | G-strkey via StrKey::encodeAccountId. `Soneso/StellarSDK/Crypto/StrKey.php:54`; SCAddress multi-arm dispatch `Soneso/StellarSDK/Xdr/XdrSCAddressBase.php:221` |
+| `AccountID / PublicKey / NodeID (G-strkey)` | ✅ Supported | G-strkey via StrKey::encodeAccountId. `Soneso/StellarSDK/Crypto/StrKey.php:54`; SCAddress multi-arm dispatch `Soneso/StellarSDK/Xdr/XdrSCAddressBase.php:238` |
 | `ContractID (C-strkey)` | ✅ Supported | StrKey::encodeContractIdHex used in SCAddress CONTRACT arm and XdrSCAddressBase. `Soneso/StellarSDK/Crypto/StrKey.php:340` |
 | `MuxedAccount / MuxedAccountMed25519 (M-strkey)` | ✅ Supported | StrKey::encodeMuxedAccountId. `Soneso/StellarSDK/Crypto/StrKey.php:85`; MuxedAccountMed25519Base `Soneso/StellarSDK/Xdr/XdrMuxedAccountMed25519Base.php:51` |
 | `ClaimableBalanceID (B-strkey)` | ✅ Supported | StrKey::encodeClaimableBalanceIdHex. `Soneso/StellarSDK/Crypto/StrKey.php:422`; XdrClaimableBalanceIDBase `Soneso/StellarSDK/Xdr/XdrClaimableBalanceIDBase.php:62` |
@@ -60,10 +60,10 @@ Stellar XDR types with dedicated JSON representations per SEP-0051 §Stellar-Spe
 | `AssetCode4` | ✅ Supported | rtrim NUL then XdrJsonHelper::escapeString. `Soneso/StellarSDK/Xdr/XdrAssetAlphaNum4Base.php:50` |
 | `AssetCode12` | ✅ Supported | Trim-and-pad rule per SEP-0051 (all-NUL emits five escaped NULs); XdrJsonHelper::escapeString. `Soneso/StellarSDK/Xdr/XdrAssetAlphaNum12Base.php:50`. Intentional input-side strictness: standalone AlphaNum12 fields reject codes decoding to fewer than 5 bytes (protocol-invalid; rs-stellar-xdr accepts and pads them structurally). |
 | `AssetCode (union)` | ✅ Supported | Bare length-discriminated string per SEP-0051 §Asset Code Types (at most 4 decoded bytes -> AssetCode4, at least 5 -> AssetCode12); no arm-key envelope. `Soneso/StellarSDK/Xdr/XdrAllowTrustOperationAssetBase.php:72` |
-| `Int128Parts` | ✅ Supported | XdrJsonHelper::int128PartsToString / stringToInt128Parts using GMP arithmetic. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:367` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:392` |
-| `UInt128Parts` | ✅ Supported | XdrJsonHelper::uint128PartsToString / stringToUint128Parts using GMP arithmetic. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:423` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:443` |
-| `Int256Parts` | ✅ Supported | XdrJsonHelper::int256PartsToString / stringToInt256Parts using GMP arithmetic. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:474` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:525` |
-| `UInt256Parts` | ✅ Supported | XdrJsonHelper::uint256PartsToString / stringToUint256Parts using GMP arithmetic. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:557` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:594` |
+| `Int128Parts` | ✅ Supported | XdrJsonHelper::int128PartsToString / stringToInt128Parts using GMP arithmetic. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:368` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:393` |
+| `UInt128Parts` | ✅ Supported | XdrJsonHelper::uint128PartsToString / stringToUint128Parts using GMP arithmetic. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:424` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:444` |
+| `Int256Parts` | ✅ Supported | XdrJsonHelper::int256PartsToString / stringToInt256Parts using GMP arithmetic. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:475` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:526` |
+| `UInt256Parts` | ✅ Supported | XdrJsonHelper::uint256PartsToString / stringToUint256Parts using GMP arithmetic. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:558` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:595` |
 
 ## JSON Schema ($schema)
 
@@ -71,9 +71,9 @@ SEP-0051 §JSON Schema: $schema property must be accepted on input and must not 
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| `$schema strip on input` | ✅ Supported | fromJsonValue in generated struct and union files strips $schema before dispatch. Emitted by xdr-generator at `tools/xdr-generator/generator/generator.rb:2930` |
-| `$schema never emitted on output` | ✅ Supported | toJsonValue never includes $schema in its output. canonicalJson normalisation also does not inject $schema. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:629` |
-| `Duplicate object keys rejected` | ✅ Supported | A JSON object repeating a key is rejected with an InvalidArgumentException naming the key. json_decode resolves a repeat silently to the last value, so the check scans the document text before parsing. Every fromJson(string) routes through the shared decode entry at `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:849`; the scan is at `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:888`. Scope is per object: the same key in sibling or nested objects is accepted. Keys are compared after JSON escapes are resolved, so an escaped spelling collides with its literal form, and a repeated $schema is a duplicate because the scan precedes the strip. fromJsonValue needs no such check: a PHP array cannot carry the same string key twice. |
+| `$schema strip on input` | ✅ Supported | fromJsonValue in generated struct and union files strips $schema before dispatch. Emitted by xdr-generator at `tools/xdr-generator/generator/generator.rb:2972` |
+| `$schema never emitted on output` | ✅ Supported | toJsonValue never includes $schema in its output. canonicalJson normalisation also does not inject $schema. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:630` |
+| `Duplicate object keys rejected` | ✅ Supported | A JSON object repeating a key is rejected with an InvalidArgumentException naming the key. json_decode resolves a repeat silently to the last value, so the check scans the document text before parsing. Every fromJson(string) routes through the shared decode entry at `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:856`; the scan is at `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:896`. Scope is per object: the same key in sibling or nested objects is accepted. Keys are compared after JSON escapes are resolved, so an escaped spelling collides with its literal form, and a repeated $schema is a duplicate because the scan precedes the strip. fromJsonValue needs no such check: a PHP array cannot carry the same string key twice. |
 
 ## Backward Compatibility
 
@@ -81,5 +81,5 @@ SEP-0051 §Hyper backward-compatibility: implementations should accept JSON numb
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| `JSON number accepted for Hyper on input` | ✅ Supported | stringToInt64 and stringToUint64 accept int|string; a PHP int (decoded from a JSON number) is returned directly without string parsing. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:258` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:321` (is_int branch at `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:260`) |
-| `JSON number accepted for Unsigned Hyper on input` | ✅ Supported | stringToInt64 and stringToUint64 accept int|string; a PHP int (decoded from a JSON number) is returned directly without string parsing. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:258` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:321` (is_int branch at `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:260`) |
+| `JSON number accepted for Hyper on input` | ✅ Supported | stringToInt64 and stringToUint64 accept int|string; a PHP int (decoded from a JSON number) is returned directly without string parsing. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:259` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:322` (is_int branch at `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:261`) |
+| `JSON number accepted for Unsigned Hyper on input` | ✅ Supported | stringToInt64 and stringToUint64 accept int|string; a PHP int (decoded from a JSON number) is returned directly without string parsing. `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:259` `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:322` (is_int branch at `Soneso/StellarSDK/Xdr/XdrJsonHelper.php:261`) |
