@@ -734,19 +734,18 @@ tx.ext.v: 0
 signatures.len: 0';
     $xdr = TxRep::transactionEnvelopeXdrBase64FromTxRep($badTxrep);
 } catch (\InvalidArgumentException $e) {
-    // "invalid tx.sourceAccount"
+    // "Invalid muxed account: NOT_VALID"
     echo 'Invalid account: ' . $e->getMessage() . PHP_EOL;
 }
 ```
 
 Common `InvalidArgumentException` messages from the parser:
-- `"missing tx.fee"` / `"missing or invalid tx.fee"`
-- `"missing tx.seqNum"` / `"invalid tx.seqNum"`
-- `"missing tx.sourceAccount"` / `"invalid tx.sourceAccount"`
+- `"missing or invalid tx.fee"`
+- `"missing tx.sourceAccount"` / `"Invalid muxed account: NOT_VALID"`
 - `"missing tx.memo.type"`
-- `"missing tx.operations.len"` / `"invalid tx.operations.len"`
-- `"missing feeBump.tx.fee"` / `"missing feeBump.tx.feeSource"`
-- Per-field errors like `"missing tx.operations[0].body.paymentOp.destination"`
+- `"missing or invalid tx.operations.len"`
+- `"missing or invalid feeBump.tx.fee"` / `"missing feeBump.tx.feeSource"`
+- A malformed or out-of-range integer field: `"Cannot parse integer for tx.fee: abc"` / `"Integer value 4294967296 for tx.fee is outside [0, 4294967295]"`
 
 ---
 

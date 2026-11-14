@@ -329,6 +329,7 @@ use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Contract\SACClient;
+use Soneso\StellarSDK\Soroban\Exceptions\SorobanSimulationException;
 
 $sac = SACClient::readOnlyForAsset(
     Asset::createNonNativeAsset('TESTASSET', 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'),
@@ -338,16 +339,17 @@ $sac = SACClient::readOnlyForAsset(
 $holder = Address::fromAccountId('GB3ARMCOZUG5BFMVS7WWR5AAV42FVQDLRCUOJRN5MDGSXMKUTSFF3VMX');
 
 // WRONG: balance() never returns 0 for a missing trustline or account; it throws
-// Exception("Transaction simulation failed: ...Error(Contract, #13)..."), uncaught here
+// SorobanSimulationException("Transaction simulation failed: ...Error(Contract, #13)..."), uncaught here
 $balance = gmp_strval($sac->balance($holder));
 
-// CORRECT: catch the contract errors: #13 = no trustline, #6 = no account
+// CORRECT: read the contract error code: 13 = no trustline, 6 = no account
 try {
     $balance = gmp_strval($sac->balance($holder));
-} catch (\Exception $e) {
-    if (str_contains($e->getMessage(), 'Error(Contract, #13)')) {
+} catch (SorobanSimulationException $e) {
+    $code = $e->getReportedContractError()?->getCode();
+    if ($code === 13) {
         $balance = null; // the holder has no trustline for the asset
-    } elseif (str_contains($e->getMessage(), 'Error(Contract, #6)')) {
+    } elseif ($code === 6) {
         $balance = null; // the holder account does not exist
     } else {
         throw $e;

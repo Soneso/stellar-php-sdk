@@ -396,7 +396,7 @@ A read-only client can build a transfer, but it can't sign one: `sign()` and `si
 
 ### Reading a Balance
 
-`balance()` takes an account (G...) or contract (C...) address and returns the balance in base units as `GMP`. A contract without a balance reads 0. A missing account or trustline is not a zero balance: the simulation fails with the contract error, `Error(Contract, #6)` for a missing account and `Error(Contract, #13)` for a missing trustline.
+`balance()` takes an account (G...) or contract (C...) address and returns the balance in base units as `GMP`. A contract without a balance reads 0. A missing account or trustline is not a zero balance: the read throws a `SorobanSimulationException`. Its `getReportedContractError()` returns the contract error, whose code is 6 for a missing account and 13 for a missing trustline.
 
 ```php
 <?php
@@ -405,6 +405,7 @@ use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Contract\SACClient;
+use Soneso\StellarSDK\Soroban\Exceptions\SorobanSimulationException;
 
 $sac = SACClient::readOnlyForAsset(
     Asset::createNonNativeAsset('TESTASSET', 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'),
@@ -421,9 +422,10 @@ try {
 } catch (\InvalidArgumentException $e) {
     echo "Not a balance holder: {$e->getMessage()}\n";
 } catch (\Exception $e) {
-    if (str_contains($e->getMessage(), 'Error(Contract, #6)')) {
+    $code = $e instanceof SorobanSimulationException ? $e->getReportedContractError()?->getCode() : null;
+    if ($code === 6) {
         echo "The account does not exist\n";
-    } elseif (str_contains($e->getMessage(), 'Error(Contract, #13)')) {
+    } elseif ($code === 13) {
         echo "The account has no trustline for the asset\n";
     } else {
         echo "Balance read failed: {$e->getMessage()}\n";
@@ -1495,17 +1497,23 @@ try {
 
 ### Simulation Errors
 
-Check simulation response for errors before submission.
+Check the simulation for errors before submission. `getSimulationData()` throws a `SorobanSimulationException` when the simulation failed.
 
 ```php
 <?php
-$tx = $client->buildInvokeMethodTx('my_method', []);
+use Soneso\StellarSDK\Soroban\Exceptions\SorobanSimulationException;
 
-if ($tx->simulationResponse->error !== null) {
-    echo "Simulation failed: {$tx->simulationResponse->error->message}\n";
+try {
+    $tx = $client->buildInvokeMethodTx('my_method', []);
+    $tx->getSimulationData();
+} catch (SorobanSimulationException $e) {
+    echo "Simulation failed: {$e->getMessage()}\n";
+    $code = $e->getReportedContractError()?->getCode(); // the contract error code, or null
     // Don't submit - fix the issue first
 }
 ```
+
+The exception carries the diagnostic events, the reported contract error and the JSON-RPC error of the failed simulation. For a contract error raised in a constructor or in `__check_auth`, the error text of stellar-rpc 30.0.1 names only the host error, `Error(Context, ...)` or `Error(Auth, ...)`. The code is then only in the diagnostic events. `getReportedContractError()` reads it from there, and the exception message names it.
 
 ### Transaction Failures
 
