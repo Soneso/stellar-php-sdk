@@ -30,6 +30,7 @@ use Soneso\StellarSDK\Xdr\XdrSCSpecTypeMap;
 use Soneso\StellarSDK\Xdr\XdrSCSpecTypeUDT;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTEnumCaseV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTEnumV0;
+use Soneso\StellarSDK\Xdr\XdrSCSpecUDTErrorEnumCaseV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTErrorEnumV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTStructFieldV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTStructV0;
@@ -1034,6 +1035,126 @@ class ContractSpecTest extends TestCase
         $result = $spec->nativeToXdrSCVal($xdrVal, $typeDef);
 
         $this->assertSame($xdrVal, $result);
+    }
+
+    /**
+     * Entry kinds in spec order that all carry the name "transfer", the value to convert,
+     * and the expected XDR: the map {value: 1}, the void case A, and the enum case 1.
+     *
+     * @return array<string, array{array<string>, mixed, string}>
+     */
+    public static function udtSharingItsNameCases(): array
+    {
+        $struct = ['value' => 1];
+        $structXdr = 'AAAAEQAAAAEAAAABAAAADwAAAAV2YWx1ZQAAAAAAAAMAAAAB';
+        $union = new NativeUnionVal('A');
+        $unionXdr = 'AAAAEAAAAAEAAAABAAAADwAAAAFBAAAA';
+        $enumXdr = 'AAAAAwAAAAE=';
+        return [
+            'function before struct' => [['function', 'struct'], $struct, $structXdr],
+            'function after struct' => [['struct', 'function'], $struct, $structXdr],
+            'function before union' => [['function', 'union'], $union, $unionXdr],
+            'function after union' => [['union', 'function'], $union, $unionXdr],
+            'function before enum' => [['function', 'enum'], 1, $enumXdr],
+            'function after enum' => [['enum', 'function'], 1, $enumXdr],
+            'error enum before enum' => [['errorEnum', 'enum'], 1, $enumXdr],
+            'event before struct' => [['event', 'struct'], $struct, $structXdr],
+        ];
+    }
+
+    /** @return array<string, array{array<string>, mixed, string}> */
+    public static function functionSharingItsNameCases(): array
+    {
+        return array_filter(self::udtSharingItsNameCases(), fn (array $case) => in_array('function', $case[0], true));
+    }
+
+    /**
+     * @dataProvider udtSharingItsNameCases
+     * @param array<string> $kinds
+     */
+    public function testNativeToXdrSCValConvertsAUdtThatSharesItsName(array $kinds, mixed $value, string $expectedXdr): void
+    {
+        $spec = new ContractSpec(array_map(fn (string $kind) => $this->transferEntry($kind), $kinds));
+
+        $this->assertSame($expectedXdr, $spec->nativeToXdrSCVal($value, $this->transferType())->toBase64Xdr());
+    }
+
+    /**
+     * @dataProvider functionSharingItsNameCases
+     * @param array<string> $kinds
+     */
+    public function testFuncArgsToXdrSCValuesConvertsAnArgumentWhoseTypeSharesTheFunctionName(
+        array $kinds,
+        mixed $value,
+        string $expectedXdr,
+    ): void {
+        $spec = new ContractSpec(array_map(fn (string $kind) => $this->transferEntry($kind), $kinds));
+
+        $result = $spec->funcArgsToXdrSCValues('transfer', ['arg' => $value]);
+
+        $this->assertSame([$expectedXdr], array_map(fn (XdrSCVal $val) => $val->toBase64Xdr(), $result));
+    }
+
+    public function testUdtConversionReportsATypeNameOnlyAFunctionCarries(): void
+    {
+        $spec = new ContractSpec([$this->transferEntry('function')]);
+
+        $this->assertConversionError('failed to parse udt transfer',
+            fn () => $spec->nativeToXdrSCVal(['value' => 1], $this->transferType()));
+        $this->assertConversionError('failed to parse udt transfer',
+            fn () => $spec->funcArgsToXdrSCValues('transfer', ['arg' => ['value' => 1]]));
+    }
+
+    public function testUdtConversionReportsATypeNameNoEntryCarries(): void
+    {
+        $pay = $this->createFunction('pay', [new XdrSCSpecFunctionInputV0('', 'arg', $this->transferType())],
+            new XdrSCSpecTypeDef(XdrSCSpecType::VOID()));
+        $other = $this->createStruct('Other', [
+            new XdrSCSpecUDTStructFieldV0('', 'value', new XdrSCSpecTypeDef(XdrSCSpecType::U32())),
+        ]);
+        $spec = new ContractSpec([$this->createFunctionEntry($pay), $this->createStructEntry($other)]);
+
+        $this->assertConversionError('entry not found for transfer',
+            fn () => $spec->nativeToXdrSCVal(['value' => 1], $this->transferType()));
+        $this->assertConversionError('entry not found for transfer',
+            fn () => $spec->funcArgsToXdrSCValues('pay', ['arg' => ['value' => 1]]));
+    }
+
+    private function transferType(): XdrSCSpecTypeDef
+    {
+        return XdrSCSpecTypeDef::forUDT(new XdrSCSpecTypeUDT('transfer'));
+    }
+
+    /**
+     * A spec entry of the given kind named "transfer"; the function takes an argument "arg"
+     * of the user-defined type "transfer".
+     */
+    private function transferEntry(string $kind): XdrSCSpecEntry
+    {
+        return match ($kind) {
+            'function' => $this->createFunctionEntry($this->createFunction('transfer',
+                [new XdrSCSpecFunctionInputV0('', 'arg', $this->transferType())], $this->transferType())),
+            'struct' => $this->createStructEntry($this->createStruct('transfer', [
+                new XdrSCSpecUDTStructFieldV0('', 'value', new XdrSCSpecTypeDef(XdrSCSpecType::U32())),
+            ])),
+            'union' => $this->createUnionEntry($this->createUnion('transfer', [$this->createUnionVoidCase('A')])),
+            'enum' => $this->createEnumEntry($this->createEnum('transfer', [new XdrSCSpecUDTEnumCaseV0('', 'A', 1)])),
+            'errorEnum' => $this->createErrorEnumEntry($this->createErrorEnum('transfer', [
+                new XdrSCSpecUDTErrorEnumCaseV0('', 'A', 2),
+            ])),
+            'event' => $this->createEventEntry($this->createEvent('transfer', [])),
+        };
+    }
+
+    private function assertConversionError(string $message, callable $conversion): void
+    {
+        try {
+            $conversion();
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame($message, $e->getMessage());
+            return;
+        }
+        $this->fail("Expected InvalidArgumentException '$message'");
     }
 
     private function createFunction(string $name, array $inputs, XdrSCSpecTypeDef $output): XdrSCSpecFunctionV0
