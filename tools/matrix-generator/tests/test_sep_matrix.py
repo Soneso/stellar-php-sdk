@@ -199,5 +199,87 @@ class SEP51EvidenceTest(unittest.TestCase):
                 analyzer._cite_first(sep.SEP51Analyzer._HELPER_PATH, r"public static function hexToBytes")
 
 
+class SEP51MuxedContractEvidenceTest(unittest.TestCase):
+    MUXED_CONTRACT = "Soneso/StellarSDK/Xdr/XdrMuxedContract.php"
+    SC_ADDRESS = "Soneso/StellarSDK/Xdr/XdrSCAddressBase.php"
+    W_EVIDENCE = {
+        MUXED_CONTRACT: (
+            "return StrKey::encodeMuxedContractId($packed);",
+            "$raw = StrKey::decodeMuxedContractId($value);",
+        ),
+        SC_ADDRESS: (
+            "return $this->muxedContract->toJsonValue();",
+            "if ($prefix === 'W') {",
+            "$result->muxedContract = XdrMuxedContract::fromJsonValue($value);",
+        ),
+    }
+
+    def sources(self):
+        sources = {
+            self.MUXED_CONTRACT: "\n".join(self.W_EVIDENCE[self.MUXED_CONTRACT]),
+            self.SC_ADDRESS: "public function toJsonValue() {}\n"
+                             + "\n".join(self.W_EVIDENCE[self.SC_ADDRESS]),
+            sep.SEP51Analyzer._STRKEY_PATH: "\n".join(
+                f"public static function {name}() {{}}" for name in (
+                    "encodeAccountId", "encodeContractIdHex", "encodeMuxedAccountId",
+                    "encodeClaimableBalanceIdHex", "encodeLiquidityPoolIdHex",
+                    "encodePreAuthTx", "encodeSha256Hash", "encodeXdrSignedPayload",
+                )
+            ),
+            sep.SEP51Analyzer._HELPER_PATH: "\n".join(
+                f"public static function {name}() {{}}" for name in (
+                    "int128PartsToString", "stringToInt128Parts",
+                    "uint128PartsToString", "stringToUint128Parts",
+                    "int256PartsToString", "stringToInt256Parts",
+                    "uint256PartsToString", "stringToUint256Parts",
+                )
+            ),
+        }
+        for name in ("MuxedAccountMed25519", "ClaimableBalanceID", "SignerKeyType",
+                     "AssetAlphaNum4", "AssetAlphaNum12", "AllowTrustOperationAsset"):
+            sources[f"Soneso/StellarSDK/Xdr/Xdr{name}Base.php"] = "public function toJsonValue() {}\n"
+        return sources
+
+    def stellar_types(self, sources):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, source in sources.items():
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("<?php\n" + source + "\n", encoding="utf-8")
+            analyzer = sep.SEP51Analyzer(sep.SDKAnalyzer(root), document=None)
+            return analyzer._section_b_stellar_types()
+
+    def test_muxed_contract_row_follows_pool_id_and_cites_both_types(self):
+        fields = self.stellar_types(self.sources()).fields
+        names = [field.name for field in fields]
+        self.assertIn("MuxedContract (W-strkey)", names)
+        index = names.index("MuxedContract (W-strkey)")
+        self.assertEqual(names[index - 1:index + 2], [
+            "PoolID (L-strkey)", "MuxedContract (W-strkey)", "SignerKey (G/T/X/P strkey)",
+        ])
+        self.assertEqual(fields[index].status, sep.SupportStatus.SUPPORTED)
+        for citation in (f"{self.MUXED_CONTRACT}:2", f"{self.MUXED_CONTRACT}:3",
+                         f"{self.SC_ADDRESS}:3", f"{self.SC_ADDRESS}:4", f"{self.SC_ADDRESS}:5"):
+            self.assertIn(f"`{citation}`", fields[index].notes)
+
+    def test_missing_w_conversion_evidence_raises(self):
+        for name, snippets in self.W_EVIDENCE.items():
+            for snippet in snippets:
+                with self.subTest(file=name, missing=snippet):
+                    sources = self.sources()
+                    sources[name] = sources[name].replace(snippet, "")
+                    with self.assertRaises(RuntimeError) as raised:
+                        self.stellar_types(sources)
+                    self.assertIn(f"matches no line of {name}", str(raised.exception))
+
+    def test_absent_muxed_contract_source_raises(self):
+        sources = self.sources()
+        sources.pop(self.MUXED_CONTRACT)
+        with self.assertRaises(RuntimeError) as raised:
+            self.stellar_types(sources)
+        self.assertIn(f"evidence file {self.MUXED_CONTRACT} cannot be read", str(raised.exception))
+
+
 if __name__ == "__main__":
     unittest.main()

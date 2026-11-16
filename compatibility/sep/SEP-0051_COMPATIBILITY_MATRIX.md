@@ -1,25 +1,25 @@
 # SEP-51: XDR-JSON
 
 **Status:** ✅ Supported  
-**SEP Version:** 2.0.1  
+**SEP Version:** 2.1.0  
 **SEP Status:** Draft  
 **SDK Version:** 1.18.0  
-**Generated:** 2026-11-14 12:24 UTC  
+**Generated:** 2026-11-16 16:00 UTC  
 **Spec:** [https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md)
 
 ## Overall Coverage
 
-**Total Coverage:** 100.0% (33/33 fields)
+**Total Coverage:** 100.0% (34/34 fields)
 
-- ✅ **Implemented:** 33/33
-- ❌ **Not Implemented:** 0/33
+- ✅ **Implemented:** 34/34
+- ❌ **Not Implemented:** 0/34
 
 ## Coverage by Section
 
 | Section | Coverage | Implemented | Total |
 |---------|----------|-------------|-------|
 | XDR Data Types | 100.0% | 15 | 15 |
-| Stellar-Specific Types | 100.0% | 13 | 13 |
+| Stellar-Specific Types | 100.0% | 14 | 14 |
 | JSON Schema ($schema) | 100.0% | 3 | 3 |
 | Backward Compatibility | 100.0% | 2 | 2 |
 
@@ -56,6 +56,7 @@ Stellar XDR types with dedicated JSON representations per SEP-0051 §Stellar-Spe
 | `MuxedAccount / MuxedAccountMed25519 (M-strkey)` | ✅ Supported | StrKey::encodeMuxedAccountId. `Soneso/StellarSDK/Crypto/StrKey.php:85`; MuxedAccountMed25519Base `Soneso/StellarSDK/Xdr/XdrMuxedAccountMed25519Base.php:51` |
 | `ClaimableBalanceID (B-strkey)` | ✅ Supported | StrKey::encodeClaimableBalanceIdHex. `Soneso/StellarSDK/Crypto/StrKey.php:422`; XdrClaimableBalanceIDBase `Soneso/StellarSDK/Xdr/XdrClaimableBalanceIDBase.php:62` |
 | `PoolID (L-strkey)` | ✅ Supported | StrKey::encodeLiquidityPoolIdHex used in SCAddress LIQUIDITY_POOL arm. `Soneso/StellarSDK/Crypto/StrKey.php:479` |
+| `MuxedContract (W-strkey)` | ✅ Supported | XdrMuxedContract via StrKey::encodeMuxedContractId / decodeMuxedContractId. `Soneso/StellarSDK/Xdr/XdrMuxedContract.php:54` `Soneso/StellarSDK/Xdr/XdrMuxedContract.php:63`; SCAddress MUXED_CONTRACT arm emission `Soneso/StellarSDK/Xdr/XdrSCAddressBase.php:283` and W-strkey dispatch `Soneso/StellarSDK/Xdr/XdrSCAddressBase.php:337` `Soneso/StellarSDK/Xdr/XdrSCAddressBase.php:339` |
 | `SignerKey (G/T/X/P strkey)` | ✅ Supported | XdrSignerKeyTypeBase.toJsonValue dispatches to StrKey encode per arm. `Soneso/StellarSDK/Xdr/XdrSignerKeyTypeBase.php:73`; PreAuthTx `Soneso/StellarSDK/Crypto/StrKey.php:184`; Sha256Hash `Soneso/StellarSDK/Crypto/StrKey.php:215`; SignedPayload `Soneso/StellarSDK/Crypto/StrKey.php:275` |
 | `AssetCode4` | ✅ Supported | rtrim NUL then XdrJsonHelper::escapeString. `Soneso/StellarSDK/Xdr/XdrAssetAlphaNum4Base.php:50` |
 | `AssetCode12` | ✅ Supported | Trim-and-pad rule per SEP-0051 (all-NUL emits five escaped NULs); XdrJsonHelper::escapeString. `Soneso/StellarSDK/Xdr/XdrAssetAlphaNum12Base.php:50`. Intentional input-side strictness: standalone AlphaNum12 fields reject codes decoding to fewer than 5 bytes (protocol-invalid; rs-stellar-xdr accepts and pads them structurally). |
