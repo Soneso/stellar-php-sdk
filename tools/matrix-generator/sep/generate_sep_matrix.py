@@ -2831,7 +2831,7 @@ class SEP51Analyzer(SEPAnalyzerBase):
 
     Evidence sources:
     - XdrJsonHelper.php: primitive encode/decode helpers
-    - *Base.php generated files: enum/struct/union round-trip emission
+    - Xdr*.php generated files (*Base.php and XdrMuxedContract.php): enum/struct/union round-trip emission
     - tools/xdr-generator/generator/generator.rb: $schema strip emission
     - tools/xdr-generator/generator/json_helpers.rb: prefix-strip / snake_case logic
     - Soneso/StellarSDK/Crypto/StrKey.php: Stellar-specific address encoding
@@ -3178,6 +3178,25 @@ class SEP51Analyzer(SEPAnalyzerBase):
             notes=(
                 "StrKey::encodeLiquidityPoolIdHex used in SCAddress LIQUIDITY_POOL arm. "
                 + self._cite_first(strkey, r"public static function encodeLiquidityPoolIdHex")
+            ),
+        ))
+
+        # W-strkey: MuxedContract / SCAddress MUXED_CONTRACT arm
+        muxed_contract = "Soneso/StellarSDK/Xdr/XdrMuxedContract.php"
+        sc_address = "Soneso/StellarSDK/Xdr/XdrSCAddressBase.php"
+        section.fields.append(SEPField(
+            name="MuxedContract (W-strkey)",
+            description="W-strkey encoding for MuxedContract and SCAddress (SEP-0051 §Address Types)",
+            status=SupportStatus.SUPPORTED,
+            notes=(
+                "XdrMuxedContract via StrKey::encodeMuxedContractId / decodeMuxedContractId. "
+                + self._cite_first(muxed_contract, r"StrKey::encodeMuxedContractId\(")
+                + " " + self._cite_first(muxed_contract, r"StrKey::decodeMuxedContractId\(")
+                + "; SCAddress MUXED_CONTRACT arm emission "
+                + self._cite_first(sc_address, r"return \$this->muxedContract->toJsonValue\(\)")
+                + " and W-strkey dispatch "
+                + self._cite_first(sc_address, r"\$prefix === 'W'")
+                + " " + self._cite_first(sc_address, r"\$result->muxedContract = XdrMuxedContract::fromJsonValue\(\$value\)")
             ),
         ))
 
