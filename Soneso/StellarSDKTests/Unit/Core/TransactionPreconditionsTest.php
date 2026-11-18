@@ -18,6 +18,7 @@ use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\TransactionPreconditions;
+use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrPreconditions;
 use Soneso\StellarSDK\Xdr\XdrPreconditionsV2;
 use Soneso\StellarSDK\Xdr\XdrPreconditionType;
@@ -67,6 +68,28 @@ class TransactionPreconditionsTest extends TestCase
             '0000000200000000000000000000000080000000000000000000000000000000',
             bin2hex($xdr->encode())
         );
+    }
+
+    public function testUnsignedGettersReturnDecodedValuesAsDecimalStrings(): void
+    {
+        $cases = [
+            ['8000000000000000', 'ffffffffffffffff', '8000000000000000',
+                '9223372036854775808', '18446744073709551615', '9223372036854775808'],
+            ['ffffffffffffffff', '8000000000000000', 'ffffffffffffffff',
+                '18446744073709551615', '9223372036854775808', '18446744073709551615'],
+            ['0000000000000005', '0000000000000007', '0000000000000003', '5', '7', '3'],
+        ];
+        foreach ($cases as [$minTime, $maxTime, $minSeqAge, $minTimeString, $maxTimeString, $minSeqAgeString]) {
+            // PRECOND_V2 with time bounds, no ledger bounds, no minimum sequence number,
+            // the minimum sequence age, ledger gap 0 and no extra signers.
+            $hex = '00000002' . '00000001' . $minTime . $maxTime . '00000000' . '00000000'
+                . $minSeqAge . '00000000' . '00000000';
+            $preconditions = TransactionPreconditions::fromXdr(XdrPreconditions::decode(new XdrBuffer(hex2bin($hex))));
+
+            self::assertSame($minTimeString, $preconditions->getTimeBounds()->getMinTimeAsString());
+            self::assertSame($maxTimeString, $preconditions->getTimeBounds()->getMaxTimeAsString());
+            self::assertSame($minSeqAgeString, $preconditions->getMinSeqAgeAsString());
+        }
     }
 
     public function testFeeBumpDefaultV2PreservesBytesAndBothHashes(): void

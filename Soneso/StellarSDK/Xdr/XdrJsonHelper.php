@@ -277,28 +277,18 @@ final class XdrJsonHelper
     /**
      * 64-bit unsigned integer to base-10 string (SEP-51 Unsigned Hyper Integer encoding).
      *
-     * PHP's int is a 64-bit signed integer on 64-bit systems, so the valid range
-     * for the $value parameter is [0, PHP_INT_MAX] (i.e. [0, 2^63-1]). Values in
-     * the upper uint64 range (2^63..2^64-1) cannot be represented as a PHP int
-     * without overflow; callers holding such values must use stringToUint64() with
-     * a string argument instead of this method.
+     * The XDR layer holds a uint64 in a PHP int: values up to 2^63-1 as themselves and
+     * values from 2^63 to 2^64-1 as negative ints in two's complement form, the form
+     * stringToUint64() returns. A negative int is read as its two's complement value, so
+     * every int has an unsigned decimal string and stringToUint64() reads it back to the
+     * same int.
      *
-     * @param int $value A PHP int in [0, PHP_INT_MAX].
-     * @return string Base-10 decimal string.
-     * @throws InvalidArgumentException If $value is negative.
+     * @param int $value The uint64 value as the XDR layer holds it.
+     * @return string Base-10 decimal string, from "0" to "18446744073709551615".
      */
     public static function uint64ToString(int $value): string
     {
-        if ($value < 0) {
-            // Negative PHP ints cannot represent valid uint64 values via this path.
-            // Callers with uint64 values in (PHP_INT_MAX, 2^64-1] must use the
-            // string-accepting stringToUint64() + sprintf pattern instead.
-            throw new InvalidArgumentException(
-                'uint64ToString accepts only non-negative values; got ' . $value
-                . '. For uint64 values above PHP_INT_MAX, pass the value as a string to stringToUint64().'
-            );
-        }
-        return (string) $value;
+        return sprintf('%u', $value);
     }
 
     /**
@@ -482,9 +472,9 @@ final class XdrJsonHelper
         self::validateInt64OrUint64HalfString($hiLo);
         self::validateInt64OrUint64HalfString($loHi);
         self::validateInt64OrUint64HalfString($loLo);
-        // All four limbs are treated as raw 64-bit values. hiHi and hiLo are signed int64s,
-        // so negative values must be converted to their unsigned uint64 bit-patterns before
-        // assembly; otherwise -1 * 2^192 would produce the wrong signed result.
+        // hiHi is an int64 and hiLo, loHi and loLo are uint64 values. Every limb is converted
+        // to its unsigned 64-bit pattern, and the 256-bit value is assembled unsigned and then
+        // reinterpreted as signed.
         $hiHiGmp = self::uint64HalfToGmp($hiHi);
         $hiLoGmp = self::uint64HalfToGmp($hiLo);
         $loHiGmp = self::uint64HalfToGmp($loHi);
@@ -1272,13 +1262,13 @@ final class XdrJsonHelper
     }
 
     /**
-     * Validate a limb string that may represent either a signed int64 or an unsigned uint64 half.
+     * Validate a limb string that holds an unsigned uint64 half.
      *
-     * The lo/loHi/loLo limbs of Int128Parts / Int256Parts are declared as int64 in XDR IDL
-     * but carry unsigned uint64 semantics — their value in memory may be negative (as a PHP
-     * signed int) when the unsigned uint64 value exceeds PHP_INT_MAX. We accept both positive
-     * and negative decimal representations and rely on uint64HalfToGmp() to reconstruct the
-     * correct unsigned GMP value.
+     * The XDR definitions declare these limbs uint64: hi and lo of UInt128Parts, lo of
+     * Int128Parts, hi_hi, hi_lo, lo_hi and lo_lo of UInt256Parts, and hi_lo, lo_hi and lo_lo of
+     * Int256Parts. A PHP int holds a value above PHP_INT_MAX as a negative int, so the method
+     * accepts both the unsigned decimal form and the negative decimal form of that int, and
+     * uint64HalfToGmp() reconstructs the unsigned GMP value.
      *
      * @throws InvalidArgumentException On format violation.
      */

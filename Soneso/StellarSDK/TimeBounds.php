@@ -61,7 +61,11 @@ class TimeBounds
     /**
      * Gets the minimum time (earliest validity)
      *
+     * The date represents time points up to 2^63-1 seconds. A time point from 2^63 up is
+     * returned as a date before 1970, its timestamp a negative integer in two's complement form.
+     *
      * @return DateTime The earliest time the transaction is valid
+     * @see getMinTimeAsString() For the unsigned value
      */
     public function getMinTime(): DateTime
     {
@@ -71,10 +75,34 @@ class TimeBounds
     /**
      * Gets the maximum time (latest validity)
      *
+     * The date represents time points up to 2^63-1 seconds. A time point from 2^63 up is
+     * returned as a date before 1970, its timestamp a negative integer in two's complement form.
+     *
      * @return DateTime The latest time the transaction is valid
+     * @see getMaxTimeAsString() For the unsigned value
      */
     public function getMaxTime(): DateTime
     {
         return $this->maxTime;
+    }
+
+    /**
+     * Gets the minimum time as unsigned decimal seconds since the Unix epoch
+     *
+     * @return string The time point, from "0" to "18446744073709551615"
+     */
+    public function getMinTimeAsString(): string
+    {
+        return sprintf('%u', (int) $this->minTime->format('U'));
+    }
+
+    /**
+     * Gets the maximum time as unsigned decimal seconds since the Unix epoch
+     *
+     * @return string The time point, from "0" to "18446744073709551615"
+     */
+    public function getMaxTimeAsString(): string
+    {
+        return sprintf('%u', (int) $this->maxTime->format('U'));
     }
 }

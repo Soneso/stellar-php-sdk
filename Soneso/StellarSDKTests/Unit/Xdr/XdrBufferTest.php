@@ -9,9 +9,10 @@ namespace Soneso\StellarSDKTests\Unit\Xdr;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrEncoder;
 
 /**
- * Tests for the array count, extension point and optional presence reads of XdrBuffer.
+ * Tests for the array count, extension point, optional presence and signed 64-bit reads of XdrBuffer.
  */
 class XdrBufferTest extends TestCase
 {
@@ -148,6 +149,20 @@ class XdrBufferTest extends TestCase
     public function testReadOptionalPresenceRejectsTruncatedWord(): void
     {
         $this->assertOptionalPresenceRejected("\x00\x00\x00", 'Unexpected end of XDR data');
+    }
+
+    public function testReadBigInteger64ReadsTwosComplement(): void
+    {
+        $cases = [
+            ['ffffffffffffffff', '-1'],
+            ['8000000000000000', '-9223372036854775808'],
+            ['7fffffffffffffff', '9223372036854775807'],
+        ];
+        foreach ($cases as [$hex, $decimal]) {
+            $value = (new XdrBuffer(hex2bin($hex)))->readBigInteger64();
+            $this->assertSame($decimal, $value->toString());
+            $this->assertSame($hex, bin2hex(XdrEncoder::bigInteger64($value)));
+        }
     }
 
     /**
