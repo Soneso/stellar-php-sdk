@@ -7,7 +7,9 @@
 namespace Soneso\StellarSDK\SEP\WebAuth;
 
 use GuzzleHttp\Client;
+use InvalidArgumentException;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
+use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\Requests\RequestBuilder;
 use Soneso\StellarSDK\Requests\RequestType;
 
@@ -70,8 +72,12 @@ class ChallengeRequestBuilder extends RequestBuilder
         return $this;
     }
 
-    public function forMemo(int $memo) : ChallengeRequestBuilder {
-        $this->queryParameters["memo"] = strval($memo);
+    public function forMemo(int|string $memo) : ChallengeRequestBuilder {
+        try {
+            $this->queryParameters["memo"] = Memo::id($memo)->getIdAsString();
+        } catch (InvalidArgumentException $e) {
+            throw new InvalidArgumentException("Invalid memo id '$memo': " . $e->getMessage(), 0, $e);
+        }
         return $this;
     }
 

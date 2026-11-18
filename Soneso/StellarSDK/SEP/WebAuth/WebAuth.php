@@ -17,6 +17,7 @@ use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\Util\UrlValidator;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Exceptions\HorizonRequestException;
+use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
@@ -169,10 +170,10 @@ class WebAuth
      *                                For accounts that don't exist, must include the master key. For existing accounts,
      *                                must provide signers that meet the required threshold (typically medium threshold).
      *                                Minimum: 1 signer. The combined weight must satisfy server authentication requirements.
-     * @param int|null $memo optional, ID memo identifying the user of a shared (omnibus/pooled) client account.
+     * @param int|string|null $memo optional, ID memo identifying the user of a shared (omnibus/pooled) client account.
      *                       Only permitted if the client account id is a Stellar account (G...), never with a muxed
-     *                       account (M...). Null means no memo; every other value, including 0, is a valid memo id
-     *                       and is sent to the server and verified against the returned challenge.
+     *                       account (M...). Null means no memo; every id from 0 to 2^64-1, as an unsigned decimal string
+     *                       above PHP_INT_MAX, is valid and is sent to the server and verified against the returned challenge.
      * @param string|null $homeDomain optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
      * @param string|null $clientDomain optional, domain of the client hosting it's stellar.toml. If clientDomain is provided,
      * you also need to provide the clientDomainKeyPair or a clientDomainSigningCallback for client domain transaction signing.
@@ -203,7 +204,7 @@ class WebAuth
      */
     public function jwtToken(string $clientAccountId,
                              array $signers,
-                             ?int $memo = null,
+                             int|string|null $memo = null,
                              ?string $homeDomain = null,
                              ?string $clientDomain = null,
                              ?KeyPair $clientDomainKeyPair = null,
@@ -324,15 +325,15 @@ class WebAuth
      * Get challenge transaction from the web auth server. Returns base64 xdr transaction envelope received from the web auth server.
      *
      * @param string $clientAccountId The account id of the client/user that requests the challenge.
-     * @param int|null $memo optional, ID memo identifying the user of a shared client account. Null means no memo;
-     *                       every other value, including 0, is a valid memo id and is sent to the server.
+     * @param int|string|null $memo optional, ID memo identifying the user of a shared client account. Null means no memo;
+     *                       every id from 0 to 2^64-1, as an unsigned decimal string above PHP_INT_MAX, is sent to the server.
      * @param string|null $homeDomain optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
      * @param string|null $clientDomain optional, domain of the client hosting it's stellar.toml
      * @return string Base64-encoded XDR transaction envelope.
      * @throws ChallengeRequestErrorResponse
      * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md#challenge SEP-10 Challenge Endpoint
      */
-    private function getChallenge(string $clientAccountId, ?int $memo = null, ?string $homeDomain = null, ?string $clientDomain = null) : string {
+    private function getChallenge(string $clientAccountId, int|string|null $memo = null, ?string $homeDomain = null, ?string $clientDomain = null) : string {
 
         $response = $this->getChallengeResponse($clientAccountId, $memo, $homeDomain, $clientDomain);
         $transaction = $response->getTransaction();
@@ -352,8 +353,8 @@ class WebAuth
      * @param string $userAccountId The client account ID that should be authenticated.
      * @param string|null $clientDomainAccountId Optional client domain account for domain verification.
      * @param int|null $timeBoundsGracePeriod Optional grace period in seconds for time bounds validation.
-     * @param int|null $memo The memo requested from the server. Every value, including 0, must be present in the
-     *                       challenge as an ID memo holding exactly that value. Null means no memo was requested;
+     * @param int|string|null $memo The memo requested from the server: every id from 0 to 2^64-1, as an unsigned decimal string above PHP_INT_MAX.
+     *                       It must be present in the challenge as an ID memo holding exactly that value. Null means no memo was requested;
      *                       a challenge that carries one anyway is accepted, provided its type is ID.
      * @throws ChallengeValidationError
      * @throws ChallengeValidationErrorInvalidHomeDomain
@@ -368,7 +369,7 @@ class WebAuth
      * @throws ChallengeValidationErrorInvalidOperationType
      * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md#challenge SEP-10 Challenge Validation
      */
-    private function validateChallenge(string $challengeTransaction, string $userAccountId,  ?string $clientDomainAccountId = null, ?int $timeBoundsGracePeriod = null, ?int $memo = null) {
+    private function validateChallenge(string $challengeTransaction, string $userAccountId,  ?string $clientDomainAccountId = null, ?int $timeBoundsGracePeriod = null, int|string|null $memo = null) {
         $res = base64_decode($challengeTransaction, true);
         if ($res === false) {
             throw new InvalidArgumentException('Invalid base64-encoded challenge transaction');
@@ -390,7 +391,7 @@ class WebAuth
                 throw new ChallengeValidationErrorMemoAndMuxedAccount("Memo and muxed account (M...) found");
             } else if ($transaction->getMemo()->getType()->getValue() != XdrMemoType::MEMO_ID) {
                 throw new ChallengeValidationErrorInvalidMemoType("invalid memo type");
-            } else if ($memo !== null && $transaction->getMemo()->getId() !== $memo) {
+            } else if ($memo !== null && Memo::fromXdr($transaction->getMemo())->getIdAsString() !== (string)$memo) {
                 throw new ChallengeValidationErrorInvalidMemoValue("invalid memo value");
             }
         } else if ($memo !== null) {
@@ -506,14 +507,14 @@ class WebAuth
 
     /**
      * @param string $accountId
-     * @param int|null $memo Null means no memo; every other value, including 0, is sent as the memo request parameter
+     * @param int|string|null $memo Null means no memo; every id from 0 to 2^64-1, as an unsigned decimal string above PHP_INT_MAX, is sent as the memo request parameter
      *                       and is rejected if the account id is a muxed account (M...).
      * @param string|null $homeDomain
      * @param string|null $clientDomain
      * @return ChallengeResponse
      * @throws ChallengeRequestErrorResponse
      */
-    private function getChallengeResponse(string $accountId, ?int $memo = null, ?string $homeDomain = null, ?string $clientDomain = null) : ChallengeResponse {
+    private function getChallengeResponse(string $accountId, int|string|null $memo = null, ?string $homeDomain = null, ?string $clientDomain = null) : ChallengeResponse {
         if ($memo !== null && str_starts_with($accountId, "M")) {
             throw new InvalidArgumentException("memo cannot be used if accountId is a muxed account");
         }

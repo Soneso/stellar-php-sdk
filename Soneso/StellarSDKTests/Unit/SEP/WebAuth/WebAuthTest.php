@@ -16,6 +16,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Psr7\Response;
 use Soneso\StellarSDK\Account;
@@ -29,6 +30,7 @@ use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PaymentOperation;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeRequestErrorResponse;
+use Soneso\StellarSDK\SEP\WebAuth\ChallengeRequestBuilder;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidHomeDomain;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidMemoType;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidMemoValue;
@@ -95,7 +97,7 @@ class WebAuthTest extends TestCase
         return $builder->build();
     }
 
-    private function memoForId(?int $id = null) : Memo {
+    private function memoForId(int|string|null $id = null) : Memo {
         if ($id !== null) {
             return Memo::id($id);
         }
@@ -154,7 +156,7 @@ class WebAuthTest extends TestCase
         return $builder->build();
     }
 
-    private function requestChallengeSuccess(string $accountId, ?int $memo = null) : string {
+    private function requestChallengeSuccess(string $accountId, int|string|null $memo = null) : string {
         $transactionAccount = new Account($this->serverAccountId, new BigInteger(-1));
         $transaction = (new TransactionBuilder($transactionAccount))
                 ->addOperation($this::validFirstManageDataOp($accountId))
@@ -387,6 +389,100 @@ class WebAuthTest extends TestCase
         $userAccountId = $userKeyPair->getAccountId();
         $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair], $this->testMemo);
         $this->assertEquals($this->successJWTToken, $jwtToken);
+    }
+
+    /** @return array<array{int|string}> */
+    public static function memoIdValues(): array {
+        return [[PHP_INT_MAX], ['0'], ['19989123'],
+            ['18446744073709551615'], ['9223372036854775808']];
+    }
+
+    #[DataProvider('memoIdValues')]
+    public function testUnsignedMemoIsSentAndValidated(int|string $memo): void {
+        $history = [];
+        $webAuth = $this->webAuthRecordingRequests([
+            new Response(200, [], $this->requestChallengeSuccess($this->clientAccountId, $memo)),
+            new Response(200, [], $this->requestJWTSuccess()),
+        ], $history);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+
+        $this->assertSame($this->successJWTToken,
+            $webAuth->jwtToken($this->clientAccountId, [$userKeyPair], $memo));
+        $this->assertSame((string)$memo, $this->challengeRequestQuery($history)['memo']);
+        $this->assertCount(2, $history);
+    }
+
+    /** @return array<array{string, string|null}> */
+    public static function mismatchedUnsignedMemos(): array {
+        return [
+            ['18446744073709551615', '9223372036854775808'],
+            ['9223372036854775808', '18446744073709551615'],
+            ['18446744073709551615', null],
+            ['9223372036854775808', null],
+        ];
+    }
+
+    #[DataProvider('mismatchedUnsignedMemos')]
+    public function testUnsignedMemoMismatchRejected(string $memo, ?string $challengeMemo): void {
+        $history = [];
+        $webAuth = $this->webAuthRecordingRequests([
+            new Response(200, [], $this->requestChallengeSuccess($this->clientAccountId, $challengeMemo)),
+        ], $history);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+
+        try {
+            $webAuth->jwtToken($this->clientAccountId, [$userKeyPair], $memo);
+            $this->fail('Expected a memo mismatch');
+        } catch (ChallengeValidationErrorInvalidMemoValue $e) {
+            $this->assertSame($challengeMemo === null ? 'missing memo' : 'invalid memo value', $e->getMessage());
+        }
+        $this->assertSame($memo, $this->challengeRequestQuery($history)['memo']);
+        $this->assertCount(1, $history);
+    }
+
+    /** @return array<array{int|string, string}> */
+    public static function invalidMemoIds(): array {
+        return [
+            [-1, 'value cannot be negative'],
+            ['abc', 'id memo value must be an unsigned decimal integer'],
+            ['18446744073709551616', 'value cannot be larger than 18446744073709551615'],
+        ];
+    }
+
+    #[DataProvider('invalidMemoIds')]
+    public function testInvalidMemoRejectedBeforeRequest(int|string $memo, string $reason): void {
+        $history = [];
+        $webAuth = $this->webAuthRecordingRequests([
+            new Response(200, [], $this->requestChallengeSuccess($this->clientAccountId)),
+        ], $history);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+
+        try {
+            $webAuth->jwtToken($this->clientAccountId, [$userKeyPair], $memo);
+            $this->fail('Expected an invalid memo');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame("Invalid memo id '$memo': $reason", $e->getMessage());
+        }
+        $this->assertSame([], $history);
+    }
+
+    #[DataProvider('memoIdValues')]
+    public function testForMemoUnsignedDecimalQuery(int|string $memo): void {
+        $builder = new ChallengeRequestBuilder($this->authServer, new Client());
+        $this->assertSame($builder, $builder->forMemo($memo));
+        $this->assertSame($this->authServer . '?memo=' . $memo, $builder->buildUrl());
+    }
+
+    #[DataProvider('invalidMemoIds')]
+    public function testForMemoRejectsInvalidId(int|string $memo, string $reason): void {
+        $builder = new ChallengeRequestBuilder($this->authServer, new Client());
+        try {
+            $builder->forMemo($memo);
+            $this->fail('Expected an invalid memo');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame("Invalid memo id '$memo': $reason", $e->getMessage());
+        }
+        $this->assertSame($this->authServer . '?', $builder->buildUrl());
     }
 
     public function testMuxedSuccess(): void {
