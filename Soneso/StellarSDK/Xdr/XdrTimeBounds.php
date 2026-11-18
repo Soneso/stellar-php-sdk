@@ -46,8 +46,8 @@ class XdrTimeBounds extends XdrTimeBoundsBase
     public static function decode(XdrBuffer $xdr): static
     {
         return new static(
-            DateTime::createFromFormat('U', strval($xdr->readUnsignedInteger64())),
-            DateTime::createFromFormat('U', strval($xdr->readUnsignedInteger64()))
+            (new DateTime('@0'))->setTimestamp($xdr->readUnsignedInteger64()),
+            (new DateTime('@0'))->setTimestamp($xdr->readUnsignedInteger64())
         );
     }
 

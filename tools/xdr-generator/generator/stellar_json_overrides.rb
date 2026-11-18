@@ -1093,11 +1093,11 @@ module StellarJsonOverrides
                   }
                   $minTimestamp = XdrJsonHelper::stringToUint64($minRaw);
                   $maxTimestamp = XdrJsonHelper::stringToUint64($maxRaw);
-                  // The wrapper stores DateTime objects; build them from the
-                  // unix-timestamp parse form so the wrapper's encode() path
+                  // The wrapper stores DateTime objects; build them with
+                  // setTimestamp() so the wrapper's encode() path
                   // (which reads `format('U')`) reproduces the original ints.
-                  $minDt = new \\DateTime('@' . $minTimestamp);
-                  $maxDt = new \\DateTime('@' . $maxTimestamp);
+                  $minDt = (new \\DateTime('@0'))->setTimestamp($minTimestamp);
+                  $maxDt = (new \\DateTime('@0'))->setTimestamp($maxTimestamp);
                   return new static($minDt, $maxDt);
         PHP
       end,

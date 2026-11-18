@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `TimeBounds::getMinTimeAsString()`, `TimeBounds::getMaxTimeAsString()` and `TransactionPreconditions::getMinSeqAgeAsString()` return values from 2^63 up as unsigned decimal strings. Before this change, the only getters returned such a time bound as a date before 1970 and such an age as a negative integer.
 - SEP-10 challenge validation rejects time bounds from 2^63 up. Before this change, a challenge with such a minimum time passed the time bounds check.
 - Negative 64-bit XDR values held as `BigInteger` read as negative. Before this change, a decoded -1 read as 18446744073709551615, and TxRep and SEP-51 JSON wrote that number.
+- On PHP 8.1, `XdrTimeBounds` keeps a time point of exactly 2^63 seconds when it decodes XDR or reads SEP-51 JSON. Before this change, it read the value as 2^63+1, so the re-encoded transaction differed.
 
 ## [1.18.0] - 2026-11-14
 
