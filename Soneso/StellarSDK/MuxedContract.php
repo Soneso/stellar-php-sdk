@@ -120,11 +120,24 @@ class MuxedContract
     /**
      * Returns the multiplexing id.
      *
+     * IDs from 2^63 up are returned as negative integers in two's complement form.
+     *
      * @return int|null the id, or null for the contract on its own
+     * @see getIdAsString() for the unsigned value
      */
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * Returns the multiplexing id as an unsigned decimal string.
+     *
+     * @return string|null the id, from "0" to "18446744073709551615", or null for the contract on its own
+     */
+    public function getIdAsString(): ?string
+    {
+        return $this->id === null ? null : sprintf('%u', $this->id);
     }
 
     /**

@@ -7,12 +7,16 @@
 namespace Soneso\StellarSDKTests\Unit\Core;
 
 use InvalidArgumentException;
+use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Crypto\CryptoKeyType;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrCryptoKeyType;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
 
 /**
@@ -37,6 +41,15 @@ class MuxedAccountTest extends TestCase
     /** Muxed account id for ED25519_ACCOUNT_ID with id 1234. */
     private const MUXED_ID_1234 = 'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAE2JUG6';
 
+    /**
+     * Muxed account id for ED25519_ACCOUNT_ID with id 18446744073709551615 (2^64 - 1),
+     * rendered by the reference stellar-xdr tool.
+     */
+    private const MUXED_ID_MAX_UINT64 = 'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJV7777777777775ZO4';
+
+    /** Muxed account id with id 18067157809773112502, the destination of a mainnet payment. */
+    private const MUXED_ID_18067157809773112502 = 'MAKICA7Q6YRRELF66WVYBASYRRZXXTYNDODKF5UDAVADQCPLWYVTV6V3OBG5Q43MWYV36';
+
     private const XDR_ED25519 = 'AAAAAD8MNL+TrQ2ZcdBMzJD3BVEcg4qtlzSkovsNegP8f+ia';
     private const XDR_MUXED_ID_ZERO = 'AAABAAAAAAAAAAAAPww0v5OtDZlx0EzMkPcFURyDiq2XNKSi+w16A/x/6Jo=';
     private const XDR_MUXED_ID_1234 = 'AAABAAAAAAAAAATSPww0v5OtDZlx0EzMkPcFURyDiq2XNKSi+w16A/x/6Jo=';
@@ -47,6 +60,7 @@ class MuxedAccountTest extends TestCase
         $muxed = MuxedAccount::fromAccountId(self::MUXED_ID_ZERO);
 
         $this->assertSame(0, $muxed->getId());
+        $this->assertSame('0', $muxed->getIdAsString());
         $this->assertSame(self::ED25519_ACCOUNT_ID, $muxed->getEd25519AccountId());
         $this->assertSame(self::MUXED_ID_ZERO, $muxed->getAccountId());
     }
@@ -78,11 +92,29 @@ class MuxedAccountTest extends TestCase
         $this->assertSame(self::MUXED_ID_ZERO, $muxed->getAccountId());
     }
 
+    /**
+     * A muxed account XDR whose type is neither KEY_TYPE_ED25519 nor
+     * KEY_TYPE_MUXED_ED25519 is rejected with the discriminant in the message.
+     */
+    public function testFromXdrRejectsUnknownDiscriminant(): void
+    {
+        $xdr = new XdrMuxedAccount(StrKey::decodeAccountId(self::ED25519_ACCOUNT_ID));
+        $xdr->setType(new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_PRE_AUTH_TX));
+
+        try {
+            MuxedAccount::fromXdr($xdr);
+            $this->fail('fromXdr() accepted the KEY_TYPE_PRE_AUTH_TX discriminant');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame('invalid discriminant: 1 in muxed account parameter', $e->getMessage());
+        }
+    }
+
     public function testNonZeroIdRoundTrips(): void
     {
         $muxed = MuxedAccount::fromAccountId(self::MUXED_ID_1234);
 
         $this->assertSame(1234, $muxed->getId());
+        $this->assertSame('1234', $muxed->getIdAsString());
         $this->assertSame(self::ED25519_ACCOUNT_ID, $muxed->getEd25519AccountId());
         $this->assertSame(self::MUXED_ID_1234, $muxed->getAccountId());
         $this->assertSame(CryptoKeyType::KEY_TYPE_MUXED_ED25519, $muxed->toXdr()->getDiscriminant());
@@ -99,12 +131,15 @@ class MuxedAccountTest extends TestCase
 
     /**
      * Ids above PHP_INT_MAX are held in a signed 64 bit int, so getId() reports
-     * a negative number. The 64 bit wire value is unaffected.
+     * a negative number and getIdAsString() the unsigned value. The 64 bit wire
+     * value is unaffected.
      */
     public function testIdAbovePhpIntMaxRoundTrips(): void
     {
         $muxed = MuxedAccount::fromAccountId(self::MUXED_ID_MAX_INT64_PLUS_ONE);
 
+        $this->assertSame(PHP_INT_MIN, $muxed->getId());
+        $this->assertSame('9223372036854775808', $muxed->getIdAsString());
         $this->assertSame(self::MUXED_ID_MAX_INT64_PLUS_ONE, $muxed->getAccountId());
         $this->assertSame(
             self::XDR_MUXED_ID_MAX_INT64_PLUS_ONE,
@@ -112,11 +147,36 @@ class MuxedAccountTest extends TestCase
         );
     }
 
+    public function testGetIdAsStringReadsTheFullUnsignedRange(): void
+    {
+        $minWrapped = new MuxedAccount(self::ED25519_ACCOUNT_ID, PHP_INT_MIN);
+        $this->assertSame('9223372036854775808', $minWrapped->getIdAsString());
+        $this->assertSame(self::MUXED_ID_MAX_INT64_PLUS_ONE, $minWrapped->getAccountId());
+
+        $maxWrapped = new MuxedAccount(self::ED25519_ACCOUNT_ID, -1);
+        $this->assertSame('18446744073709551615', $maxWrapped->getIdAsString());
+        $this->assertSame(self::MUXED_ID_MAX_UINT64, $maxWrapped->getAccountId());
+
+        $max = MuxedAccount::fromAccountId(self::MUXED_ID_MAX_UINT64);
+        $this->assertSame(-1, $max->getId());
+        $this->assertSame('18446744073709551615', $max->getIdAsString());
+    }
+
+    public function testGetIdAsStringReadsAMainnetIdAbovePhpIntMax(): void
+    {
+        $muxed = MuxedAccount::fromAccountId(self::MUXED_ID_18067157809773112502);
+        $this->assertSame('18067157809773112502', $muxed->getIdAsString());
+
+        $account = Account::fromAccountId(self::MUXED_ID_18067157809773112502, new BigInteger(1));
+        $this->assertSame('18067157809773112502', $account->getMuxedAccount()->getIdAsString());
+    }
+
     public function testNullIdEncodesAsEd25519(): void
     {
         $muxed = MuxedAccount::fromAccountId(self::ED25519_ACCOUNT_ID);
 
         $this->assertNull($muxed->getId());
+        $this->assertNull($muxed->getIdAsString());
         $this->assertSame(self::ED25519_ACCOUNT_ID, $muxed->getAccountId());
         $this->assertSame(CryptoKeyType::KEY_TYPE_ED25519, $muxed->toXdr()->getDiscriminant());
         $this->assertSame(self::XDR_ED25519, base64_encode($muxed->toXdr()->encode()));

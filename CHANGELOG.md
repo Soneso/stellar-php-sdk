@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - A transaction decoded from a V1 or fee bump envelope keeps `PRECOND_V2` preconditions, so its hash and its re-encoded envelope equal the original. Before this change, `PRECOND_V2` preconditions whose values were all defaults were rebuilt as `PRECOND_TIME` or `PRECOND_NONE`, a minimum sequence age from 2^63 up was dropped, and the hash differed from the network hash.
+- Muxed ids from 2^63 up are readable as unsigned values: `MuxedAccount::getIdAsString()` and `MuxedContract::getIdAsString()` return the id as a decimal string. Before this change, `getId()` was the only accessor; it returns such ids as negative integers in two's complement form.
 
 ## [1.18.0] - 2026-11-14
 

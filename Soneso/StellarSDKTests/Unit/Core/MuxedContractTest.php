@@ -57,11 +57,28 @@ class MuxedContractTest extends TestCase
         $zero = MuxedContract::fromAddress(self::MUXED_ID_ZERO);
         $this->assertSame(self::CONTRACT_ID, $zero->getContractId());
         $this->assertSame(0, $zero->getId());
+        $this->assertSame('0', $zero->getIdAsString());
 
         $max = MuxedContract::fromAddress(self::MUXED_ID_MAX_UINT64);
         $this->assertSame(self::CONTRACT_ID, $max->getContractId());
         $this->assertSame(-1, $max->getId());
+        $this->assertSame('18446744073709551615', $max->getIdAsString());
         $this->assertSame(self::MUXED_ID_MAX_UINT64, $max->getAddress());
+
+        $minWrapped = MuxedContract::fromAddress(self::MUXED_ID_MAX_INT64_PLUS_ONE);
+        $this->assertSame(PHP_INT_MIN, $minWrapped->getId());
+        $this->assertSame('9223372036854775808', $minWrapped->getIdAsString());
+
+        $this->assertSame('123456', MuxedContract::fromAddress(self::MUXED_ID_123456)->getIdAsString());
+    }
+
+    public function testGetIdAsStringReadsTheFullUnsignedRangeOfWrappedInts(): void
+    {
+        $this->assertSame('9223372036854775808', (new MuxedContract(self::CONTRACT_ID, PHP_INT_MIN))->getIdAsString());
+        $this->assertSame('18446744073709551615', (new MuxedContract(self::CONTRACT_ID, -1))->getIdAsString());
+        $this->assertSame('0', (new MuxedContract(self::CONTRACT_ID, 0))->getIdAsString());
+        $this->assertSame('1234', (new MuxedContract(self::CONTRACT_ID, 1234))->getIdAsString());
+        $this->assertNull((new MuxedContract(self::CONTRACT_ID))->getIdAsString());
     }
 
     public function testFromAddressReadsAContractIdWithoutId(): void
@@ -70,6 +87,7 @@ class MuxedContractTest extends TestCase
 
         $this->assertSame(self::CONTRACT_ID, $contract->getContractId());
         $this->assertNull($contract->getId());
+        $this->assertNull($contract->getIdAsString());
         $this->assertSame(self::CONTRACT_ID, $contract->getAddress());
     }
 
@@ -80,6 +98,7 @@ class MuxedContractTest extends TestCase
         $this->assertSame(PHP_INT_MIN, $muxed->muxedContract->id);
         $this->assertSame(self::CONTRACT_HASH_HEX, bin2hex($muxed->muxedContract->contractId));
         $this->assertSame(PHP_INT_MIN, MuxedContract::fromXdrSCAddress($muxed)->getId());
+        $this->assertSame('9223372036854775808', MuxedContract::fromXdrSCAddress($muxed)->getIdAsString());
 
         $contract = (new MuxedContract(self::CONTRACT_ID))->toXdrSCAddress();
         $this->assertSame(XdrSCAddressType::SC_ADDRESS_TYPE_CONTRACT, $contract->type->value);
