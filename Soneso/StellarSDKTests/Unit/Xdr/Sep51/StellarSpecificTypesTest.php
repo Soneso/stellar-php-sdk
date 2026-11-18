@@ -3,7 +3,12 @@
 namespace Soneso\StellarSDKTests\Unit\Xdr\Sep51;
 
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Account;
+use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\PaymentOperationBuilder;
+use Soneso\StellarSDK\SEP\TxRep\TxRep;
+use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrAllowTrustOperationAsset;
 use Soneso\StellarSDK\Xdr\XdrAsset;
@@ -26,10 +31,12 @@ use Soneso\StellarSDK\Xdr\XdrMemoType;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccountMed25519;
 use Soneso\StellarSDK\Xdr\XdrNodeID;
+use Soneso\StellarSDK\Xdr\XdrPreconditions;
 use Soneso\StellarSDK\Xdr\XdrPublicKey;
 use Soneso\StellarSDK\Xdr\XdrPublicKeyType;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCAddressType;
+use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
 use Soneso\StellarSDK\Xdr\XdrSignedPayload;
 use Soneso\StellarSDK\Xdr\XdrSignerKey;
 use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
@@ -830,6 +837,14 @@ class StellarSpecificTypesTest extends TestCase
         $this->assertSame(0x1122334455667788, $rt->id);
     }
 
+    public function testXdrMemoIdArmEmitsIdsAtOrAbove2Pow63AsDecimalStrings(): void
+    {
+        $hex = '00000002ffffffffffffffff';
+        $json = XdrMemo::decode(new XdrBuffer(hex2bin($hex)))->toJson();
+        $this->assertSame('{"id":"18446744073709551615"}', $json);
+        $this->assertSame($hex, bin2hex(XdrMemo::fromJson($json)->encode()));
+    }
+
     public function testXdrMemoHashArmRoundTrip(): void
     {
         $hash = str_repeat("\x42", 32);
@@ -1044,6 +1059,66 @@ class StellarSpecificTypesTest extends TestCase
 
         $this->expectException(\InvalidArgumentException::class);
         \Soneso\StellarSDK\Xdr\XdrTransactionEnvelope::fromJsonValue('not-an-object');
+    }
+
+    public function testXdrTransactionEnvelopeRoundTripsUnsigned64BitValuesAtOrAbove2Pow63(): void
+    {
+        // PRECOND_V2 with time bounds [2^63, 2^64-1] and a minimum sequence age of 2^63.
+        $cond = '00000002' . '00000001' . '8000000000000000' . 'ffffffffffffffff'
+            . '00000000' . '00000000' . '8000000000000000' . '00000000' . '00000000';
+        $envelope = self::paymentEnvelope(1);
+        $tx = $envelope->getV1()->getTx();
+        $tx->setPreconditions(XdrPreconditions::decode(new XdrBuffer(hex2bin($cond))));
+        $tx->setMemo(XdrMemo::decode(new XdrBuffer(hex2bin('00000002ffffffffffffffff'))));
+        $bytes = $envelope->encode();
+
+        $json = XdrTransactionEnvelope::decode(new XdrBuffer($bytes))->toJson();
+        $this->assertStringContainsString(
+            '"time_bounds":{"min_time":"9223372036854775808","max_time":"18446744073709551615"}',
+            $json
+        );
+        $this->assertStringContainsString('"min_seq_age":"9223372036854775808"', $json);
+        $this->assertStringContainsString('"memo":{"id":"18446744073709551615"}', $json);
+        $this->assertSame(bin2hex($bytes), bin2hex(XdrTransactionEnvelope::fromJson($json)->encode()));
+    }
+
+    public function testXdrTransactionEnvelopeRoundTripsNegativeInt64Values(): void
+    {
+        $envelope = self::paymentEnvelope(2);
+        $tx = $envelope->getV1()->getTx();
+        $tx->setSequenceNumber(new XdrSequenceNumber(new BigInteger('-9223372036854775808')));
+        $tx->getOperations()[0]->getBody()->getPaymentOp()->setAmount(new BigInteger(-1));
+        $tx->getOperations()[1]->getBody()->getPaymentOp()->setAmount(new BigInteger('9223372036854775807'));
+        $bytes = $envelope->encode();
+
+        $txRep = TxRep::fromTransactionEnvelopeXdrBase64(base64_encode($bytes));
+        $lines = explode(PHP_EOL, $txRep);
+        $this->assertContains('tx.seqNum: -9223372036854775808', $lines);
+        $this->assertContains('tx.operations[0].body.paymentOp.amount: -1', $lines);
+        $this->assertContains('tx.operations[1].body.paymentOp.amount: 9223372036854775807', $lines);
+        $this->assertSame(base64_encode($bytes), TxRep::transactionEnvelopeXdrBase64FromTxRep($txRep));
+
+        $json = XdrTransactionEnvelope::decode(new XdrBuffer($bytes))->toJson();
+        $this->assertStringContainsString('"seq_num":"-9223372036854775808"', $json);
+        $this->assertStringContainsString('"amount":"-1"}', $json);
+        $this->assertStringContainsString('"amount":"9223372036854775807"}', $json);
+        $this->assertSame(bin2hex($bytes), bin2hex(XdrTransactionEnvelope::fromJson($json)->encode()));
+    }
+
+    /** A v1 envelope with $count native payments, whose 64-bit fields a test then replaces. */
+    private static function paymentEnvelope(int $count): XdrTransactionEnvelope
+    {
+        $builder = new TransactionBuilder(
+            new Account('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ', new BigInteger(1))
+        );
+        for ($i = 0; $i < $count; $i++) {
+            $builder->addOperation((new PaymentOperationBuilder(
+                'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+                Asset::native(),
+                '1'
+            ))->build());
+        }
+        return $builder->build()->toEnvelopeXdr();
     }
 
     // -----------------------------------------------------------------
@@ -1273,6 +1348,31 @@ class StellarSpecificTypesTest extends TestCase
     {
         $bounds = XdrTimeBounds::fromJsonValue(['min_time' => '0', 'max_time' => '100']);
         $this->assertSame(['min_time' => '0', 'max_time' => '100'], $bounds->toJsonValue());
+    }
+
+    public function testXdrTimeBoundsEmitTimePointsAtOrAbove2Pow63AsDecimalStrings(): void
+    {
+        $cases = [
+            '0000000000000000ffffffffffffffff' => '{"min_time":"0","max_time":"18446744073709551615"}',
+            '00000000000000008000000000000000' => '{"min_time":"0","max_time":"9223372036854775808"}',
+        ];
+        foreach ($cases as $hex => $expected) {
+            $json = XdrTimeBounds::decode(new XdrBuffer(hex2bin($hex)))->toJson();
+            $this->assertSame($expected, $json);
+            $this->assertSame($hex, bin2hex(XdrTimeBounds::fromJson($json)->encode()));
+        }
+    }
+
+    public function testXdrPreconditionsV2EmitsMinSeqAgeAtOrAbove2Pow63AsDecimalString(): void
+    {
+        $hex = '00000002' . '00000000' . '00000000' . '00000000' . '8000000000000000' . '00000000' . '00000000';
+        $json = XdrPreconditions::decode(new XdrBuffer(hex2bin($hex)))->toJson();
+        $this->assertSame(
+            '{"v2":{"time_bounds":null,"ledger_bounds":null,"min_seq_num":null,'
+            . '"min_seq_age":"9223372036854775808","min_seq_ledger_gap":0,"extra_signers":[]}}',
+            $json
+        );
+        $this->assertSame($hex, bin2hex(XdrPreconditions::fromJson($json)->encode()));
     }
 
     public function testXdrTimeBoundsRejectsAnUnknownKey(): void

@@ -1051,6 +1051,54 @@ class WebAuthTest extends TestCase
         $this->assertTrue($exception);
     }
 
+    public function testChallengeTimeBoundsAtOrAbove2Pow63AreRejected(): void
+    {
+        $now = time();
+        $cases = [
+            'minTime 2^63' => new TimeBounds(
+                (new DateTime)->setTimestamp(PHP_INT_MIN),
+                (new DateTime)->setTimestamp($now + 3)
+            ),
+            'maxTime 2^64-1' => new TimeBounds(
+                (new DateTime)->setTimestamp($now),
+                (new DateTime)->setTimestamp(-1)
+            ),
+        ];
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+        foreach ($cases as $name => $timeBounds) {
+            $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+            $webAuth->setMockHandler(new MockHandler([
+                new Response(200, [], $this->requestChallengeWithTimeBounds($timeBounds)),
+                new Response(200, [], $this->requestJWTSuccess()),
+            ]));
+            try {
+                $webAuth->jwtToken($this->clientAccountId, [$userKeyPair]);
+                $this->fail('Accepted a challenge with ' . $name);
+            } catch (ChallengeValidationErrorInvalidTimeBounds $e) {
+                $this->assertSame('Invalid transaction, invalid time bounds', $e->getMessage());
+            }
+        }
+
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $webAuth->setMockHandler(new MockHandler([
+            new Response(200, [], $this->requestChallengeWithTimeBounds($this->validTimeBounds())),
+            new Response(200, [], $this->requestJWTSuccess()),
+        ]));
+        $this->assertSame($this->successJWTToken, $webAuth->jwtToken($this->clientAccountId, [$userKeyPair]));
+    }
+
+    private function requestChallengeWithTimeBounds(TimeBounds $timeBounds) : string {
+        $transactionAccount = new Account($this->serverAccountId, new BigInteger(-1));
+        $transaction = (new TransactionBuilder($transactionAccount))
+            ->addOperation($this::validFirstManageDataOp($this->clientAccountId))
+            ->addOperation($this::validSecondManageDataOp())
+            ->addMemo(Memo::none())
+            ->setTimeBounds($timeBounds)
+            ->build();
+        $transaction->sign($this->serverKeyPair, Network::testnet());
+        return json_encode(['transaction' => $transaction->toEnvelopeXdrBase64()]);
+    }
+
     public function testChallengeValidationWithEmptyOperations(): void
     {
         $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());

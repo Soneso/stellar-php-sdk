@@ -169,11 +169,25 @@ class TransactionPreconditions
     /**
      * Gets the minimum sequence age constraint in seconds.
      *
+     * The int represents ages up to 2^63-1 seconds. Ages from 2^63 up are returned as
+     * negative integers in two's complement form.
+     *
      * @return int The minimum sequence age in seconds (0 if not set)
+     * @see getMinSeqAgeAsString() For the unsigned value
      */
     public function getMinSeqAge(): int
     {
         return $this->minSeqAge;
+    }
+
+    /**
+     * Gets the minimum sequence age constraint as unsigned decimal seconds.
+     *
+     * @return string The minimum sequence age, from "0" to "18446744073709551615" ("0" if not set)
+     */
+    public function getMinSeqAgeAsString(): string
+    {
+        return sprintf('%u', $this->minSeqAge);
     }
 
     /**

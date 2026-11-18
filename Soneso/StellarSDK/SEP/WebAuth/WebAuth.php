@@ -472,7 +472,11 @@ class WebAuth
             $grace = $timeBoundsGracePeriod;
         }
         $currentTime = round(microtime(true));
-        if ($currentTime < $timeBounds->getMinTimestamp() - $grace ||
+        // A time point from 2^63 up is held as a negative int. As a minimum time it never
+        // arrives, and as a maximum time it keeps the challenge valid indefinitely, so it is
+        // rejected before the signed comparison with the current time.
+        if ($timeBounds->getMinTimestamp() < 0 || $timeBounds->getMaxTimestamp() < 0 ||
+            $currentTime < $timeBounds->getMinTimestamp() - $grace ||
             $currentTime > $timeBounds->getMaxTimestamp() + $grace) {
             throw new ChallengeValidationErrorInvalidTimeBounds(
                 "Invalid transaction, invalid time bounds");

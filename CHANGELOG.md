@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `XdrDataValue::encode()` writes an empty value and `"0"` as present. It previously wrote both as absent; manage data operations were not affected.
 - A transaction decoded from a V1 or fee bump envelope keeps `PRECOND_V2` preconditions, so its hash and its re-encoded envelope equal the original. Before this change, `PRECOND_V2` preconditions whose values were all defaults were rebuilt as `PRECOND_TIME` or `PRECOND_NONE`, a minimum sequence age from 2^63 up was dropped, and the hash differed from the network hash.
 - Muxed ids from 2^63 up are readable as unsigned values: `MuxedAccount::getIdAsString()` and `MuxedContract::getIdAsString()` return the id as a decimal string. Before this change, `getId()` was the only accessor; it returns such ids as negative integers in two's complement form.
+- SEP-51 JSON emission writes unsigned 64-bit values from 2^63 up as decimal strings. Before this change, `toJson()` threw for a memo id, a time bound or a duration in that range.
+- `TimeBounds::getMinTimeAsString()`, `TimeBounds::getMaxTimeAsString()` and `TransactionPreconditions::getMinSeqAgeAsString()` return values from 2^63 up as unsigned decimal strings. Before this change, the only getters returned such a time bound as a date before 1970 and such an age as a negative integer.
+- SEP-10 challenge validation rejects time bounds from 2^63 up. Before this change, a challenge with such a minimum time passed the time bounds check.
+- Negative 64-bit XDR values held as `BigInteger` read as negative. Before this change, a decoded -1 read as 18446744073709551615, and TxRep and SEP-51 JSON wrote that number.
 
 ## [1.18.0] - 2026-11-14
 

@@ -78,6 +78,10 @@ class XdrBuffer
     }
     
     /**
+     * Reads a signed 64-bit integer (XDR hyper) as a BigInteger.
+     *
+     * The eight bytes are read in two's complement form, so the value lies in [-2^63, 2^63-1].
+     *
      * @return BigInteger
      */
     public function readBigInteger64() : BigInteger
@@ -85,7 +89,7 @@ class XdrBuffer
         $dataSize = 8;
         $this->assertBytesRemaining($dataSize);
         
-        $bigInteger = new BigInteger(substr($this->xdrBytes, $this->position, $dataSize), 256);
+        $bigInteger = new BigInteger(substr($this->xdrBytes, $this->position, $dataSize), -256);
         $this->position += $dataSize;
         
         return $bigInteger;

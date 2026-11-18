@@ -551,11 +551,13 @@ class XdrJsonHelperTest extends TestCase
         XdrJsonHelper::stringToUint64('-1');
     }
 
-    public function testUint64ToString_negativeThrows(): void
+    public function testUint64ToString_negativeIntIsTheUpperHalf(): void
     {
-        // uint64ToString with a negative PHP int must throw.
-        $this->expectException(\InvalidArgumentException::class);
-        XdrJsonHelper::uint64ToString(-1);
+        // A negative int holds a uint64 from 2^63 up in two's complement form.
+        $this->assertSame('18446744073709551615', XdrJsonHelper::uint64ToString(-1));
+        $this->assertSame('9223372036854775808', XdrJsonHelper::uint64ToString(PHP_INT_MIN));
+        $this->assertSame(-1, XdrJsonHelper::stringToUint64(XdrJsonHelper::uint64ToString(-1)));
+        $this->assertSame(PHP_INT_MIN, XdrJsonHelper::stringToUint64(XdrJsonHelper::uint64ToString(PHP_INT_MIN)));
     }
 
     public function testUint64_acceptsIntInput(): void
