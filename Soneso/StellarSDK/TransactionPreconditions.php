@@ -22,8 +22,8 @@ use Soneso\StellarSDK\Xdr\XdrSignerKey;
  * and required additional signers.
  *
  * V2 preconditions (Protocol 19+) support all constraint types, while earlier
- * versions only support time bounds. The hasV2() method determines which format
- * to use when converting to XDR.
+ * versions only support time bounds. Decoded V2 preconditions retain the V2 arm.
+ * Newly constructed preconditions select NONE, TIME or V2 from their values.
  *
  * @package Soneso\StellarSDK
  * @see Transaction
@@ -34,6 +34,9 @@ use Soneso\StellarSDK\Xdr\XdrSignerKey;
  */
 class TransactionPreconditions
 {
+    /** @var bool Whether the decoded XDR uses the V2 arm. */
+    private bool $decodedV2 = false;
+
     /**
      * Ledger number constraints for transaction validity.
      *
@@ -241,16 +244,16 @@ class TransactionPreconditions
     /**
      * Determines if V2 preconditions are needed.
      *
-     * Returns true if any V2-only preconditions are set (ledger bounds, minimum
-     * sequence number, sequence age, ledger gap, or extra signers). When true,
-     * the preconditions must be encoded using the V2 XDR format.
+     * Returns true for decoded V2 preconditions or any V2-only values (ledger
+     * bounds, minimum sequence number, nonzero sequence age, ledger gap, or extra
+     * signers). A sequence age from 2^63 up is held as a negative int.
      *
      * @return bool True if V2 preconditions are required, false otherwise
      */
     public function hasV2(): bool {
-        return $this->ledgerBounds !== null ||
+        return $this->decodedV2 || $this->ledgerBounds !== null ||
             $this->minSeqNumber !== null ||
-            $this->minSeqAge > 0 ||
+            $this->minSeqAge !== 0 ||
             $this->minSeqLedgerGap > 0 ||
             count($this->extraSigners) > 0;
     }
@@ -258,8 +261,8 @@ class TransactionPreconditions
     /**
      * Converts the preconditions to XDR format.
      *
-     * Creates an XDR representation of the preconditions. The format used depends
-     * on which constraints are set:
+     * Retains the V2 arm for decoded V2 preconditions, including all-default values.
+     * Otherwise, the format depends on which constraints are set:
      * - V2 format: If any V2-only preconditions are set
      * - TIME format: If only time bounds are set
      * - NONE format: If no preconditions are set
@@ -303,6 +306,7 @@ class TransactionPreconditions
     {
         $cond = new TransactionPreconditions();
         if ($xdr->getType()->getValue() == XdrPreconditionType::V2) {
+            $cond->decodedV2 = true;
             $xdrV2 = $xdr->getV2();
             if ($xdrV2 !== null) {
                 if ($xdrV2->getTimeBounds() !== null) {
