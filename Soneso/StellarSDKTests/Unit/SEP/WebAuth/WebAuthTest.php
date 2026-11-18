@@ -31,6 +31,7 @@ use Soneso\StellarSDK\PaymentOperation;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeRequestErrorResponse;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeRequestBuilder;
+use Soneso\StellarSDK\SEP\WebAuth\ChallengeResponse;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidHomeDomain;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidMemoType;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidMemoValue;
@@ -954,6 +955,80 @@ class WebAuthTest extends TestCase
             }
         }
         $this->assertTrue($exception);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function challengeBodiesWithoutStringTransaction(): array {
+        return [
+            'empty object' => ['{}'],
+            'null transaction' => ['{"transaction": null}'],
+            'int transaction' => ['{"transaction": 123}'],
+            'array transaction' => ['{"transaction": ["a"]}'],
+        ];
+    }
+
+    #[DataProvider('challengeBodiesWithoutStringTransaction')]
+    public function testChallengeWithoutStringTransactionRejected(string $body): void {
+        $this->assertNull(ChallengeResponse::fromJson(json_decode($body, true))->getTransaction());
+
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $webAuth->setMockHandler(new MockHandler([new Response(200, [], $body)]));
+        try {
+            $webAuth->jwtToken($this->clientAccountId, [KeyPair::fromSeed($this->clientSecretSeed)]);
+            $this->fail('Expected ChallengeRequestErrorResponse');
+        } catch (ChallengeRequestErrorResponse $e) {
+            $this->assertSame('Error parsing challenge response', $e->getMessage());
+        }
+    }
+
+    /** @return array<string, array{string, string}> */
+    public static function challengeBodiesNotObject(): array {
+        return [
+            'string' => ['"abc"', 'string'],
+            'number' => ['42', 'int'],
+            'boolean' => ['true', 'bool'],
+            'null' => ['null', 'null'],
+        ];
+    }
+
+    #[DataProvider('challengeBodiesNotObject')]
+    public function testChallengeBodyNotObjectRejected(string $body, string $type): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $webAuth->setMockHandler(new MockHandler([new Response(200, [], $body)]));
+        try {
+            $webAuth->jwtToken($this->clientAccountId, [KeyPair::fromSeed($this->clientSecretSeed)]);
+            $this->fail('Expected ChallengeRequestErrorResponse');
+        } catch (ChallengeRequestErrorResponse $e) {
+            $this->assertSame("Response body must be a JSON object or array, got $type", $e->getMessage());
+            $this->assertSame(200, $e->getCode());
+        }
+    }
+
+    /** @return array<string, array{string, string}> */
+    public static function malformedTokenBodies(): array {
+        return [
+            'int token' => ['{"token": 123}', 'an unknown error occurred'],
+            'array token' => ['{"token": ["a"]}', 'an unknown error occurred'],
+            'int error' => ['{"error": 5}', 'an unknown error occurred'],
+            'string body' => ['"abc"', 'Token response body must be a JSON object or array, got string'],
+            'number body' => ['42', 'Token response body must be a JSON object or array, got int'],
+            'null body' => ['null', 'Token response body must be a JSON object or array, got null'],
+        ];
+    }
+
+    #[DataProvider('malformedTokenBodies')]
+    public function testMalformedTokenResponseRejected(string $body, string $message): void {
+        $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
+        $webAuth->setMockHandler(new MockHandler([
+            new Response(200, [], $this->requestChallengeSuccess($this->clientAccountId)),
+            new Response(200, [], $body),
+        ]));
+        try {
+            $webAuth->jwtToken($this->clientAccountId, [KeyPair::fromSeed($this->clientSecretSeed)]);
+            $this->fail('Expected SubmitCompletedChallengeErrorResponseException');
+        } catch (SubmitCompletedChallengeErrorResponseException $e) {
+            $this->assertSame($message, $e->getMessage());
+        }
     }
 
     public function testFromDomainMissingWebAuthEndpoint(): void {

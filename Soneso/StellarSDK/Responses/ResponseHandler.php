@@ -94,7 +94,7 @@ class ResponseHandler
      * @param Client $httpClient The HTTP client for pagination requests
      * @return Response The typed response object with parsed data
      * @throws \RuntimeException If HTTP status code indicates failure (3xx+)
-     * @throws \InvalidArgumentException If JSON parsing fails or request type is unknown
+     * @throws \InvalidArgumentException If JSON parsing fails, the body is not a JSON object or array, or request type is unknown
      */
     public function handleResponse(ResponseInterface $response, string $requestType, Client $httpClient) : Response {
 
@@ -113,6 +113,9 @@ class ResponseHandler
 
         if (null === $jsonData && json_last_error() != JSON_ERROR_NONE) {
             throw new \InvalidArgumentException(sprintf("Error in json_decode: %s", json_last_error_msg()));
+        }
+        if (!is_array($jsonData)) {
+            throw new \InvalidArgumentException(sprintf("Response body must be a JSON object or array, got %s", get_debug_type($jsonData)));
         }
 
         $horizonResponse = match ($requestType) {

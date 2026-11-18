@@ -267,6 +267,9 @@ class WebAuth
             if (null === $jsonData && json_last_error() != JSON_ERROR_NONE) {
                 throw new SubmitCompletedChallengeErrorResponseException(sprintf("Error in json_decode: %s", json_last_error_msg()));
             }
+            if (!is_array($jsonData)) {
+                throw new SubmitCompletedChallengeErrorResponseException(sprintf("Token response body must be a JSON object or array, got %s", get_debug_type($jsonData)));
+            }
             $result = SubmitCompletedChallengeResponse::fromJson($jsonData);
             if ($result->getError()) {
                 throw new SubmitCompletedChallengeErrorResponseException($result->getError());
