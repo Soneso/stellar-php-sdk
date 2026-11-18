@@ -2375,7 +2375,7 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrTxAdvertVectorTypedefRoundTrip(): void
     {
-        $original = new XdrTxAdvertVector([]);
+        $original = new XdrTxAdvertVector([str_repeat("\x01", 32)]);
         $encoded = $original->encode();
         $decoded = XdrTxAdvertVector::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTxAdvertVector');
@@ -2385,7 +2385,7 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrTxAdvertVectorTypedefJsonRoundTrip(): void
     {
-        $original = new XdrTxAdvertVector([]);
+        $original = new XdrTxAdvertVector([str_repeat("\x01", 32)]);
         $j1 = $original->toJsonValue();
         $back = XdrTxAdvertVector::fromJsonValue($j1);
         $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTxAdvertVector');
@@ -2404,7 +2404,7 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrFloodAdvertStructRoundTrip(): void
     {
-        $original = new XdrFloodAdvert(new XdrTxAdvertVector([]));
+        $original = new XdrFloodAdvert(new XdrTxAdvertVector([str_repeat("\x01", 32)]));
         $encoded = $original->encode();
         $decoded = XdrFloodAdvert::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrFloodAdvert');
@@ -2414,7 +2414,7 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrFloodAdvertStructJsonRoundTrip(): void
     {
-        $original = new XdrFloodAdvert(new XdrTxAdvertVector([]));
+        $original = new XdrFloodAdvert(new XdrTxAdvertVector([str_repeat("\x01", 32)]));
         $j1 = $original->toJsonValue();
         $back = XdrFloodAdvert::fromJsonValue($j1);
         $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrFloodAdvert');
@@ -2425,7 +2425,7 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrFloodAdvertStructJsonRejectsInvalid(): void
     {
-        $original = new XdrFloodAdvert(new XdrTxAdvertVector([]));
+        $original = new XdrFloodAdvert(new XdrTxAdvertVector([str_repeat("\x01", 32)]));
         $valid = $original->toJsonValue();
         $noWrongTypeCheck = [];
         $assertRejects = function ($bad, string $desc) {
@@ -2465,16 +2465,16 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrFloodAdvertGettersSetters(): void
     {
-        $obj = new XdrFloodAdvert(new XdrTxAdvertVector([]));
+        $obj = new XdrFloodAdvert(new XdrTxAdvertVector([str_repeat("\x01", 32)]));
         $obj->getTxHashes();
-        $newVal = new XdrTxAdvertVector([]);
+        $newVal = new XdrTxAdvertVector([str_repeat("\x01", 32)]);
         $obj->setTxHashes($newVal);
         $this->assertSame($newVal, $obj->getTxHashes());
     }
 
     public function testXdrTxDemandVectorTypedefRoundTrip(): void
     {
-        $original = new XdrTxDemandVector([]);
+        $original = new XdrTxDemandVector([str_repeat("\x01", 32)]);
         $encoded = $original->encode();
         $decoded = XdrTxDemandVector::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrTxDemandVector');
@@ -2484,7 +2484,7 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrTxDemandVectorTypedefJsonRoundTrip(): void
     {
-        $original = new XdrTxDemandVector([]);
+        $original = new XdrTxDemandVector([str_repeat("\x01", 32)]);
         $j1 = $original->toJsonValue();
         $back = XdrTxDemandVector::fromJsonValue($j1);
         $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrTxDemandVector');
@@ -2503,7 +2503,7 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrFloodDemandStructRoundTrip(): void
     {
-        $original = new XdrFloodDemand(new XdrTxDemandVector([]));
+        $original = new XdrFloodDemand(new XdrTxDemandVector([str_repeat("\x01", 32)]));
         $encoded = $original->encode();
         $decoded = XdrFloodDemand::decode(new XdrBuffer($encoded));
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrFloodDemand');
@@ -2513,7 +2513,7 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrFloodDemandStructJsonRoundTrip(): void
     {
-        $original = new XdrFloodDemand(new XdrTxDemandVector([]));
+        $original = new XdrFloodDemand(new XdrTxDemandVector([str_repeat("\x01", 32)]));
         $j1 = $original->toJsonValue();
         $back = XdrFloodDemand::fromJsonValue($j1);
         $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrFloodDemand');
@@ -2524,7 +2524,7 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrFloodDemandStructJsonRejectsInvalid(): void
     {
-        $original = new XdrFloodDemand(new XdrTxDemandVector([]));
+        $original = new XdrFloodDemand(new XdrTxDemandVector([str_repeat("\x01", 32)]));
         $valid = $original->toJsonValue();
         $noWrongTypeCheck = [];
         $assertRejects = function ($bad, string $desc) {
@@ -2564,9 +2564,9 @@ class XdrOverlayGenTest extends TestCase
 
     public function testXdrFloodDemandGettersSetters(): void
     {
-        $obj = new XdrFloodDemand(new XdrTxDemandVector([]));
+        $obj = new XdrFloodDemand(new XdrTxDemandVector([str_repeat("\x01", 32)]));
         $obj->getTxHashes();
-        $newVal = new XdrTxDemandVector([]);
+        $newVal = new XdrTxDemandVector([str_repeat("\x01", 32)]);
         $obj->setTxHashes($newVal);
         $this->assertSame($newVal, $obj->getTxHashes());
     }
@@ -2723,14 +2723,14 @@ class XdrOverlayGenTest extends TestCase
         $this->assertSame($arm19->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_SEND_MORE_EXTENDED');
         $back2 = XdrStellarMessage::fromJson($arm19->toJson());
         $this->assertSame($arm19->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_SEND_MORE_EXTENDED');
-        $arm20 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::FLOOD_ADVERT)); $u->floodAdvert = new XdrFloodAdvert(new XdrTxAdvertVector([])); return $u; })();
+        $arm20 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::FLOOD_ADVERT)); $u->floodAdvert = new XdrFloodAdvert(new XdrTxAdvertVector([str_repeat("\x01", 32)])); return $u; })();
         $j1 = $arm20->toJsonValue();
         $back = XdrStellarMessage::fromJsonValue($j1);
         $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_FLOOD_ADVERT');
         $this->assertSame($arm20->toJson(), $back->toJson(), 'JSON string not stable for XdrStellarMessage arm XdrMessageType_FLOOD_ADVERT');
         $back2 = XdrStellarMessage::fromJson($arm20->toJson());
         $this->assertSame($arm20->toJson(), $back2->toJson(), 'fromJson round-trip failed for XdrStellarMessage arm XdrMessageType_FLOOD_ADVERT');
-        $arm21 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::FLOOD_DEMAND)); $u->floodDemand = new XdrFloodDemand(new XdrTxDemandVector([])); return $u; })();
+        $arm21 = (function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::FLOOD_DEMAND)); $u->floodDemand = new XdrFloodDemand(new XdrTxDemandVector([str_repeat("\x01", 32)])); return $u; })();
         $j1 = $arm21->toJsonValue();
         $back = XdrStellarMessage::fromJsonValue($j1);
         $this->assertEquals($j1, $back->toJsonValue(), 'JSON value not stable for XdrStellarMessage arm XdrMessageType_FLOOD_DEMAND');
@@ -2762,8 +2762,8 @@ class XdrOverlayGenTest extends TestCase
         $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::GET_SCP_STATE)); $u->getSCPLedgerSeq = 42; return $u; })())->toJsonValue();
         $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::SEND_MORE)); $u->sendMoreMessage = new XdrSendMore(42); return $u; })())->toJsonValue();
         $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::SEND_MORE_EXTENDED)); $u->sendMoreExtendedMessage = new XdrSendMoreExtended(42, 42); return $u; })())->toJsonValue();
-        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::FLOOD_ADVERT)); $u->floodAdvert = new XdrFloodAdvert(new XdrTxAdvertVector([])); return $u; })())->toJsonValue();
-        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::FLOOD_DEMAND)); $u->floodDemand = new XdrFloodDemand(new XdrTxDemandVector([])); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::FLOOD_ADVERT)); $u->floodAdvert = new XdrFloodAdvert(new XdrTxAdvertVector([str_repeat("\x01", 32)])); return $u; })())->toJsonValue();
+        $samples[] = ((function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::FLOOD_DEMAND)); $u->floodDemand = new XdrFloodDemand(new XdrTxDemandVector([str_repeat("\x01", 32)])); return $u; })())->toJsonValue();
         $valid = $samples[0];
         foreach ($samples as $s) { if (!is_string($s)) { $valid = $s; break; } }
         $assertRejects = function ($bad, string $desc) {

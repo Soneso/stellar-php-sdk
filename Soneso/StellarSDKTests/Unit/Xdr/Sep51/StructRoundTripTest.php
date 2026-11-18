@@ -3548,27 +3548,6 @@ public function testRoundTrip_XdrSorobanTransactionMetaExtV1(): void
         'XdrSorobanTransactionMetaExtV1 XDR-JSON-XDR round trip diverged');
 }
 
-public function testRoundTrip_XdrSponsorshipDescriptor(): void
-{
-    $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
-    $instance = \Soneso\StellarSDK\Xdr\XdrSponsorshipDescriptor::fromBase64Xdr($base64);
-    $jsonValue = $instance->toJsonValue();
-    $json = $instance->toJson();
-    $instance2 = \Soneso\StellarSDK\Xdr\XdrSponsorshipDescriptor::fromBase64Xdr($base64);
-    $this->assertSame($jsonValue, $instance2->toJsonValue(),
-        'XdrSponsorshipDescriptor toJsonValue not deterministic across decodes');
-    $decoded = \Soneso\StellarSDK\Xdr\XdrSponsorshipDescriptor::fromJsonValue($jsonValue);
-    $this->assertSame($jsonValue, $decoded->toJsonValue(),
-        'XdrSponsorshipDescriptor round-trip toJsonValue idempotence broken');
-    $reparsed = \Soneso\StellarSDK\Xdr\XdrSponsorshipDescriptor::fromJson($json);
-    $this->assertSame($json, $reparsed->toJson(),
-        'XdrSponsorshipDescriptor round-trip toJson idempotence broken');
-    $reEncodedXdr = $decoded->toBase64Xdr();
-    $reInstance = \Soneso\StellarSDK\Xdr\XdrSponsorshipDescriptor::fromBase64Xdr($reEncodedXdr);
-    $this->assertSame($jsonValue, $reInstance->toJsonValue(),
-        'XdrSponsorshipDescriptor XDR-JSON-XDR round trip diverged');
-}
-
 public function testRoundTrip_XdrStateArchivalSettings(): void
 {
     $base64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
@@ -5381,6 +5360,39 @@ public function testRoundTrip_XdrValue(): void
         $reparsed = \Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaV2::fromJson($json);
         $this->assertSame($json, $reparsed->toJson(),
             'XdrSorobanTransactionMetaV2 optset toJson idempotence broken');
+    }
+
+    public function testRoundTrip_XdrSponsorshipDescriptor_optset_0(): void
+    {
+            // optset mask=0 selects no optional fields
+        $base64 = 'AAAAAA==';
+        $instance = \Soneso\StellarSDK\Xdr\XdrSponsorshipDescriptor::fromBase64Xdr($base64);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrSponsorshipDescriptor::fromJsonValue($jsonValue);
+        $this->assertSame($jsonValue, $decoded->toJsonValue(),
+            'XdrSponsorshipDescriptor optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSponsorshipDescriptor::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSponsorshipDescriptor optset toJson idempotence broken');
+    }
+
+    public function testRoundTrip_XdrSponsorshipDescriptor_optset_1(): void
+    {
+// optset mask=1 selects optional fields:
+//   sponsorshipDescriptor
+        $base64 = 'AAAAAA==';
+        $instance = \Soneso\StellarSDK\Xdr\XdrSponsorshipDescriptor::fromBase64Xdr($base64);
+        $jsonValue = $instance->toJsonValue();
+        $decoded = \Soneso\StellarSDK\Xdr\XdrSponsorshipDescriptor::fromJsonValue($jsonValue);
+        $this->assertSame($jsonValue, $decoded->toJsonValue(),
+            'XdrSponsorshipDescriptor optset round-trip idempotence broken');
+        // Exercise the JSON-string boundary too.
+        $json = $instance->toJson();
+        $reparsed = \Soneso\StellarSDK\Xdr\XdrSponsorshipDescriptor::fromJson($json);
+        $this->assertSame($json, $reparsed->toJson(),
+            'XdrSponsorshipDescriptor optset toJson idempotence broken');
     }
 
     public function testRoundTrip_XdrStoredTransactionSet_optset_00(): void

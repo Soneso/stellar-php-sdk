@@ -126,8 +126,8 @@ FALLBACK_VALUES = {
   "XdrTxSetComponent" => "(function() { $u = new XdrTxSetComponent(new XdrTxSetComponentType(XdrTxSetComponentType::TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE)); $u->txsMaybeDiscountedFee = new XdrTxSetComponentTxsMaybeDiscountedFee([]); return $u; })()",
   "XdrTransactionPhase" => "(function() { $u = new XdrTransactionPhase(0); $u->v0Components = []; return $u; })()",
   "XdrParallelTxsComponent" => "new XdrParallelTxsComponent([])",
-  "XdrTxAdvertVector" => "new XdrTxAdvertVector([])",
-  "XdrTxDemandVector" => "new XdrTxDemandVector([])",
+  "XdrTxAdvertVector" => 'new XdrTxAdvertVector([str_repeat("\x01", 32)])',
+  "XdrTxDemandVector" => 'new XdrTxDemandVector([str_repeat("\x01", 32)])',
   "XdrDependentTxCluster" => "new XdrDependentTxCluster([])",
   "XdrParallelTxExecutionStage" => "new XdrParallelTxExecutionStage([])",
   "XdrTimeSlicedPeerDataList" => "new XdrTimeSlicedPeerDataList([])",
@@ -147,8 +147,8 @@ FALLBACK_VALUES = {
   "XdrDontHave" => "new XdrDontHave(new XdrMessageType(XdrMessageType::ERROR_MSG), str_repeat(\"\\0\", 32))",
   "XdrError" => "new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error')",
   "XdrPeerAddress" => "(function() { $ip = new XdrPeerAddressIp(new XdrIPAddrType(XdrIPAddrType::IPv4)); $ip->ipv4 = str_repeat(\"\\xAB\", 4); return new XdrPeerAddress($ip, 42, 0); })()",
-  "XdrFloodAdvert" => "new XdrFloodAdvert(new XdrTxAdvertVector([]))",
-  "XdrFloodDemand" => "new XdrFloodDemand(new XdrTxDemandVector([]))",
+  "XdrFloodAdvert" => 'new XdrFloodAdvert(new XdrTxAdvertVector([str_repeat("\x01", 32)]))',
+  "XdrFloodDemand" => 'new XdrFloodDemand(new XdrTxDemandVector([str_repeat("\x01", 32)]))',
   "XdrStellarMessage" => "(function() { $u = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $u->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return $u; })()",
   "XdrAuthenticatedMessageV0" => "(function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); return new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat(\"\\xAB\", 32))); })()",
   "XdrAuthenticatedMessage" => "(function() { $msg = new XdrStellarMessage(new XdrMessageType(XdrMessageType::ERROR_MSG)); $msg->error = new XdrError(new XdrErrorCode(XdrErrorCode::ERR_MISC), 'test_error'); $u = new XdrAuthenticatedMessage(0); $u->v0 = new XdrAuthenticatedMessageV0(42, $msg, new XdrHmacSha256Mac(str_repeat(\"\\xAB\", 32))); return $u; })()",
@@ -2025,6 +2025,13 @@ def generate_typedef_test(php_name, typedef_defn)
   lines << "        $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for #{php_name}');"
   lines << "        $b64Decoded = #{class_name}::fromBase64Xdr($original->toBase64Xdr());"
   lines << "        $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for #{php_name}');"
+  if typedef_defn.declaration.is_a?(AST::Declarations::Optional)
+    lines << "        $absent = new #{class_name}(null);"
+    lines << "        $this->assertSame('00000000', bin2hex($absent->encode()));"
+    lines << "        $this->assertSame($absent->encode(), #{class_name}::fromBase64Xdr($absent->toBase64Xdr())->encode());"
+    lines << "        $this->assertNull($absent->toJsonValue());"
+    lines << "        $this->assertSame($absent->encode(), #{class_name}::fromJson('null')->encode());"
+  end
   lines << "    }"
 
   { lines: lines, imports: imports }

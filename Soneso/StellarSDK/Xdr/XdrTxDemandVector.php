@@ -21,7 +21,7 @@ class XdrTxDemandVector {
         $count = count($this->txDemandVector);
         $bytes = XdrEncoder::integer32($count);
         foreach ($this->txDemandVector as $item) {
-            $bytes .= XdrEncoder::string($item);
+            $bytes .= XdrEncoder::opaqueFixed($item, 32);
         }
         return $bytes;
     }
@@ -30,7 +30,7 @@ class XdrTxDemandVector {
         $txDemandVector = [];
         $size = $xdr->readArrayLength();
         for ($i = 0; $i < $size; $i++) {
-            $txDemandVector[] = $xdr->readString();
+            $txDemandVector[] = $xdr->readOpaqueFixed(32);
         }
         return new XdrTxDemandVector($txDemandVector);
     }

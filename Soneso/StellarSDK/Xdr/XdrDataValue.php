@@ -12,6 +12,9 @@ use JsonException;
 use TypeError;
 
 /**
+ * Wraps the optional dataValue field of ManageDataOp (DataValue*) with its presence flag.
+ * Use XdrDataValueMandatory for the bare value.
+ *
  * @phpstan-consistent-constructor
  */
 class XdrDataValue
@@ -32,7 +35,7 @@ class XdrDataValue
 
     public function encode() : string {
         $bytes = "";
-        if ($this->value) {
+        if ($this->value !== null) {
             $bytes .= XdrEncoder::boolean(true);
             $bytes .= XdrEncoder::opaqueVariable($this->value);
         }

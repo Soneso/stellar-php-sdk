@@ -10,19 +10,30 @@ use JsonException;
 
 class XdrSponsorshipDescriptor {
 
-    public XdrPublicKey $sponsorshipDescriptor;
+    public ?XdrPublicKey $sponsorshipDescriptor;
 
-    public function __construct(XdrPublicKey $sponsorshipDescriptor) {
+    public function __construct(?XdrPublicKey $sponsorshipDescriptor) {
         $this->sponsorshipDescriptor = $sponsorshipDescriptor;
     }
 
     public function encode(): string {
-        return $this->sponsorshipDescriptor->encode();
+        return $this->sponsorshipDescriptor !== null ? XdrEncoder::integer32(1) . $this->sponsorshipDescriptor->encode() : XdrEncoder::integer32(0);
     }
 
     public static function decode(XdrBuffer $xdr): XdrSponsorshipDescriptor {
-        return new XdrSponsorshipDescriptor(XdrPublicKey::decode($xdr));
+        return new XdrSponsorshipDescriptor($xdr->readOptionalPresence('XdrSponsorshipDescriptor.sponsorshipDescriptor') ? XdrPublicKey::decode($xdr) : null);
     }
+
+    /**
+     * @return XdrPublicKey|null
+     */
+    public function getSponsorshipDescriptor(): ?XdrPublicKey { return $this->sponsorshipDescriptor; }
+
+    /**
+     * @param XdrPublicKey|null $sponsorshipDescriptor
+     * @return void
+     */
+    public function setSponsorshipDescriptor(?XdrPublicKey $sponsorshipDescriptor): void { $this->sponsorshipDescriptor = $sponsorshipDescriptor; }
 
     public function toBase64Xdr(): string {
         return base64_encode($this->encode());
@@ -37,11 +48,11 @@ class XdrSponsorshipDescriptor {
     }
 
     public function toJsonValue(): mixed {
-        return $this->sponsorshipDescriptor->toJsonValue();
+        return $this->sponsorshipDescriptor !== null ? $this->sponsorshipDescriptor->toJsonValue() : null;
     }
 
     public static function fromJsonValue(mixed $value): static {
-        return new static(XdrPublicKey::fromJsonValue($value));
+        return new static($value !== null ? XdrPublicKey::fromJsonValue($value) : null);
     }
 
     /**

@@ -21,7 +21,7 @@ class XdrTxAdvertVector {
         $count = count($this->txAdvertVector);
         $bytes = XdrEncoder::integer32($count);
         foreach ($this->txAdvertVector as $item) {
-            $bytes .= XdrEncoder::string($item);
+            $bytes .= XdrEncoder::opaqueFixed($item, 32);
         }
         return $bytes;
     }
@@ -30,7 +30,7 @@ class XdrTxAdvertVector {
         $txAdvertVector = [];
         $size = $xdr->readArrayLength();
         for ($i = 0; $i < $size; $i++) {
-            $txAdvertVector[] = $xdr->readString();
+            $txAdvertVector[] = $xdr->readOpaqueFixed(32);
         }
         return new XdrTxAdvertVector($txAdvertVector);
     }

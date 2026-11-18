@@ -11,6 +11,8 @@ use InvalidArgumentException;
 use TypeError;
 
 /**
+ * Holds a variable opaque value shared by DataValue<64> and unbounded opaque fields.
+ *
  * @phpstan-consistent-constructor
  */
 class XdrDataValueMandatory
