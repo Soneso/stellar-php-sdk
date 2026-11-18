@@ -120,11 +120,24 @@ class MuxedAccount
     /**
      * Gets the muxed account ID
      *
+     * IDs from 2^63 up are returned as negative integers in two's complement form.
+     *
      * @return int|null The 64-bit ID, or null if not a multiplexed account
+     * @see getIdAsString() For the unsigned value
      */
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * Gets the muxed account ID as an unsigned decimal string
+     *
+     * @return string|null The ID, from "0" to "18446744073709551615", or null if not a multiplexed account
+     */
+    public function getIdAsString(): ?string
+    {
+        return $this->id === null ? null : sprintf('%u', $this->id);
     }
 
     /**
@@ -177,7 +190,7 @@ class MuxedAccount
             $ed25519AccountId = StrKey::encodeAccountId($muxedAccount->getEd25519());
             return new MuxedAccount($ed25519AccountId, null);
         } else {
-            throw new InvalidArgumentException("invalid discriminant: ". $muxedAccount->getDiscriminant() . "in muxed account parameter");
+            throw new InvalidArgumentException("invalid discriminant: ". $muxedAccount->getDiscriminant() . " in muxed account parameter");
         }
     }
 
