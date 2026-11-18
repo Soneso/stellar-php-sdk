@@ -1024,6 +1024,11 @@ class XdrLedgerEntriesGenTest extends TestCase
         $this->assertEquals($encoded, $decoded->encode(), 'Binary roundtrip failed for XdrSponsorshipDescriptor');
         $b64Decoded = XdrSponsorshipDescriptor::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals($encoded, $b64Decoded->encode(), 'Base64 roundtrip failed for XdrSponsorshipDescriptor');
+        $absent = new XdrSponsorshipDescriptor(null);
+        $this->assertSame('00000000', bin2hex($absent->encode()));
+        $this->assertSame($absent->encode(), XdrSponsorshipDescriptor::fromBase64Xdr($absent->toBase64Xdr())->encode());
+        $this->assertNull($absent->toJsonValue());
+        $this->assertSame($absent->encode(), XdrSponsorshipDescriptor::fromJson('null')->encode());
     }
 
     public function testXdrSponsorshipDescriptorTypedefJsonRoundTrip(): void

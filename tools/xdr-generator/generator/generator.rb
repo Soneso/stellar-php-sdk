@@ -767,6 +767,7 @@ class Generator < Xdrgen::Generators::Base
 
   def render_simple_typedef(php_name, decl, typedef)
     underlying = decl.type
+    is_optional = decl.is_a?(AST::Declarations::Optional)
     type_info = resolve_typedef_type(underlying)
     return unless type_info
 
@@ -801,26 +802,48 @@ class Generator < Xdrgen::Generators::Base
       imports << "use Soneso\\StellarSDK\\Crypto\\StrKey;"
     end
 
+    type_hint = is_optional ? "?#{php_type}" : php_type
+    encode_value = encode_expr.call(field_name)
+    decode_value = decode_expr.call
+    if is_optional
+      encode_value = "$this->#{field_name} !== null ? XdrEncoder::integer32(1) . #{encode_value} : XdrEncoder::integer32(0)"
+      decode_value = "$xdr->readOptionalPresence('#{php_name}.#{field_name}') ? #{decode_value} : null"
+    end
+
     out.puts GENERATED_HEADER
     out.puts ""
     imports.each { |imp| out.puts imp }
     out.puts ""
     out.puts "class #{class_name} {"
     out.puts ""
-    out.puts "    public #{php_type} $#{field_name};"
+    out.puts "    public #{type_hint} $#{field_name};"
     out.puts ""
-    out.puts "    public function __construct(#{php_type} $#{field_name}) {"
+    out.puts "    public function __construct(#{type_hint} $#{field_name}) {"
     out.puts "        $this->#{field_name} = $#{field_name};"
     out.puts "    }"
     out.puts ""
     out.puts "    public function encode(): string {"
-    out.puts "        return #{encode_expr.call(field_name)};"
+    out.puts "        return #{encode_value};"
     out.puts "    }"
     out.puts ""
     out.puts "    public static function decode(XdrBuffer $xdr): #{return_type} {"
-    out.puts "        return #{new_expr}(#{decode_expr.call});"
+    out.puts "        return #{new_expr}(#{decode_value});"
     out.puts "    }"
     out.puts ""
+    if is_optional
+      uc_field = "#{field_name[0].upcase}#{field_name[1..]}"
+      out.puts "    /**"
+      out.puts "     * @return #{php_type}|null"
+      out.puts "     */"
+      out.puts "    public function get#{uc_field}(): #{type_hint} { return $this->#{field_name}; }"
+      out.puts ""
+      out.puts "    /**"
+      out.puts "     * @param #{php_type}|null $#{field_name}"
+      out.puts "     * @return void"
+      out.puts "     */"
+      out.puts "    public function set#{uc_field}(#{type_hint} $#{field_name}): void { $this->#{field_name} = $#{field_name}; }"
+      out.puts ""
+    end
     render_base64_methods(out)
     if emits_sep51?(php_name, is_base)
       if StellarJsonOverrides.has?(php_name)
@@ -1649,7 +1672,7 @@ class Generator < Xdrgen::Generators::Base
     when AST::Typespecs::String
       "XdrEncoder::string(#{accessor})"
     else
-      encode_type_call(php_type_for_typespec(typespec), accessor)
+      encode_type_call(php_type_for_typespec(typespec), accessor, typespec: typespec)
     end
   end
 
@@ -1668,7 +1691,7 @@ class Generator < Xdrgen::Generators::Base
     when AST::Typespecs::String
       "$xdr->readString()"
     else
-      decode_type_call(php_type_for_typespec(typespec))
+      decode_type_call(php_type_for_typespec(typespec), typespec: typespec)
     end
   end
 
@@ -3884,15 +3907,21 @@ class Generator < Xdrgen::Generators::Base
   # wrappers cover several wire-form shapes depending on the underlying type.
   def render_simple_typedef_sep51_methods(out, php_name, php_type, field_name, decl)
     typespec = decl.respond_to?(:type) ? decl.type : nil
+    to_expr = simple_value_to_json_expr(php_type, typespec, "$this->#{field_name}")
+    from_expr = simple_value_from_json_expr(php_type, typespec, "$value")
+    if decl.is_a?(AST::Declarations::Optional)
+      to_expr = "$this->#{field_name} !== null ? #{to_expr} : null"
+      from_expr = "$value !== null ? #{from_expr} : null"
+    end
 
     out.puts ""
     out.puts "    public function toJsonValue(): mixed {"
-    out.puts "        return #{simple_value_to_json_expr(php_type, typespec, "$this->#{field_name}")};"
+    out.puts "        return #{to_expr};"
     out.puts "    }"
 
     out.puts ""
     out.puts "    public static function fromJsonValue(mixed $value): static {"
-    out.puts "        return new static(#{simple_value_from_json_expr(php_type, typespec, "$value")});"
+    out.puts "        return new static(#{from_expr});"
     out.puts "    }"
 
     render_to_json_facade(out)
@@ -4457,8 +4486,8 @@ class Generator < Xdrgen::Generators::Base
         override = TYPE_OVERRIDES[php_name]
         return {
           php_type: override,
-          encode: ->(field) { "#{encode_type_call(override, "$this->#{field}")}" },
-          decode: -> { decode_type_call(override) },
+          encode: ->(field) { "#{encode_type_call(override, "$this->#{field}", typespec: underlying)}" },
+          decode: -> { decode_type_call(override, typespec: underlying) },
         }
       end
       {

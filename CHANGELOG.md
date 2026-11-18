@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- `XdrSponsorshipDescriptor` encodes and decodes its optional account id with the presence flag and takes a nullable key, and `XdrTxAdvertVector` and `XdrTxDemandVector` encode and decode their elements as 32-byte hashes. Before this change, the three classes did not read or write the XDR form of their types.
+- `XdrDataValue::encode()` writes an empty value and `"0"` as present. It previously wrote both as absent; manage data operations were not affected.
 - A transaction decoded from a V1 or fee bump envelope keeps `PRECOND_V2` preconditions, so its hash and its re-encoded envelope equal the original. Before this change, `PRECOND_V2` preconditions whose values were all defaults were rebuilt as `PRECOND_TIME` or `PRECOND_NONE`, a minimum sequence age from 2^63 up was dropped, and the hash differed from the network hash.
 - Muxed ids from 2^63 up are readable as unsigned values: `MuxedAccount::getIdAsString()` and `MuxedContract::getIdAsString()` return the id as a decimal string. Before this change, `getId()` was the only accessor; it returns such ids as negative integers in two's complement form.
 
