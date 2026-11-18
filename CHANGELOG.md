@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- SEP-10 `WebAuth::jwtToken()` and `ChallengeRequestBuilder::forMemo()` take a memo id from 2^63 up as an unsigned decimal string, as `Memo::id()` does, and reject a negative id. Before this change, the memo was an int, so such an id could not be requested, and a negative int was sent unchanged.
 - `XdrSponsorshipDescriptor` encodes and decodes its optional account id with the presence flag and takes a nullable key, and `XdrTxAdvertVector` and `XdrTxDemandVector` encode and decode their elements as 32-byte hashes. Before this change, the three classes did not read or write the XDR form of their types.
 - `XdrDataValue::encode()` writes an empty value and `"0"` as present. It previously wrote both as absent; manage data operations were not affected.
 - A transaction decoded from a V1 or fee bump envelope keeps `PRECOND_V2` preconditions, so its hash and its re-encoded envelope equal the original. Before this change, `PRECOND_V2` preconditions whose values were all defaults were rebuilt as `PRECOND_TIME` or `PRECOND_NONE`, a minimum sequence age from 2^63 up was dropped, and the hash differed from the network hash.
