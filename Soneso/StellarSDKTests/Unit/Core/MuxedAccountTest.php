@@ -12,9 +12,11 @@ use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Crypto\CryptoKeyType;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrCryptoKeyType;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
 
 /**
@@ -88,6 +90,23 @@ class MuxedAccountTest extends TestCase
 
         $this->assertSame(0, $muxed->getId());
         $this->assertSame(self::MUXED_ID_ZERO, $muxed->getAccountId());
+    }
+
+    /**
+     * A muxed account XDR whose type is neither KEY_TYPE_ED25519 nor
+     * KEY_TYPE_MUXED_ED25519 is rejected with the discriminant in the message.
+     */
+    public function testFromXdrRejectsUnknownDiscriminant(): void
+    {
+        $xdr = new XdrMuxedAccount(StrKey::decodeAccountId(self::ED25519_ACCOUNT_ID));
+        $xdr->setType(new XdrCryptoKeyType(XdrCryptoKeyType::KEY_TYPE_PRE_AUTH_TX));
+
+        try {
+            MuxedAccount::fromXdr($xdr);
+            $this->fail('fromXdr() accepted the KEY_TYPE_PRE_AUTH_TX discriminant');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame('invalid discriminant: 1 in muxed account parameter', $e->getMessage());
+        }
     }
 
     public function testNonZeroIdRoundTrips(): void
