@@ -78,8 +78,8 @@ class SubmitCompletedChallengeResponse extends Response {
     }
 
     protected function loadFromJson(array $json) : void {
-        if (isset($json['token'])) $this->jwtToken = $json['token'];
-        if (isset($json['error'])) $this->error = $json['error'];
+        if (is_string($json['token'] ?? null)) $this->jwtToken = $json['token'];
+        if (is_string($json['error'] ?? null)) $this->error = $json['error'];
     }
 
     public static function fromJson(array $json) : SubmitCompletedChallengeResponse

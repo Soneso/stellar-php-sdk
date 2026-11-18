@@ -38,7 +38,7 @@ use Soneso\StellarSDK\Responses\Response;
  */
 class ChallengeResponse extends Response
 {
-    private string $transaction;
+    private ?string $transaction = null;
 
     /**
      * @param string $transaction
@@ -49,15 +49,15 @@ class ChallengeResponse extends Response
     }
 
     /**
-     * @return string
+     * @return string|null The challenge transaction as base64-encoded XDR, or null when the response holds no transaction string.
      */
-    public function getTransaction(): string
+    public function getTransaction(): ?string
     {
         return $this->transaction;
     }
 
     protected function loadFromJson(array $json) : void {
-        if (isset($json['transaction'])) $this->transaction = $json['transaction'];
+        if (is_string($json['transaction'] ?? null)) $this->transaction = $json['transaction'];
     }
 
     public static function fromJson(array $json) : ChallengeResponse
