@@ -372,8 +372,8 @@ class GetTransactionResponse extends SorobanRpcResponse
      */
     public function getXdrTransactionMeta(): ? XdrTransactionMeta
     {
-        if($this->resultXdr !== null) {
-            return XdrTransactionMeta::fromBase64Xdr($this->resultXdr);
+        if($this->resultMetaXdr !== null) {
+            return XdrTransactionMeta::fromBase64Xdr($this->resultMetaXdr);
         }
         return null;
     }

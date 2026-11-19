@@ -119,19 +119,46 @@ class SorobanResponsesTest extends TestCase
         $this->assertNotNull($xdrResult);
     }
 
-    public function testGetTransactionResponseGetXdrTransactionMeta(): void
+    public function testGetTransactionResponseGetXdrTransactionMetaDecodesResultMetaXdr(): void
     {
-        $json = [
+        // TransactionResult and TransactionMeta v3 of the mainnet payment
+        // a434302ea03b42dd00614e258e6b7cdce5dc8a9d7381b1cba8844b75df4f1486, as Horizon returns them.
+        $resultXdr = 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=';
+        $resultMetaXdr = 'AAAAAwAAAAAAAAACAAAAAwMgANMAAAAAAAAAABpkeES/191B7z9YrUh5J2wySk7XDoZU7ulEgyoWUsBeAAAAAAHJUdQDHvLTAAABIgAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAMAAAAAAyAAyAAAAABmh4mjAAAAAAAAAAEDIADTAAAAAAAAAAAaZHhEv9fdQe8/WK1IeSdsMkpO1w6GVO7pRIMqFlLAXgAAAAAByVHUAx7y0wAAASMAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAADAAAAAAMgANMAAAAAZoeJ4wAAAAAAAAABAAAABAAAAAMDIADTAAAAAQAAAABDkt3qvAkFIBzwQNUTIuVYO6lakWIP/qYVmqhwqWJiJwAAAAFIVU4AAAAAAGKry1RSK+866Ljmnti9mQnKwZY/Rh/xYQLyKbb7e+vkAAKTCBRhynx//////////wAAAAEAAAABAAAA1xsdUZsAAAAAAAAAAAAAAAAAAAAAAAAAAQMgANMAAAABAAAAAEOS3eq8CQUgHPBA1RMi5Vg7qVqRYg/+phWaqHCpYmInAAAAAUhVTgAAAAAAYqvLVFIr7zrouOae2L2ZCcrBlj9GH/FhAvIptvt76+QAApMHukZ45H//////////AAAAAQAAAAEAAADXGx1RmwAAAAAAAAAAAAAAAAAAAAAAAAADAx/LTQAAAAEAAAAALKh2/uxMx/7OQG16N5OsdpWPl0ZGSeDIVpWQqsOV2wIAAAABSFVOAAAAAABiq8tUUivvOui45p7YvZkJysGWP0Yf8WEC8im2+3vr5AAAAdVOSfYYf/////////8AAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEDIADTAAAAAQAAAAAsqHb+7EzH/s5AbXo3k6x2lY+XRkZJ4MhWlZCqw5XbAgAAAAFIVU4AAAAAAGKry1RSK+866Ljmnti9mQnKwZY/Rh/xYQLyKbb7e+vkAAAB1ahlR7B//////////wAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+        $response = GetTransactionResponse::fromJson([
             'result' => [
                 'status' => 'SUCCESS',
-                'resultXdr' => null
+                'resultXdr' => $resultXdr,
+                'resultMetaXdr' => $resultMetaXdr,
             ]
-        ];
+        ]);
 
-        $response = GetTransactionResponse::fromJson($json);
-        $xdrMeta = $response->getXdrTransactionMeta();
+        $meta = $response->getXdrTransactionMeta();
 
-        $this->assertNull($xdrMeta);
+        $this->assertNotNull($meta);
+        $this->assertSame(3, $meta->getV());
+        $v3 = $meta->getV3();
+        $this->assertNotNull($v3);
+        $this->assertCount(2, $v3->getTxChangesBefore());
+        $this->assertCount(1, $v3->getOperations());
+        $this->assertCount(0, $v3->getTxChangesAfter());
+        $this->assertNull($v3->getSorobanMeta());
+        $this->assertSame($resultMetaXdr, $meta->toBase64Xdr());
+
+        $metaOnly = GetTransactionResponse::fromJson(['result' => ['status' => 'SUCCESS', 'resultMetaXdr' => $resultMetaXdr]]);
+        $this->assertSame($resultMetaXdr, $metaOnly->getXdrTransactionMeta()?->toBase64Xdr());
+    }
+
+    public function testGetTransactionResponseGetXdrTransactionMetaWithoutResultMetaXdr(): void
+    {
+        $response = GetTransactionResponse::fromJson([
+            'result' => [
+                'status' => 'SUCCESS',
+                'resultXdr' => 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+            ]
+        ]);
+
+        $this->assertNull($response->getXdrTransactionMeta());
     }
 
     public function testGetTransactionResponseWithEvents(): void
