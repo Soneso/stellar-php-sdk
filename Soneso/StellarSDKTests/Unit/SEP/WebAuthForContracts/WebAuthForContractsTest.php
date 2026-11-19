@@ -10,17 +10,20 @@ use Exception;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeRequestErrorResponse;
+use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeResponse;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationError;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidAccount;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidArgs;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidContractAddress;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidFunctionName;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidHomeDomain;
+use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidNetworkPassphrase;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidNonce;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidServerSignature;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidWebAuthDomain;
@@ -1274,6 +1277,116 @@ class WebAuthForContractsTest extends TestCase
             [$clientSigner],
             $this->domain
         );
+    }
+
+    /** @return array<string, array{string, string}> */
+    public static function malformedChallengeFields(): array
+    {
+        return [
+            'authorization_entries' => ['{"authorization_entries": 123}', 'Field authorization_entries must be a string, got int'],
+            'null authorization_entries' => ['{"authorization_entries": null}', 'Missing required field: authorization_entries'],
+            'authorizationEntries' => ['{"authorizationEntries": ["a"]}', 'Field authorizationEntries must be a string, got array'],
+            'network_passphrase' => ['{"authorization_entries": "AAAAAA==", "network_passphrase": 5}', 'Field network_passphrase must be a string, got int'],
+            'networkPassphrase' => ['{"authorization_entries": "AAAAAA==", "networkPassphrase": ["a"]}', 'Field networkPassphrase must be a string, got array'],
+        ];
+    }
+
+    #[DataProvider('malformedChallengeFields')]
+    public function testMalformedChallengeFieldRejectedByParser(string $body, string $message): void
+    {
+        try {
+            ContractChallengeResponse::fromJson(json_decode($body, true));
+        } catch (Exception $e) {
+            $this->assertSame(Exception::class, $e::class);
+            $this->assertSame($message, $e->getMessage());
+            return;
+        }
+        $this->fail('Expected Exception');
+    }
+
+    public function testNullNetworkPassphraseAccepted(): void
+    {
+        $response = ContractChallengeResponse::fromJson(json_decode(
+            '{"authorization_entries": "AAAAAA==", "network_passphrase": null}', true
+        ));
+        $this->assertNull($response->getNetworkPassphrase());
+        $this->assertSame('AAAAAA==', $response->getAuthorizationEntries());
+    }
+
+    public function testInvalidNetworkPassphraseRejectedByJwtToken(): void
+    {
+        $webAuth = new WebAuthForContracts(
+            $this->authServer, $this->webAuthContractId, $this->serverAccountId, $this->domain, Network::testnet()
+        );
+        $mock = new MockHandler([new Response(200, [],
+            '{"authorization_entries": "AAAAAA==", "network_passphrase": "Public Global Stellar Network ; September 2015"}'
+        )]);
+        $webAuth->setMockHandler($mock);
+        try {
+            $webAuth->jwtToken($this->clientContractId, [$this->serverKeyPair]);
+        } catch (ContractChallengeValidationErrorInvalidNetworkPassphrase $e) {
+            $this->assertSame(
+                "Network passphrase mismatch. Expected: 'Test SDF Network ; September 2015', Got: 'Public Global Stellar Network ; September 2015'",
+                $e->getMessage()
+            );
+            $this->assertCount(0, $mock);
+            $this->assertSame('GET', $mock->getLastRequest()->getMethod());
+            return;
+        }
+        $this->fail('Expected ContractChallengeValidationErrorInvalidNetworkPassphrase');
+    }
+
+    #[DataProvider('malformedChallengeFields')]
+    public function testMalformedChallengeFieldRejectedByJwtToken(string $body, string $message): void
+    {
+        $webAuth = new WebAuthForContracts(
+            $this->authServer, $this->webAuthContractId, $this->serverAccountId, $this->domain, Network::testnet()
+        );
+        $webAuth->setMockHandler(new MockHandler([new Response(200, [], $body)]));
+        try {
+            $webAuth->jwtToken($this->clientContractId, [$this->serverKeyPair]);
+            $this->fail('Expected ContractChallengeRequestErrorResponse');
+        } catch (ContractChallengeRequestErrorResponse $e) {
+            $this->assertSame($message, $e->getMessage());
+            $this->assertSame(200, $e->getHttpStatusCode());
+        }
+    }
+
+    /** @return array<string, array{string, string}> */
+    public static function malformedTokenBodies(): array
+    {
+        return [
+            'int token' => ['{"token": 123}', 'An unknown error occurred'],
+            'array token' => ['{"token": ["a"]}', 'An unknown error occurred'],
+            'int error' => ['{"error": 5}', 'An unknown error occurred'],
+            'string body' => ['"abc"', 'Token response body must be a JSON object or array, got string'],
+            'number body' => ['42', 'Token response body must be a JSON object or array, got int'],
+            'null body' => ['null', 'Token response body must be a JSON object or array, got null'],
+        ];
+    }
+
+    #[DataProvider('malformedTokenBodies')]
+    public function testMalformedTokenResponseRejected(string $body, string $message): void
+    {
+        $webAuth = new WebAuthForContracts(
+            $this->authServer, $this->webAuthContractId, $this->serverAccountId, $this->domain, Network::testnet()
+        );
+        $webAuth->setMockHandler(new MockHandler([new Response(200, [], $body)]));
+        try {
+            $webAuth->sendSignedChallenge([]);
+            $this->fail('Expected SubmitContractChallengeErrorResponseException');
+        } catch (SubmitContractChallengeErrorResponseException $e) {
+            $this->assertSame($message, $e->getMessage());
+        }
+    }
+
+    public function testTokenWithNonStringErrorAccepted(): void
+    {
+        $webAuth = new WebAuthForContracts(
+            $this->authServer, $this->webAuthContractId, $this->serverAccountId, $this->domain, Network::testnet()
+        );
+        $webAuth->setMockHandler(new MockHandler([new Response(200, [], '{"token": "jwt", "error": 5}')]));
+        $this->assertSame('jwt', $webAuth->sendSignedChallenge([]));
     }
 
     /**

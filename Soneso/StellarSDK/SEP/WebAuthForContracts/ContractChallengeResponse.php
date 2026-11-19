@@ -96,21 +96,33 @@ class ContractChallengeResponse extends Response
      * Loads this response from JSON data.
      *
      * @param array $json JSON data array from the server response
-     * @throws Exception if required field authorization_entries is missing
+     * @throws Exception if authorization_entries is missing, or authorization_entries or network_passphrase is not a string
      */
     protected function loadFromJson(array $json): void
     {
         if (isset($json['authorization_entries'])) {
+            if (!is_string($json['authorization_entries'])) {
+                throw new Exception(sprintf("Field authorization_entries must be a string, got %s", get_debug_type($json['authorization_entries'])));
+            }
             $this->authorizationEntries = $json['authorization_entries'];
         } else if (isset($json['authorizationEntries'])) {
+            if (!is_string($json['authorizationEntries'])) {
+                throw new Exception(sprintf("Field authorizationEntries must be a string, got %s", get_debug_type($json['authorizationEntries'])));
+            }
             $this->authorizationEntries = $json['authorizationEntries'];
         } else {
             throw new Exception("Missing required field: authorization_entries");
         }
 
         if (isset($json['network_passphrase'])) {
+            if (!is_string($json['network_passphrase'])) {
+                throw new Exception(sprintf("Field network_passphrase must be a string, got %s", get_debug_type($json['network_passphrase'])));
+            }
             $this->networkPassphrase = $json['network_passphrase'];
         } else if (isset($json['networkPassphrase'])) {
+            if (!is_string($json['networkPassphrase'])) {
+                throw new Exception(sprintf("Field networkPassphrase must be a string, got %s", get_debug_type($json['networkPassphrase'])));
+            }
             $this->networkPassphrase = $json['networkPassphrase'];
         }
     }
@@ -120,6 +132,7 @@ class ContractChallengeResponse extends Response
      *
      * @param array $json JSON data array from the server response
      * @return ContractChallengeResponse the created response object
+     * @throws Exception if authorization_entries is missing, or authorization_entries or network_passphrase is not a string
      */
     public static function fromJson(array $json): ContractChallengeResponse
     {
