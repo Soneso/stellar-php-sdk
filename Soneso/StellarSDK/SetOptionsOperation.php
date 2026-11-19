@@ -197,14 +197,14 @@ class SetOptionsOperation extends AbstractOperation
     public function toOperationBody(): XdrOperationBody
     {
         $result = new XdrSetOptionsOperation();
-        if ($this->inflationDestination) {
+        if ($this->inflationDestination !== null) {
             $accId = new XdrAccountID($this->inflationDestination);
             $result->setInflationDest($accId);
         }
-        if ($this->clearFlags) {
+        if ($this->clearFlags !== null) {
             $result->setClearFlags($this->clearFlags);
         }
-        if ($this->setFlags) {
+        if ($this->setFlags !== null) {
             $result->setSetFlags($this->setFlags);
         }
         if ($this->masterKeyWeight !== null) {
@@ -219,10 +219,10 @@ class SetOptionsOperation extends AbstractOperation
         if ($this->highThreshold !== null) {
             $result->setHighThreshold($this->highThreshold);
         }
-        if ($this->homeDomain) {
+        if ($this->homeDomain !== null) {
             $result->setHomeDomain($this->homeDomain);
         }
-        if ($this->signerKey) {
+        if ($this->signerKey !== null) {
             $weight = $this->signerWeight ?? 0;
             $signer = new XdrSigner($this->signerKey, $weight);
             $result->setSigner($signer);

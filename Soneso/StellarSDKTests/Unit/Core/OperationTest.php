@@ -8,6 +8,7 @@ namespace Soneso\StellarSDKTests\Unit\Core;
 
 use Exception;
 use phpseclib3\Math\BigInteger;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\AbstractOperation;
 use Soneso\StellarSDK\Asset;
@@ -51,6 +52,9 @@ use Soneso\StellarSDK\Xdr\XdrAllowTrustOperationAsset;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrOperation;
+use Soneso\StellarSDK\Xdr\XdrOperationBody;
+use Soneso\StellarSDK\Xdr\XdrOperationType;
+use Soneso\StellarSDK\Xdr\XdrSetOptionsOperation;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use function PHPUnit\Framework\assertCount;
 use function PHPUnit\Framework\assertEmpty;
@@ -188,6 +192,32 @@ class OperationTest extends TestCase
         assertEquals(10, $parsed->getMediumThreshold());
         assertEquals(15, $parsed->getHighThreshold());
         assertEquals("example.com", $parsed->getHomeDomain());
+    }
+
+    public static function setOptionsXdrProvider(): array
+    {
+        return [
+            'clear flags 0' => [new XdrSetOptionsOperation(clearFlags: 0)],
+            'set flags 0' => [new XdrSetOptionsOperation(setFlags: 0)],
+            'empty home domain' => [new XdrSetOptionsOperation(homeDomain: '')],
+            'home domain "0"' => [new XdrSetOptionsOperation(homeDomain: '0')],
+            'all fields absent' => [new XdrSetOptionsOperation()],
+            'master weight 0' => [new XdrSetOptionsOperation(masterWeight: 0)],
+            'home domain "x"' => [new XdrSetOptionsOperation(homeDomain: 'x')],
+        ];
+    }
+
+    #[DataProvider('setOptionsXdrProvider')]
+    public function testSetOptionsFromXdrReencodesTheInputBytes(XdrSetOptionsOperation $xdrSetOptions): void
+    {
+        $body = new XdrOperationBody(new XdrOperationType(XdrOperationType::SET_OPTIONS));
+        $body->setSetOptionsOp($xdrSetOptions);
+        $input = (new XdrOperation($body))->encode();
+
+        $parsed = AbstractOperation::fromXdr(XdrOperation::decode(new XdrBuffer($input)));
+
+        $this->assertInstanceOf(SetOptionsOperation::class, $parsed);
+        $this->assertSame(bin2hex($input), bin2hex($parsed->toXdr()->encode()));
     }
 
     public function testChangeTrustFromXdr()

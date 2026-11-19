@@ -135,6 +135,16 @@ final class AccountTest extends TestCase
         $this->assertTrue($accountA->getFlags()->isAuthRevocable() == true);
         $this->assertTrue($accountA->getFlags()->isAuthImmutable() == false);
 
+        // An empty home domain clears it; Horizon then omits the home_domain field.
+        $clearHomeDomainTransaction = (new TransactionBuilder($this->sdk->requestAccount($accountId)))
+            ->addOperation((new SetOptionsOperationBuilder())->setHomeDomain("")->build())
+            ->build();
+        $clearHomeDomainTransaction->sign($keyPairA, $this->network);
+        $response = $this->sdk->submitTransaction($clearHomeDomainTransaction);
+        $this->assertTrue($response->isSuccessful());
+        TestUtils::resultDeAndEncodingTest($this, $clearHomeDomainTransaction, $response);
+        $this->assertNull($this->sdk->requestAccount($accountId)->getHomeDomain());
+
         // Walk signer B through the rest of its lifecycle. Adding it above emitted a
         // signer_created effect; raising its weight emits signer_updated and zeroing
         // it emits signer_removed.

@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDKTests\Unit\Core;
 
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use phpseclib3\Math\BigInteger;
@@ -283,6 +284,62 @@ class OperationBuilderTest extends TestCase
 
         $xdr = $operation->toXdr();
         $this->assertNotNull($xdr->getBody()->getSetOptionsOp());
+    }
+
+    public function testSetOptionsWritesZeroFlags(): void
+    {
+        $xdr = (new SetOptionsOperationBuilder())
+            ->setClearFlags(0)
+            ->setSetFlags(0)
+            ->build()
+            ->toOperationBody()
+            ->getSetOptionsOp();
+
+        $this->assertSame(0, $xdr->getClearFlags());
+        $this->assertSame(0, $xdr->getSetFlags());
+        $this->assertSame(
+            '00000000' . '0000000100000000' . '0000000100000000' . str_repeat('00000000', 6),
+            bin2hex($xdr->encode())
+        );
+    }
+
+    public static function homeDomainProvider(): array
+    {
+        return [
+            'empty home domain' => ['', '0000000100000000'],
+            'home domain "0"' => ['0', '000000010000000130000000'],
+        ];
+    }
+
+    #[DataProvider('homeDomainProvider')]
+    public function testSetOptionsWritesHomeDomain(string $homeDomain, string $homeDomainHex): void
+    {
+        $xdr = (new SetOptionsOperationBuilder())
+            ->setHomeDomain($homeDomain)
+            ->build()
+            ->toOperationBody()
+            ->getSetOptionsOp();
+
+        $this->assertSame($homeDomain, $xdr->getHomeDomain());
+        $this->assertSame(str_repeat('00000000', 7) . $homeDomainHex . '00000000', bin2hex($xdr->encode()));
+    }
+
+    public static function invalidInflationDestinationProvider(): array
+    {
+        return [
+            'empty inflation destination' => ['', 0],
+            'inflation destination "0"' => ['0', 1],
+        ];
+    }
+
+    #[DataProvider('invalidInflationDestinationProvider')]
+    public function testSetOptionsRejectsInvalidInflationDestination(string $inflationDestination, int $length): void
+    {
+        $operation = (new SetOptionsOperationBuilder())->setInflationDestination($inflationDestination)->build();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('G-strkey must be 56 characters long, ' . $length . ' characters given');
+        $operation->toXdr()->encode();
     }
 
     // PathPaymentStrictReceiveOperationBuilder Tests
