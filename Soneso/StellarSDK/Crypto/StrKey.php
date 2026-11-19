@@ -910,23 +910,15 @@ class StrKey
     /**
      * Requires the decoded data of a signed payload P-strkey to carry exactly
      * the framing SEP-23 prescribes: the signer key, the 4-byte payload length
-     * prefix, and the payload padded to a 4-byte multiple. Two rules follow
-     * from that framing and both are enforced here.
+     * prefix, and the payload padded to a 4-byte multiple.
      *
      * The data ends where the padded payload ends. SEP-23 permits nothing after
      * the padding, so surplus bytes mean the length prefix understates the payload.
-     *
-     * Every padding byte is zero. XDR fills an opaque field up to the next 4-byte
-     * boundary with zero bytes (RFC 4506 section 4.10), and the checksum covers
-     * that fill. Padding that carried anything else would let two strkeys differing
-     * only in their tail decode to the same signer and payload, giving one signer
-     * more than one spelling, which would make string comparison of P-strkeys
-     * unsound.
+     * The XDR decode that reads the payload checks that the padding bytes are zero.
      *
      * @param string $decodedData decoded strkey data (version byte and checksum removed)
      * @param string $payload raw payload read from the length prefix
      * @throws InvalidArgumentException when the decoded data carries surplus bytes
-     * or a non-zero padding byte
      */
     private static function checkSignedPayloadFraming(string $decodedData, string $payload) : void {
         $paddingOffset = StellarConstants::ED25519_PUBLIC_KEY_LENGTH_BYTES
@@ -940,15 +932,6 @@ class StrKey
                 strlen($decodedData),
                 $expectedLength
             ));
-        }
-        for ($offset = $paddingOffset; $offset < $expectedLength; $offset++) {
-            if ($decodedData[$offset] !== "\x00") {
-                throw new InvalidArgumentException(sprintf(
-                    'Signed payload padding must be zero, byte 0x%02X found at offset %d',
-                    ord($decodedData[$offset]),
-                    $offset
-                ));
-            }
         }
     }
 }

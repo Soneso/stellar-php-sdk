@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDKTests\Unit\Soroban;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 use RuntimeException;
@@ -177,8 +178,8 @@ class SACSpecTest extends TestCase
 
     public function testNonCanonicalEntryThrowsTheOffsetMessage(): void
     {
-        // A non-zero XDR padding byte decodes but re-encodes as zero, so the entry does not
-        // reproduce its bytes. Corrupt the doc padding of a later function entry, so the offset is not 0.
+        // A nonzero XDR padding byte fails the decode of its entry. Corrupt the doc padding of a
+        // later function entry, so the offset is not 0.
         $bytes = base64_decode(SACSpec::XDR_BASE64, true);
         $this->assertIsString($bytes);
         $offset = 0;
@@ -199,11 +200,16 @@ class SACSpecTest extends TestCase
         $this->assertSame("\x00", $bytes[$paddingIndex]);
         $bytes[$paddingIndex] = "\x01";
 
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessageMatches('/^' . preg_quote(
-            "The embedded SAC spec does not decode at byte offset {$target}: "
-            . 'the entry does not re-encode to the bytes it was decoded from', '/') . '\z/');
-        $this->decodeSpec(base64_encode($bytes), hash('sha256', $bytes));
+        try {
+            $this->decodeSpec(base64_encode($bytes), hash('sha256', $bytes));
+            $this->fail('Expected a RuntimeException');
+        } catch (RuntimeException $e) {
+            // The entry decodes from its own buffer, so the padding offset counts from the entry.
+            $this->assertSame("The embedded SAC spec does not decode at byte offset {$target}: "
+                . 'XDR padding must be zero, byte 0x01 found at offset ' . ($paddingIndex - $target),
+                $e->getMessage());
+            $this->assertInstanceOf(InvalidArgumentException::class, $e->getPrevious());
+        }
     }
 
     public function testDecodeSpecAcceptsTheEmbeddedConstant(): void

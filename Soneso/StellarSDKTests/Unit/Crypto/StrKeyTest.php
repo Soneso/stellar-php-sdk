@@ -873,7 +873,7 @@ class StrKeyTest extends TestCase
      */
     private function assertNonZeroSignedPayloadPaddingRejected(string $signedPayload, int $paddingByte, int $offset) : void {
         $expectedMessage = sprintf(
-            'Signed payload padding must be zero, byte 0x%02X found at offset %d',
+            'XDR padding must be zero, byte 0x%02X found at offset %d',
             $paddingByte,
             $offset
         );

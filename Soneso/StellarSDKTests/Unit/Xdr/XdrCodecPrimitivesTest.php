@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDKTests\Unit\Xdr;
 
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Xdr\XdrDecoder;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
@@ -77,5 +78,61 @@ class XdrCodecPrimitivesTest extends TestCase
         $this->assertSame(str_repeat("\x00", 12), XdrEncoder::opaqueFixed('', 12, true));
         $this->assertSame("AB" . str_repeat("\x00", 10), XdrEncoder::opaqueFixed('AB', 12, true));
         $this->assertSame(str_repeat("\x00", 4), XdrEncoder::opaqueFixed('', 4, true));
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function variableLengthDecoders(): array
+    {
+        return ['opaqueVariable' => ['opaqueVariable'], 'string' => ['string']];
+    }
+
+    #[DataProvider('variableLengthDecoders')]
+    public function testVariableLengthDecodeReturnsTheValueAtTheStart(string $method): void
+    {
+        // Bytes after the padding, such as the following field, are not part of the value.
+        $this->assertSame('abc', XdrDecoder::{$method}("\x00\x00\x00\x03abc\x00\xCA\xFE\xBA\xBE"));
+        $this->assertSame('', XdrDecoder::{$method}("\x00\x00\x00\x00"));
+        $this->assertSame('abcd', XdrDecoder::{$method}("\x00\x00\x00\x04abcd"));
+        $this->assertSame("\x00\xFF\x80", XdrDecoder::{$method}("\x00\x00\x00\x03\x00\xFF\x80\x00"));
+    }
+
+    #[DataProvider('variableLengthDecoders')]
+    public function testVariableLengthDecodeRejectsNonZeroPadding(string $method): void
+    {
+        $cases = [
+            ["\x00\x00\x00\x01a\x01\x00\x00", 'XDR padding must be zero, byte 0x01 found at offset 5'],
+            ["\x00\x00\x00\x01a\x00\x01\x00", 'XDR padding must be zero, byte 0x01 found at offset 6'],
+            ["\x00\x00\x00\x01a\x00\x00\x01", 'XDR padding must be zero, byte 0x01 found at offset 7'],
+            ["\x00\x00\x00\x03abc\x01", 'XDR padding must be zero, byte 0x01 found at offset 7'],
+            ["\x00\x00\x00\x03abc\x80", 'XDR padding must be zero, byte 0x80 found at offset 7'],
+            ["\x00\x00\x00\x03abc\xFF", 'XDR padding must be zero, byte 0xFF found at offset 7'],
+        ];
+        foreach ($cases as [$bytes, $message]) {
+            $this->assertDecodeRejected($method, $bytes, $message);
+        }
+    }
+
+    #[DataProvider('variableLengthDecoders')]
+    public function testVariableLengthDecodeRejectsCutOffInput(string $method): void
+    {
+        // No length prefix, half a length prefix, a value cut off inside its data, missing padding.
+        foreach (['', "\x00\x00", "\x00\x00\x00\x05ab", "\x00\x00\x00\x03abc"] as $bytes) {
+            $this->assertDecodeRejected($method, $bytes, 'Unexpected end of XDR data');
+        }
+    }
+
+    /**
+     * Decodes $bytes with the named XdrDecoder static and asserts the exact exception message.
+     */
+    private function assertDecodeRejected(string $method, string $bytes, string $message): void
+    {
+        try {
+            XdrDecoder::{$method}($bytes);
+            $this->fail(sprintf('XdrDecoder::%s() accepted %s', $method, bin2hex($bytes)));
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame($message, $e->getMessage());
+        }
     }
 }

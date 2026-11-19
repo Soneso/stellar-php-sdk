@@ -7,12 +7,31 @@
 namespace Soneso\StellarSDKTests\Unit\Xdr;
 
 use InvalidArgumentException;
+use phpseclib3\Math\BigInteger;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrBumpSequenceOperation;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
+use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
+use Soneso\StellarSDK\Xdr\XdrMemo;
+use Soneso\StellarSDK\Xdr\XdrMemoType;
+use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
+use Soneso\StellarSDK\Xdr\XdrOperation;
+use Soneso\StellarSDK\Xdr\XdrOperationBody;
+use Soneso\StellarSDK\Xdr\XdrOperationType;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
+use Soneso\StellarSDK\Xdr\XdrSCValType;
+use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
+use Soneso\StellarSDK\Xdr\XdrSignerKey;
+use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
+use Soneso\StellarSDK\Xdr\XdrTransaction;
+use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrTransactionV1Envelope;
 
 /**
- * Tests for the array count, extension point, optional presence and signed 64-bit reads of XdrBuffer.
+ * Tests for the array count, extension point, optional presence, signed 64-bit and variable-length
+ * reads of XdrBuffer, and for its padding check as generated decoders reach it.
  */
 class XdrBufferTest extends TestCase
 {
@@ -194,6 +213,141 @@ class XdrBufferTest extends TestCase
             $value = (new XdrBuffer(hex2bin($hex)))->readBigInteger64();
             $this->assertSame($decimal, $value->toString());
             $this->assertSame($hex, bin2hex(XdrEncoder::bigInteger64($value)));
+        }
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function variableLengthReaders(): array
+    {
+        return ['readOpaqueVariable' => ['readOpaqueVariable'], 'readString' => ['readString']];
+    }
+
+    #[DataProvider('variableLengthReaders')]
+    public function testVariableLengthReadConsumesZeroPadding(string $reader): void
+    {
+        $cases = [['', ''], ['a', "\x00\x00\x00"], ['ab', "\x00\x00"], ['abc', "\x00"], ['abcd', '']];
+        foreach ($cases as [$value, $padding]) {
+            $buffer = new XdrBuffer(pack('N', strlen($value)) . $value . $padding . pack('N', 0xCAFEBABE));
+            $this->assertSame($value, $buffer->{$reader}());
+            $this->assertSame(0xCAFEBABE, $buffer->readUnsignedInteger32());
+            $buffer->assertFullyConsumed('XdrExample');
+        }
+    }
+
+    #[DataProvider('variableLengthReaders')]
+    public function testVariableLengthReadRejectsEachNonZeroPaddingByte(string $reader): void
+    {
+        // A leading word puts the value at offset 8, so the offsets count from the start of the input.
+        $cases = [
+            ['a', "\x01\x00\x00", 9],
+            ['a', "\x00\x01\x00", 10],
+            ['a', "\x00\x00\x01", 11],
+            ['ab', "\x01\x00", 10],
+            ['ab', "\x00\x01", 11],
+            ['abc', "\x01", 11],
+        ];
+        foreach ($cases as [$value, $padding, $offset]) {
+            $buffer = new XdrBuffer(pack('N', 7) . pack('N', strlen($value)) . $value . $padding);
+            $this->assertSame(7, $buffer->readUnsignedInteger32());
+            try {
+                $buffer->{$reader}();
+                $this->fail(sprintf('%s accepted the padding %s', $reader, bin2hex($padding)));
+            } catch (InvalidArgumentException $e) {
+                $this->assertSame("XDR padding must be zero, byte 0x01 found at offset {$offset}", $e->getMessage());
+            }
+        }
+    }
+
+    #[DataProvider('variableLengthReaders')]
+    public function testVariableLengthReadRejectsMissingPadding(string $reader): void
+    {
+        $buffer = new XdrBuffer(pack('N', 3) . 'abc');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/^Unexpected end of XDR data$/');
+        $buffer->{$reader}();
+    }
+
+    public function testVariableLengthReadChecksTheDeclaredMaximumBeforeThePadding(): void
+    {
+        $bytes = pack('N', 5) . 'abcde' . "\x01\x00\x00";
+        $cases = [
+            'readOpaqueVariable' => 'length of 5 exceeds max length of 4',
+            'readString' => 'maxLength of 4 exceeded (string is 5 bytes)',
+        ];
+        foreach ($cases as $reader => $message) {
+            try {
+                (new XdrBuffer($bytes))->{$reader}(4);
+                $this->fail($reader . ' accepted a 5-byte value against a maximum of 4');
+            } catch (InvalidArgumentException $e) {
+                $this->assertSame($message, $e->getMessage());
+            }
+        }
+    }
+
+    public function testMemoTextDecodesOnlyWithZeroPadding(): void
+    {
+        // MEMO_TEXT, length 3, "abc" and one padding byte at offset 11.
+        $bytes = pack('N', XdrMemoType::MEMO_TEXT) . pack('N', 3) . 'abc' . "\x00";
+        $this->assertSame('abc', XdrMemo::decode(new XdrBuffer($bytes))->text);
+        $this->assertOnlyZeroPaddingDecodes($bytes, 11,
+            fn (string $b): string => XdrMemo::decode(new XdrBuffer($b))->encode());
+    }
+
+    public function testTransactionEnvelopeDecodesOnlyWithZeroPaddingInItsMemo(): void
+    {
+        $memo = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_TEXT));
+        $memo->text = 'abc';
+        $body = new XdrOperationBody(new XdrOperationType(XdrOperationType::BUMP_SEQUENCE));
+        $body->setBumpSequenceOp(new XdrBumpSequenceOperation(new XdrSequenceNumber(new BigInteger(100))));
+        $transaction = new XdrTransaction(new XdrMuxedAccount(str_repeat("\x11", 32)),
+            new XdrSequenceNumber(new BigInteger(12345)), [new XdrOperation($body)], 100, $memo);
+        $envelope = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX));
+        $envelope->setV1(new XdrTransactionV1Envelope($transaction, []));
+        $bytes = $envelope->encode();
+        $memoBytes = $memo->encode();
+        $this->assertSame(1, substr_count($bytes, $memoBytes));
+        $this->assertOnlyZeroPaddingDecodes($bytes, strpos($bytes, $memoBytes) + 11,
+            fn (string $b): string => base64_decode(
+                XdrTransactionEnvelope::fromEnvelopeBase64XdrString(base64_encode($b))->toBase64Xdr()));
+    }
+
+    public function testSignedPayloadSignerKeyDecodesOnlyWithZeroPadding(): void
+    {
+        // Type, 32-byte signer, length 3, three payload bytes and one padding byte at offset 43.
+        $bytes = pack('N', XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD) . str_repeat("\x22", 32)
+            . pack('N', 3) . "\x01\x02\x03" . "\x00";
+        $this->assertOnlyZeroPaddingDecodes($bytes, 43,
+            fn (string $b): string => XdrSignerKey::decode(new XdrBuffer($b))->encode());
+    }
+
+    public function testScValBytesAndStringDecodeOnlyWithZeroPadding(): void
+    {
+        // Type, length 2, two value bytes and padding at offsets 10 and 11.
+        foreach ([XdrSCValType::SCV_BYTES => 10, XdrSCValType::SCV_STRING => 11] as $type => $offset) {
+            $bytes = pack('N', $type) . pack('N', 2) . 'hi' . "\x00\x00";
+            $this->assertOnlyZeroPaddingDecodes($bytes, $offset,
+                fn (string $b): string => XdrSCVal::decode(new XdrBuffer($b))->encode());
+        }
+    }
+
+    /**
+     * Asserts that $bytes, which carry a zero padding byte at $offset, round-trip through
+     * $roundTrip, and that the same bytes with 0x01 at $offset fail with the padding message.
+     *
+     * @param callable(string): string $roundTrip decodes the bytes and encodes the decoded value
+     */
+    private function assertOnlyZeroPaddingDecodes(string $bytes, int $offset, callable $roundTrip): void
+    {
+        $this->assertSame("\x00", $bytes[$offset]);
+        $this->assertSame(bin2hex($bytes), bin2hex($roundTrip($bytes)));
+        $bytes[$offset] = "\x01";
+        try {
+            $roundTrip($bytes);
+            $this->fail(sprintf('Decoded 0x01 padding at offset %d of %s', $offset, bin2hex($bytes)));
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame("XDR padding must be zero, byte 0x01 found at offset {$offset}", $e->getMessage());
         }
     }
 

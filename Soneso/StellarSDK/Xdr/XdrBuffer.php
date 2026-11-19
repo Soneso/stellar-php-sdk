@@ -174,6 +174,8 @@ class XdrBuffer
     /**
      * @param int|null $maxLength maximum accepted length in bytes, or null for no limit
      * @return string
+     * @throws InvalidArgumentException if the length exceeds $maxLength, the input ends before the
+     *                                  padded value ends, or a padding byte is not zero
      */
     public function readOpaqueVariable($maxLength = null) : string
     {
@@ -187,6 +189,7 @@ class XdrBuffer
         $this->assertBytesRemaining($paddedLength);
         
         $data = XdrDecoder::opaqueFixed(substr($this->xdrBytes, $this->position), $length);
+        $this->assertZeroPadding($this->position + $length, $this->position + $paddedLength);
         $this->position += $paddedLength;
         
         return $data;
@@ -195,6 +198,8 @@ class XdrBuffer
     /**
      * @param int|null $maxLength maximum accepted length in bytes, or null for no limit
      * @return string
+     * @throws InvalidArgumentException if the length exceeds $maxLength, the input ends before the
+     *                                  padded value ends, or a padding byte is not zero
      */
     public function readString($maxLength = null): string
     {
@@ -205,6 +210,7 @@ class XdrBuffer
         $this->assertBytesRemaining($paddedLength);
         
         $data = XdrDecoder::opaqueFixed(substr($this->xdrBytes, $this->position), $strLen);
+        $this->assertZeroPadding($this->position + $strLen, $this->position + $paddedLength);
         $this->position += $paddedLength;
         
         return $data;
@@ -340,6 +346,27 @@ class XdrBuffer
         }
     }
     
+    /**
+     * Checks that the padding after a variable-length value is zero, as RFC 4506 requires,
+     * so that every value has exactly one encoding.
+     *
+     * @param int $start offset of the first padding byte in the input
+     * @param int $end offset after the last padding byte in the input
+     * @throws InvalidArgumentException naming the byte value and the offset of the first nonzero padding byte
+     */
+    private function assertZeroPadding(int $start, int $end): void
+    {
+        for ($offset = $start; $offset < $end; $offset++) {
+            if ($this->xdrBytes[$offset] !== "\x00") {
+                throw new InvalidArgumentException(sprintf(
+                    'XDR padding must be zero, byte 0x%02X found at offset %d',
+                    ord($this->xdrBytes[$offset]),
+                    $offset
+                ));
+            }
+        }
+    }
+
     /**
      * Signals entry into one level of recursive XDR decoding.
      *
