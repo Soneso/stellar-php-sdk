@@ -61,7 +61,9 @@ class TxRep
         if ($xdr === false) {
             throw new InvalidArgumentException('Invalid base64-encoded transaction envelope XDR');
         }
-        $envelope = XdrTransactionEnvelope::decode(new XdrBuffer($xdr));
+        $buffer = new XdrBuffer($xdr);
+        $envelope = XdrTransactionEnvelope::decode($buffer);
+        $buffer->assertFullyConsumed(XdrTransactionEnvelope::class);
 
         $lines = [];
 

@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `XdrBuffer::assertFullyConsumed()` checks that a buffer holds no unread bytes.
+
 ### Fixed
+- `fromBase64Xdr()` and the other readers of a complete XDR value throw when bytes follow the value: an `InvalidArgumentException`, or the `ContractChallengeValidationError` of `WebAuthForContracts::decodeAuthorizationEntries()`. Before this change, the trailing bytes were ignored.
 - `XdrTransaction::fromTxRep()` and `XdrTransactionV0::fromTxRep()` build the transaction from valid TxRep. Before this change, they threw a `TypeError`.
 - `XdrTimeBounds::fromTxRep()` returns its dates in UTC, as `decode()` does.
 - `fromJson()` works on `XdrTransactionBase`, `XdrTransactionV0Base`, `XdrManageDataOperationBase` and `XdrTimeBoundsBase`.

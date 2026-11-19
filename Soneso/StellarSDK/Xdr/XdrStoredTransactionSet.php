@@ -67,7 +67,10 @@ class XdrStoredTransactionSet {
         if ($decoded === false) {
             throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
-        return static::decode(new XdrBuffer($decoded));
+        $buffer = new XdrBuffer($decoded);
+        $result = static::decode($buffer);
+        $buffer->assertFullyConsumed(static::class);
+        return $result;
     }
 
     public function toJsonValue(): mixed {

@@ -2720,7 +2720,10 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        if ($decoded === false) {"
     out.puts "            throw new InvalidArgumentException('Invalid base64-encoded XDR');"
     out.puts "        }"
-    out.puts "        return static::decode(new XdrBuffer($decoded));"
+    out.puts "        $buffer = new XdrBuffer($decoded);"
+    out.puts "        $result = static::decode($buffer);"
+    out.puts "        $buffer->assertFullyConsumed(static::class);"
+    out.puts "        return $result;"
     out.puts "    }"
   end
 

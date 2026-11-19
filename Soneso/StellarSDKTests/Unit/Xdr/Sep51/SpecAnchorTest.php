@@ -264,7 +264,7 @@ class SpecAnchorTest extends TestCase
     {
         // SEP-0051 §Address Types: SCAddress with SC_ADDRESS_TYPE_MUXED_ACCOUNT
         // muxedAccount {id: 1, ed25519: 32 zero bytes}
-        $base64 = 'AAAAAgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+        $base64 = 'AAAAAgAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
         $address = XdrSCAddress::fromBase64Xdr($base64);
         $this->assertSame(
             '"MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFNZG"',

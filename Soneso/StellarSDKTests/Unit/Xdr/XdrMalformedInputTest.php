@@ -10,6 +10,7 @@ use DateTime;
 use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\AllowTrustOperationBuilder;
 use Soneso\StellarSDK\Asset;
@@ -17,6 +18,7 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\FeeBumpTransactionBuilder;
 use Soneso\StellarSDK\ManageDataOperationBuilder;
 use Soneso\StellarSDK\PaymentOperationBuilder;
+use Soneso\StellarSDK\SEP\TxRep\TxRep;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
@@ -54,6 +56,54 @@ class XdrMalformedInputTest extends TestCase
 {
     /** Packs as the bytes ff ff ff ff on 32-bit and 64-bit PHP alike. */
     private const NEGATIVE_COUNT = -1;
+
+    public function testEnvelopeReadersRejectTrailingBytes(): void
+    {
+        $transaction = $this->paymentTransaction();
+        $feeBump = (new FeeBumpTransactionBuilder($transaction))
+            ->setBaseFee(200)->setFeeAccount($transaction->getSourceAccount()->getAccountId())->build();
+        foreach ([$transaction, $feeBump] as $original) {
+            $base64 = $original->toEnvelopeXdrBase64();
+            $subclass = new class extends XdrTransactionEnvelope {};
+            $readers = [
+                'envelope' => [XdrTransactionEnvelope::class, 'fromEnvelopeBase64XdrString'],
+                'subclass' => [$subclass::class, 'fromEnvelopeBase64XdrString'],
+                'base64' => [XdrTransactionEnvelope::class, 'fromBase64Xdr'],
+                'transaction' => [AbstractTransaction::class, 'fromEnvelopeBase64XdrString'],
+                'txrep' => [TxRep::class, 'fromTransactionEnvelopeXdrBase64'],
+            ];
+            foreach ($readers as $name => $reader) {
+                $decoded = $reader($base64);
+                if ($decoded instanceof XdrTransactionEnvelope) {
+                    $this->assertSame(XdrTransactionEnvelope::class, get_class($decoded));
+                    $this->assertSame(base64_decode($base64), $decoded->encode());
+                } elseif ($decoded instanceof AbstractTransaction) {
+                    $this->assertSame($base64, $decoded->toEnvelopeXdrBase64());
+                } else {
+                    $this->assertSame($base64, TxRep::transactionEnvelopeXdrBase64FromTxRep($decoded));
+                }
+                foreach (["\x00\x00\x00\x00", "\x01", str_repeat("\xff", 13)] as $tail) {
+                    try {
+                        $reader(base64_encode(base64_decode($base64) . $tail));
+                        $this->fail($name . ' accepts ' . strlen($tail) . ' trailing bytes');
+                    } catch (InvalidArgumentException $e) {
+                        $this->assertSame(sprintf('%s leaves %d of %d bytes unread', XdrTransactionEnvelope::class,
+                            strlen($tail), strlen(base64_decode($base64)) + strlen($tail)), $e->getMessage());
+                    }
+                }
+            }
+        }
+    }
+
+    public function testSCValRejectsTrailingBytes(): void
+    {
+        $bytes = XdrSCVal::forU32(7)->encode();
+        $this->assertSame(pack('NN', XdrSCValType::SCV_U32, 7), $bytes);
+        $this->assertSame(7, XdrSCVal::fromBase64Xdr(base64_encode($bytes))->getU32());
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(XdrSCVal::class . ' leaves 4 of 12 bytes unread');
+        XdrSCVal::fromBase64Xdr(base64_encode($bytes . pack('N', 0)));
+    }
 
     public function testTransactionOperationsCountBeyondRemainingBytesIsRejected(): void
     {

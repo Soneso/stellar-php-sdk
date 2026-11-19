@@ -16,6 +16,24 @@ use Soneso\StellarSDK\Xdr\XdrEncoder;
  */
 class XdrBufferTest extends TestCase
 {
+    public function testAssertFullyConsumedAtEnd(): void
+    {
+        $buffer = new XdrBuffer(pack('N', 7));
+        $this->assertSame(7, $buffer->readInteger32());
+        $buffer->assertFullyConsumed('XdrExample');
+        $empty = new XdrBuffer('');
+        $empty->assertFullyConsumed('XdrEmpty');
+    }
+
+    public function testAssertFullyConsumedRejectsUnreadBytes(): void
+    {
+        $buffer = new XdrBuffer(pack('N', 7) . "\x01\x02\x03");
+        $this->assertSame(7, $buffer->readInteger32());
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('XdrExample leaves 3 of 7 bytes unread');
+        $buffer->assertFullyConsumed('XdrExample');
+    }
+
     public function testReadArrayLengthRejectsCountWithAllBitsSetAsNegative(): void
     {
         // 0xffffffff is -1 as a signed int32.

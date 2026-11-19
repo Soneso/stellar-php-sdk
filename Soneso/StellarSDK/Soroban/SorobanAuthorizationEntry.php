@@ -12,7 +12,6 @@ use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\Util\Hash;
-use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimage;
 use Soneso\StellarSDK\Xdr\XdrHashIDPreimageSorobanAuthorization;
@@ -115,12 +114,7 @@ class SorobanAuthorizationEntry
      */
     public static function fromBase64Xdr(string $base64Xdr): SorobanAuthorizationEntry
     {
-        $xdr = base64_decode($base64Xdr, true);
-        if ($xdr === false) {
-            throw new InvalidArgumentException('Invalid base64-encoded XDR');
-        }
-        $xdrBuffer = new XdrBuffer($xdr);
-        return SorobanAuthorizationEntry::fromXdr(XdrSorobanAuthorizationEntry::decode($xdrBuffer));
+        return SorobanAuthorizationEntry::fromXdr(XdrSorobanAuthorizationEntry::fromBase64Xdr($base64Xdr));
     }
 
     /**
