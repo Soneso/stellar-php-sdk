@@ -22,6 +22,7 @@ class XdrInvokeContractArgs {
 
     public function encode(): string {
         $bytes = $this->contractAddress->encode();
+        XdrEncoder::assertMaxLength(strlen($this->functionName), 32, 'XdrInvokeContractArgs.functionName');
         $bytes .= XdrEncoder::string($this->functionName);
         $argsCount = count($this->args);
         $bytes .= XdrEncoder::integer32($argsCount);
@@ -33,7 +34,7 @@ class XdrInvokeContractArgs {
 
     public static function decode(XdrBuffer $xdr): XdrInvokeContractArgs {
         $contractAddress = XdrSCAddress::decode($xdr);
-        $functionName = $xdr->readString();
+        $functionName = $xdr->readString(32);
         $args = [];
         $argsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $argsSize; $i++) {
@@ -93,7 +94,7 @@ class XdrInvokeContractArgs {
                 'Missing required field function_name for XdrInvokeContractArgs'
             );
         }
-        $functionName = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($value['function_name']);
+        $functionName = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } $bytes = XdrJsonHelper::unescapeString($v); XdrEncoder::assertMaxLength(strlen($bytes), 32, 'XdrSCSymbol'); return $bytes; })($value['function_name']);
         if (!array_key_exists('args', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field args for XdrInvokeContractArgs'
@@ -145,6 +146,7 @@ class XdrInvokeContractArgs {
     public static function fromTxRep(array $map, string $prefix): XdrInvokeContractArgs {
         $contractAddress = XdrSCAddress::fromTxRep($map, $prefix . '.contractAddress');
         $functionName = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.functionName') ?? '');
+        XdrEncoder::assertMaxLength(strlen($functionName), 32, $prefix . '.functionName');
         $argsLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.args.len') ?? '0', $prefix . '.args.len');
         $args = [];
         for ($i = 0; $i < $argsLen; $i++) {

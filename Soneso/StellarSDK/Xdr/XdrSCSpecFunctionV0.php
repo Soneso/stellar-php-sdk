@@ -23,13 +23,16 @@ class XdrSCSpecFunctionV0 {
     }
 
     public function encode(): string {
+        XdrEncoder::assertMaxLength(strlen($this->doc), 1024, 'XdrSCSpecFunctionV0.doc');
         $bytes = XdrEncoder::string($this->doc);
+        XdrEncoder::assertMaxLength(strlen($this->name), 32, 'XdrSCSpecFunctionV0.name');
         $bytes .= XdrEncoder::string($this->name);
         $inputsCount = count($this->inputs);
         $bytes .= XdrEncoder::integer32($inputsCount);
         foreach ($this->inputs as $inputsItem) {
             $bytes .= $inputsItem->encode();
         }
+        XdrEncoder::assertMaxLength(count($this->outputs), 1, 'XdrSCSpecFunctionV0.outputs');
         $outputsCount = count($this->outputs);
         $bytes .= XdrEncoder::integer32($outputsCount);
         foreach ($this->outputs as $outputsItem) {
@@ -39,15 +42,15 @@ class XdrSCSpecFunctionV0 {
     }
 
     public static function decode(XdrBuffer $xdr): XdrSCSpecFunctionV0 {
-        $doc = $xdr->readString();
-        $name = $xdr->readString();
+        $doc = $xdr->readString(1024);
+        $name = $xdr->readString(32);
         $inputs = [];
         $inputsSize = $xdr->readArrayLength();
         for ($i = 0; $i < $inputsSize; $i++) {
             $inputs[] = XdrSCSpecFunctionInputV0::decode($xdr);
         }
         $outputs = [];
-        $outputsSize = $xdr->readArrayLength();
+        $outputsSize = $xdr->readBoundedArrayLength(1);
         for ($i = 0; $i < $outputsSize; $i++) {
             $outputs[] = XdrSCSpecTypeDef::decode($xdr);
         }
@@ -106,12 +109,13 @@ class XdrSCSpecFunctionV0 {
             throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['doc']));
         }
         $doc = XdrJsonHelper::unescapeString($value['doc']);
+        XdrEncoder::assertMaxLength(strlen($doc), 1024, 'XdrSCSpecFunctionV0.doc');
         if (!array_key_exists('name', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field name for XdrSCSpecFunctionV0'
             );
         }
-        $name = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($value['name']);
+        $name = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } $bytes = XdrJsonHelper::unescapeString($v); XdrEncoder::assertMaxLength(strlen($bytes), 32, 'XdrSCSymbol'); return $bytes; })($value['name']);
         if (!array_key_exists('inputs', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field inputs for XdrSCSpecFunctionV0'
@@ -134,6 +138,7 @@ class XdrSCSpecFunctionV0 {
             if (!is_array($v)) {
                 throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
+            XdrEncoder::assertMaxLength(count($v), 1, 'XdrSCSpecFunctionV0.outputs');
             $out = [];
             foreach ($v as $item) { $out[] = XdrSCSpecTypeDef::fromJsonValue($item); }
             return $out;

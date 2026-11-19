@@ -158,13 +158,23 @@ class TransactionBuilder
 
     /**
      * Builds a transaction. It will increment sequence number of the source account.
+     *
+     * @throws InvalidArgumentException if the builder holds more than 100 operations
      */
     public function build() : Transaction {
+        $operationCount = count($this->operations);
+        if ($operationCount > StellarConstants::MAX_OPERATIONS_PER_TRANSACTION) {
+            throw new InvalidArgumentException(sprintf(
+                'a transaction holds at most %d operations, got %d',
+                StellarConstants::MAX_OPERATIONS_PER_TRANSACTION,
+                $operationCount
+            ));
+        }
         if ($this->maxOperationFee === null) {
             $this->maxOperationFee =  StellarConstants::MIN_BASE_FEE_STROOPS;
         }
 
-        $fee = count($this->operations) * $this->maxOperationFee;
+        $fee = $operationCount * $this->maxOperationFee;
         $source = $this->sourceAccount->getMuxedAccount();
         $seqNr = $this->sourceAccount->getSequenceNumber();
         if ($this->incrementSeqNr) {

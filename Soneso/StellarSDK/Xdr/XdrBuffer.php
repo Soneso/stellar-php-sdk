@@ -245,6 +245,30 @@ class XdrBuffer
     }
 
     /**
+     * Reads the element count of a variable-length XDR array whose definition declares a
+     * maximum, such as `Operation operations<100>`.
+     *
+     * The count is read through readArrayLength(), so the checks of that method apply first.
+     *
+     * @param int $maxCount the maximum element count the XDR definition declares
+     * @return int the element count, between 0 and $maxCount (inclusive)
+     * @throws InvalidArgumentException if the count exceeds $maxCount or readArrayLength() rejects it
+     */
+    public function readBoundedArrayLength(int $maxCount) : int
+    {
+        $count = $this->readArrayLength();
+        if ($count > $maxCount) {
+            throw new InvalidArgumentException(sprintf(
+                'XDR array count %d exceeds the declared maximum of %d',
+                $count,
+                $maxCount
+            ));
+        }
+
+        return $count;
+    }
+
+    /**
      * Reads a void-only extension point that the SDK stores as a plain integer field.
      *
      * The XDR union behind such a field has a single arm, `case 0: void`, so any other

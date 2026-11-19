@@ -19,6 +19,7 @@ class XdrTimeSlicedPeerDataList {
 
     public function encode(): string {
         $count = count($this->timeSlicedPeerDataList);
+        XdrEncoder::assertMaxLength($count, 25, 'XdrTimeSlicedPeerDataList');
         $bytes = XdrEncoder::integer32($count);
         foreach ($this->timeSlicedPeerDataList as $item) {
             $bytes .= $item->encode();
@@ -28,7 +29,7 @@ class XdrTimeSlicedPeerDataList {
 
     public static function decode(XdrBuffer $xdr): XdrTimeSlicedPeerDataList {
         $timeSlicedPeerDataList = [];
-        $size = $xdr->readArrayLength();
+        $size = $xdr->readBoundedArrayLength(25);
         for ($i = 0; $i < $size; $i++) {
             $timeSlicedPeerDataList[] = XdrTimeSlicedPeerData::decode($xdr);
         }
@@ -60,6 +61,7 @@ class XdrTimeSlicedPeerDataList {
                 'Expected JSON array for XdrTimeSlicedPeerDataList, got ' . get_debug_type($value)
             );
         }
+        XdrEncoder::assertMaxLength(count($value), 25, 'XdrTimeSlicedPeerDataList');
         $out = [];
         foreach ($value as $item) { $out[] = XdrTimeSlicedPeerData::fromJsonValue($item); }
         return new static($out);

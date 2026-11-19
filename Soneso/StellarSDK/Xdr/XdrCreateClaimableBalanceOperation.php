@@ -24,6 +24,7 @@ class XdrCreateClaimableBalanceOperation {
     public function encode(): string {
         $bytes = $this->asset->encode();
         $bytes .= XdrEncoder::bigInteger64($this->amount);
+        XdrEncoder::assertMaxLength(count($this->claimants), 10, 'XdrCreateClaimableBalanceOperation.claimants');
         $claimantsCount = count($this->claimants);
         $bytes .= XdrEncoder::integer32($claimantsCount);
         foreach ($this->claimants as $claimantsItem) {
@@ -36,7 +37,7 @@ class XdrCreateClaimableBalanceOperation {
         $asset = XdrAsset::decode($xdr);
         $amount = $xdr->readBigInteger64();
         $claimants = [];
-        $claimantsSize = $xdr->readArrayLength();
+        $claimantsSize = $xdr->readBoundedArrayLength(10);
         for ($i = 0; $i < $claimantsSize; $i++) {
             $claimants[] = XdrClaimant::decode($xdr);
         }
@@ -104,6 +105,7 @@ class XdrCreateClaimableBalanceOperation {
             if (!is_array($v)) {
                 throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
+            XdrEncoder::assertMaxLength(count($v), 10, 'XdrCreateClaimableBalanceOperation.claimants');
             $out = [];
             foreach ($v as $item) { $out[] = XdrClaimant::fromJsonValue($item); }
             return $out;
@@ -147,6 +149,7 @@ class XdrCreateClaimableBalanceOperation {
         $asset = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.asset') ?? '');
         $amount = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0', $prefix . '.amount'));
         $claimantsLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.claimants.len') ?? '0', $prefix . '.claimants.len');
+        XdrEncoder::assertMaxLength($claimantsLen, 10, $prefix . '.claimants.len');
         $claimants = [];
         for ($i = 0; $i < $claimantsLen; $i++) {
             $claimants[] = XdrClaimant::fromTxRep($map, $prefix . '.claimants[' . $i . ']');

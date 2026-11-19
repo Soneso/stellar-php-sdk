@@ -19,13 +19,14 @@ class XdrSignedTimeSlicedSurveyRequestMessage {
     }
 
     public function encode(): string {
+        XdrEncoder::assertMaxLength(strlen($this->requestSignature), 64, 'XdrSignedTimeSlicedSurveyRequestMessage.requestSignature');
         $bytes = XdrEncoder::opaqueVariable($this->requestSignature);
         $bytes .= $this->request->encode();
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr): XdrSignedTimeSlicedSurveyRequestMessage {
-        $requestSignature = $xdr->readOpaqueVariable();
+        $requestSignature = $xdr->readOpaqueVariable(64);
         $request = XdrTimeSlicedSurveyRequestMessage::decode($xdr);
         return new XdrSignedTimeSlicedSurveyRequestMessage($requestSignature, $request);
     }
@@ -72,7 +73,7 @@ class XdrSignedTimeSlicedSurveyRequestMessage {
                 'Missing required field request_signature for XdrSignedTimeSlicedSurveyRequestMessage'
             );
         }
-        $requestSignature = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['request_signature']);
+        $requestSignature = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } $bytes = XdrJsonHelper::hexToBytes($v); XdrEncoder::assertMaxLength(strlen($bytes), 64, 'XdrSignature'); return $bytes; })($value['request_signature']);
         if (!array_key_exists('request', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field request for XdrSignedTimeSlicedSurveyRequestMessage'

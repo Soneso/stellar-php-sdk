@@ -19,6 +19,7 @@ class XdrContractCostParams {
 
     public function encode(): string {
         $count = count($this->entries);
+        XdrEncoder::assertMaxLength($count, 1024, 'XdrContractCostParams');
         $bytes = XdrEncoder::integer32($count);
         foreach ($this->entries as $item) {
             $bytes .= $item->encode();
@@ -28,7 +29,7 @@ class XdrContractCostParams {
 
     public static function decode(XdrBuffer $xdr): XdrContractCostParams {
         $entries = [];
-        $size = $xdr->readArrayLength();
+        $size = $xdr->readBoundedArrayLength(1024);
         for ($i = 0; $i < $size; $i++) {
             $entries[] = XdrContractCostParamEntry::decode($xdr);
         }
@@ -60,6 +61,7 @@ class XdrContractCostParams {
                 'Expected JSON array for XdrContractCostParams, got ' . get_debug_type($value)
             );
         }
+        XdrEncoder::assertMaxLength(count($value), 1024, 'XdrContractCostParams');
         $out = [];
         foreach ($value as $item) { $out[] = XdrContractCostParamEntry::fromJsonValue($item); }
         return new static($out);

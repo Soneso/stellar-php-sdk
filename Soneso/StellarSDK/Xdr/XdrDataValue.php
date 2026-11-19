@@ -36,6 +36,7 @@ class XdrDataValue
     public function encode() : string {
         $bytes = "";
         if ($this->value !== null) {
+            XdrEncoder::assertMaxLength(strlen($this->value), 64, 'XdrDataValue');
             $bytes .= XdrEncoder::boolean(true);
             $bytes .= XdrEncoder::opaqueVariable($this->value);
         }
@@ -110,7 +111,9 @@ class XdrDataValue
                 'Expected hex string or null for XdrDataValue JSON value, got ' . get_debug_type($value)
             );
         }
-        return new static(XdrJsonHelper::hexToBytes($value));
+        $bytes = XdrJsonHelper::hexToBytes($value);
+        XdrEncoder::assertMaxLength(strlen($bytes), 64, 'XdrDataValue');
+        return new static($bytes);
     }
 
     /**

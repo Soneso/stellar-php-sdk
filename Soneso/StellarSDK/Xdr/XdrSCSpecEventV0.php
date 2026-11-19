@@ -27,12 +27,17 @@ class XdrSCSpecEventV0 {
     }
 
     public function encode(): string {
+        XdrEncoder::assertMaxLength(strlen($this->doc), 1024, 'XdrSCSpecEventV0.doc');
         $bytes = XdrEncoder::string($this->doc);
+        XdrEncoder::assertMaxLength(strlen($this->lib), 80, 'XdrSCSpecEventV0.lib');
         $bytes .= XdrEncoder::string($this->lib);
+        XdrEncoder::assertMaxLength(strlen($this->name), 1024, 'XdrSCSpecEventV0.name');
         $bytes .= XdrEncoder::string($this->name);
+        XdrEncoder::assertMaxLength(count($this->prefixTopics), 2, 'XdrSCSpecEventV0.prefixTopics');
         $prefixTopicsCount = count($this->prefixTopics);
         $bytes .= XdrEncoder::integer32($prefixTopicsCount);
         foreach ($this->prefixTopics as $prefixTopicsItem) {
+            XdrEncoder::assertMaxLength(strlen($prefixTopicsItem), 32, 'XdrSCSpecEventV0.prefixTopics[]');
             $bytes .= XdrEncoder::string($prefixTopicsItem);
         }
         $paramsCount = count($this->params);
@@ -45,13 +50,13 @@ class XdrSCSpecEventV0 {
     }
 
     public static function decode(XdrBuffer $xdr): XdrSCSpecEventV0 {
-        $doc = $xdr->readString();
-        $lib = $xdr->readString();
-        $name = $xdr->readString();
+        $doc = $xdr->readString(1024);
+        $lib = $xdr->readString(80);
+        $name = $xdr->readString(1024);
         $prefixTopics = [];
-        $prefixTopicsSize = $xdr->readArrayLength();
+        $prefixTopicsSize = $xdr->readBoundedArrayLength(2);
         for ($i = 0; $i < $prefixTopicsSize; $i++) {
-            $prefixTopics[] = $xdr->readString();
+            $prefixTopics[] = $xdr->readString(32);
         }
         $params = [];
         $paramsSize = $xdr->readArrayLength();
@@ -120,6 +125,7 @@ class XdrSCSpecEventV0 {
             throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['doc']));
         }
         $doc = XdrJsonHelper::unescapeString($value['doc']);
+        XdrEncoder::assertMaxLength(strlen($doc), 1024, 'XdrSCSpecEventV0.doc');
         if (!array_key_exists('lib', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field lib for XdrSCSpecEventV0'
@@ -129,6 +135,7 @@ class XdrSCSpecEventV0 {
             throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['lib']));
         }
         $lib = XdrJsonHelper::unescapeString($value['lib']);
+        XdrEncoder::assertMaxLength(strlen($lib), 80, 'XdrSCSpecEventV0.lib');
         if (!array_key_exists('name', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field name for XdrSCSpecEventV0'
@@ -138,6 +145,7 @@ class XdrSCSpecEventV0 {
             throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['name']));
         }
         $name = XdrJsonHelper::unescapeString($value['name']);
+        XdrEncoder::assertMaxLength(strlen($name), 1024, 'XdrSCSpecEventV0.name');
         if (!array_key_exists('prefix_topics', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field prefix_topics for XdrSCSpecEventV0'
@@ -147,8 +155,9 @@ class XdrSCSpecEventV0 {
             if (!is_array($v)) {
                 throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
+            XdrEncoder::assertMaxLength(count($v), 2, 'XdrSCSpecEventV0.prefixTopics');
             $out = [];
-            foreach ($v as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($item); }
+            foreach ($v as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } $bytes = XdrJsonHelper::unescapeString($v); XdrEncoder::assertMaxLength(strlen($bytes), 32, 'XdrSCSymbol'); return $bytes; })($item); }
             return $out;
         })($value['prefix_topics']);
         if (!array_key_exists('params', $value)) {

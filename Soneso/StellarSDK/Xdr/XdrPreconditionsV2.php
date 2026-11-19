@@ -47,6 +47,7 @@ class XdrPreconditionsV2 {
         }
         $bytes .= XdrEncoder::unsignedInteger64($this->minSeqAge);
         $bytes .= XdrEncoder::unsignedInteger32($this->minSeqLedgerGap);
+        XdrEncoder::assertMaxLength(count($this->extraSigners), 2, 'XdrPreconditionsV2.extraSigners');
         $extraSignersCount = count($this->extraSigners);
         $bytes .= XdrEncoder::integer32($extraSignersCount);
         foreach ($this->extraSigners as $extraSignersItem) {
@@ -71,7 +72,7 @@ class XdrPreconditionsV2 {
         $minSeqAge = $xdr->readUnsignedInteger64();
         $minSeqLedgerGap = $xdr->readUnsignedInteger32();
         $extraSigners = [];
-        $extraSignersSize = $xdr->readArrayLength();
+        $extraSignersSize = $xdr->readBoundedArrayLength(2);
         for ($i = 0; $i < $extraSignersSize; $i++) {
             $extraSigners[] = XdrSignerKey::decode($xdr);
         }
@@ -175,6 +176,7 @@ class XdrPreconditionsV2 {
             if (!is_array($v)) {
                 throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
+            XdrEncoder::assertMaxLength(count($v), 2, 'XdrPreconditionsV2.extraSigners');
             $out = [];
             foreach ($v as $item) { $out[] = XdrSignerKey::fromJsonValue($item); }
             return $out;
@@ -251,6 +253,7 @@ class XdrPreconditionsV2 {
         $minSeqAge = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.minSeqAge') ?? '0', $prefix . '.minSeqAge');
         $minSeqLedgerGap = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.minSeqLedgerGap') ?? '0', $prefix . '.minSeqLedgerGap');
         $extraSignersLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.extraSigners.len') ?? '0', $prefix . '.extraSigners.len');
+        XdrEncoder::assertMaxLength($extraSignersLen, 2, $prefix . '.extraSigners.len');
         $extraSigners = [];
         for ($i = 0; $i < $extraSignersLen; $i++) {
             $extraSigners[] = TxRepHelper::parseSignerKey(TxRepHelper::getValue($map, $prefix . '.extraSigners[' . $i . ']') ?? '');

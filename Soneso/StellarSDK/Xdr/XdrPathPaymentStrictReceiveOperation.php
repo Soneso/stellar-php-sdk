@@ -33,6 +33,7 @@ class XdrPathPaymentStrictReceiveOperation {
         $bytes .= $this->destination->encode();
         $bytes .= $this->destAsset->encode();
         $bytes .= XdrEncoder::bigInteger64($this->destAmount);
+        XdrEncoder::assertMaxLength(count($this->path), 5, 'XdrPathPaymentStrictReceiveOperation.path');
         $pathCount = count($this->path);
         $bytes .= XdrEncoder::integer32($pathCount);
         foreach ($this->path as $pathItem) {
@@ -48,7 +49,7 @@ class XdrPathPaymentStrictReceiveOperation {
         $destAsset = XdrAsset::decode($xdr);
         $destAmount = $xdr->readBigInteger64();
         $path = [];
-        $pathSize = $xdr->readArrayLength();
+        $pathSize = $xdr->readBoundedArrayLength(5);
         for ($i = 0; $i < $pathSize; $i++) {
             $path[] = XdrAsset::decode($xdr);
         }
@@ -143,6 +144,7 @@ class XdrPathPaymentStrictReceiveOperation {
             if (!is_array($v)) {
                 throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
+            XdrEncoder::assertMaxLength(count($v), 5, 'XdrPathPaymentStrictReceiveOperation.path');
             $out = [];
             foreach ($v as $item) { $out[] = XdrAsset::fromJsonValue($item); }
             return $out;
@@ -192,6 +194,7 @@ class XdrPathPaymentStrictReceiveOperation {
         $destAsset = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.destAsset') ?? '');
         $destAmount = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.destAmount') ?? '0', $prefix . '.destAmount'));
         $pathLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.path.len') ?? '0', $prefix . '.path.len');
+        XdrEncoder::assertMaxLength($pathLen, 5, $prefix . '.path.len');
         $path = [];
         for ($i = 0; $i < $pathLen; $i++) {
             $path[] = TxRepHelper::parseAsset(TxRepHelper::getValue($map, $prefix . '.path[' . $i . ']') ?? '');

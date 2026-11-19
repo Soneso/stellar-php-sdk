@@ -63,6 +63,26 @@ class XdrEncoder
     }
 
     /**
+     * Checks a value against the maximum length its XDR definition declares.
+     *
+     * Serves the generated encode(), fromTxRep() and fromJsonValue() methods: $length is the
+     * byte length of a string or variable opaque value, or the element count of an array.
+     *
+     * @internal
+     * @param int $length byte length or element count of the value
+     * @param int $max the maximum the XDR definition declares
+     * @param string $name the value's type and field, or its TxRep key, used in the error message
+     * @return void
+     * @throws InvalidArgumentException if $length exceeds $max
+     */
+    public static function assertMaxLength(int $length, int $max, string $name): void
+    {
+        if ($length > $max) {
+            throw new InvalidArgumentException(sprintf('%s length %d exceeds the maximum of %d', $name, $length, $max));
+        }
+    }
+
+    /**
      * @param int $value
      * @return string
      */

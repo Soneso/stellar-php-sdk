@@ -21,7 +21,9 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
     }
 
     public function encode(): string {
+        XdrEncoder::assertMaxLength(strlen($this->doc), 1024, 'XdrSCSpecUDTUnionCaseTupleV0.doc');
         $bytes = XdrEncoder::string($this->doc);
+        XdrEncoder::assertMaxLength(strlen($this->name), 60, 'XdrSCSpecUDTUnionCaseTupleV0.name');
         $bytes .= XdrEncoder::string($this->name);
         $typeCount = count($this->type);
         $bytes .= XdrEncoder::integer32($typeCount);
@@ -32,8 +34,8 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
     }
 
     public static function decode(XdrBuffer $xdr): XdrSCSpecUDTUnionCaseTupleV0 {
-        $doc = $xdr->readString();
-        $name = $xdr->readString();
+        $doc = $xdr->readString(1024);
+        $name = $xdr->readString(60);
         $type = [];
         $typeSize = $xdr->readArrayLength();
         for ($i = 0; $i < $typeSize; $i++) {
@@ -92,6 +94,7 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
             throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['doc']));
         }
         $doc = XdrJsonHelper::unescapeString($value['doc']);
+        XdrEncoder::assertMaxLength(strlen($doc), 1024, 'XdrSCSpecUDTUnionCaseTupleV0.doc');
         if (!array_key_exists('name', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field name for XdrSCSpecUDTUnionCaseTupleV0'
@@ -101,6 +104,7 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
             throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['name']));
         }
         $name = XdrJsonHelper::unescapeString($value['name']);
+        XdrEncoder::assertMaxLength(strlen($name), 60, 'XdrSCSpecUDTUnionCaseTupleV0.name');
         if (!array_key_exists('type', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field type for XdrSCSpecUDTUnionCaseTupleV0'

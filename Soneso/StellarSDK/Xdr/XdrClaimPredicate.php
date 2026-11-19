@@ -29,6 +29,7 @@ class XdrClaimPredicate {
             case XdrClaimPredicateType::UNCONDITIONAL:
                 break;
             case XdrClaimPredicateType::AND:
+                XdrEncoder::assertMaxLength(count($this->andPredicates), 2, 'XdrClaimPredicate.andPredicates');
                 $andPredicatesCount = count($this->andPredicates);
                 $bytes .= XdrEncoder::integer32($andPredicatesCount);
                 foreach ($this->andPredicates as $andPredicatesItem) {
@@ -36,6 +37,7 @@ class XdrClaimPredicate {
                 }
                 break;
             case XdrClaimPredicateType::OR:
+                XdrEncoder::assertMaxLength(count($this->orPredicates), 2, 'XdrClaimPredicate.orPredicates');
                 $orPredicatesCount = count($this->orPredicates);
                 $bytes .= XdrEncoder::integer32($orPredicatesCount);
                 foreach ($this->orPredicates as $orPredicatesItem) {
@@ -71,14 +73,14 @@ class XdrClaimPredicate {
                     break;
                 case XdrClaimPredicateType::AND:
                     $result->andPredicates = [];
-                    $andPredicatesSize = $xdr->readArrayLength();
+                    $andPredicatesSize = $xdr->readBoundedArrayLength(2);
                     for ($i = 0; $i < $andPredicatesSize; $i++) {
                         $result->andPredicates[] = XdrClaimPredicate::decode($xdr);
                     }
                     break;
                 case XdrClaimPredicateType::OR:
                     $result->orPredicates = [];
-                    $orPredicatesSize = $xdr->readArrayLength();
+                    $orPredicatesSize = $xdr->readBoundedArrayLength(2);
                     for ($i = 0; $i < $orPredicatesSize; $i++) {
                         $result->orPredicates[] = XdrClaimPredicate::decode($xdr);
                     }
@@ -185,8 +187,8 @@ class XdrClaimPredicate {
         }
         $arm = $value[$key];
         return match ($key) {
-            'and' => (static function () use ($arm) { $r = new static(new XdrClaimPredicateType(XdrClaimPredicateType::AND)); $r->andPredicates = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrClaimPredicate::fromJsonValue($item); } return $out; })($arm); return $r; })(),
-            'or' => (static function () use ($arm) { $r = new static(new XdrClaimPredicateType(XdrClaimPredicateType::OR)); $r->orPredicates = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrClaimPredicate::fromJsonValue($item); } return $out; })($arm); return $r; })(),
+            'and' => (static function () use ($arm) { $r = new static(new XdrClaimPredicateType(XdrClaimPredicateType::AND)); $r->andPredicates = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } XdrEncoder::assertMaxLength(count($v), 2, 'XdrClaimPredicate.andPredicates'); $out = []; foreach ($v as $item) { $out[] = XdrClaimPredicate::fromJsonValue($item); } return $out; })($arm); return $r; })(),
+            'or' => (static function () use ($arm) { $r = new static(new XdrClaimPredicateType(XdrClaimPredicateType::OR)); $r->orPredicates = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } XdrEncoder::assertMaxLength(count($v), 2, 'XdrClaimPredicate.orPredicates'); $out = []; foreach ($v as $item) { $out[] = XdrClaimPredicate::fromJsonValue($item); } return $out; })($arm); return $r; })(),
             'not' => (static function () use ($arm) { $r = new static(new XdrClaimPredicateType(XdrClaimPredicateType::NOT)); $r->notPredicate = ($arm === null ? null : XdrClaimPredicate::fromJsonValue($arm)); return $r; })(),
             'before_absolute_time' => (static function () use ($arm) { $r = new static(new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_ABSOLUTE_TIME)); $r->absBefore = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($arm); return $r; })(),
             'before_relative_time' => (static function () use ($arm) { $r = new static(new XdrClaimPredicateType(XdrClaimPredicateType::BEFORE_RELATIVE_TIME)); $r->relBefore = (static function ($v) { if (!is_string($v) && !is_int($v)) { throw new InvalidArgumentException('Expected int64 JSON value (string or int), got ' . get_debug_type($v)); } return XdrJsonHelper::stringToInt64($v); })($arm); return $r; })(),
@@ -263,6 +265,7 @@ class XdrClaimPredicate {
                 break;
             case XdrClaimPredicateType::AND:
                 $andPredicatesLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.andPredicates.len') ?? '0', $prefix . '.andPredicates.len');
+                XdrEncoder::assertMaxLength($andPredicatesLen, 2, $prefix . '.andPredicates.len');
                 $result->andPredicates = [];
                 for ($i = 0; $i < $andPredicatesLen; $i++) {
                     $result->andPredicates[] = XdrClaimPredicate::fromTxRep($map, $prefix . '.andPredicates[' . $i . ']');
@@ -270,6 +273,7 @@ class XdrClaimPredicate {
                 break;
             case XdrClaimPredicateType::OR:
                 $orPredicatesLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.orPredicates.len') ?? '0', $prefix . '.orPredicates.len');
+                XdrEncoder::assertMaxLength($orPredicatesLen, 2, $prefix . '.orPredicates.len');
                 $result->orPredicates = [];
                 for ($i = 0; $i < $orPredicatesLen; $i++) {
                     $result->orPredicates[] = XdrClaimPredicate::fromTxRep($map, $prefix . '.orPredicates[' . $i . ']');

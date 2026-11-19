@@ -25,6 +25,7 @@ class XdrStellarValue {
     public function encode(): string {
         $bytes = XdrEncoder::opaqueFixed($this->txSetHash, 32);
         $bytes .= XdrEncoder::unsignedInteger64($this->closeTime);
+        XdrEncoder::assertMaxLength(count($this->upgrades), 6, 'XdrStellarValue.upgrades');
         $upgradesCount = count($this->upgrades);
         $bytes .= XdrEncoder::integer32($upgradesCount);
         foreach ($this->upgrades as $upgradesItem) {
@@ -38,7 +39,7 @@ class XdrStellarValue {
         $txSetHash = $xdr->readOpaqueFixed(32);
         $closeTime = $xdr->readUnsignedInteger64();
         $upgrades = [];
-        $upgradesSize = $xdr->readArrayLength();
+        $upgradesSize = $xdr->readBoundedArrayLength(6);
         for ($i = 0; $i < $upgradesSize; $i++) {
             $upgrades[] = XdrUpgradeType::decode($xdr);
         }
@@ -110,6 +111,7 @@ class XdrStellarValue {
             if (!is_array($v)) {
                 throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
+            XdrEncoder::assertMaxLength(count($v), 6, 'XdrStellarValue.upgrades');
             $out = [];
             foreach ($v as $item) { $out[] = XdrUpgradeType::fromJsonValue($item); }
             return $out;

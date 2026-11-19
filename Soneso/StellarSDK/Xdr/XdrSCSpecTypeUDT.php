@@ -17,12 +17,13 @@ class XdrSCSpecTypeUDT {
     }
 
     public function encode(): string {
+        XdrEncoder::assertMaxLength(strlen($this->name), 1024, 'XdrSCSpecTypeUDT.name');
         $bytes = XdrEncoder::string($this->name);
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr): XdrSCSpecTypeUDT {
-        $name = $xdr->readString();
+        $name = $xdr->readString(1024);
         return new XdrSCSpecTypeUDT($name);
     }
 
@@ -69,6 +70,7 @@ class XdrSCSpecTypeUDT {
             throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['name']));
         }
         $name = XdrJsonHelper::unescapeString($value['name']);
+        XdrEncoder::assertMaxLength(strlen($name), 1024, 'XdrSCSpecTypeUDT.name');
         return new static($name);
     }
 

@@ -6,10 +6,16 @@
 
 namespace Soneso\StellarSDKTests\Unit\Xdr;
 
+use Closure;
 use DateTime;
+use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\Crypto\CryptoKeyType;
+use Soneso\StellarSDK\SEP\TxRep\TxRep;
+use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
@@ -452,6 +458,64 @@ class XdrTransactionTest extends TestCase
         $preconditions->setV2(new XdrPreconditionsV2(0, 0, [], null, new XdrLedgerBounds(100, 200)));
 
         $this->assertNull($this->transactionWithPreconditions($preconditions)->getTimeBounds());
+    }
+
+    public static function envelopeMaxima(): array
+    {
+        $operations = 'XDR array count 101 exceeds the declared maximum of 100';
+        $memo = 'maxLength of 28 exceeded (string is 29 bytes)';
+        $memoLine = 'tx.memo.text: "' . str_repeat('m', 28) . '"';
+        return [
+            'operations' => [static fn (int $n) => self::envelopeXdr(false, $n, null), 100, 'tx.operations.len: 100', $operations],
+            'V0 operations' => [static fn (int $n) => self::envelopeXdr(true, $n, null), 100, 'tx.operations.len: 100', $operations],
+            'memo text' => [static fn (int $n) => self::envelopeXdr(false, 1, str_repeat('m', $n)), 28, $memoLine, $memo],
+            'V0 memo text' => [static fn (int $n) => self::envelopeXdr(true, 1, str_repeat('m', $n)), 28, $memoLine, $memo],
+            'signatures' => [static fn (int $n) => self::envelopeXdr(false, 1, null, $n), 20, 'signatures.len: 20',
+                'XDR array count 21 exceeds the declared maximum of 20'],
+        ];
+    }
+
+    #[DataProvider('envelopeMaxima')]
+    public function testEnvelopeDecodingChecksTheDeclaredMaximum(Closure $xdr, int $max, string $line, string $message): void
+    {
+        $atMax = base64_encode($xdr($max));
+        $this->assertSame($atMax, XdrTransactionEnvelope::fromEnvelopeBase64XdrString($atMax)->toBase64Xdr());
+        $transaction = AbstractTransaction::fromEnvelopeBase64XdrString($atMax);
+        $this->assertInstanceOf(Transaction::class, $transaction);
+        $this->assertStringContainsString($line . PHP_EOL, TxRep::fromTransactionEnvelopeXdrBase64($transaction->toEnvelopeXdrBase64()));
+        $this->assertStringContainsString($line . PHP_EOL, TxRep::fromTransactionEnvelopeXdrBase64($atMax));
+        $over = base64_encode($xdr($max + 1));
+        foreach ([
+            fn () => XdrTransactionEnvelope::fromEnvelopeBase64XdrString($over),
+            fn () => AbstractTransaction::fromEnvelopeBase64XdrString($over),
+            fn () => TxRep::fromTransactionEnvelopeXdrBase64($over),
+        ] as $decode) {
+            try {
+                $decode();
+                $this->fail('no InvalidArgumentException, expected: ' . $message);
+            } catch (InvalidArgumentException $e) {
+                $this->assertSame($message, $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * A V1 or V0 envelope of a transaction from TEST_ACCOUNT_ED25519 with fee 100, sequence number 12345,
+     * $operations operations bumping the sequence number to 100 and a memo text unless $memoText is null.
+     */
+    private static function envelopeXdr(bool $v0, int $operations, ?string $memoText, int $signatures = 0): string
+    {
+        $memo = pack('N', XdrMemoType::MEMO_NONE);
+        if ($memoText !== null) {
+            $memo = pack('NN', XdrMemoType::MEMO_TEXT, strlen($memoText)) . $memoText
+                . str_repeat("\x00", (4 - strlen($memoText) % 4) % 4);
+        }
+        $source = ($v0 ? '' : pack('N', CryptoKeyType::KEY_TYPE_ED25519)) . hex2bin(self::TEST_ACCOUNT_ED25519);
+        $operation = pack('NNJ', 0, XdrOperationType::BUMP_SEQUENCE, 100);
+        $signature = "\x01\x02\x03\x04" . pack('N', 64) . str_repeat("\x05", 64);
+        return pack('N', $v0 ? XdrEnvelopeType::ENVELOPE_TYPE_TX_V0 : XdrEnvelopeType::ENVELOPE_TYPE_TX)
+            . $source . pack('NJN', 100, 12345, 0) . $memo . pack('N', $operations)
+            . str_repeat($operation, $operations) . pack('N', 0) . pack('N', $signatures) . str_repeat($signature, $signatures);
     }
 
     /**

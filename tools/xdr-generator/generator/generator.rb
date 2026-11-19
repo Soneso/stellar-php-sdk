@@ -400,6 +400,8 @@ class Generator < Xdrgen::Generators::Base
         is_ext_point: is_ext,
         type_overridden: type_overridden,
         elements_optional: elements_optional,
+        max_length: is_ext ? nil : value_max_length(decl),
+        label: "#{struct_name}.#{field_name}",
       }
     end
   end
@@ -749,14 +751,14 @@ class Generator < Xdrgen::Generators::Base
       else
         render_scalar_typedef(php_name,
           ->(fn) { "XdrEncoder::opaqueVariable($this->#{fn})" },
-          "$xdr->readOpaqueVariable()",
-          :opaque)
+          "$xdr->readOpaqueVariable(#{max_arg(decl)})",
+          :opaque, declared_max(decl))
       end
     when AST::Declarations::String
       render_scalar_typedef(php_name,
         ->(fn) { "XdrEncoder::string($this->#{fn})" },
-        "$xdr->readString()",
-        :string)
+        "$xdr->readString(#{max_arg(decl)})",
+        :string, declared_max(decl))
     when AST::Declarations::Array
       render_array_typedef(php_name, decl)
     else
@@ -822,6 +824,9 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
     out.puts ""
     out.puts "    public function encode(): string {"
+    bound = { max_length: is_optional ? nil : typedef_chain_max(underlying), php_type: php_type }
+    check = max_length_check(bound, "$this->#{field_name}", "'#{php_name}'")
+    out.puts "        #{check}" if check
     out.puts "        return #{encode_value};"
     out.puts "    }"
     out.puts ""
@@ -852,18 +857,19 @@ class Generator < Xdrgen::Generators::Base
       end
     end
     if should_generate_txrep?(php_name)
-      render_simple_typedef_txrep_methods(out, php_name, class_name, return_type, php_type, field_name, underlying)
+      render_simple_typedef_txrep_methods(out, php_name, class_name, return_type, php_type, field_name, underlying, bound)
     end
     out.puts "}"
     out.close
   end
 
   # Renders a single-field typedef wrapper class (opaque fixed/variable, string).
-  def render_scalar_typedef(php_name, encode_expr, decode_expr, scalar_kind = :opaque)
+  def render_scalar_typedef(php_name, encode_expr, decode_expr, scalar_kind = :opaque, max = nil)
     _, class_name, return_type, new_expr = resolve_class_info(php_name)
     out = open_output_file(class_name)
 
     field_name = underscore_field(php_name)
+    bound = { max_length: max }
     is_base = BASE_WRAPPER_TYPES.include?(php_name)
 
     imports = ["use InvalidArgumentException;"]
@@ -885,6 +891,8 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
     out.puts ""
     out.puts "    public function encode(): string {"
+    check = max_length_check(bound, "$this->#{field_name}", "'#{php_name}'")
+    out.puts "        #{check}" if check
     out.puts "        return #{encode_expr.call(field_name)};"
     out.puts "    }"
     out.puts ""
@@ -897,11 +905,11 @@ class Generator < Xdrgen::Generators::Base
       if StellarJsonOverrides.has?(php_name)
         render_overridden_sep51_methods(out, php_name, class_name)
       else
-        render_scalar_typedef_sep51_methods(out, php_name, field_name, scalar_kind)
+        render_scalar_typedef_sep51_methods(out, php_name, field_name, scalar_kind, bound)
       end
     end
     if should_generate_txrep?(php_name)
-      render_scalar_typedef_txrep_methods(out, php_name, class_name, return_type, field_name, scalar_kind)
+      render_scalar_typedef_txrep_methods(out, php_name, class_name, return_type, field_name, scalar_kind, bound)
     end
     out.puts "}"
     out.close
@@ -950,8 +958,11 @@ class Generator < Xdrgen::Generators::Base
       out.puts "        }"
     else
       out.puts "        $count = count($this->#{field_name});"
+      out.puts "        XdrEncoder::assertMaxLength($count, #{declared_max(decl)}, '#{php_name}');" if declared_max(decl)
       out.puts "        $bytes = XdrEncoder::integer32($count);"
       out.puts "        foreach ($this->#{field_name} as $item) {"
+      element_check = element_max_check(element_typespec, '$item', php_name)
+      out.puts "            #{element_check}" if element_check
       out.puts "            $bytes .= #{encode_call_for_typespec(element_typespec, '$item')};"
       out.puts "        }"
     end
@@ -969,7 +980,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "            $#{field_name}[] = #{decode_call_for_typespec(element_typespec)};"
       out.puts "        }"
     else
-      out.puts "        $size = $xdr->readArrayLength();"
+      out.puts "        $size = #{array_length_read(decl)};"
       out.puts "        for ($i = 0; $i < $size; $i++) {"
       out.puts "            $#{field_name}[] = #{decode_call_for_typespec(element_typespec)};"
       out.puts "        }"
@@ -1001,12 +1012,17 @@ class Generator < Xdrgen::Generators::Base
     decl = field_info[:decl]
     member = field_info[:member]
     is_optional = field_info[:is_optional]
+    # An optional value is checked inside its presence branch.
+    check = max_length_check(field_info, accessor, "'#{field_info[:label]}'")
+    out.puts "        #{check}" if check && !is_optional
+    optional_check = -> { out.puts "            #{check}" if check }
 
     # When a FIELD_TYPE_OVERRIDE changes the type, dispatch to that type's encode
     if field_info[:type_overridden]
       type_str = field_info[:php_type]
       if is_optional
         out.puts "        if (#{accessor} !== null) {"
+        optional_check.call
         out.puts "            #{prefix} XdrEncoder::integer32(1);"
         out.puts "            $bytes .= #{encode_type_call(type_str, "#{accessor}")};"
         out.puts "        } else {"
@@ -1022,8 +1038,10 @@ class Generator < Xdrgen::Generators::Base
     when AST::Declarations::Array
       element_typespec = decl.type
       element_type = php_type_for_typespec(element_typespec)
+      element_check = element_max_check(element_typespec, "$#{field_info[:name]}Item", field_info[:label])
       if is_optional
         out.puts "        if (#{accessor} !== null) {"
+        optional_check.call
         out.puts "            #{prefix} XdrEncoder::integer32(1);"
         if decl.fixed?
           size = resolve_size(decl)
@@ -1035,6 +1053,7 @@ class Generator < Xdrgen::Generators::Base
           out.puts "            $#{field_info[:name]}Count = count(#{accessor});"
           out.puts "            $bytes .= XdrEncoder::integer32($#{field_info[:name]}Count);"
           out.puts "            foreach (#{accessor} as $#{field_info[:name]}Item) {"
+          out.puts "                #{element_check}" if element_check
           out.puts "                $bytes .= #{encode_type_call(element_type, "$#{field_info[:name]}Item", typespec: element_typespec)};"
           out.puts "            }"
         end
@@ -1053,6 +1072,7 @@ class Generator < Xdrgen::Generators::Base
         if field_info[:elements_optional]
           out.puts "        foreach (#{accessor} as $#{field_info[:name]}Item) {"
           out.puts "            if ($#{field_info[:name]}Item !== null) {"
+          out.puts "                #{element_check}" if element_check
           out.puts "                $bytes .= XdrEncoder::integer32(1);"
           out.puts "                $bytes .= #{encode_type_call(element_type, "$#{field_info[:name]}Item", typespec: element_typespec)};"
           out.puts "            } else {"
@@ -1061,6 +1081,7 @@ class Generator < Xdrgen::Generators::Base
           out.puts "        }"
         else
           out.puts "        foreach (#{accessor} as $#{field_info[:name]}Item) {"
+          out.puts "            #{element_check}" if element_check
           out.puts "            $bytes .= #{encode_type_call(element_type, "$#{field_info[:name]}Item", typespec: element_typespec)};"
           out.puts "        }"
         end
@@ -1075,6 +1096,7 @@ class Generator < Xdrgen::Generators::Base
     when AST::Declarations::String
       if is_optional
         out.puts "        if (#{accessor} !== null) {"
+        optional_check.call
         out.puts "            #{prefix} XdrEncoder::integer32(1);"
         out.puts "            $bytes .= XdrEncoder::string(#{accessor});"
         out.puts "        } else {"
@@ -1088,6 +1110,7 @@ class Generator < Xdrgen::Generators::Base
       type_str = field_info[:php_type]
       if is_optional
         out.puts "        if (#{accessor} !== null) {"
+        optional_check.call
         out.puts "            #{prefix} XdrEncoder::integer32(1);"
         out.puts "            $bytes .= #{encode_type_call(type_str, "#{accessor}", typespec: typespec)};"
         out.puts "        } else {"
@@ -1109,13 +1132,18 @@ class Generator < Xdrgen::Generators::Base
     # When a FIELD_TYPE_OVERRIDE changes the type, use that type's decode
     if field_info[:type_overridden]
       type_str = field_info[:php_type]
+      decode = decode_type_call(type_str)
+      # XdrDataValueMandatory also holds unbounded values, so a bounded field reads its bytes here.
+      if field_info[:max_length] && type_str == 'XdrDataValueMandatory'
+        decode = "new XdrDataValueMandatory($xdr->readOpaqueVariable(#{field_info[:max_length]}))"
+      end
       if is_optional
         out.puts "        $#{local_name} = null;"
         out.puts "        if (#{presence}) {"
-        out.puts "            $#{local_name} = #{decode_type_call(type_str)};"
+        out.puts "            $#{local_name} = #{decode};"
         out.puts "        }"
       else
-        out.puts "        $#{local_name} = #{decode_type_call(type_str)};"
+        out.puts "        $#{local_name} = #{decode};"
       end
       return
     end
@@ -1132,7 +1160,7 @@ class Generator < Xdrgen::Generators::Base
           size = resolve_size(decl)
           out.puts "            for ($i = 0; $i < #{size}; $i++) {"
         else
-          out.puts "            $#{local_name}Size = $xdr->readArrayLength();"
+          out.puts "            $#{local_name}Size = #{array_length_read(decl)};"
           out.puts "            for ($i = 0; $i < $#{local_name}Size; $i++) {"
         end
         out.puts "                $#{local_name}[] = #{decode_type_call(element_type, typespec: element_typespec)};"
@@ -1144,7 +1172,7 @@ class Generator < Xdrgen::Generators::Base
           size = resolve_size(decl)
           out.puts "        for ($i = 0; $i < #{size}; $i++) {"
         else
-          out.puts "        $#{local_name}Size = $xdr->readArrayLength();"
+          out.puts "        $#{local_name}Size = #{array_length_read(decl)};"
           out.puts "        for ($i = 0; $i < $#{local_name}Size; $i++) {"
         end
         if field_info[:elements_optional]
@@ -1163,16 +1191,16 @@ class Generator < Xdrgen::Generators::Base
         size = resolve_size(decl)
         out.puts "        $#{local_name} = $xdr->readOpaqueFixed(#{size});"
       else
-        out.puts "        $#{local_name} = $xdr->readOpaqueVariable();"
+        out.puts "        $#{local_name} = $xdr->readOpaqueVariable(#{max_arg(decl)});"
       end
     when AST::Declarations::String
       if is_optional
         out.puts "        $#{local_name} = null;"
         out.puts "        if (#{presence}) {"
-        out.puts "            $#{local_name} = $xdr->readString();"
+        out.puts "            $#{local_name} = $xdr->readString(#{max_arg(decl)});"
         out.puts "        }"
       else
-        out.puts "        $#{local_name} = $xdr->readString();"
+        out.puts "        $#{local_name} = $xdr->readString(#{max_arg(decl)});"
       end
     else
       typespec = decl.respond_to?(:type) ? decl.type : nil
@@ -1198,6 +1226,10 @@ class Generator < Xdrgen::Generators::Base
       write_php_block(out, override, "                ")
       return
     end
+    check = max_length_check(arm, accessor, "'#{arm[:label]}'")
+    optional = %i[optional optional_array].include?(arm[:encode_style])
+    out.puts "                #{check}" if check && !optional
+    element_check = arm[:element_typespec] && element_max_check(arm[:element_typespec], "$#{arm[:field_name]}Item", arm[:label])
 
     case arm[:encode_style]
     when :string
@@ -1213,12 +1245,14 @@ class Generator < Xdrgen::Generators::Base
       out.puts "                $#{arm[:field_name]}Count = count(#{accessor});"
       out.puts "                $bytes .= XdrEncoder::integer32($#{arm[:field_name]}Count);"
       out.puts "                foreach (#{accessor} as $#{arm[:field_name]}Item) {"
+      out.puts "                    #{element_check}" if element_check
       out.puts "                    $bytes .= #{encode_type_call(element_type, "$#{arm[:field_name]}Item", typespec: element_typespec)};"
       out.puts "                }"
     when :optional
       inner_type = arm[:inner_type]
       inner_typespec = arm[:inner_typespec]
       out.puts "                if (#{accessor} !== null) {"
+      out.puts "                    #{check}" if check
       out.puts "                    $bytes .= XdrEncoder::integer32(1);"
       out.puts "                    $bytes .= #{encode_type_call(inner_type, accessor, typespec: inner_typespec)};"
       out.puts "                } else {"
@@ -1228,10 +1262,12 @@ class Generator < Xdrgen::Generators::Base
       element_type = arm[:element_type]
       element_typespec = arm[:element_typespec]
       out.puts "                if (#{accessor} !== null) {"
+      out.puts "                    #{check}" if check
       out.puts "                    $bytes .= XdrEncoder::integer32(1);"
       out.puts "                    $#{arm[:field_name]}Count = count(#{accessor});"
       out.puts "                    $bytes .= XdrEncoder::integer32($#{arm[:field_name]}Count);"
       out.puts "                    foreach (#{accessor} as $#{arm[:field_name]}Item) {"
+      out.puts "                        #{element_check}" if element_check
       out.puts "                        $bytes .= #{encode_type_call(element_type, "$#{arm[:field_name]}Item", typespec: element_typespec)};"
       out.puts "                    }"
       out.puts "                } else {"
@@ -1253,19 +1289,21 @@ class Generator < Xdrgen::Generators::Base
       return
     end
 
+    max = arm[:max_length].to_s
+    length_read = arm[:max_length] ? "$xdr->readBoundedArrayLength(#{max})" : "$xdr->readArrayLength()"
     case arm[:decode_style]
     when :string
-      out.puts "                #{target}->#{field} = $xdr->readString();"
+      out.puts "                #{target}->#{field} = $xdr->readString(#{max});"
     when :opaque_fixed
       size = arm[:fixed_size]
       out.puts "                #{target}->#{field} = $xdr->readOpaqueFixed(#{size});"
     when :opaque_var
-      out.puts "                #{target}->#{field} = $xdr->readOpaqueVariable();"
+      out.puts "                #{target}->#{field} = $xdr->readOpaqueVariable(#{max});"
     when :array
       element_type = arm[:element_type]
       element_typespec = arm[:element_typespec]
       out.puts "                #{target}->#{field} = [];"
-      out.puts "                $#{field}Size = $xdr->readArrayLength();"
+      out.puts "                $#{field}Size = #{length_read};"
       out.puts "                for ($i = 0; $i < $#{field}Size; $i++) {"
       out.puts "                    #{target}->#{field}[] = #{decode_type_call(element_type, typespec: element_typespec)};"
       out.puts "                }"
@@ -1280,7 +1318,7 @@ class Generator < Xdrgen::Generators::Base
       element_typespec = arm[:element_typespec]
       out.puts "                if (#{presence}) {"
       out.puts "                    #{target}->#{field} = [];"
-      out.puts "                    $#{field}Size = $xdr->readArrayLength();"
+      out.puts "                    $#{field}Size = #{length_read};"
       out.puts "                    for ($i = 0; $i < $#{field}Size; $i++) {"
       out.puts "                        #{target}->#{field}[] = #{decode_type_call(element_type, typespec: element_typespec)};"
       out.puts "                    }"
@@ -1390,6 +1428,8 @@ class Generator < Xdrgen::Generators::Base
       fixed_size: arm_info[:fixed_size],
       typespec: arm_info[:typespec],
       is_default: is_default,
+      max_length: value_max_length(arm.declaration),
+      label: "#{union_name}.#{field_name}",
     }
   end
 
@@ -1688,7 +1728,7 @@ class Generator < Xdrgen::Generators::Base
     when AST::Typespecs::Bool
       "$xdr->readBoolean()"
     when AST::Typespecs::String
-      "$xdr->readString()"
+      "$xdr->readString(#{max_arg(typespec.decl)})"
     else
       decode_type_call(php_type_for_typespec(typespec), typespec: typespec)
     end
@@ -1762,10 +1802,10 @@ class Generator < Xdrgen::Generators::Base
         size = resolve_size(decl)
         "$xdr->readOpaqueFixed(#{size})"
       else
-        "$xdr->readOpaqueVariable()"
+        "$xdr->readOpaqueVariable(#{max_arg(decl)})"
       end
     when AST::Declarations::String
-      "$xdr->readString()"
+      "$xdr->readString(#{max_arg(decl)})"
     else
       if decl.respond_to?(:type)
         ut = decl.type
@@ -2098,6 +2138,7 @@ class Generator < Xdrgen::Generators::Base
     # Type-overridden fields
     if field[:type_overridden]
       txrep_emit_primitive_from_assign(out, field, target, indent, xdr_name)
+      txrep_emit_max_check(out, field, target, "$prefix . '.#{xdr_name}'", indent)
       return
     end
 
@@ -2112,6 +2153,7 @@ class Generator < Xdrgen::Generators::Base
         out.puts "#{indent}}"
       else
         out.puts "#{indent}$#{fname}Len = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}.len') ?? '0', $prefix . '.#{xdr_name}.len');"
+        out.puts "#{indent}XdrEncoder::assertMaxLength($#{fname}Len, #{field[:max_length]}, $prefix . '.#{xdr_name}.len');" if field[:max_length]
         out.puts "#{indent}#{target} = [];"
         out.puts "#{indent}for ($i = 0; $i < $#{fname}Len; $i++) {"
         txrep_emit_element_from_assign(out, "#{target}[]", element_type, xdr_name, "#{indent}    ", decl.type)
@@ -2123,17 +2165,20 @@ class Generator < Xdrgen::Generators::Base
     # Opaque declarations
     if decl.is_a?(AST::Declarations::Opaque)
       out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '');"
-      return
-    end
-
     # String declarations (text)
-    if decl.is_a?(AST::Declarations::String)
+    elsif decl.is_a?(AST::Declarations::String)
       out.puts "#{indent}#{target} = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '');"
-      return
-    end
-
     # Primitive and named types
-    txrep_emit_primitive_from_assign(out, field, target, indent, xdr_name)
+    else
+      txrep_emit_primitive_from_assign(out, field, target, indent, xdr_name)
+    end
+    txrep_emit_max_check(out, field, target, "$prefix . '.#{xdr_name}'", indent)
+  end
+
+  # The check of a value read from TxRep against its declared maximum, named by its TxRep key.
+  def txrep_emit_max_check(out, value, target, key_expr, indent)
+    check = max_length_check(value, target, key_expr)
+    out.puts "#{indent}#{check}" if check
   end
 
   # Emit fromTxRep for a primitive or named type value.
@@ -2161,6 +2206,7 @@ class Generator < Xdrgen::Generators::Base
 
   # Emit fromTxRep for a single array element.
   def txrep_emit_element_from_assign(out, target, element_type, xdr_name, indent, typespec)
+    raise "TxRep reader has no check for the bounded elements of #{xdr_name}" if typedef_chain_max(typespec)
     if TXREP_COMPACT_TYPES.key?(element_type)
       parse = TXREP_COMPACT_TYPES[element_type][:parse]
       out.puts "#{indent}#{target} = #{parse}(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}[' . $i . ']') ?? '');"
@@ -2410,17 +2456,22 @@ class Generator < Xdrgen::Generators::Base
       write_php_block(out, override, indent)
       return
     end
+    key = "$prefix . '.#{xdr_field}'"
+    len_check = "XdrEncoder::assertMaxLength($#{field}Len, #{arm[:max_length]}, $prefix . '.#{xdr_field}.len');" if arm[:max_length]
 
     case style
     when :string
       out.puts "#{indent}#{target} = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
+      txrep_emit_max_check(out, arm, target, key, indent)
     when :opaque_fixed
       out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
     when :opaque_var
       out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
+      txrep_emit_max_check(out, arm, target, key, indent)
     when :array
       element_type = arm[:element_type]
       out.puts "#{indent}$#{field}Len = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}.len') ?? '0', $prefix . '.#{xdr_field}.len');"
+      out.puts "#{indent}#{len_check}" if len_check
       out.puts "#{indent}#{target} = [];"
       out.puts "#{indent}for ($i = 0; $i < $#{field}Len; $i++) {"
       txrep_emit_element_from_assign(out, "#{target}[]", element_type, xdr_field, "#{indent}    ", arm[:element_typespec] || arm[:typespec])
@@ -2430,12 +2481,14 @@ class Generator < Xdrgen::Generators::Base
       out.puts "#{indent}$#{field}Present = TxRepHelper::getValue($map, $prefix . '.#{xdr_field}._present');"
       out.puts "#{indent}if ($#{field}Present !== null && $#{field}Present === 'true') {"
       render_txrep_arm_inner_from(out, target, inner_type, xdr_field, "#{indent}    ", arm)
+      txrep_emit_max_check(out, arm, target, key, "#{indent}    ")
       out.puts "#{indent}}"
     when :optional_array
       element_type = arm[:element_type]
       out.puts "#{indent}$#{field}Present = TxRepHelper::getValue($map, $prefix . '.#{xdr_field}._present');"
       out.puts "#{indent}if ($#{field}Present !== null && $#{field}Present === 'true') {"
       out.puts "#{indent}    $#{field}Len = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}.len') ?? '0', $prefix . '.#{xdr_field}.len');"
+      out.puts "#{indent}    #{len_check}" if len_check
       out.puts "#{indent}    #{target} = [];"
       out.puts "#{indent}    for ($i = 0; $i < $#{field}Len; $i++) {"
       txrep_emit_element_from_assign(out, "#{target}[]", element_type, xdr_field, "#{indent}        ", arm[:element_typespec] || arm[:typespec])
@@ -2448,12 +2501,14 @@ class Generator < Xdrgen::Generators::Base
       elsif php_type == "array"
         elem_type = resolve_arm_array_element_type(arm)
         out.puts "#{indent}$#{field}Len = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}.len') ?? '0', $prefix . '.#{xdr_field}.len');"
+        out.puts "#{indent}#{len_check}" if len_check
         out.puts "#{indent}#{target} = [];"
         out.puts "#{indent}for ($i = 0; $i < $#{field}Len; $i++) {"
         txrep_emit_element_from_assign(out, "#{target}[]", elem_type, xdr_field, "#{indent}    ", arm[:element_typespec] || arm[:typespec])
         out.puts "#{indent}}"
       else
         render_txrep_simple_arm_from(out, target, php_type, xdr_field, indent, arm)
+        txrep_emit_max_check(out, arm, target, key, indent)
       end
     end
   end
@@ -2570,7 +2625,7 @@ class Generator < Xdrgen::Generators::Base
   end
 
   # Simple typedef TxRep: wraps int, bool, BigInteger, or a named type.
-  def render_simple_typedef_txrep_methods(out, php_name, class_name, return_type, php_type, field_name, typespec)
+  def render_simple_typedef_txrep_methods(out, php_name, class_name, return_type, php_type, field_name, typespec, bound)
     is_base = BASE_WRAPPER_TYPES.include?(php_name)
     decode_class = is_base ? "static" : class_name
 
@@ -2602,7 +2657,7 @@ class Generator < Xdrgen::Generators::Base
     when "BigInteger"
       out.puts "        return new #{decode_class}(#{txrep_integer_from(typespec, php_type, "$prefix")});"
     when "string"
-      out.puts "        return new #{decode_class}(TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix) ?? ''));"
+      render_txrep_typedef_return(out, decode_class, "TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix) ?? '')", bound)
     else
       # Named XDR type — delegate to inner type's fromTxRep
       out.puts "        return new #{decode_class}(#{php_type}::fromTxRep($map, $prefix));"
@@ -2610,8 +2665,19 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
   end
 
+  # The return of a typedef TxRep reader, which checks a bounded value first.
+  def render_txrep_typedef_return(out, decode_class, read_expr, bound)
+    check = max_length_check(bound, '$value', '$prefix')
+    if check
+      out.puts "        $value = #{read_expr};"
+      out.puts "        #{check}"
+      read_expr = '$value'
+    end
+    out.puts "        return new #{decode_class}(#{read_expr});"
+  end
+
   # Scalar typedef TxRep: opaque (hex) or string (escape) wrapper.
-  def render_scalar_typedef_txrep_methods(out, php_name, class_name, return_type, field_name, scalar_kind)
+  def render_scalar_typedef_txrep_methods(out, php_name, class_name, return_type, field_name, scalar_kind, bound)
     is_base = BASE_WRAPPER_TYPES.include?(php_name)
     decode_class = is_base ? "static" : class_name
 
@@ -2627,12 +2693,8 @@ class Generator < Xdrgen::Generators::Base
 
     out.puts ""
     out.puts "    public static function fromTxRep(array $map, string $prefix): #{return_type} {"
-    case scalar_kind
-    when :opaque
-      out.puts "        return new #{decode_class}(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix) ?? ''));"
-    when :string
-      out.puts "        return new #{decode_class}(TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix) ?? ''));"
-    end
+    reader = scalar_kind == :opaque ? 'TxRepHelper::hexToBytes' : 'TxRepHelper::unescapeString'
+    render_txrep_typedef_return(out, decode_class, "#{reader}(TxRepHelper::getValue($map, $prefix) ?? '')", bound)
     out.puts "    }"
   end
 
@@ -2681,6 +2743,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "        for ($i = 0; $i < #{size}; $i++) {"
     else
       out.puts "        $len = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.len') ?? '0', $prefix . '.len');"
+      out.puts "        XdrEncoder::assertMaxLength($len, #{declared_max(decl)}, $prefix . '.len');" if declared_max(decl)
       out.puts "        for ($i = 0; $i < $len; $i++) {"
     end
     # Emit element deserialization
@@ -3334,11 +3397,15 @@ class Generator < Xdrgen::Generators::Base
     end
     return true if guard_only
     if kind == 'array'
+      check = max_length_check(field, source, "'#{field[:label]}'")
+      out.puts "#{indent}#{check}" if check
       out.puts "#{indent}#{target} = [];"
       element_type = php_type_for_typespec(field[:decl].type)
       out.puts "#{indent}foreach (#{source} as $item) { #{target}[] = #{element_type}::fromJsonValue($item); }"
     else
       out.puts "#{indent}#{target} = #{expression};"
+      check = max_length_check(field, target, "'#{field[:label]}'")
+      out.puts "#{indent}#{check}" if check
     end
     true
   end
@@ -3359,8 +3426,11 @@ class Generator < Xdrgen::Generators::Base
       return
     end
 
+    # A value read through a typedef reader is checked there.
+    check = max_length_check(field, target, "'#{field[:label]}'")
     if field[:type_overridden]
       render_type_overridden_from_json(out, field, target, json_lookup, indent)
+      out.puts "#{indent}#{check}" if check
       return
     end
 
@@ -3368,17 +3438,19 @@ class Generator < Xdrgen::Generators::Base
     when AST::Declarations::Array
       element_typespec = decl.type
       element_type = php_type_for_typespec(element_typespec)
-      render_array_from_json(out, target, json_lookup, element_type, element_typespec, indent, field[:elements_optional])
+      render_array_from_json(out, target, json_lookup, element_type, element_typespec, indent, field[:elements_optional], field)
     when AST::Declarations::Opaque
       out.puts "#{indent}if (!is_string(#{json_lookup})) {"
       out.puts "#{indent}    throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type(#{json_lookup}));"
       out.puts "#{indent}}"
       out.puts "#{indent}#{target} = XdrJsonHelper::hexToBytes(#{json_lookup});"
+      out.puts "#{indent}#{check}" if check
     when AST::Declarations::String
       out.puts "#{indent}if (!is_string(#{json_lookup})) {"
       out.puts "#{indent}    throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type(#{json_lookup}));"
       out.puts "#{indent}}"
       out.puts "#{indent}#{target} = XdrJsonHelper::unescapeString(#{json_lookup});"
+      out.puts "#{indent}#{check}" if check
     else
       typespec = decl.respond_to?(:type) ? decl.type : nil
       render_simple_value_from_json(out, target, json_lookup, field[:php_type], typespec, indent)
@@ -3838,9 +3910,18 @@ class Generator < Xdrgen::Generators::Base
       end
 
     parse_expr = union_arm_from_json_expr(arm, "$arm", parent_type)
+    check = union_arm_json_check(arm)
     # Use a closure to set the field and return the instance in a single
     # expression so that the surrounding match arm remains a single statement.
-    "(static function () use ($arm) { $r = #{constructor}; $r->#{arm[:field_name]} = #{parse_expr}; return $r; })()"
+    "(static function () use ($arm) { $r = #{constructor}; $r->#{arm[:field_name]} = #{parse_expr}; #{check}return $r; })()"
+  end
+
+  # The check of a string or opaque arm read from JSON, followed by a space;
+  # array arms are checked in their reader, typedef-typed arms in the typedef reader.
+  def union_arm_json_check(arm)
+    return '' unless %i[string opaque_var].include?(arm[:decode_style])
+    check = max_length_check(arm, "$r->#{arm[:field_name]}", "'#{arm[:label]}'")
+    check ? "#{check} " : ''
   end
 
   # Helper rendered alongside fromJsonValue to handle default-arm dispatch for
@@ -3873,6 +3954,8 @@ class Generator < Xdrgen::Generators::Base
     end
     parse_expr = union_arm_from_json_expr(default_arm, "$arm", parent_type)
     out.puts "        $r->#{default_arm[:field_name]} = #{parse_expr};"
+    check = union_arm_json_check(default_arm)
+    out.puts "        #{check.rstrip}" unless check.empty?
     out.puts "        return $r;"
     out.puts "    }"
   end
@@ -3896,12 +3979,12 @@ class Generator < Xdrgen::Generators::Base
     when :opaque_fixed, :opaque_var
       "XdrJsonHelper::hexToBytes((string) #{source})"
     when :array
-      array_from_json_expr(source, arm[:element_type], arm[:element_typespec])
+      array_from_json_expr(source, arm[:element_type], arm[:element_typespec], arm)
     when :optional
       inner = simple_value_from_json_expr(arm[:inner_type], arm[:inner_typespec], source)
       "(#{source} === null ? null : #{inner})"
     when :optional_array
-      inner = array_from_json_expr(source, arm[:element_type], arm[:element_typespec])
+      inner = array_from_json_expr(source, arm[:element_type], arm[:element_typespec], arm)
       "(#{source} === null ? null : #{inner})"
     when :simple
       simple_value_from_json_expr(arm[:php_type], arm[:typespec], source)
@@ -3980,7 +4063,7 @@ class Generator < Xdrgen::Generators::Base
 
   # Render SEP-51 methods for a scalar typedef wrapper (opaque or string).
   # scalar_kind is :opaque (hex form) or :string (escaped-ASCII form).
-  def render_scalar_typedef_sep51_methods(out, php_name, field_name, scalar_kind)
+  def render_scalar_typedef_sep51_methods(out, php_name, field_name, scalar_kind, bound)
     out.puts ""
     out.puts "    public function toJsonValue(): string {"
     case scalar_kind
@@ -3998,11 +4081,14 @@ class Generator < Xdrgen::Generators::Base
     out.puts "                'Expected string for #{php_name} JSON value, got ' . get_debug_type($value)"
     out.puts "            );"
     out.puts "        }"
-    case scalar_kind
-    when :opaque
-      out.puts "        return new static(XdrJsonHelper::hexToBytes($value));"
-    when :string
-      out.puts "        return new static(XdrJsonHelper::unescapeString($value));"
+    reader = scalar_kind == :opaque ? 'XdrJsonHelper::hexToBytes' : 'XdrJsonHelper::unescapeString'
+    check = max_length_check(bound, '$bytes', "'#{php_name}'")
+    if check
+      out.puts "        $bytes = #{reader}($value);"
+      out.puts "        #{check}"
+      out.puts "        return new static($bytes);"
+    else
+      out.puts "        return new static(#{reader}($value));"
     end
     out.puts "    }"
 
@@ -4029,6 +4115,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "            );"
     out.puts "        }"
     elem_from_expr = simple_value_from_json_expr(element_type, element_typespec, "$item")
+    out.puts "        XdrEncoder::assertMaxLength(count($value), #{declared_max(decl)}, '#{php_name}');" if declared_max(decl)
     out.puts "        $out = [];"
     out.puts "        foreach ($value as $item) { $out[] = #{elem_from_expr}; }"
     out.puts "        return new static($out);"
@@ -4171,22 +4258,25 @@ class Generator < Xdrgen::Generators::Base
   end
 
   # Inverse of array_to_json_expr: read a JSON list and parse each element.
-  def array_from_json_expr(source, element_type, element_typespec)
+  def array_from_json_expr(source, element_type, element_typespec, arm)
     elem_expr = simple_value_from_json_expr(element_type, element_typespec, "$item")
-    "(static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = #{elem_expr}; } return $out; })(#{source})"
+    check = max_length_check(arm, '$v', "'#{arm[:label]}'")
+    "(static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } #{"#{check} " if check}$out = []; foreach ($v as $item) { $out[] = #{elem_expr}; } return $out; })(#{source})"
   end
 
-  def render_array_from_json(out, target, json_lookup, element_type, element_typespec, indent, elements_optional)
+  def render_array_from_json(out, target, json_lookup, element_type, element_typespec, indent, elements_optional, field)
     elem_expr =
       if elements_optional
         "($item === null ? null : #{simple_value_from_json_expr(element_type, element_typespec, "$item")})"
       else
         simple_value_from_json_expr(element_type, element_typespec, "$item")
       end
+    check = max_length_check(field, '$v', "'#{field[:label]}'")
     out.puts "#{indent}#{target} = (static function ($v) {"
     out.puts "#{indent}    if (!is_array($v)) {"
     out.puts "#{indent}        throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));"
     out.puts "#{indent}    }"
+    out.puts "#{indent}    #{check}" if check
     out.puts "#{indent}    $out = [];"
     out.puts "#{indent}    foreach ($v as $item) { $out[] = #{elem_expr}; }"
     out.puts "#{indent}    return $out;"
@@ -4262,19 +4352,21 @@ class Generator < Xdrgen::Generators::Base
     resolved = typespec.resolved_type
     return nil unless resolved.is_a?(AST::Definitions::Typedef)
     return nil unless TYPE_OVERRIDES.key?(name(resolved))
-    resolve_typedef_json_form_inner(resolved.declaration)
+    form = resolve_typedef_json_form_inner(resolved.declaration)
+    form && form.merge(name: name(resolved))
   end
 
+  # :hex_variable and :string forms carry the declared maximum as :max.
   def resolve_typedef_json_form_inner(decl)
     case decl
     when AST::Declarations::Opaque
       if decl.fixed?
         { kind: :hex_fixed, size: resolve_size(decl) }
       else
-        { kind: :hex_variable }
+        { kind: :hex_variable, max: declared_max(decl) }
       end
     when AST::Declarations::String
-      { kind: :string }
+      { kind: :string, max: declared_max(decl) }
     else
       ut = decl.respond_to?(:type) ? decl.type : nil
       return nil unless ut
@@ -4306,11 +4398,13 @@ class Generator < Xdrgen::Generators::Base
   end
 
   def typedef_form_from_json_expr(form, source)
+    check = max_length_check({ max_length: form[:max] }, '$bytes', "'#{form[:name]}'")
+    result = ->(read) { check ? "$bytes = #{read}; #{check} return $bytes;" : "return #{read};" }
     case form[:kind]
     when :hex_fixed, :hex_variable
-      "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })(#{source})"
+      "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } #{result.call('XdrJsonHelper::hexToBytes($v)')} })(#{source})"
     when :string
-      "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })(#{source})"
+      "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } #{result.call('XdrJsonHelper::unescapeString($v)')} })(#{source})"
     when :primitive
       case form[:width]
       when :int64
@@ -4590,6 +4684,73 @@ class Generator < Xdrgen::Generators::Base
     else
       decl.size
     end
+  end
+
+  # The maximum a variable-length array, string or opaque declaration states
+  # (`<100>`, `<MAX_OPS_PER_TX>`): an element count or a byte length. nil for
+  # fixed-size and unbounded declarations.
+  def declared_max(decl)
+    return nil unless bounded_kind?(decl)
+    return nil if decl.respond_to?(:fixed?) && decl.fixed?
+    size = decl.resolved_size
+    size && Integer(size)
+  end
+
+  def bounded_kind?(decl)
+    decl.is_a?(AST::Declarations::Array) || decl.is_a?(AST::Declarations::Opaque) ||
+      decl.is_a?(AST::Declarations::String)
+  end
+
+  # The maximum a TYPE_OVERRIDES typedef chain (string64, Signature, SCSymbol)
+  # carries to the inline read of a value of that type.
+  def typedef_chain_max(typespec)
+    return nil unless typespec.is_a?(AST::Typespecs::Simple)
+    resolved = typespec.resolved_type
+    return nil unless resolved.is_a?(AST::Definitions::Typedef) && TYPE_OVERRIDES.key?(name(resolved))
+    chain_decl_max(resolved.declaration)
+  end
+
+  def chain_decl_max(decl)
+    return declared_max(decl) if bounded_kind?(decl)
+    ut = decl.respond_to?(:type) ? decl.type : nil
+    return nil unless ut.is_a?(AST::Typespecs::Simple) && ut.resolved_type.is_a?(AST::Definitions::Typedef)
+    chain_decl_max(ut.resolved_type.declaration)
+  end
+
+  # The maximum of a struct field or union arm declaration, its own or the one
+  # its TYPE_OVERRIDES typedef chain carries.
+  def value_max_length(decl)
+    return declared_max(decl) if bounded_kind?(decl)
+    decl.respond_to?(:type) ? typedef_chain_max(decl.type) : nil
+  end
+
+  # The argument list of a bounded readString/readOpaqueVariable call.
+  def max_arg(decl)
+    declared_max(decl).to_s
+  end
+
+  def array_length_read(decl)
+    max = declared_max(decl)
+    max ? "$xdr->readBoundedArrayLength(#{max})" : "$xdr->readArrayLength()"
+  end
+
+  # The statement that checks a field or arm value against its declared
+  # maximum, or nil when it has none. name_expr is a PHP string expression.
+  def max_length_check(value, accessor, name_expr)
+    return nil unless value[:max_length]
+    subject =
+      case value[:php_type]
+      when 'array' then "count(#{accessor})"
+      when 'XdrDataValueMandatory' then "strlen(#{accessor}->getValue())"
+      else "strlen(#{accessor})"
+      end
+    "XdrEncoder::assertMaxLength(#{subject}, #{value[:max_length]}, #{name_expr});"
+  end
+
+  # The check of one array element whose type carries a maximum (SCSymbol).
+  def element_max_check(element_typespec, item, label)
+    max = typedef_chain_max(element_typespec)
+    max && "XdrEncoder::assertMaxLength(strlen(#{item}), #{max}, '#{label}[]');"
   end
 
   # Returns the fixed size N when typespec is a typedef that wraps opaque[N],

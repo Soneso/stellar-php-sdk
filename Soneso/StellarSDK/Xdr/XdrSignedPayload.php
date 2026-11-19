@@ -21,13 +21,14 @@ class XdrSignedPayload {
 
     public function encode(): string {
         $bytes = XdrEncoder::opaqueFixed($this->ed25519, 32);
+        XdrEncoder::assertMaxLength(strlen($this->payload), 64, 'XdrSignedPayload.payload');
         $bytes .= XdrEncoder::opaqueVariable($this->payload);
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr): XdrSignedPayload {
         $ed25519 = $xdr->readOpaqueFixed(32);
-        $payload = $xdr->readOpaqueVariable();
+        $payload = $xdr->readOpaqueVariable(64);
         return new XdrSignedPayload($ed25519, $payload);
     }
 
@@ -109,6 +110,7 @@ class XdrSignedPayload {
     public static function fromTxRep(array $map, string $prefix): XdrSignedPayload {
         $ed25519 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.ed25519') ?? '');
         $payload = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.payload') ?? '');
+        XdrEncoder::assertMaxLength(strlen($payload), 64, $prefix . '.payload');
         return new XdrSignedPayload($ed25519, $payload);
     }
 }

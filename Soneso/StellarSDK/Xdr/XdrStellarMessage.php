@@ -55,6 +55,7 @@ class XdrStellarMessage {
                 $bytes .= $this->dontHave->encode();
                 break;
             case XdrMessageType::PEERS:
+                XdrEncoder::assertMaxLength(count($this->peers), 100, 'XdrStellarMessage.peers');
                 $peersCount = count($this->peers);
                 $bytes .= XdrEncoder::integer32($peersCount);
                 foreach ($this->peers as $peersItem) {
@@ -132,7 +133,7 @@ class XdrStellarMessage {
                 break;
             case XdrMessageType::PEERS:
                 $result->peers = [];
-                $peersSize = $xdr->readArrayLength();
+                $peersSize = $xdr->readBoundedArrayLength(100);
                 for ($i = 0; $i < $peersSize; $i++) {
                     $result->peers[] = XdrPeerAddress::decode($xdr);
                 }
@@ -301,7 +302,7 @@ class XdrStellarMessage {
             'hello' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::HELLO)); $r->hello = XdrHello::fromJsonValue($arm); return $r; })(),
             'auth' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::AUTH)); $r->auth = XdrAuth::fromJsonValue($arm); return $r; })(),
             'dont_have' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::DONT_HAVE)); $r->dontHave = XdrDontHave::fromJsonValue($arm); return $r; })(),
-            'peers' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::PEERS)); $r->peers = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrPeerAddress::fromJsonValue($item); } return $out; })($arm); return $r; })(),
+            'peers' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::PEERS)); $r->peers = (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } XdrEncoder::assertMaxLength(count($v), 100, 'XdrStellarMessage.peers'); $out = []; foreach ($v as $item) { $out[] = XdrPeerAddress::fromJsonValue($item); } return $out; })($arm); return $r; })(),
             'get_tx_set' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::GET_TX_SET)); $r->txSetHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($arm); return $r; })(),
             'tx_set' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::TX_SET)); $r->txSet = XdrTransactionSet::fromJsonValue($arm); return $r; })(),
             'generalized_tx_set' => (static function () use ($arm) { $r = new static(new XdrMessageType(XdrMessageType::GENERALIZED_TX_SET)); $r->generalizedTxSet = XdrGeneralizedTransactionSet::fromJsonValue($arm); return $r; })(),

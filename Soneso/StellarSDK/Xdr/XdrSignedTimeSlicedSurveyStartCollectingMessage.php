@@ -19,13 +19,14 @@ class XdrSignedTimeSlicedSurveyStartCollectingMessage {
     }
 
     public function encode(): string {
+        XdrEncoder::assertMaxLength(strlen($this->signature), 64, 'XdrSignedTimeSlicedSurveyStartCollectingMessage.signature');
         $bytes = XdrEncoder::opaqueVariable($this->signature);
         $bytes .= $this->startCollecting->encode();
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr): XdrSignedTimeSlicedSurveyStartCollectingMessage {
-        $signature = $xdr->readOpaqueVariable();
+        $signature = $xdr->readOpaqueVariable(64);
         $startCollecting = XdrTimeSlicedSurveyStartCollectingMessage::decode($xdr);
         return new XdrSignedTimeSlicedSurveyStartCollectingMessage($signature, $startCollecting);
     }
@@ -72,7 +73,7 @@ class XdrSignedTimeSlicedSurveyStartCollectingMessage {
                 'Missing required field signature for XdrSignedTimeSlicedSurveyStartCollectingMessage'
             );
         }
-        $signature = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['signature']);
+        $signature = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } $bytes = XdrJsonHelper::hexToBytes($v); XdrEncoder::assertMaxLength(strlen($bytes), 64, 'XdrSignature'); return $bytes; })($value['signature']);
         if (!array_key_exists('start_collecting', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field start_collecting for XdrSignedTimeSlicedSurveyStartCollectingMessage'

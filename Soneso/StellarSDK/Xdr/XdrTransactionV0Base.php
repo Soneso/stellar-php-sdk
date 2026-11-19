@@ -39,6 +39,7 @@ class XdrTransactionV0Base {
             $bytes .= XdrEncoder::integer32(0);
         }
         $bytes .= $this->memo->encode();
+        XdrEncoder::assertMaxLength(count($this->operations), 100, 'XdrTransactionV0.operations');
         $operationsCount = count($this->operations);
         $bytes .= XdrEncoder::integer32($operationsCount);
         foreach ($this->operations as $operationsItem) {
@@ -58,7 +59,7 @@ class XdrTransactionV0Base {
         }
         $memo = XdrMemo::decode($xdr);
         $operations = [];
-        $operationsSize = $xdr->readArrayLength();
+        $operationsSize = $xdr->readBoundedArrayLength(100);
         for ($i = 0; $i < $operationsSize; $i++) {
             $operations[] = XdrOperation::decode($xdr);
         }
@@ -144,6 +145,7 @@ class XdrTransactionV0Base {
         if (!is_array($value['operations'])) {
             throw new InvalidArgumentException('Expected JSON array for operations, got ' . get_debug_type($value['operations']));
         }
+        XdrEncoder::assertMaxLength(count($value['operations']), 100, 'XdrTransactionV0.operations');
         $operations = [];
         foreach ($value['operations'] as $item) { $operations[] = XdrOperation::fromJsonValue($item); }
         $ext = XdrTransactionV0Ext::fromJsonValue($value['ext']);
@@ -204,6 +206,7 @@ class XdrTransactionV0Base {
         }
         $memo = XdrMemo::fromTxRep($map, $prefix . '.memo');
         $operationsLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.operations.len') ?? '0', $prefix . '.operations.len');
+        XdrEncoder::assertMaxLength($operationsLen, 100, $prefix . '.operations.len');
         $operations = [];
         for ($i = 0; $i < $operationsLen; $i++) {
             $operations[] = XdrOperation::fromTxRep($map, $prefix . '.operations[' . $i . ']');

@@ -20,13 +20,14 @@ class XdrDecoratedSignatureBase {
 
     public function encode(): string {
         $bytes = XdrEncoder::opaqueFixed($this->hint, 4);
+        XdrEncoder::assertMaxLength(strlen($this->signature), 64, 'XdrDecoratedSignature.signature');
         $bytes .= XdrEncoder::opaqueVariable($this->signature);
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr): static {
         $hint = $xdr->readOpaqueFixed(4);
-        $signature = $xdr->readOpaqueVariable();
+        $signature = $xdr->readOpaqueVariable(64);
         return new static($hint, $signature);
     }
 
@@ -78,7 +79,7 @@ class XdrDecoratedSignatureBase {
                 'Missing required field signature for XdrDecoratedSignatureBase'
             );
         }
-        $signature = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['signature']);
+        $signature = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } $bytes = XdrJsonHelper::hexToBytes($v); XdrEncoder::assertMaxLength(strlen($bytes), 64, 'XdrSignature'); return $bytes; })($value['signature']);
         return new static($hint, $signature);
     }
 
@@ -113,6 +114,7 @@ class XdrDecoratedSignatureBase {
     public static function fromTxRep(array $map, string $prefix): static {
         $hint = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.hint') ?? '');
         $signature = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.signature') ?? '');
+        XdrEncoder::assertMaxLength(strlen($signature), 64, $prefix . '.signature');
         return new static($hint, $signature);
     }
 }

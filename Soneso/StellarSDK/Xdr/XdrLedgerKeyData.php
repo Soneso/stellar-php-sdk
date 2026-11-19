@@ -20,13 +20,14 @@ class XdrLedgerKeyData {
 
     public function encode(): string {
         $bytes = $this->accountID->encode();
+        XdrEncoder::assertMaxLength(strlen($this->dataName), 64, 'XdrLedgerKeyData.dataName');
         $bytes .= XdrEncoder::string($this->dataName);
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr): XdrLedgerKeyData {
         $accountID = XdrAccountID::decode($xdr);
-        $dataName = $xdr->readString();
+        $dataName = $xdr->readString(64);
         return new XdrLedgerKeyData($accountID, $dataName);
     }
 
@@ -78,7 +79,7 @@ class XdrLedgerKeyData {
                 'Missing required field data_name for XdrLedgerKeyData'
             );
         }
-        $dataName = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($value['data_name']);
+        $dataName = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } $bytes = XdrJsonHelper::unescapeString($v); XdrEncoder::assertMaxLength(strlen($bytes), 64, 'XdrString64'); return $bytes; })($value['data_name']);
         return new static($accountID, $dataName);
     }
 
@@ -113,6 +114,7 @@ class XdrLedgerKeyData {
     public static function fromTxRep(array $map, string $prefix): XdrLedgerKeyData {
         $accountID = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.accountID') ?? '');
         $dataName = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.dataName') ?? '');
+        XdrEncoder::assertMaxLength(strlen($dataName), 64, $prefix . '.dataName');
         return new XdrLedgerKeyData($accountID, $dataName);
     }
 }

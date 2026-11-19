@@ -87,6 +87,7 @@ class XdrSCValBase {
                 $bytes .= XdrEncoder::string($this->str);
                 break;
             case XdrSCValType::SCV_SYMBOL:
+                XdrEncoder::assertMaxLength(strlen($this->sym), 32, 'XdrSCVal.sym');
                 $bytes .= XdrEncoder::string($this->sym);
                 break;
             case XdrSCValType::SCV_VEC:
@@ -183,7 +184,7 @@ class XdrSCValBase {
                     $result->str = $xdr->readString();
                     break;
                 case XdrSCValType::SCV_SYMBOL:
-                    $result->sym = $xdr->readString();
+                    $result->sym = $xdr->readString(32);
                     break;
                 case XdrSCValType::SCV_VEC:
                     if ($xdr->readOptionalPresence('XdrSCVal.vec')) {
@@ -424,7 +425,7 @@ class XdrSCValBase {
             'i256' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_I256)); $r->i256 = XdrInt256Parts::fromJsonValue($arm); return $r; })(),
             'bytes' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_BYTES)); $r->bytes = XdrDataValueMandatory::fromJsonValue($arm); return $r; })(),
             'string' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_STRING)); $r->str = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($arm); return $r; })(),
-            'symbol' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_SYMBOL)); $r->sym = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($arm); return $r; })(),
+            'symbol' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_SYMBOL)); $r->sym = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } $bytes = XdrJsonHelper::unescapeString($v); XdrEncoder::assertMaxLength(strlen($bytes), 32, 'XdrSCSymbol'); return $bytes; })($arm); return $r; })(),
             'vec' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_VEC)); $r->vec = ($arm === null ? null : (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrSCVal::fromJsonValue($item); } return $out; })($arm)); return $r; })(),
             'map' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_MAP)); $r->map = ($arm === null ? null : (static function ($v) { if (!is_array($v)) { throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v)); } $out = []; foreach ($v as $item) { $out[] = XdrSCMapEntry::fromJsonValue($item); } return $out; })($arm)); return $r; })(),
             'address' => (static function () use ($arm) { $r = new static(new XdrSCValType(XdrSCValType::SCV_ADDRESS)); $r->address = XdrSCAddress::fromJsonValue($arm); return $r; })(),
@@ -601,6 +602,7 @@ class XdrSCValBase {
                 break;
             case XdrSCValType::SCV_SYMBOL:
                 $result->sym = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.sym') ?? '');
+                XdrEncoder::assertMaxLength(strlen($result->sym), 32, $prefix . '.sym');
                 break;
             case XdrSCValType::SCV_VEC:
                 $vecPresent = TxRepHelper::getValue($map, $prefix . '.vec._present');

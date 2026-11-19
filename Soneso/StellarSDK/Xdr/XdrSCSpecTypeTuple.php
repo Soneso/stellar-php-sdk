@@ -17,6 +17,7 @@ class XdrSCSpecTypeTuple {
     }
 
     public function encode(): string {
+        XdrEncoder::assertMaxLength(count($this->valueTypes), 12, 'XdrSCSpecTypeTuple.valueTypes');
         $valueTypesCount = count($this->valueTypes);
         $bytes = XdrEncoder::integer32($valueTypesCount);
         foreach ($this->valueTypes as $valueTypesItem) {
@@ -29,7 +30,7 @@ class XdrSCSpecTypeTuple {
         $xdr->enterRecursion();
         try {
             $valueTypes = [];
-            $valueTypesSize = $xdr->readArrayLength();
+            $valueTypesSize = $xdr->readBoundedArrayLength(12);
             for ($i = 0; $i < $valueTypesSize; $i++) {
                 $valueTypes[] = XdrSCSpecTypeDef::decode($xdr);
             }
@@ -82,6 +83,7 @@ class XdrSCSpecTypeTuple {
             if (!is_array($v)) {
                 throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
+            XdrEncoder::assertMaxLength(count($v), 12, 'XdrSCSpecTypeTuple.valueTypes');
             $out = [];
             foreach ($v as $item) { $out[] = XdrSCSpecTypeDef::fromJsonValue($item); }
             return $out;

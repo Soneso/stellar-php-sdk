@@ -21,15 +21,17 @@ class XdrSCSpecUDTStructFieldV0 {
     }
 
     public function encode(): string {
+        XdrEncoder::assertMaxLength(strlen($this->doc), 1024, 'XdrSCSpecUDTStructFieldV0.doc');
         $bytes = XdrEncoder::string($this->doc);
+        XdrEncoder::assertMaxLength(strlen($this->name), 30, 'XdrSCSpecUDTStructFieldV0.name');
         $bytes .= XdrEncoder::string($this->name);
         $bytes .= $this->type->encode();
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr): XdrSCSpecUDTStructFieldV0 {
-        $doc = $xdr->readString();
-        $name = $xdr->readString();
+        $doc = $xdr->readString(1024);
+        $name = $xdr->readString(30);
         $type = XdrSCSpecTypeDef::decode($xdr);
         return new XdrSCSpecUDTStructFieldV0($doc, $name, $type);
     }
@@ -84,6 +86,7 @@ class XdrSCSpecUDTStructFieldV0 {
             throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['doc']));
         }
         $doc = XdrJsonHelper::unescapeString($value['doc']);
+        XdrEncoder::assertMaxLength(strlen($doc), 1024, 'XdrSCSpecUDTStructFieldV0.doc');
         if (!array_key_exists('name', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field name for XdrSCSpecUDTStructFieldV0'
@@ -93,6 +96,7 @@ class XdrSCSpecUDTStructFieldV0 {
             throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['name']));
         }
         $name = XdrJsonHelper::unescapeString($value['name']);
+        XdrEncoder::assertMaxLength(strlen($name), 30, 'XdrSCSpecUDTStructFieldV0.name');
         if (!array_key_exists('type', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field type for XdrSCSpecUDTStructFieldV0'

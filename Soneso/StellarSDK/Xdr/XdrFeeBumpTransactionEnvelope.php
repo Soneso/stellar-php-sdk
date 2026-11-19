@@ -20,6 +20,7 @@ class XdrFeeBumpTransactionEnvelope {
 
     public function encode(): string {
         $bytes = $this->tx->encode();
+        XdrEncoder::assertMaxLength(count($this->signatures), 20, 'XdrFeeBumpTransactionEnvelope.signatures');
         $signaturesCount = count($this->signatures);
         $bytes .= XdrEncoder::integer32($signaturesCount);
         foreach ($this->signatures as $signaturesItem) {
@@ -31,7 +32,7 @@ class XdrFeeBumpTransactionEnvelope {
     public static function decode(XdrBuffer $xdr): XdrFeeBumpTransactionEnvelope {
         $tx = XdrFeeBumpTransaction::decode($xdr);
         $signatures = [];
-        $signaturesSize = $xdr->readArrayLength();
+        $signaturesSize = $xdr->readBoundedArrayLength(20);
         for ($i = 0; $i < $signaturesSize; $i++) {
             $signatures[] = XdrDecoratedSignature::decode($xdr);
         }
@@ -90,6 +91,7 @@ class XdrFeeBumpTransactionEnvelope {
             if (!is_array($v)) {
                 throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
+            XdrEncoder::assertMaxLength(count($v), 20, 'XdrFeeBumpTransactionEnvelope.signatures');
             $out = [];
             foreach ($v as $item) { $out[] = XdrDecoratedSignature::fromJsonValue($item); }
             return $out;
@@ -131,6 +133,7 @@ class XdrFeeBumpTransactionEnvelope {
     public static function fromTxRep(array $map, string $prefix): XdrFeeBumpTransactionEnvelope {
         $tx = XdrFeeBumpTransaction::fromTxRep($map, $prefix . '.tx');
         $signaturesLen = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.signatures.len') ?? '0', $prefix . '.signatures.len');
+        XdrEncoder::assertMaxLength($signaturesLen, 20, $prefix . '.signatures.len');
         $signatures = [];
         for ($i = 0; $i < $signaturesLen; $i++) {
             $signatures[] = XdrDecoratedSignature::fromTxRep($map, $prefix . '.signatures[' . $i . ']');
