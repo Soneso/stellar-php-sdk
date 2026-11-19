@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `GetTransactionResponse::getXdrTransactionMeta()` decodes `resultMetaXdr`. Before this change, it decoded `resultXdr` and threw or returned a wrong object.
 - XDR decoding, encoding, TxRep, and SEP-51 JSON input reject arrays, strings, and opaque values longer than the maximum their XDR definition declares, and `TransactionBuilder::build()` rejects more than 100 operations. Before this change, the SDK accepted such values, for example a transaction with 101 operations or a 29-byte memo text.
 - `SetOptionsOperation` writes a clear flags or set flags value of 0 and a home domain of "" or "0". Before this change, it dropped them, so clearing a home domain with "" sent nothing and an imported transaction with such a value got another hash.
+- `AbstractTransaction::fromEnvelopeXdr()`, `fromEnvelopeBase64XdrString()` and `AbstractOperation::fromXdr()` read an inflation operation as the new `InflationOperation`, which encodes it unchanged. Before this change, they threw "Unknown operation type: 9", so a transaction with inflation could not be read or hashed.
 
 ## [1.18.0] - 2026-11-14
 

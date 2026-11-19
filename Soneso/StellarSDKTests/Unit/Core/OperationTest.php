@@ -31,6 +31,7 @@ use Soneso\StellarSDK\CreateClaimableBalanceOperation;
 use Soneso\StellarSDK\ClaimClaimableBalanceOperation;
 use Soneso\StellarSDK\BeginSponsoringFutureReservesOperation;
 use Soneso\StellarSDK\EndSponsoringFutureReservesOperation;
+use Soneso\StellarSDK\InflationOperation;
 use Soneso\StellarSDK\RevokeSponsorshipOperation;
 use Soneso\StellarSDK\ClawbackOperation;
 use Soneso\StellarSDK\ClawbackClaimableBalanceOperation;
@@ -56,6 +57,8 @@ use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
 use Soneso\StellarSDK\Xdr\XdrSetOptionsOperation;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
+use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
+use Soneso\StellarSDK\Xdr\XdrMuxedAccountMed25519;
 use function PHPUnit\Framework\assertCount;
 use function PHPUnit\Framework\assertEmpty;
 use function PHPUnit\Framework\assertEquals;
@@ -291,6 +294,29 @@ class OperationTest extends TestCase
 
         assertEquals(AccountMergeOperation::class, get_class($parsed));
         assertEquals($destinationId, $parsed->getDestination()->getAccountId());
+    }
+
+    public static function inflationSourceAccountProvider(): array
+    {
+        $ed25519 = str_repeat("\x11", 32);
+        return [
+            'no source' => [null],
+            'ed25519 source' => [new XdrMuxedAccount($ed25519)],
+            'med25519 source' => [new XdrMuxedAccount(null, new XdrMuxedAccountMed25519(123456789, $ed25519))],
+        ];
+    }
+
+    #[DataProvider('inflationSourceAccountProvider')]
+    public function testInflationFromXdrPreservesSourceAndBytes(?XdrMuxedAccount $source): void
+    {
+        $input = new XdrOperation(new XdrOperationBody(new XdrOperationType(XdrOperationType::INFLATION)), $source);
+        $bytes = $input->encode();
+
+        $operation = AbstractOperation::fromXdr(XdrOperation::decode(new XdrBuffer($bytes)));
+
+        $this->assertInstanceOf(InflationOperation::class, $operation);
+        $this->assertSame($source?->encode(), $operation->getSourceAccount()?->toXdr()->encode());
+        $this->assertSame($bytes, $operation->toXdr()->encode());
     }
 
     public function testOperationWithoutSourceAccount()
