@@ -112,6 +112,7 @@ abstract class AbstractOperation
             XdrOperationType::CHANGE_TRUST => self::changeTrustOperation($body),
             XdrOperationType::ALLOW_TRUST => self::allowTrustOperation($body),
             XdrOperationType::ACCOUNT_MERGE => self::accountMerge($body),
+            XdrOperationType::INFLATION => new InflationOperation(),
             XdrOperationType::MANAGE_DATA => self::manageData($body),
             XdrOperationType::BUMP_SEQUENCE => self::bumpSequence($body),
             XdrOperationType::MANAGE_BUY_OFFER => self::manageBuyOfferOperation($body),

@@ -16,6 +16,8 @@ use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\CreateAccountOperation;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\FeeBumpTransaction;
+use Soneso\StellarSDK\InflationOperation;
 use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
@@ -60,6 +62,9 @@ use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 use Soneso\StellarSDK\Xdr\XdrTransactionExt;
 use Soneso\StellarSDK\Xdr\XdrTransactionV0Ext;
 use Soneso\StellarSDK\Xdr\XdrTransactionV1Envelope;
+use Soneso\StellarSDK\Xdr\XdrAsset;
+use Soneso\StellarSDK\Xdr\XdrAssetType;
+use Soneso\StellarSDK\Xdr\XdrPaymentOperation;
 use InvalidArgumentException;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertNotNull;
@@ -598,6 +603,68 @@ class TransactionTest extends TestCase
         assertCount(1, $parsed->getSignatures());
     }
 
+    public static function inflationEnvelopeProvider(): array
+    {
+        $source = new XdrMuxedAccount(str_repeat("\x11", 32));
+        $operations = self::inflationXdrOperations();
+        $sequence = new XdrSequenceNumber(new BigInteger(101));
+        $memo = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE));
+        $signatures = [new XdrDecoratedSignature(str_repeat("\x11", 4), str_repeat("\x33", 64))];
+
+        $v1Tx = new XdrTransaction($source, $sequence, $operations, 200, $memo,
+            new XdrPreconditions(XdrPreconditionType::NONE()), new XdrTransactionExt(0));
+        $v1 = new XdrTransactionV1Envelope($v1Tx, $signatures);
+        $v1Envelope = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX));
+        $v1Envelope->setV1($v1);
+
+        $v0Tx = new XdrTransactionV0(str_repeat("\x11", 32), $sequence, $operations, 200, $memo,
+            null, new XdrTransactionV0Ext(0));
+        $v0Envelope = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0));
+        $v0Envelope->setV0(new XdrTransactionV0Envelope($v0Tx, $signatures));
+        // The V0 signature payload prefixes the source key with its muxed-account discriminant.
+        $v0TaggedTransaction = pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX)
+            . pack('N', XdrCryptoKeyType::KEY_TYPE_ED25519) . $v0Tx->encode();
+
+        $inner = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX));
+        $inner->setV1($v1);
+        $feeBumpTx = new XdrFeeBumpTransaction($source, 400, $inner, new XdrFeeBumpTransactionExt(0));
+        $feeBumpEnvelope = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP));
+        $feeBumpEnvelope->setFeeBump(new XdrFeeBumpTransactionEnvelope($feeBumpTx, $signatures));
+
+        return [
+            'V1' => [$v1Envelope, pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX) . $v1Tx->encode(), true],
+            'V0' => [$v0Envelope, $v0TaggedTransaction, false],
+            'fee bump' => [$feeBumpEnvelope, pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP) . $feeBumpTx->encode(), true],
+        ];
+    }
+
+    #[DataProvider('inflationEnvelopeProvider')]
+    public function testImportedInflationEnvelopePreservesOperationsAndHash(
+        XdrTransactionEnvelope $envelope,
+        string $taggedTransaction,
+        bool $expectEnvelopeEqual,
+    ): void
+    {
+        [$inflation, $payment] = self::inflationXdrOperations();
+        $input = base64_encode($envelope->encode());
+        $network = Network::public();
+        $expectedHash = $this->expectedTransactionHash($network, $taggedTransaction);
+        $imported = AbstractTransaction::fromEnvelopeBase64XdrString($input);
+
+        $transaction = $imported instanceof FeeBumpTransaction ? $imported->getInnerTx() : $imported;
+        $this->assertInstanceOf(Transaction::class, $transaction);
+        $parsed = $transaction->getOperations();
+        $this->assertCount(2, $parsed);
+        $this->assertInstanceOf(InflationOperation::class, $parsed[0]);
+        $this->assertSame($inflation->encode(), $parsed[0]->toXdr()->encode());
+        $this->assertInstanceOf(PaymentOperation::class, $parsed[1]);
+        $this->assertSame($payment->encode(), $parsed[1]->toXdr()->encode());
+        $this->assertSame($expectedHash, $imported->hash($network));
+        if ($expectEnvelopeEqual) {
+            $this->assertSame($input, $imported->toEnvelopeXdrBase64());
+        }
+    }
+
     public static function zeroAndEmptySetOptionsProvider(): array
     {
         return [
@@ -647,10 +714,25 @@ class TransactionTest extends TestCase
     private function assertImportedHash(XdrTransactionEnvelope $envelope, string $taggedTransaction): void
     {
         $network = Network::testnet();
-        $networkId = hash('sha256', $network->getNetworkPassphrase(), true);
         $imported = AbstractTransaction::fromEnvelopeXdr(XdrTransactionEnvelope::decode(new XdrBuffer($envelope->encode())));
 
-        $this->assertSame(bin2hex(hash('sha256', $networkId . $taggedTransaction, true)), bin2hex($imported->hash($network)));
+        $this->assertSame(bin2hex($this->expectedTransactionHash($network, $taggedTransaction)), bin2hex($imported->hash($network)));
+    }
+
+    private function expectedTransactionHash(Network $network, string $taggedTransaction): string
+    {
+        $networkId = hash('sha256', $network->getNetworkPassphrase(), true);
+        return hash('sha256', $networkId . $taggedTransaction, true);
+    }
+
+    private static function inflationXdrOperations(): array
+    {
+        $inflation = new XdrOperation(new XdrOperationBody(new XdrOperationType(XdrOperationType::INFLATION)));
+        $paymentBody = new XdrOperationBody(new XdrOperationType(XdrOperationType::PAYMENT));
+        $paymentBody->setPaymentOp(new XdrPaymentOperation(new XdrMuxedAccount(str_repeat("\x22", 32)),
+            new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger(1234567)));
+        $payment = new XdrOperation($paymentBody);
+        return [$inflation, $payment];
     }
 
     private static function setOptionsV1Transaction(XdrSetOptionsOperation $xdrSetOptions): XdrTransaction
