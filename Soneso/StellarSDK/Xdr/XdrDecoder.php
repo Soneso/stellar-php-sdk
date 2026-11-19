@@ -96,10 +96,12 @@ class XdrDecoder
     /**
      * @param string $xdr
      * @return string
+     * @throws InvalidArgumentException if $xdr ends inside the length prefix, the value or its padding,
+     *                                  or a padding byte is not zero
      */
     public static function string($xdr): string
     {
-        return self::opaqueVariable($xdr);
+        return (new XdrBuffer($xdr))->readString();
     }
     
     /**
@@ -130,13 +132,12 @@ class XdrDecoder
     /**
      * @param string $xdr
      * @return string
+     * @throws InvalidArgumentException if $xdr ends inside the length prefix, the value or its padding,
+     *                                  or a padding byte is not zero
      */
     public static function opaqueVariable($xdr): string
     {
-        $length = static::unsignedInteger($xdr);
-        
-        // first 4 bytes are the length
-        return substr($xdr, 4, $length);
+        return (new XdrBuffer($xdr))->readOpaqueVariable();
     }
     
     /**
