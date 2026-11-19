@@ -10,10 +10,8 @@ namespace Soneso\StellarSDK;
 use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Util\Hash;
-use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
-use InvalidArgumentException;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 
 /**
@@ -158,12 +156,7 @@ abstract class AbstractTransaction
      * @throws \InvalidArgumentException If the XDR is invalid or the envelope cannot be converted to a transaction
      */
     public static function fromEnvelopeBase64XdrString(string $envelope) : AbstractTransaction {
-        $xdr = base64_decode($envelope, true);
-        if ($xdr === false) {
-            throw new InvalidArgumentException('Invalid base64-encoded XDR');
-        }
-        $xdrBuffer = new XdrBuffer($xdr);
-        $xdrEnvelope = XdrTransactionEnvelope::decode($xdrBuffer);
+        $xdrEnvelope = XdrTransactionEnvelope::fromEnvelopeBase64XdrString($envelope);
         return static::fromEnvelopeXdr($xdrEnvelope);
     }
 }

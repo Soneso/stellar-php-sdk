@@ -47,6 +47,7 @@ use Soneso\StellarSDK\SEP\WebAuth\SubmitCompletedChallengeUnknownResponseExcepti
 use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\TransactionBuilder;
+use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 
 
 class WebAuthTest extends TestCase
@@ -364,6 +365,36 @@ class WebAuthTest extends TestCase
 
     private function requestJWTError() : string{
         return json_encode(['error' => 'The provided transaction is not valid']);
+    }
+
+    public function testChallengeAndSigningCallbackRejectTrailingBytes(): void
+    {
+        foreach ([false, true] as $tailAtSigning) {
+            $domainKey = KeyPair::random();
+            $body = json_decode($this->requestChallengeValidClientDomainOpSourceAccount($this->clientAccountId, $domainKey->getAccountId()), true);
+            $valid = $body['transaction'];
+            if (!$tailAtSigning) {
+                $body['transaction'] = base64_encode(base64_decode($valid) . "\x01");
+            }
+            $history = [];
+            $webAuth = $this->webAuthRecordingRequests([
+                new Response(200, [], json_encode($body)),
+                new Response(200, [], json_encode(['token' => $this->successJWTToken])),
+            ], $history);
+            $callback = function (string $envelope) use ($tailAtSigning, $valid): string {
+                $this->assertTrue($tailAtSigning, 'Challenge validation must reject before signing');
+                $this->assertSame($valid, $envelope);
+                return base64_encode(base64_decode($envelope) . "\x01");
+            };
+            try {
+                $webAuth->jwtToken($this->clientAccountId, [KeyPair::fromSeed($this->clientSecretSeed)],
+                    clientDomain: 'place.client.com', clientDomainKeyPair: $domainKey, clientDomainSigningCallback: $callback);
+                $this->fail('Accepted trailing bytes');
+            } catch (InvalidArgumentException $e) {
+                $this->assertSame(XdrTransactionEnvelope::class . ' leaves 1 of ' . (strlen(base64_decode($valid)) + 1) . ' bytes unread', $e->getMessage());
+                $this->assertCount(1, $history);
+            }
+        }
     }
 
     public function testDefaultSuccess(): void {

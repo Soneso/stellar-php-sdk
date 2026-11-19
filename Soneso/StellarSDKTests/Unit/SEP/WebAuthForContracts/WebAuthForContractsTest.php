@@ -46,6 +46,7 @@ use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
 use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
+use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntries;
 
 /**
  * Unit tests for SEP-45 Web Authentication for Contract Accounts
@@ -1499,6 +1500,17 @@ class WebAuthForContractsTest extends TestCase
             [$clientSigner],
             $this->domain
         );
+    }
+
+    public function testDecodeAuthorizationEntriesRejectsTrailingBytes(): void
+    {
+        $webAuth = new WebAuthForContracts(
+            $this->authServer, $this->webAuthContractId, $this->serverAccountId, $this->domain, Network::testnet()
+        );
+        $this->assertSame([], $webAuth->decodeAuthorizationEntries(base64_encode(pack('N', 0))));
+        $this->expectException(ContractChallengeValidationError::class);
+        $this->expectExceptionMessage('Failed to decode authorization entries: ' . XdrSorobanAuthorizationEntries::class . ' leaves 1 of 5 bytes unread');
+        $webAuth->decodeAuthorizationEntries(base64_encode(pack('N', 0) . "\x01"));
     }
 
     /**

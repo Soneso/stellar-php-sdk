@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDKTests\Unit\Xdr;
 
 use Closure;
+use InvalidArgumentException;
 use TypeError;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -73,6 +74,19 @@ class XdrDecodeSubclassTest extends TestCase
 
         $this->assertSame($class, get_class($decoded));
         $this->assertSame($original->encode(), $decoded->encode());
+    }
+
+    /**
+     * @dataProvider sdkClasses
+     * @param class-string $class
+     * @param Closure(): object $fixture
+     */
+    public function testFromBase64XdrRejectsTrailingBytes(string $class, Closure $fixture): void
+    {
+        $bytes = $fixture()->encode();
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage($class . ' leaves 1 of ' . (strlen($bytes) + 1) . ' bytes unread');
+        $class::fromBase64Xdr(base64_encode($bytes . "\x01"));
     }
 
     /**

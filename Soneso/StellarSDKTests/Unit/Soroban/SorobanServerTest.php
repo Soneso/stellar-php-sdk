@@ -724,7 +724,7 @@ class SorobanServerTest extends TestCase
     public function testGetAccountSuccess(): void
     {
         // Valid account entry XDR with proper structure
-        $accountXdr = 'AAAAAAAAAACPKa/Vp1t+FMYwKPTSEcxhN/V7mPCMmEzEGhDwl+DKwwAAAAAAAHOQAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAwcAAAAAAAAAAAACBw=';
+        $accountXdr = 'AAAAAAAAAACPKa/Vp1t+FMYwKPTSEcxhN/V7mPCMmEzEGhDwl+DKwwAAAAAAAHOQAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAwcAAAAAA==';
 
         $mockResponse = new Response(200, [], json_encode([
             'jsonrpc' => '2.0',
@@ -744,9 +744,9 @@ class SorobanServerTest extends TestCase
         $server = $this->createMockedSorobanServer([$mockResponse]);
         $account = $server->getAccount(self::TEST_ACCOUNT_ID);
 
-        // Account may be null if XDR doesn't match expected structure, which is fine for unit test
-        // The important test is that the method is called and returns without error
-        $this->assertTrue(true);
+        $this->assertNotNull($account);
+        $this->assertSame('GCHSTL6VU5NX4FGGGAUPJUQRZRQTP5L3TDYIZGCMYQNBB4EX4DFMG3PW', $account->getAccountId());
+        $this->assertSame('1', $account->getSequenceNumber()->toString());
     }
 
     public function testGetAccountNotFound(): void

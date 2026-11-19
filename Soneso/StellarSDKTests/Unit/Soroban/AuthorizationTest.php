@@ -344,9 +344,13 @@ class AuthorizationTest extends TestCase
 
         $decoded = SorobanAuthorizationEntry::fromBase64Xdr($base64Xdr);
 
+        $this->assertSame($base64Xdr, $decoded->toBase64Xdr());
         $this->assertInstanceOf(SorobanAuthorizationEntry::class, $decoded);
         $this->assertNotNull($decoded->getCredentials());
         $this->assertNotNull($decoded->getRootInvocation());
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(XdrSorobanAuthorizationEntry::class . ' leaves 4 of ' . (strlen(base64_decode($base64Xdr)) + 4) . ' bytes unread');
+        SorobanAuthorizationEntry::fromBase64Xdr(base64_encode(base64_decode($base64Xdr) . pack('N', 0)));
     }
 
     /**

@@ -435,6 +435,7 @@ class TransactionResponse extends Response
             for ($i = 0; $i < $valCount; $i++) {
                 array_push($this->feeMetaXdr, XdrLedgerEntryChange::decode($xdrBuffer));
             }
+            $xdrBuffer->assertFullyConsumed(XdrLedgerEntryChange::class . '[]');
         }
 
         if (isset($json['memo_type'])) {

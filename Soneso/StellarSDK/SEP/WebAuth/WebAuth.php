@@ -309,6 +309,7 @@ class WebAuth
         }
         $xdr = new XdrBuffer($res);
         $envelopeXdr = XdrTransactionEnvelope::decode($xdr);
+        $xdr->assertFullyConsumed(XdrTransactionEnvelope::class);
         if ($envelopeXdr->getType()->getValue() != XdrEnvelopeType::ENVELOPE_TYPE_TX) {
             throw new ChallengeValidationError("Invalid transaction type");
         }
@@ -379,6 +380,7 @@ class WebAuth
         }
         $xdr = new XdrBuffer($res);
         $envelopeXdr = XdrTransactionEnvelope::decode($xdr);
+        $xdr->assertFullyConsumed(XdrTransactionEnvelope::class);
 
         if ($envelopeXdr->getType()->getValue() != XdrEnvelopeType::ENVELOPE_TYPE_TX) {
             throw new ChallengeValidationError("Invalid transaction type received in challenge");

@@ -76,7 +76,9 @@ class XdrAccountMergeOperation
         if ($decoded === false) {
             throw new InvalidArgumentException('Invalid base64-encoded XDR');
         }
-        $result = static::decode(new XdrBuffer($decoded));
+        $buffer = new XdrBuffer($decoded);
+        $result = static::decode($buffer);
+        $buffer->assertFullyConsumed(static::class);
         if (!$result instanceof static) {
             throw new TypeError(sprintf(
                 '%s::fromBase64Xdr() needs a decode() override that returns %s, got %s',

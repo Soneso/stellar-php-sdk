@@ -19,6 +19,7 @@ use Soneso\StellarSDK\Responses\Transaction\InnerTransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\FeeBumpTransactionResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionSignaturesResponse;
 use Soneso\StellarSDK\Responses\Transaction\TransactionsResponse;
+use Soneso\StellarSDK\Xdr\XdrLedgerEntryChange;
 
 /**
  * Unit tests for all Transaction Response classes
@@ -29,6 +30,17 @@ use Soneso\StellarSDK\Responses\Transaction\TransactionsResponse;
  */
 class TransactionResponseTest extends TestCase
 {
+    public function testFeeMetaRejectsTrailingBytes(): void
+    {
+        $json = $this->getCompleteTransactionJson();
+        $json['fee_meta_xdr'] = base64_encode(pack('N', 0));
+        $this->assertSame([], TransactionResponse::fromJson($json)->getFeeMetaXdr());
+        $json['fee_meta_xdr'] = base64_encode(pack('N', 0) . "\x01");
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(XdrLedgerEntryChange::class . '[] leaves 1 of 5 bytes unread');
+        TransactionResponse::fromJson($json);
+    }
+
     /**
      * Helper method to create complete transaction JSON data
      */

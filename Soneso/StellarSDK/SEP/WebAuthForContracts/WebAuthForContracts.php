@@ -25,10 +25,9 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\Soroban\SorobanAuthAddressGuard;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Util\Hash;
-use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
-use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntry;
+use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizationEntries;
 
 /**
  * Implements SEP-45 Web Authentication for Contract Accounts protocol
@@ -752,18 +751,8 @@ class WebAuthForContracts
     public function decodeAuthorizationEntries(string $base64Xdr): array
     {
         try {
-            $xdr = base64_decode($base64Xdr, true);
-            if ($xdr === false) {
-                throw new InvalidArgumentException('Invalid base64-encoded XDR');
-            }
-            $xdrBuffer = new XdrBuffer($xdr);
-
-            // Decode as array of SorobanAuthorizationEntry
-            $count = $xdrBuffer->readArrayLength();
-            $entries = [];
-            for ($i = 0; $i < $count; $i++) {
-                $entries[] = SorobanAuthorizationEntry::fromXdr(XdrSorobanAuthorizationEntry::decode($xdrBuffer));
-            }
+            $entries = array_map(SorobanAuthorizationEntry::fromXdr(...),
+                XdrSorobanAuthorizationEntries::fromBase64Xdr($base64Xdr)->sorobanAuthorizationEntries);
 
             return $entries;
         } catch (Exception $e) {

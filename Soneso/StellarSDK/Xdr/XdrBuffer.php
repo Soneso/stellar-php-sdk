@@ -48,6 +48,22 @@ class XdrBuffer
         $this->position = 0;
         $this->size = strlen($xdrBytes);
     }
+
+    /**
+     * Checks that a complete XDR value consumes the entire buffer.
+     *
+     * @param string $typeName name of the decoded type, used in the error message
+     * @return void
+     * @throws InvalidArgumentException if unread bytes remain
+     */
+    public function assertFullyConsumed(string $typeName): void
+    {
+        $total = $this->size;
+        $unread = $total - $this->position;
+        if ($unread !== 0) {
+            throw new InvalidArgumentException(sprintf('%s leaves %d of %d bytes unread', $typeName, $unread, $total));
+        }
+    }
     
     /**
      * @return int
