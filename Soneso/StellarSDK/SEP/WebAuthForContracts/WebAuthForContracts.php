@@ -721,6 +721,9 @@ class WebAuthForContracts
                     sprintf("Error in json_decode: %s", json_last_error_msg())
                 );
             }
+            if (!is_array($jsonData)) {
+                throw new SubmitContractChallengeErrorResponseException(sprintf("Token response body must be a JSON object or array, got %s", get_debug_type($jsonData)));
+            }
             $result = SubmitContractChallengeResponse::fromJson($jsonData);
             if ($result->getError()) {
                 throw new SubmitContractChallengeErrorResponseException($result->getError());

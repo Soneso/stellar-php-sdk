@@ -97,10 +97,10 @@ class SubmitContractChallengeResponse
     public static function fromJson(array $json): SubmitContractChallengeResponse
     {
         $result = new SubmitContractChallengeResponse();
-        if (isset($json['token'])) {
+        if (is_string($json['token'] ?? null)) {
             $result->jwtToken = $json['token'];
         }
-        if (isset($json['error'])) {
+        if (is_string($json['error'] ?? null)) {
             $result->error = $json['error'];
         }
         return $result;
