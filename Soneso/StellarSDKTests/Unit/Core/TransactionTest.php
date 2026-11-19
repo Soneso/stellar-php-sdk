@@ -9,7 +9,9 @@ namespace Soneso\StellarSDKTests\Unit\Core;
 use DateTime;
 use Exception;
 use phpseclib3\Math\BigInteger;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\AbstractTransaction;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\CreateAccountOperation;
@@ -39,6 +41,25 @@ use Soneso\StellarSDK\Xdr\XdrTimeBounds;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionOp;
+use Soneso\StellarSDK\Xdr\XdrCryptoKeyType;
+use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
+use Soneso\StellarSDK\Xdr\XdrFeeBumpTransaction;
+use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionExt;
+use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionInnerTx;
+use Soneso\StellarSDK\Xdr\XdrMemo;
+use Soneso\StellarSDK\Xdr\XdrMemoType;
+use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
+use Soneso\StellarSDK\Xdr\XdrOperationBody;
+use Soneso\StellarSDK\Xdr\XdrOperationType;
+use Soneso\StellarSDK\Xdr\XdrPreconditions;
+use Soneso\StellarSDK\Xdr\XdrPreconditionType;
+use Soneso\StellarSDK\Xdr\XdrSetOptionsOperation;
+use Soneso\StellarSDK\Xdr\XdrTransaction;
+use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrTransactionExt;
+use Soneso\StellarSDK\Xdr\XdrTransactionV0Ext;
+use Soneso\StellarSDK\Xdr\XdrTransactionV1Envelope;
 use InvalidArgumentException;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertNotNull;
@@ -575,5 +596,80 @@ class TransactionTest extends TestCase
         $parsed = Transaction::fromV0EnvelopeXdr($v0Envelope);
 
         assertCount(1, $parsed->getSignatures());
+    }
+
+    public static function zeroAndEmptySetOptionsProvider(): array
+    {
+        return [
+            'empty home domain' => [new XdrSetOptionsOperation(homeDomain: '')],
+            'clear flags 0' => [new XdrSetOptionsOperation(clearFlags: 0)],
+        ];
+    }
+
+    #[DataProvider('zeroAndEmptySetOptionsProvider')]
+    public function testImportedV1SetOptionsHashEqualsTheNetworkHash(XdrSetOptionsOperation $xdrSetOptions): void
+    {
+        $tx = self::setOptionsV1Transaction($xdrSetOptions);
+        $envelope = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX));
+        $envelope->setV1(new XdrTransactionV1Envelope($tx, []));
+
+        $this->assertImportedHash($envelope, pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX) . $tx->encode());
+    }
+
+    #[DataProvider('zeroAndEmptySetOptionsProvider')]
+    public function testImportedV0SetOptionsHashEqualsTheNetworkHash(XdrSetOptionsOperation $xdrSetOptions): void
+    {
+        $tx = new XdrTransactionV0(self::setOptionsSourceEd25519(), new XdrSequenceNumber(new BigInteger(101)),
+            [self::setOptionsXdrOperation($xdrSetOptions)], 100, new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)),
+            null, new XdrTransactionV0Ext(0));
+        $envelope = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0));
+        $envelope->setV0(new XdrTransactionV0Envelope($tx, []));
+
+        // stellar-core hashes a V0 transaction in its V1 form: the KEY_TYPE_ED25519
+        // discriminant of the muxed source account, followed by the V0 body.
+        $this->assertImportedHash($envelope, pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX)
+            . pack('N', XdrCryptoKeyType::KEY_TYPE_ED25519) . $tx->encode());
+    }
+
+    #[DataProvider('zeroAndEmptySetOptionsProvider')]
+    public function testImportedFeeBumpSetOptionsHashEqualsTheNetworkHash(XdrSetOptionsOperation $xdrSetOptions): void
+    {
+        $innerTx = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX));
+        $innerTx->setV1(new XdrTransactionV1Envelope(self::setOptionsV1Transaction($xdrSetOptions), []));
+        $tx = new XdrFeeBumpTransaction(new XdrMuxedAccount(self::setOptionsSourceEd25519()), 400, $innerTx,
+            new XdrFeeBumpTransactionExt(0));
+        $envelope = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP));
+        $envelope->setFeeBump(new XdrFeeBumpTransactionEnvelope($tx, []));
+
+        $this->assertImportedHash($envelope, pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP) . $tx->encode());
+    }
+
+    private function assertImportedHash(XdrTransactionEnvelope $envelope, string $taggedTransaction): void
+    {
+        $network = Network::testnet();
+        $networkId = hash('sha256', $network->getNetworkPassphrase(), true);
+        $imported = AbstractTransaction::fromEnvelopeXdr(XdrTransactionEnvelope::decode(new XdrBuffer($envelope->encode())));
+
+        $this->assertSame(bin2hex(hash('sha256', $networkId . $taggedTransaction, true)), bin2hex($imported->hash($network)));
+    }
+
+    private static function setOptionsV1Transaction(XdrSetOptionsOperation $xdrSetOptions): XdrTransaction
+    {
+        return new XdrTransaction(new XdrMuxedAccount(self::setOptionsSourceEd25519()),
+            new XdrSequenceNumber(new BigInteger(101)), [self::setOptionsXdrOperation($xdrSetOptions)], 100,
+            new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)), new XdrPreconditions(XdrPreconditionType::NONE()),
+            new XdrTransactionExt(0));
+    }
+
+    private static function setOptionsXdrOperation(XdrSetOptionsOperation $xdrSetOptions): XdrOperation
+    {
+        $body = new XdrOperationBody(new XdrOperationType(XdrOperationType::SET_OPTIONS));
+        $body->setSetOptionsOp($xdrSetOptions);
+        return new XdrOperation($body);
+    }
+
+    private static function setOptionsSourceEd25519(): string
+    {
+        return KeyPair::fromAccountId('GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO')->getPublicKey();
     }
 }
