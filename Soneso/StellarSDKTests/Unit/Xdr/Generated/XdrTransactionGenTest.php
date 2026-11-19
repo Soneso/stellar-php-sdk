@@ -14516,7 +14516,7 @@ class XdrTransactionGenTest extends TestCase
         $original = new XdrMuxedAccountMed25519(42, str_repeat("\xAB", 32));
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrMuxedAccountMed25519Base::fromTxRep($lines, 'test');
+        $reconstructed = XdrMuxedAccountMed25519::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrMuxedAccountMed25519');
     }
 
@@ -14525,7 +14525,7 @@ class XdrTransactionGenTest extends TestCase
         $original = new XdrDecoratedSignature(str_repeat("\xAB", 4), str_repeat("\xAB", 64));
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrDecoratedSignatureBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrDecoratedSignature::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrDecoratedSignature');
     }
 
@@ -15024,7 +15024,7 @@ class XdrTransactionGenTest extends TestCase
         $original = new XdrChangeTrustOperation(new XdrChangeTrustAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)), new BigInteger('123456789'));
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrChangeTrustOperationBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrChangeTrustOperation::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrChangeTrustOperation');
     }
 
@@ -15283,7 +15283,7 @@ class XdrTransactionGenTest extends TestCase
         $original = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return $p; })();
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrContractIDPreimageBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrContractIDPreimage::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrContractIDPreimage');
     }
 
@@ -15410,7 +15410,7 @@ class XdrTransactionGenTest extends TestCase
         $original = (function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)); $u->contractFn = new XdrInvokeContractArgs(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 'test_string', []); return $u; })();
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrSorobanAuthorizedFunctionBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrSorobanAuthorizedFunction::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanAuthorizedFunction_XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN');
     }
 
@@ -15419,7 +15419,7 @@ class XdrTransactionGenTest extends TestCase
         $original = (function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN)); $u->createContractHostFn = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgs($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET())); })(); return $u; })();
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrSorobanAuthorizedFunctionBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrSorobanAuthorizedFunction::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanAuthorizedFunction_XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN');
     }
 
@@ -15428,7 +15428,7 @@ class XdrTransactionGenTest extends TestCase
         $original = (function() { $u = new XdrSorobanAuthorizedFunction(new XdrSorobanAuthorizedFunctionType(XdrSorobanAuthorizedFunctionType::SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN)); $u->createContractV2HostFn = (function() { $p = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS()); $p->fromAddress = new XdrContractIDPreimageFromAddress(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), str_repeat("\xAB", 32)); return new XdrCreateContractArgsV2($p, new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET()), []); })(); return $u; })();
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrSorobanAuthorizedFunctionBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrSorobanAuthorizedFunction::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanAuthorizedFunction_XdrSorobanAuthorizedFunctionType_SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN');
     }
 
@@ -15533,7 +15533,7 @@ class XdrTransactionGenTest extends TestCase
         $original = (function() { $u = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS)); $u->address = new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))); return $u; })();
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrSorobanCredentialsBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrSorobanCredentials::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanCredentials_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS');
     }
 
@@ -15542,7 +15542,7 @@ class XdrTransactionGenTest extends TestCase
         $original = (function() { $u = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2)); $u->addressV2 = new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))); return $u; })();
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrSorobanCredentialsBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrSorobanCredentials::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanCredentials_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_V2');
     }
 
@@ -15551,7 +15551,7 @@ class XdrTransactionGenTest extends TestCase
         $original = (function() { $u = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES)); $u->addressWithDelegates = new XdrSorobanAddressCredentialsWithDelegates(new XdrSorobanAddressCredentials(XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'), 42, 42, new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID))), []); return $u; })();
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrSorobanCredentialsBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrSorobanCredentials::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanCredentials_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES');
     }
 
@@ -15560,7 +15560,7 @@ class XdrTransactionGenTest extends TestCase
         $original = new XdrSorobanCredentials(new XdrSorobanCredentialsType(XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_SOURCE_ACCOUNT));
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrSorobanCredentialsBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrSorobanCredentials::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSorobanCredentials_XdrSorobanCredentialsType_SOROBAN_CREDENTIALS_SOURCE_ACCOUNT');
     }
 
@@ -15869,7 +15869,7 @@ class XdrTransactionGenTest extends TestCase
         $original = new XdrTransactionV0(str_repeat("\xAB", 32), new XdrSequenceNumber(new BigInteger('123456789')), []);
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrTransactionV0Base::fromTxRep($lines, 'test');
+        $reconstructed = XdrTransactionV0::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrTransactionV0');
     }
 

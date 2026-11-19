@@ -22,6 +22,10 @@ SNAPSHOT_FILES = [
   "XdrLedgerEntryData.php",              # Large union, many struct-typed arms
   "XdrTransactionResultResult.php",      # Union with fee bump arms (regression guard)
   "XdrClaimableBalanceEntryExtV1.php",   # Struct with extension point field
+  "XdrTransactionBase.php",              # Base wrapper struct, reordered constructor
+  "XdrTransactionV0Base.php",            # Base wrapper struct, optional time bounds
+  "XdrManageDataOperationBase.php",      # Base wrapper struct, optional data value
+  "XdrTimeBoundsBase.php",               # Base wrapper struct, DateTime conversion
 ].freeze
 
 FileUtils.mkdir_p(SNAPSHOT_DIR)

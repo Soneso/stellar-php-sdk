@@ -42,22 +42,4 @@ class XdrTransactionV0 extends XdrTransactionV0Base
     {
         return $this->seqNum;
     }
-
-    public static function decode(XdrBuffer $xdr): static {
-        $sourceAccountEd25519 = $xdr->readOpaqueFixed(32);
-        $fee = $xdr->readUnsignedInteger32();
-        $seqNum = XdrSequenceNumber::decode($xdr);
-        $timeBounds = null;
-        if ($xdr->readOptionalPresence('XdrTransactionV0.timeBounds')) {
-            $timeBounds = XdrTimeBounds::decode($xdr);
-        }
-        $memo = XdrMemo::decode($xdr);
-        $operations = [];
-        $operationsSize = $xdr->readArrayLength();
-        for ($i = 0; $i < $operationsSize; $i++) {
-            $operations[] = XdrOperation::decode($xdr);
-        }
-        $ext = XdrTransactionV0Ext::decode($xdr);
-        return new static($sourceAccountEd25519, $seqNum, $operations, $fee, $memo, $timeBounds, $ext);
-    }
 }

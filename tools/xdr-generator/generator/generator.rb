@@ -295,7 +295,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
 
     # Getters and setters for backward compatibility
-    render_struct_accessors(out, fields)
+    render_struct_accessors(out, fields, typed_arrays: is_base)
 
     render_base64_methods(out)
     if emits_sep51?(struct_name, is_base)
@@ -312,11 +312,12 @@ class Generator < Xdrgen::Generators::Base
     out.close
   end
 
-  def render_struct_accessors(out, fields)
+  def render_struct_accessors(out, fields, typed_arrays: false)
     fields.each do |f|
       next if f[:is_ext_point]
       fname = f[:name]
       uc_name = "#{fname[0].upcase}#{fname[1..]}"
+      array_type = typed_arrays && f[:is_array] ? "array<#{php_type_for_typespec(f[:decl].type)}#{'|null' if f[:elements_optional]}>#{'|null' if f[:is_optional]}" : nil
 
       if f[:is_optional]
         type_hint = "?#{f[:php_type]}"
@@ -330,8 +331,10 @@ class Generator < Xdrgen::Generators::Base
       if f[:php_type] == "bool" && fname.start_with?("is") && fname.length > 2
         out.puts "    public function #{fname}(): bool { return $this->#{fname}; }"
       else
+        out.puts "    /** @return #{array_type} */" if array_type
         out.puts "    public function get#{uc_name}(): #{type_hint} { return $this->#{fname}; }"
       end
+      out.puts "    /** @param #{array_type} $#{fname} */" if array_type
       out.puts "    public function set#{uc_name}(#{type_hint} $#{fname}): void { $this->#{fname} = $#{fname}; }"
     end
     out.puts ""
@@ -440,14 +443,7 @@ class Generator < Xdrgen::Generators::Base
           render_decode_field_php(out, f[:name], f, struct_name)
         end
       end
-      # Build constructor call using non-ext fields, reordered to match constructor
-      # (required first, optional last)
-      constructor_fields = fields.reject { |f| f[:is_ext_point] }
-      required_fields = constructor_fields.reject { |f| f[:is_optional] }
-      optional_fields = constructor_fields.select { |f| f[:is_optional] }
-      ordered_fields = required_fields + optional_fields
-      args = ordered_fields.map { |f| "$#{f[:name]}" }.join(", ")
-      out.puts "        return new #{decode_class}(#{args});"
+      render_struct_construction(out, struct_name, fields, decode_class)
     end
     out.puts "    }"
   end
@@ -561,7 +557,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
 
     # Getters and setters for backward compatibility
-    render_union_accessors(out, disc_info, arms)
+    render_union_accessors(out, disc_info, arms, typed_arrays: is_base)
 
     # Members the type's ARM_STORAGE_OVERRIDES entries call
     render_arm_storage_helpers(out, union_name)
@@ -699,7 +695,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
   end
 
-  def render_union_accessors(out, disc_info, arms)
+  def render_union_accessors(out, disc_info, arms, typed_arrays: false)
     # Discriminant getter/setter
     df = disc_info[:field_name]
     uc_disc = "#{df[0].upcase}#{df[1..]}"
@@ -713,7 +709,10 @@ class Generator < Xdrgen::Generators::Base
       fn = arm[:field_name]
       uc_fn = "#{fn[0].upcase}#{fn[1..]}"
       type_hint = "?#{arm[:php_type]}"
+      array_type = typed_arrays && arm[:php_type] == 'array' ? "array<#{arm[:element_type]}>|null" : nil
+      out.puts "    /** @return #{array_type} */" if array_type
       out.puts "    public function get#{uc_fn}(): #{type_hint} { return $this->#{fn}; }"
+      out.puts "    /** @param #{array_type} $#{fn} */" if array_type
       out.puts "    public function set#{uc_fn}(#{type_hint} $#{fn}): void { $this->#{fn} = $#{fn}; }"
     end
     out.puts ""
@@ -1912,13 +1911,7 @@ class Generator < Xdrgen::Generators::Base
       txrep_parse_field_to_local(out, struct_name, f, "        ")
     end
 
-    # Build constructor call with parsed local variables
-    constructor_fields = fields.reject { |f| f[:is_ext_point] }
-    required_fields = constructor_fields.reject { |f| f[:is_optional] }
-    optional_fields = constructor_fields.select { |f| f[:is_optional] }
-    ordered = required_fields + optional_fields
-    args = ordered.map { |f| "$#{f[:name]}" }.join(", ")
-    out.puts "        return new #{decode_class}(#{args});"
+    render_struct_construction(out, struct_name, fields, decode_class)
 
     out.puts "    }"
   end
@@ -2980,6 +2973,8 @@ class Generator < Xdrgen::Generators::Base
   # remaining key must be one of the emitted field keys, and all of them are
   # required. See render_field_alias_folds and render_unknown_field_guard.
   def render_struct_sep51_methods(out, struct_name, class_name, fields)
+    wrapper_constructor = WRAPPER_CONSTRUCTORS.key?(struct_name)
+    error_class = wrapper_constructor ? struct_name : class_name
     out.puts ""
     out.puts "    public function toJsonValue(): array {"
     out.puts "        return ["
@@ -2997,20 +2992,26 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        }"
     out.puts "        if (!is_array($value)) {"
     out.puts "            throw new InvalidArgumentException("
-    out.puts "                'Expected object for #{class_name} JSON value, got ' . get_debug_type($value)"
+    out.puts "                'Expected object for #{error_class} JSON value, got ' . get_debug_type($value)"
     out.puts "            );"
     out.puts "        }"
-    render_field_alias_folds(out, class_name, fields)
-    render_unknown_field_guard(out, class_name, fields.map { |f| struct_field_json_key(f) })
-    fields.each do |f|
-      render_struct_field_from_json(out, f, class_name)
+    render_field_alias_folds(out, error_class, fields)
+    render_unknown_field_guard(out, error_class, fields.map { |f| struct_field_json_key(f) })
+    if wrapper_constructor
+      keys = fields.map { |f| "'#{struct_field_json_key(f)}'" }.join(', ')
+      out.puts "        foreach ([#{keys}] as $required) {"
+      out.puts "            if (!array_key_exists($required, $value)) {"
+      out.puts "                throw new InvalidArgumentException('Missing required field ' . $required . ' for #{error_class}');"
+      out.puts "            }"
+      out.puts "        }"
+      if struct_name == 'XdrTimeBounds'
+        fields.each { |f| render_wrapper_json_field(out, f, class_name, '        ', guard_only: true) }
+      end
     end
-    constructor_fields = fields.reject { |f| f[:is_ext_point] }
-    required_fields = constructor_fields.reject { |f| f[:is_optional] }
-    optional_fields = constructor_fields.select { |f| f[:is_optional] }
-    ordered_fields = required_fields + optional_fields
-    args = ordered_fields.map { |f| "$#{f[:name]}" }.join(", ")
-    out.puts "        return new static(#{args});"
+    fields.each do |f|
+      render_struct_field_from_json(out, f, struct_name, class_name)
+    end
+    render_struct_construction(out, struct_name, fields, 'static')
     out.puts "    }"
 
     render_to_json_facade(out)
@@ -3251,7 +3252,7 @@ class Generator < Xdrgen::Generators::Base
   # from $value into a local variable named $FIELDNAME. Extension-point fields
   # are not parsed into a local because they do not appear in the constructor
   # signature; their JSON value is validated and discarded.
-  def render_struct_field_from_json(out, field, class_name)
+  def render_struct_field_from_json(out, field, struct_name, class_name)
     xdr_key = struct_field_json_key(field)
     json_lookup = "$value['#{php_string_escape(xdr_key)}']"
 
@@ -3273,6 +3274,19 @@ class Generator < Xdrgen::Generators::Base
     fname = field[:name]
     target = "$#{fname}"
 
+    if WRAPPER_CONSTRUCTORS.key?(struct_name)
+      indent = field[:is_optional] ? '            ' : '        '
+      if field[:is_optional]
+        out.puts "        #{target} = null;"
+        out.puts "        if (#{json_lookup} !== null) {"
+      end
+      unless render_wrapper_json_field(out, field, class_name, indent)
+        render_struct_field_from_json_inner(out, field, target, json_lookup, indent, class_name)
+      end
+      out.puts '        }' if field[:is_optional]
+      return
+    end
+
     if field[:is_optional]
       out.puts "        if (!array_key_exists('#{php_string_escape(xdr_key)}', $value)) {"
       out.puts "            throw new InvalidArgumentException("
@@ -3291,6 +3305,39 @@ class Generator < Xdrgen::Generators::Base
       out.puts "        }"
       render_struct_field_from_json_inner(out, field, target, json_lookup, "        ", class_name)
     end
+  end
+
+  # JSON readers of WRAPPER_CONSTRUCTORS types name the field in each type error;
+  # XdrTimeBounds checks both bounds before it converts either.
+  def render_wrapper_json_field(out, field, class_name, indent, guard_only: false)
+    return false if SEP51_FIELD_OVERRIDES.key?([class_name, field[:name]])
+    key = struct_field_json_key(field)
+    source = "$value['#{key}']"
+    target = "$#{field[:name]}"
+    kind, expected, expression = case key
+    when 'fee' then ['int', 'int', source]
+    when 'source_account_ed25519' then ['string', 'hex string', "XdrJsonHelper::hexToBytes(#{source})"]
+    when 'data_name' then ['string', 'string', "XdrJsonHelper::unescapeString(#{source})"]
+    when 'data_value' then ['string', 'hex string or null', "XdrJsonHelper::hexToBytes(#{source})"]
+    when 'min_time', 'max_time' then ['uint64', 'uint64 JSON value (string or int)', "XdrJsonHelper::stringToUint64(#{source})"]
+    when 'operations' then ['array', 'JSON array', nil]
+    else return false
+    end
+    if class_name != 'XdrTimeBoundsBase' || guard_only
+      condition = kind == 'uint64' ? "!is_string(#{source}) && !is_int(#{source})" : "!is_#{kind}(#{source})"
+      out.puts "#{indent}if (#{condition}) {"
+      out.puts "#{indent}    throw new InvalidArgumentException('Expected #{expected} for #{key}, got ' . get_debug_type(#{source}));"
+      out.puts "#{indent}}"
+    end
+    return true if guard_only
+    if kind == 'array'
+      out.puts "#{indent}#{target} = [];"
+      element_type = php_type_for_typespec(field[:decl].type)
+      out.puts "#{indent}foreach (#{source} as $item) { #{target}[] = #{element_type}::fromJsonValue($item); }"
+    else
+      out.puts "#{indent}#{target} = #{expression};"
+    end
+    true
   end
 
   # Inner parsing block for one struct field; emits "$target = ...;" for the
@@ -4379,6 +4426,21 @@ class Generator < Xdrgen::Generators::Base
     return_type = is_base ? "static" : class_name
     new_expr = is_base ? "new static" : "new #{class_name}"
     [is_base, class_name, return_type, new_expr]
+  end
+
+  # Struct readers share the required-first base order and wrapper conversions.
+  def render_struct_construction(out, struct_name, fields, decode_class)
+    constructor_fields = fields.reject { |f| f[:is_ext_point] }
+    required, optional = constructor_fields.partition { |f| !f[:is_optional] }
+    args = (required + optional).map { |f| "$#{f[:name]}" }.join(', ')
+    wrapper_args = WRAPPER_CONSTRUCTORS[struct_name]
+    if wrapper_args
+      out.puts "        return is_a(static::class, #{struct_name}::class, true)"
+      out.puts "            ? new static(#{wrapper_args.join(', ')})"
+      out.puts "            : new static(#{args});"
+    else
+      out.puts "        return new #{decode_class}(#{args});"
+    end
   end
 
   # ---------------------------------------------------------------------------

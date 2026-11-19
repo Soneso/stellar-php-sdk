@@ -27,7 +27,9 @@ class XdrTimeBoundsBase {
     public static function decode(XdrBuffer $xdr): static {
         $minTimestamp = $xdr->readUnsignedInteger64();
         $maxTimestamp = $xdr->readUnsignedInteger64();
-        return new static($minTimestamp, $maxTimestamp);
+        return is_a(static::class, XdrTimeBounds::class, true)
+            ? new static((new \DateTime('@0'))->setTimestamp($minTimestamp), (new \DateTime('@0'))->setTimestamp($maxTimestamp))
+            : new static($minTimestamp, $maxTimestamp);
     }
 
     public function getMinTimestamp(): int { return $this->minTimestamp; }
@@ -64,36 +66,22 @@ class XdrTimeBoundsBase {
             );
         }
         XdrJsonHelper::rejectUnknownFields($value, ['min_time', 'max_time'], 'XdrTimeBounds');
-        if (!array_key_exists('min_time', $value)) {
-            throw new InvalidArgumentException(
-                'Missing required field min_time for XdrTimeBounds'
-            );
+        foreach (['min_time', 'max_time'] as $required) {
+            if (!array_key_exists($required, $value)) {
+                throw new InvalidArgumentException('Missing required field ' . $required . ' for XdrTimeBounds');
+            }
         }
-        if (!array_key_exists('max_time', $value)) {
-            throw new InvalidArgumentException(
-                'Missing required field max_time for XdrTimeBounds'
-            );
+        if (!is_string($value['min_time']) && !is_int($value['min_time'])) {
+            throw new InvalidArgumentException('Expected uint64 JSON value (string or int) for min_time, got ' . get_debug_type($value['min_time']));
         }
-        $minRaw = $value['min_time'];
-        $maxRaw = $value['max_time'];
-        if (!is_string($minRaw) && !is_int($minRaw)) {
-            throw new InvalidArgumentException(
-                'Expected uint64 JSON value (string or int) for min_time, got ' . get_debug_type($minRaw)
-            );
+        if (!is_string($value['max_time']) && !is_int($value['max_time'])) {
+            throw new InvalidArgumentException('Expected uint64 JSON value (string or int) for max_time, got ' . get_debug_type($value['max_time']));
         }
-        if (!is_string($maxRaw) && !is_int($maxRaw)) {
-            throw new InvalidArgumentException(
-                'Expected uint64 JSON value (string or int) for max_time, got ' . get_debug_type($maxRaw)
-            );
-        }
-        $minTimestamp = XdrJsonHelper::stringToUint64($minRaw);
-        $maxTimestamp = XdrJsonHelper::stringToUint64($maxRaw);
-        // The wrapper stores DateTime objects; build them with
-        // setTimestamp() so the wrapper's encode() path
-        // (which reads `format('U')`) reproduces the original ints.
-        $minDt = (new \DateTime('@0'))->setTimestamp($minTimestamp);
-        $maxDt = (new \DateTime('@0'))->setTimestamp($maxTimestamp);
-        return new static($minDt, $maxDt);
+        $minTimestamp = XdrJsonHelper::stringToUint64($value['min_time']);
+        $maxTimestamp = XdrJsonHelper::stringToUint64($value['max_time']);
+        return is_a(static::class, XdrTimeBounds::class, true)
+            ? new static((new \DateTime('@0'))->setTimestamp($minTimestamp), (new \DateTime('@0'))->setTimestamp($maxTimestamp))
+            : new static($minTimestamp, $maxTimestamp);
     }
 
     /**
@@ -127,6 +115,8 @@ class XdrTimeBoundsBase {
     public static function fromTxRep(array $map, string $prefix): static {
         $minTimestamp = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.minTime') ?? '0', $prefix . '.minTime');
         $maxTimestamp = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.maxTime') ?? '0', $prefix . '.maxTime');
-        return new static($minTimestamp, $maxTimestamp);
+        return is_a(static::class, XdrTimeBounds::class, true)
+            ? new static((new \DateTime('@0'))->setTimestamp($minTimestamp), (new \DateTime('@0'))->setTimestamp($maxTimestamp))
+            : new static($minTimestamp, $maxTimestamp);
     }
 }

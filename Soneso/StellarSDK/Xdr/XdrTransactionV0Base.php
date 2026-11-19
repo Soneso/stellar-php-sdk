@@ -63,7 +63,9 @@ class XdrTransactionV0Base {
             $operations[] = XdrOperation::decode($xdr);
         }
         $ext = XdrTransactionV0Ext::decode($xdr);
-        return new static($sourceAccountEd25519, $fee, $seqNum, $memo, $operations, $ext, $timeBounds);
+        return is_a(static::class, XdrTransactionV0::class, true)
+            ? new static($sourceAccountEd25519, $seqNum, $operations, $fee, $memo, $timeBounds, $ext)
+            : new static($sourceAccountEd25519, $fee, $seqNum, $memo, $operations, $ext, $timeBounds);
     }
 
     public function getSourceAccountEd25519(): string { return $this->sourceAccountEd25519; }
@@ -76,7 +78,9 @@ class XdrTransactionV0Base {
     public function setTimeBounds(?XdrTimeBounds $timeBounds): void { $this->timeBounds = $timeBounds; }
     public function getMemo(): XdrMemo { return $this->memo; }
     public function setMemo(XdrMemo $memo): void { $this->memo = $memo; }
+    /** @return array<XdrOperation> */
     public function getOperations(): array { return $this->operations; }
+    /** @param array<XdrOperation> $operations */
     public function setOperations(array $operations): void { $this->operations = $operations; }
     public function getExt(): XdrTransactionV0Ext { return $this->ext; }
     public function setExt(XdrTransactionV0Ext $ext): void { $this->ext = $ext; }
@@ -117,41 +121,32 @@ class XdrTransactionV0Base {
         XdrJsonHelper::rejectUnknownFields($value, ['source_account_ed25519', 'fee', 'seq_num', 'time_bounds', 'memo', 'operations', 'ext'], 'XdrTransactionV0');
         foreach (['source_account_ed25519', 'fee', 'seq_num', 'time_bounds', 'memo', 'operations', 'ext'] as $required) {
             if (!array_key_exists($required, $value)) {
-                throw new InvalidArgumentException(
-                    'Missing required field ' . $required . ' for XdrTransactionV0'
-                );
+                throw new InvalidArgumentException('Missing required field ' . $required . ' for XdrTransactionV0');
             }
         }
         if (!is_string($value['source_account_ed25519'])) {
-            throw new InvalidArgumentException(
-                'Expected hex string for source_account_ed25519, got ' . get_debug_type($value['source_account_ed25519'])
-            );
+            throw new InvalidArgumentException('Expected hex string for source_account_ed25519, got ' . get_debug_type($value['source_account_ed25519']));
         }
         $sourceAccountEd25519 = XdrJsonHelper::hexToBytes($value['source_account_ed25519']);
         if (!is_int($value['fee'])) {
-            throw new InvalidArgumentException(
-                    'Expected int for fee, got ' . get_debug_type($value['fee'])
-            );
+            throw new InvalidArgumentException('Expected int for fee, got ' . get_debug_type($value['fee']));
         }
         $fee = $value['fee'];
-        $sequenceNumber = XdrSequenceNumber::fromJsonValue($value['seq_num']);
+        $seqNum = XdrSequenceNumber::fromJsonValue($value['seq_num']);
         $timeBounds = null;
         if ($value['time_bounds'] !== null) {
             $timeBounds = XdrTimeBounds::fromJsonValue($value['time_bounds']);
         }
         $memo = XdrMemo::fromJsonValue($value['memo']);
         if (!is_array($value['operations'])) {
-            throw new InvalidArgumentException(
-                'Expected JSON array for operations, got ' . get_debug_type($value['operations'])
-            );
+            throw new InvalidArgumentException('Expected JSON array for operations, got ' . get_debug_type($value['operations']));
         }
         $operations = [];
-        foreach ($value['operations'] as $item) {
-            $operations[] = XdrOperation::fromJsonValue($item);
-        }
+        foreach ($value['operations'] as $item) { $operations[] = XdrOperation::fromJsonValue($item); }
         $ext = XdrTransactionV0Ext::fromJsonValue($value['ext']);
-        // Wrapper signature: (sourceAccountEd25519, sequenceNumber, operations, ?fee, ?memo, ?timeBounds, ?ext).
-        return new static($sourceAccountEd25519, $sequenceNumber, $operations, $fee, $memo, $timeBounds, $ext);
+        return is_a(static::class, XdrTransactionV0::class, true)
+            ? new static($sourceAccountEd25519, $seqNum, $operations, $fee, $memo, $timeBounds, $ext)
+            : new static($sourceAccountEd25519, $fee, $seqNum, $memo, $operations, $ext, $timeBounds);
     }
 
     /**
@@ -211,6 +206,8 @@ class XdrTransactionV0Base {
             $operations[] = XdrOperation::fromTxRep($map, $prefix . '.operations[' . $i . ']');
         }
         $ext = XdrTransactionV0Ext::fromTxRep($map, $prefix . '.ext');
-        return new static($sourceAccountEd25519, $fee, $seqNum, $memo, $operations, $ext, $timeBounds);
+        return is_a(static::class, XdrTransactionV0::class, true)
+            ? new static($sourceAccountEd25519, $seqNum, $operations, $fee, $memo, $timeBounds, $ext)
+            : new static($sourceAccountEd25519, $fee, $seqNum, $memo, $operations, $ext, $timeBounds);
     }
 }

@@ -55,7 +55,9 @@ class XdrTransactionBase {
             $operations[] = XdrOperation::decode($xdr);
         }
         $ext = XdrTransactionExt::decode($xdr);
-        return new static($sourceAccount, $fee, $sequenceNumber, $preconditions, $memo, $operations, $ext);
+        return is_a(static::class, XdrTransaction::class, true)
+            ? new static($sourceAccount, $sequenceNumber, $operations, $fee, $memo, $preconditions, $ext)
+            : new static($sourceAccount, $fee, $sequenceNumber, $preconditions, $memo, $operations, $ext);
     }
 
     public function getSourceAccount(): XdrMuxedAccount { return $this->sourceAccount; }
@@ -68,7 +70,9 @@ class XdrTransactionBase {
     public function setPreconditions(XdrPreconditions $preconditions): void { $this->preconditions = $preconditions; }
     public function getMemo(): XdrMemo { return $this->memo; }
     public function setMemo(XdrMemo $memo): void { $this->memo = $memo; }
+    /** @return array<XdrOperation> */
     public function getOperations(): array { return $this->operations; }
+    /** @param array<XdrOperation> $operations */
     public function setOperations(array $operations): void { $this->operations = $operations; }
     public function getExt(): XdrTransactionExt { return $this->ext; }
     public function setExt(XdrTransactionExt $ext): void { $this->ext = $ext; }
@@ -109,33 +113,26 @@ class XdrTransactionBase {
         XdrJsonHelper::rejectUnknownFields($value, ['source_account', 'fee', 'seq_num', 'cond', 'memo', 'operations', 'ext'], 'XdrTransaction');
         foreach (['source_account', 'fee', 'seq_num', 'cond', 'memo', 'operations', 'ext'] as $required) {
             if (!array_key_exists($required, $value)) {
-                throw new InvalidArgumentException(
-                    'Missing required field ' . $required . ' for XdrTransaction'
-                );
+                throw new InvalidArgumentException('Missing required field ' . $required . ' for XdrTransaction');
             }
         }
         $sourceAccount = XdrMuxedAccount::fromJsonValue($value['source_account']);
         if (!is_int($value['fee'])) {
-            throw new InvalidArgumentException(
-                    'Expected int for fee, got ' . get_debug_type($value['fee'])
-            );
+            throw new InvalidArgumentException('Expected int for fee, got ' . get_debug_type($value['fee']));
         }
         $fee = $value['fee'];
         $sequenceNumber = XdrSequenceNumber::fromJsonValue($value['seq_num']);
         $preconditions = XdrPreconditions::fromJsonValue($value['cond']);
         $memo = XdrMemo::fromJsonValue($value['memo']);
         if (!is_array($value['operations'])) {
-            throw new InvalidArgumentException(
-                'Expected JSON array for operations, got ' . get_debug_type($value['operations'])
-            );
+            throw new InvalidArgumentException('Expected JSON array for operations, got ' . get_debug_type($value['operations']));
         }
         $operations = [];
-        foreach ($value['operations'] as $item) {
-            $operations[] = XdrOperation::fromJsonValue($item);
-        }
+        foreach ($value['operations'] as $item) { $operations[] = XdrOperation::fromJsonValue($item); }
         $ext = XdrTransactionExt::fromJsonValue($value['ext']);
-        // Wrapper signature: (sourceAccount, sequenceNumber, operations, ?fee, ?memo, ?preconditions, ?ext).
-        return new static($sourceAccount, $sequenceNumber, $operations, $fee, $memo, $preconditions, $ext);
+        return is_a(static::class, XdrTransaction::class, true)
+            ? new static($sourceAccount, $sequenceNumber, $operations, $fee, $memo, $preconditions, $ext)
+            : new static($sourceAccount, $fee, $sequenceNumber, $preconditions, $memo, $operations, $ext);
     }
 
     /**
@@ -186,6 +183,8 @@ class XdrTransactionBase {
             $operations[] = XdrOperation::fromTxRep($map, $prefix . '.operations[' . $i . ']');
         }
         $ext = XdrTransactionExt::fromTxRep($map, $prefix . '.ext');
-        return new static($sourceAccount, $fee, $sequenceNumber, $preconditions, $memo, $operations, $ext);
+        return is_a(static::class, XdrTransaction::class, true)
+            ? new static($sourceAccount, $sequenceNumber, $operations, $fee, $memo, $preconditions, $ext)
+            : new static($sourceAccount, $fee, $sequenceNumber, $preconditions, $memo, $operations, $ext);
     }
 }

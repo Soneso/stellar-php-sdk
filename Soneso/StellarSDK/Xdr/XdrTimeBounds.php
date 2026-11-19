@@ -42,29 +42,4 @@ class XdrTimeBounds extends XdrTimeBoundsBase
     {
         return $this->maxTime;
     }
-
-    public static function decode(XdrBuffer $xdr): static
-    {
-        return new static(
-            (new DateTime('@0'))->setTimestamp($xdr->readUnsignedInteger64()),
-            (new DateTime('@0'))->setTimestamp($xdr->readUnsignedInteger64())
-        );
-    }
-
-    /**
-     * Override fromTxRep to supply DateTime objects as required by this constructor.
-     *
-     * @param array<string,string> $map
-     * @param string               $prefix
-     * @return static
-     * @throws \InvalidArgumentException If an integer token is malformed or outside its XDR range.
-     */
-    public static function fromTxRep(array $map, string $prefix): static
-    {
-        $minTimestamp = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.minTime') ?? '0', $prefix . '.minTime');
-        $maxTimestamp = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.maxTime') ?? '0', $prefix . '.maxTime');
-        $minDt = (new DateTime())->setTimestamp($minTimestamp);
-        $maxDt = (new DateTime())->setTimestamp($maxTimestamp);
-        return new static($minDt, $maxDt);
-    }
 }

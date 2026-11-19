@@ -1397,7 +1397,7 @@ class XdrTypesGenTest extends TestCase
         $original = new XdrSignerKeyType(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_ED25519);
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrSignerKeyTypeBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrSignerKeyType::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSignerKeyType_SIGNER_KEY_TYPE_ED25519');
     }
 
@@ -1406,7 +1406,7 @@ class XdrTypesGenTest extends TestCase
         $original = new XdrSignerKeyType(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_PRE_AUTH_TX);
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrSignerKeyTypeBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrSignerKeyType::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSignerKeyType_SIGNER_KEY_TYPE_PRE_AUTH_TX');
     }
 
@@ -1415,7 +1415,7 @@ class XdrTypesGenTest extends TestCase
         $original = new XdrSignerKeyType(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_HASH_X);
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrSignerKeyTypeBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrSignerKeyType::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSignerKeyType_SIGNER_KEY_TYPE_HASH_X');
     }
 
@@ -1424,7 +1424,7 @@ class XdrTypesGenTest extends TestCase
         $original = new XdrSignerKeyType(XdrSignerKeyTypeBase::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD);
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrSignerKeyTypeBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrSignerKeyType::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSignerKeyType_SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD');
     }
 

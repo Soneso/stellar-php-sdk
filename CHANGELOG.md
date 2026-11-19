@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- `XdrTransaction::fromTxRep()` and `XdrTransactionV0::fromTxRep()` build the transaction from valid TxRep. Before this change, they threw a `TypeError`.
+- `XdrTimeBounds::fromTxRep()` returns its dates in UTC, as `decode()` does.
+- `fromJson()` works on `XdrTransactionBase`, `XdrTransactionV0Base`, `XdrManageDataOperationBase` and `XdrTimeBoundsBase`.
 - SEP-45 `WebAuthForContracts::jwtToken()` throws `ContractChallengeRequestErrorResponse` for a challenge response whose `authorization_entries` or `network_passphrase` is not a string, and `SubmitContractChallengeErrorResponseException` for a token response that is not a JSON object or array; a `token` or `error` value that is not a string counts as absent. Before this change, such responses threw a `TypeError`.
 - SEP-10 `WebAuth::jwtToken()` throws `ChallengeRequestErrorResponse` for a challenge response without a string `transaction`, and `SubmitCompletedChallengeErrorResponseException` for a token response that is not a JSON object or array; a `token` or `error` value that is not a string counts as absent. `ChallengeResponse::getTransaction()` returns null for a response without a transaction. Before this change, such responses threw a PHP `Error` or `TypeError`.
 - A response body that is valid JSON but neither an object nor an array, such as a string, a number or `null`, throws the same exception as an invalid JSON body. Before this change, it threw a `TypeError`.

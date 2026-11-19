@@ -1153,14 +1153,6 @@ class TxRepBaseTypesTest extends TestCase
 
     public function testTransactionEnvelopeBaseFromTxRepV1(): void
     {
-        // XdrTransactionEnvelopeBase::fromTxRep for ENVELOPE_TYPE_TX → XdrTransactionV1Envelope::fromTxRep
-        // → XdrTransaction::fromTxRep (inherited from XdrTransactionBase) calls
-        // new static($sourceAccount, $fee, $sequenceNumber, ...) but XdrTransaction::__construct
-        // has the different signature ($sourceAccount, $sequenceNumber, $operations, ...).
-        //
-        // This mismatch means the base fromTxRep cannot reconstruct an XdrTransaction.
-        // The test below exercises the toTxRep path only, then uses XdrBuffer decode
-        // (not fromTxRep) to verify the XDR output is valid.
         $keyBytes = KeyPair::random()->getPublicKey();
         $sourceAccount = new XdrMuxedAccount($keyBytes);
         $tx = new XdrTransaction($sourceAccount, new XdrSequenceNumber(new BigInteger(5000)), []);
@@ -1178,11 +1170,9 @@ class TxRepBaseTypesTest extends TestCase
         $this->assertArrayHasKey('env.v1.signatures.len', $lines);
         $this->assertEquals('0', $lines['env.v1.signatures.len']);
 
-        // Verify XDR can be decoded back via XdrBuffer (not fromTxRep)
-        $xdrBase64 = $original->toBase64Xdr();
-        $this->assertNotEmpty($xdrBase64);
-        $decoded = XdrTransactionEnvelopeBase::fromBase64Xdr($xdrBase64);
-        $this->assertEquals(XdrEnvelopeType::ENVELOPE_TYPE_TX, $decoded->getType()->getValue());
+        $decoded = XdrTransactionEnvelopeBase::fromTxRep($lines, 'env');
+        $this->assertSame($original->encode(), $decoded->encode());
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX, $decoded->getType()->getValue());
         $this->assertNotNull($decoded->getV1());
     }
 
@@ -2615,7 +2605,7 @@ class TxRepBaseTypesTest extends TestCase
         $this->assertArrayHasKey('env.v1.tx.sourceAccount', $lines);
         $this->assertArrayHasKey('env.v1.signatures.len', $lines);
 
-        // Verify via XDR encode/decode (fromTxRep has a known ctor-signature mismatch for XdrTransaction)
+        // Verify via XDR encode/decode
         $xdrBase64 = $original->toBase64Xdr();
         $this->assertNotEmpty($xdrBase64);
         $decoded = XdrTransactionEnvelopeBase::fromBase64Xdr($xdrBase64);
