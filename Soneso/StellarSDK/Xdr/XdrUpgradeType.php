@@ -17,11 +17,12 @@ class XdrUpgradeType {
     }
 
     public function encode(): string {
+        XdrEncoder::assertMaxLength(strlen($this->upgradeType), 128, 'XdrUpgradeType');
         return XdrEncoder::opaqueVariable($this->upgradeType);
     }
 
     public static function decode(XdrBuffer $xdr): XdrUpgradeType {
-        return new XdrUpgradeType($xdr->readOpaqueVariable());
+        return new XdrUpgradeType($xdr->readOpaqueVariable(128));
     }
 
     public function toBase64Xdr(): string {
@@ -49,7 +50,9 @@ class XdrUpgradeType {
                 'Expected string for XdrUpgradeType JSON value, got ' . get_debug_type($value)
             );
         }
-        return new static(XdrJsonHelper::hexToBytes($value));
+        $bytes = XdrJsonHelper::hexToBytes($value);
+        XdrEncoder::assertMaxLength(strlen($bytes), 128, 'XdrUpgradeType');
+        return new static($bytes);
     }
 
     /**

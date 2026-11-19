@@ -27,6 +27,7 @@ class XdrClaimableBalanceEntry {
 
     public function encode(): string {
         $bytes = $this->accountID->encode();
+        XdrEncoder::assertMaxLength(count($this->claimants), 10, 'XdrClaimableBalanceEntry.claimants');
         $claimantsCount = count($this->claimants);
         $bytes .= XdrEncoder::integer32($claimantsCount);
         foreach ($this->claimants as $claimantsItem) {
@@ -41,7 +42,7 @@ class XdrClaimableBalanceEntry {
     public static function decode(XdrBuffer $xdr): XdrClaimableBalanceEntry {
         $accountID = XdrClaimableBalanceID::decode($xdr);
         $claimants = [];
-        $claimantsSize = $xdr->readArrayLength();
+        $claimantsSize = $xdr->readBoundedArrayLength(10);
         for ($i = 0; $i < $claimantsSize; $i++) {
             $claimants[] = XdrClaimant::decode($xdr);
         }
@@ -112,6 +113,7 @@ class XdrClaimableBalanceEntry {
             if (!is_array($v)) {
                 throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
+            XdrEncoder::assertMaxLength(count($v), 10, 'XdrClaimableBalanceEntry.claimants');
             $out = [];
             foreach ($v as $item) { $out[] = XdrClaimant::fromJsonValue($item); }
             return $out;

@@ -441,6 +441,7 @@ module StellarJsonOverrides
                       }
                       $result = new static(new XdrMemoType(XdrMemoType::MEMO_TEXT));
                       $result->text = XdrJsonHelper::unescapeString($value['text']);
+                      XdrEncoder::assertMaxLength(strlen($result->text), 28, 'XdrMemo.text');
                       return $result;
                   }
                   if ($key === 'id') {

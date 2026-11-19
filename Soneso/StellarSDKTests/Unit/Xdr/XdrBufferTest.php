@@ -105,6 +105,20 @@ class XdrBufferTest extends TestCase
         $buffer->readArrayLength();
     }
 
+    public function testReadBoundedArrayLengthAcceptsTheDeclaredMaximum(): void
+    {
+        $this->assertSame(100, (new XdrBuffer(pack('N', 100) . str_repeat("\x00", 400)))->readBoundedArrayLength(100));
+        $this->assertSame(101, (new XdrBuffer(pack('N', 101) . str_repeat("\x00", 404)))->readArrayLength());
+    }
+
+    public function testReadBoundedArrayLengthRejectsCountAboveTheDeclaredMaximum(): void
+    {
+        $buffer = new XdrBuffer(pack('N', 101) . str_repeat("\x00", 404));
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/^XDR array count 101 exceeds the declared maximum of 100$/');
+        $buffer->readBoundedArrayLength(100);
+    }
+
     public function testReadExtensionPointAcceptsZero(): void
     {
         $buffer = new XdrBuffer(pack('N', 0) . pack('N', 5));

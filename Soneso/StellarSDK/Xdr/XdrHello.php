@@ -37,6 +37,7 @@ class XdrHello {
         $bytes .= XdrEncoder::unsignedInteger32($this->overlayVersion);
         $bytes .= XdrEncoder::unsignedInteger32($this->overlayMinVersion);
         $bytes .= XdrEncoder::opaqueFixed($this->networkID, 32);
+        XdrEncoder::assertMaxLength(strlen($this->versionStr), 100, 'XdrHello.versionStr');
         $bytes .= XdrEncoder::string($this->versionStr);
         $bytes .= XdrEncoder::integer32($this->listeningPort);
         $bytes .= $this->peerID->encode();
@@ -50,7 +51,7 @@ class XdrHello {
         $overlayVersion = $xdr->readUnsignedInteger32();
         $overlayMinVersion = $xdr->readUnsignedInteger32();
         $networkID = $xdr->readOpaqueFixed(32);
-        $versionStr = $xdr->readString();
+        $versionStr = $xdr->readString(100);
         $listeningPort = $xdr->readInteger32();
         $peerID = XdrNodeID::decode($xdr);
         $cert = XdrAuthCert::decode($xdr);
@@ -149,6 +150,7 @@ class XdrHello {
             throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['version_str']));
         }
         $versionStr = XdrJsonHelper::unescapeString($value['version_str']);
+        XdrEncoder::assertMaxLength(strlen($versionStr), 100, 'XdrHello.versionStr');
         if (!array_key_exists('listening_port', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field listening_port for XdrHello'

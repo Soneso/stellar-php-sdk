@@ -76,6 +76,7 @@ class XdrSetOptionsOperation {
             $bytes .= XdrEncoder::integer32(0);
         }
         if ($this->homeDomain !== null) {
+            XdrEncoder::assertMaxLength(strlen($this->homeDomain), 32, 'XdrSetOptionsOperation.homeDomain');
             $bytes .= XdrEncoder::integer32(1);
             $bytes .= XdrEncoder::string($this->homeDomain);
         } else {
@@ -121,7 +122,7 @@ class XdrSetOptionsOperation {
         }
         $homeDomain = null;
         if ($xdr->readOptionalPresence('XdrSetOptionsOperation.homeDomain')) {
-            $homeDomain = $xdr->readString();
+            $homeDomain = $xdr->readString(32);
         }
         $signer = null;
         if ($xdr->readOptionalPresence('XdrSetOptionsOperation.signer')) {
@@ -258,7 +259,7 @@ class XdrSetOptionsOperation {
         }
         $homeDomain = null;
         if ($value['home_domain'] !== null) {
-            $homeDomain = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($value['home_domain']);
+            $homeDomain = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } $bytes = XdrJsonHelper::unescapeString($v); XdrEncoder::assertMaxLength(strlen($bytes), 32, 'XdrString32'); return $bytes; })($value['home_domain']);
         }
         if (!array_key_exists('signer', $value)) {
             throw new InvalidArgumentException(
@@ -392,6 +393,7 @@ class XdrSetOptionsOperation {
         $homeDomainPresent = TxRepHelper::getValue($map, $prefix . '.homeDomain._present');
         if ($homeDomainPresent !== null && $homeDomainPresent === 'true') {
             $homeDomain = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.homeDomain') ?? '');
+            XdrEncoder::assertMaxLength(strlen($homeDomain), 32, $prefix . '.homeDomain');
         }
         $signer = null;
         $signerPresent = TxRepHelper::getValue($map, $prefix . '.signer._present');

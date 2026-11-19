@@ -28,6 +28,7 @@ class XdrMemo {
             case XdrMemoType::MEMO_NONE:
                 break;
             case XdrMemoType::MEMO_TEXT:
+                XdrEncoder::assertMaxLength(strlen($this->text), 28, 'XdrMemo.text');
                 $bytes .= XdrEncoder::string($this->text);
                 break;
             case XdrMemoType::MEMO_ID:
@@ -51,7 +52,7 @@ class XdrMemo {
             case XdrMemoType::MEMO_NONE:
                 break;
             case XdrMemoType::MEMO_TEXT:
-                $result->text = $xdr->readString();
+                $result->text = $xdr->readString(28);
                 break;
             case XdrMemoType::MEMO_ID:
                 $result->id = $xdr->readUnsignedInteger64();
@@ -162,6 +163,7 @@ class XdrMemo {
             }
             $result = new static(new XdrMemoType(XdrMemoType::MEMO_TEXT));
             $result->text = XdrJsonHelper::unescapeString($value['text']);
+            XdrEncoder::assertMaxLength(strlen($result->text), 28, 'XdrMemo.text');
             return $result;
         }
         if ($key === 'id') {
@@ -252,6 +254,7 @@ class XdrMemo {
                 break;
             case XdrMemoType::MEMO_TEXT:
                 $result->text = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.text') ?? '');
+                XdrEncoder::assertMaxLength(strlen($result->text), 28, $prefix . '.text');
                 break;
             case XdrMemoType::MEMO_ID:
                 $result->id = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.id') ?? '0', $prefix . '.id');

@@ -24,7 +24,9 @@ class XdrDataEntry {
 
     public function encode(): string {
         $bytes = $this->accountID->encode();
+        XdrEncoder::assertMaxLength(strlen($this->dataName), 64, 'XdrDataEntry.dataName');
         $bytes .= XdrEncoder::string($this->dataName);
+        XdrEncoder::assertMaxLength(strlen($this->dataValue->getValue()), 64, 'XdrDataEntry.dataValue');
         $bytes .= $this->dataValue->encode();
         $bytes .= $this->ext->encode();
         return $bytes;
@@ -32,8 +34,8 @@ class XdrDataEntry {
 
     public static function decode(XdrBuffer $xdr): XdrDataEntry {
         $accountID = XdrAccountID::decode($xdr);
-        $dataName = $xdr->readString();
-        $dataValue = XdrDataValueMandatory::decode($xdr);
+        $dataName = $xdr->readString(64);
+        $dataValue = new XdrDataValueMandatory($xdr->readOpaqueVariable(64));
         $ext = XdrDataEntryExt::decode($xdr);
         return new XdrDataEntry($accountID, $dataName, $dataValue, $ext);
     }
@@ -92,13 +94,14 @@ class XdrDataEntry {
                 'Missing required field data_name for XdrDataEntry'
             );
         }
-        $dataName = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($value['data_name']);
+        $dataName = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } $bytes = XdrJsonHelper::unescapeString($v); XdrEncoder::assertMaxLength(strlen($bytes), 64, 'XdrString64'); return $bytes; })($value['data_name']);
         if (!array_key_exists('data_value', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field data_value for XdrDataEntry'
             );
         }
         $dataValue = XdrDataValueMandatory::fromJsonValue($value['data_value']);
+        XdrEncoder::assertMaxLength(strlen($dataValue->getValue()), 64, 'XdrDataEntry.dataValue');
         if (!array_key_exists('ext', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field ext for XdrDataEntry'

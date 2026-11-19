@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Negative 64-bit XDR values held as `BigInteger` read as negative. Before this change, a decoded -1 read as 18446744073709551615, and TxRep and SEP-51 JSON wrote that number.
 - On PHP 8.1, `XdrTimeBounds` keeps a time point of exactly 2^63 seconds when it decodes XDR or reads SEP-51 JSON. Before this change, it read the value as 2^63+1, so the re-encoded transaction differed.
 - `GetTransactionResponse::getXdrTransactionMeta()` decodes `resultMetaXdr`. Before this change, it decoded `resultXdr` and threw or returned a wrong object.
+- XDR decoding, encoding, TxRep, and SEP-51 JSON input reject arrays, strings, and opaque values longer than the maximum their XDR definition declares, and `TransactionBuilder::build()` rejects more than 100 operations. Before this change, the SDK accepted such values, for example a transaction with 101 operations or a 29-byte memo text.
 
 ## [1.18.0] - 2026-11-14
 

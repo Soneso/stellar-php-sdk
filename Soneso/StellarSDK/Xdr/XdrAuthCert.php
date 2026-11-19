@@ -23,6 +23,7 @@ class XdrAuthCert {
     public function encode(): string {
         $bytes = $this->pubkey->encode();
         $bytes .= XdrEncoder::unsignedInteger64($this->expiration);
+        XdrEncoder::assertMaxLength(strlen($this->sig), 64, 'XdrAuthCert.sig');
         $bytes .= XdrEncoder::opaqueVariable($this->sig);
         return $bytes;
     }
@@ -30,7 +31,7 @@ class XdrAuthCert {
     public static function decode(XdrBuffer $xdr): XdrAuthCert {
         $pubkey = XdrCurve25519Public::decode($xdr);
         $expiration = $xdr->readUnsignedInteger64();
-        $sig = $xdr->readOpaqueVariable();
+        $sig = $xdr->readOpaqueVariable(64);
         return new XdrAuthCert($pubkey, $expiration, $sig);
     }
 
@@ -91,7 +92,7 @@ class XdrAuthCert {
                 'Missing required field sig for XdrAuthCert'
             );
         }
-        $sig = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['sig']);
+        $sig = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } $bytes = XdrJsonHelper::hexToBytes($v); XdrEncoder::assertMaxLength(strlen($bytes), 64, 'XdrSignature'); return $bytes; })($value['sig']);
         return new static($pubkey, $expiration, $sig);
     }
 

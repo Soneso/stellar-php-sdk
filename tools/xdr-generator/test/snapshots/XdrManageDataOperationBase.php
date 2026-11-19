@@ -19,8 +19,10 @@ class XdrManageDataOperationBase {
     }
 
     public function encode(): string {
+        XdrEncoder::assertMaxLength(strlen($this->dataName), 64, 'XdrManageDataOperation.dataName');
         $bytes = XdrEncoder::string($this->dataName);
         if ($this->dataValue !== null) {
+            XdrEncoder::assertMaxLength(strlen($this->dataValue), 64, 'XdrManageDataOperation.dataValue');
             $bytes .= XdrEncoder::integer32(1);
             $bytes .= XdrEncoder::opaqueVariable($this->dataValue);
         } else {
@@ -30,10 +32,10 @@ class XdrManageDataOperationBase {
     }
 
     public static function decode(XdrBuffer $xdr): static {
-        $dataName = $xdr->readString();
+        $dataName = $xdr->readString(64);
         $dataValue = null;
         if ($xdr->readOptionalPresence('XdrManageDataOperation.dataValue')) {
-            $dataValue = $xdr->readOpaqueVariable();
+            $dataValue = $xdr->readOpaqueVariable(64);
         }
         return is_a(static::class, XdrManageDataOperation::class, true)
             ? new static($dataName, new XdrDataValue($dataValue))
@@ -86,12 +88,14 @@ class XdrManageDataOperationBase {
             throw new InvalidArgumentException('Expected string for data_name, got ' . get_debug_type($value['data_name']));
         }
         $dataName = XdrJsonHelper::unescapeString($value['data_name']);
+        XdrEncoder::assertMaxLength(strlen($dataName), 64, 'XdrManageDataOperation.dataName');
         $dataValue = null;
         if ($value['data_value'] !== null) {
             if (!is_string($value['data_value'])) {
                 throw new InvalidArgumentException('Expected hex string or null for data_value, got ' . get_debug_type($value['data_value']));
             }
             $dataValue = XdrJsonHelper::hexToBytes($value['data_value']);
+            XdrEncoder::assertMaxLength(strlen($dataValue), 64, 'XdrManageDataOperation.dataValue');
         }
         return is_a(static::class, XdrManageDataOperation::class, true)
             ? new static($dataName, new XdrDataValue($dataValue))
@@ -133,10 +137,12 @@ class XdrManageDataOperationBase {
 
     public static function fromTxRep(array $map, string $prefix): static {
         $dataName = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.dataName') ?? '');
+        XdrEncoder::assertMaxLength(strlen($dataName), 64, $prefix . '.dataName');
         $dataValue = null;
         $dataValuePresent = TxRepHelper::getValue($map, $prefix . '.dataValue._present');
         if ($dataValuePresent !== null && $dataValuePresent === 'true') {
             $dataValue = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.dataValue') ?? '');
+            XdrEncoder::assertMaxLength(strlen($dataValue), 64, $prefix . '.dataValue');
         }
         return is_a(static::class, XdrManageDataOperation::class, true)
             ? new static($dataName, new XdrDataValue($dataValue))

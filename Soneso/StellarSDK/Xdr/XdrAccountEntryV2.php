@@ -25,6 +25,7 @@ class XdrAccountEntryV2 {
     public function encode(): string {
         $bytes = XdrEncoder::unsignedInteger32($this->numSponsored);
         $bytes .= XdrEncoder::unsignedInteger32($this->numSponsoring);
+        XdrEncoder::assertMaxLength(count($this->signerSponsoringIDs), 20, 'XdrAccountEntryV2.signerSponsoringIDs');
         $signerSponsoringIDsCount = count($this->signerSponsoringIDs);
         $bytes .= XdrEncoder::integer32($signerSponsoringIDsCount);
         foreach ($this->signerSponsoringIDs as $signerSponsoringIDsItem) {
@@ -43,7 +44,7 @@ class XdrAccountEntryV2 {
         $numSponsored = $xdr->readUnsignedInteger32();
         $numSponsoring = $xdr->readUnsignedInteger32();
         $signerSponsoringIDs = [];
-        $signerSponsoringIDsSize = $xdr->readArrayLength();
+        $signerSponsoringIDsSize = $xdr->readBoundedArrayLength(20);
         for ($i = 0; $i < $signerSponsoringIDsSize; $i++) {
             if ($xdr->readOptionalPresence('XdrAccountEntryV2.signerSponsoringIDs')) {
                 $signerSponsoringIDs[] = XdrAccountID::decode($xdr);
@@ -119,6 +120,7 @@ class XdrAccountEntryV2 {
             if (!is_array($v)) {
                 throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
+            XdrEncoder::assertMaxLength(count($v), 20, 'XdrAccountEntryV2.signerSponsoringIDs');
             $out = [];
             foreach ($v as $item) { $out[] = ($item === null ? null : XdrAccountID::fromJsonValue($item)); }
             return $out;

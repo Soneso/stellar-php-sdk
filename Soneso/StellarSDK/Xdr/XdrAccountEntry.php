@@ -47,8 +47,10 @@ class XdrAccountEntry {
             $bytes .= XdrEncoder::integer32(0);
         }
         $bytes .= XdrEncoder::unsignedInteger32($this->flags);
+        XdrEncoder::assertMaxLength(strlen($this->homeDomain), 32, 'XdrAccountEntry.homeDomain');
         $bytes .= XdrEncoder::string($this->homeDomain);
         $bytes .= XdrEncoder::opaqueFixed($this->thresholds, 4);
+        XdrEncoder::assertMaxLength(count($this->signers), 20, 'XdrAccountEntry.signers');
         $signersCount = count($this->signers);
         $bytes .= XdrEncoder::integer32($signersCount);
         foreach ($this->signers as $signersItem) {
@@ -68,10 +70,10 @@ class XdrAccountEntry {
             $inflationDest = XdrAccountID::decode($xdr);
         }
         $flags = $xdr->readUnsignedInteger32();
-        $homeDomain = $xdr->readString();
+        $homeDomain = $xdr->readString(32);
         $thresholds = $xdr->readOpaqueFixed(4);
         $signers = [];
-        $signersSize = $xdr->readArrayLength();
+        $signersSize = $xdr->readBoundedArrayLength(20);
         for ($i = 0; $i < $signersSize; $i++) {
             $signers[] = XdrSigner::decode($xdr);
         }
@@ -184,7 +186,7 @@ class XdrAccountEntry {
                 'Missing required field home_domain for XdrAccountEntry'
             );
         }
-        $homeDomain = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::unescapeString($v); })($value['home_domain']);
+        $homeDomain = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } $bytes = XdrJsonHelper::unescapeString($v); XdrEncoder::assertMaxLength(strlen($bytes), 32, 'XdrString32'); return $bytes; })($value['home_domain']);
         if (!array_key_exists('thresholds', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field thresholds for XdrAccountEntry'
@@ -200,6 +202,7 @@ class XdrAccountEntry {
             if (!is_array($v)) {
                 throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
+            XdrEncoder::assertMaxLength(count($v), 20, 'XdrAccountEntry.signers');
             $out = [];
             foreach ($v as $item) { $out[] = XdrSigner::fromJsonValue($item); }
             return $out;

@@ -19,14 +19,16 @@ class XdrSCSpecUDTUnionCaseVoidV0 {
     }
 
     public function encode(): string {
+        XdrEncoder::assertMaxLength(strlen($this->doc), 1024, 'XdrSCSpecUDTUnionCaseVoidV0.doc');
         $bytes = XdrEncoder::string($this->doc);
+        XdrEncoder::assertMaxLength(strlen($this->name), 60, 'XdrSCSpecUDTUnionCaseVoidV0.name');
         $bytes .= XdrEncoder::string($this->name);
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr): XdrSCSpecUDTUnionCaseVoidV0 {
-        $doc = $xdr->readString();
-        $name = $xdr->readString();
+        $doc = $xdr->readString(1024);
+        $name = $xdr->readString(60);
         return new XdrSCSpecUDTUnionCaseVoidV0($doc, $name);
     }
 
@@ -76,6 +78,7 @@ class XdrSCSpecUDTUnionCaseVoidV0 {
             throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['doc']));
         }
         $doc = XdrJsonHelper::unescapeString($value['doc']);
+        XdrEncoder::assertMaxLength(strlen($doc), 1024, 'XdrSCSpecUDTUnionCaseVoidV0.doc');
         if (!array_key_exists('name', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field name for XdrSCSpecUDTUnionCaseVoidV0'
@@ -85,6 +88,7 @@ class XdrSCSpecUDTUnionCaseVoidV0 {
             throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['name']));
         }
         $name = XdrJsonHelper::unescapeString($value['name']);
+        XdrEncoder::assertMaxLength(strlen($name), 60, 'XdrSCSpecUDTUnionCaseVoidV0.name');
         return new static($doc, $name);
     }
 

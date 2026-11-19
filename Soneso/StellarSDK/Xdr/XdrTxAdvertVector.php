@@ -19,6 +19,7 @@ class XdrTxAdvertVector {
 
     public function encode(): string {
         $count = count($this->txAdvertVector);
+        XdrEncoder::assertMaxLength($count, 1000, 'XdrTxAdvertVector');
         $bytes = XdrEncoder::integer32($count);
         foreach ($this->txAdvertVector as $item) {
             $bytes .= XdrEncoder::opaqueFixed($item, 32);
@@ -28,7 +29,7 @@ class XdrTxAdvertVector {
 
     public static function decode(XdrBuffer $xdr): XdrTxAdvertVector {
         $txAdvertVector = [];
-        $size = $xdr->readArrayLength();
+        $size = $xdr->readBoundedArrayLength(1000);
         for ($i = 0; $i < $size; $i++) {
             $txAdvertVector[] = $xdr->readOpaqueFixed(32);
         }
@@ -60,6 +61,7 @@ class XdrTxAdvertVector {
                 'Expected JSON array for XdrTxAdvertVector, got ' . get_debug_type($value)
             );
         }
+        XdrEncoder::assertMaxLength(count($value), 1000, 'XdrTxAdvertVector');
         $out = [];
         foreach ($value as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($item); }
         return new static($out);

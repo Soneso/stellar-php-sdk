@@ -20,13 +20,14 @@ class XdrError {
 
     public function encode(): string {
         $bytes = $this->code->encode();
+        XdrEncoder::assertMaxLength(strlen($this->msg), 100, 'XdrError.msg');
         $bytes .= XdrEncoder::string($this->msg);
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr): XdrError {
         $code = XdrErrorCode::decode($xdr);
-        $msg = $xdr->readString();
+        $msg = $xdr->readString(100);
         return new XdrError($code, $msg);
     }
 
@@ -82,6 +83,7 @@ class XdrError {
             throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['msg']));
         }
         $msg = XdrJsonHelper::unescapeString($value['msg']);
+        XdrEncoder::assertMaxLength(strlen($msg), 100, 'XdrError.msg');
         return new static($code, $msg);
     }
 

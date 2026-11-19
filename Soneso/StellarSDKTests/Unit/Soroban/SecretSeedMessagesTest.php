@@ -867,7 +867,6 @@ class SecretSeedMessagesTest extends TestCase
             'bytes' => [fn (string $c) => XdrSCVal::forBytes($c)],
             'string after a line break' => [fn (string $c) => XdrSCVal::forString("\n" . $c)],
             'string after a tab' => [fn (string $c) => XdrSCVal::forString("\t" . $c)],
-            'symbol' => [fn (string $c) => XdrSCVal::forSymbol($c)],
             'executable tag' => [fn (string $c) => XdrSCVal::forExecutableTag($c)],
             'bytes in a map in a vector' => [fn (string $c) => XdrSCVal::forVec([XdrSCVal::forU32(1),
                 XdrSCVal::forMap([new XdrSCMapEntry(XdrSCVal::forSymbol('k'), XdrSCVal::forBytes($c))])])],
@@ -898,6 +897,20 @@ class SecretSeedMessagesTest extends TestCase
                 $this->assertStringNotContainsString($encoded, $error->getMessage(), $name);
             }
             $this->assertSame($original, $key->toBase64Xdr(), $name . ': the key passed in is unchanged');
+        }
+    }
+
+    public function testDuplicateSymbolKeyLongerThanASymbolIsNotShown(): void
+    {
+        $variants = SecretSeedVariants::create();
+        foreach ($variants->variants as $name => $variant) {
+            $error = $this->thrown(fn (string $v) => XdrSCVal::forMap([
+                new XdrSCMapEntry(XdrSCVal::forSymbol($v), XdrSCVal::forVoid()),
+                new XdrSCMapEntry(XdrSCVal::forSymbol($v), XdrSCVal::forTrue()),
+            ]), $variant['input'], $name);
+            $this->assertInstanceOf(InvalidArgumentException::class, $error, $name);
+            $this->assertSame('Duplicate SCMap key (not shown, it may hold a secret seed)', $error->getMessage(), $name);
+            $variants->assertNotShown($error, $name);
         }
     }
 

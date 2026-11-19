@@ -7,9 +7,11 @@
 namespace Soneso\StellarSDK\SEP\TxRep;
 
 use InvalidArgumentException;
+use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Xdr\TxRepHelper;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
+use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrFeeBumpTransaction;
 use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionEnvelope;
@@ -352,6 +354,7 @@ class TxRep
             throw new InvalidArgumentException('missing or invalid ' . $prefix . '.operations.len');
         }
         $opsLen = TxRepHelper::parseUint32($opsLenStr, $prefix . '.operations.len');
+        XdrEncoder::assertMaxLength($opsLen, StellarConstants::MAX_OPERATIONS_PER_TRANSACTION, $prefix . '.operations.len');
         $operations = [];
         for ($i = 0; $i < $opsLen; $i++) {
             $operations[] = XdrOperation::fromTxRep($map, $prefix . '.operations[' . $i . ']');
@@ -407,8 +410,10 @@ class TxRep
             } else {
                 $text = $raw;
             }
+            $text = (string)$text;
+            XdrEncoder::assertMaxLength(strlen($text), StellarConstants::MEMO_TEXT_MAX_LENGTH, $prefix . '.text');
             $memo = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_TEXT));
-            $memo->setText((string)$text);
+            $memo->setText($text);
             return $memo;
         }
 
@@ -460,6 +465,8 @@ class TxRep
             return [];
         }
         $count = TxRepHelper::parseUint32($lenStr, $prefix . 'signatures.len');
+        // The XDR definition of every transaction envelope declares signatures<20>.
+        XdrEncoder::assertMaxLength($count, 20, $prefix . 'signatures.len');
         $sigs  = [];
         for ($i = 0; $i < $count; $i++) {
             $hintHex = TxRepHelper::getValue($map, $prefix . 'signatures[' . $i . '].hint');

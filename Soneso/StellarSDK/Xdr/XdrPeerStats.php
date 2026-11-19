@@ -46,6 +46,7 @@ class XdrPeerStats {
 
     public function encode(): string {
         $bytes = $this->id->encode();
+        XdrEncoder::assertMaxLength(strlen($this->versionStr), 100, 'XdrPeerStats.versionStr');
         $bytes .= XdrEncoder::string($this->versionStr);
         $bytes .= XdrEncoder::unsignedInteger64($this->messagesRead);
         $bytes .= XdrEncoder::unsignedInteger64($this->messagesWritten);
@@ -65,7 +66,7 @@ class XdrPeerStats {
 
     public static function decode(XdrBuffer $xdr): XdrPeerStats {
         $id = XdrNodeID::decode($xdr);
-        $versionStr = $xdr->readString();
+        $versionStr = $xdr->readString(100);
         $messagesRead = $xdr->readUnsignedInteger64();
         $messagesWritten = $xdr->readUnsignedInteger64();
         $bytesRead = $xdr->readUnsignedInteger64();
@@ -173,6 +174,7 @@ class XdrPeerStats {
             throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['version_str']));
         }
         $versionStr = XdrJsonHelper::unescapeString($value['version_str']);
+        XdrEncoder::assertMaxLength(strlen($versionStr), 100, 'XdrPeerStats.versionStr');
         if (!array_key_exists('messages_read', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field messages_read for XdrPeerStats'

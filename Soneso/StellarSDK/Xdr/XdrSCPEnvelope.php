@@ -20,13 +20,14 @@ class XdrSCPEnvelope {
 
     public function encode(): string {
         $bytes = $this->statement->encode();
+        XdrEncoder::assertMaxLength(strlen($this->signature), 64, 'XdrSCPEnvelope.signature');
         $bytes .= XdrEncoder::opaqueVariable($this->signature);
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr): XdrSCPEnvelope {
         $statement = XdrSCPStatement::decode($xdr);
-        $signature = $xdr->readOpaqueVariable();
+        $signature = $xdr->readOpaqueVariable(64);
         return new XdrSCPEnvelope($statement, $signature);
     }
 
@@ -78,7 +79,7 @@ class XdrSCPEnvelope {
                 'Missing required field signature for XdrSCPEnvelope'
             );
         }
-        $signature = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['signature']);
+        $signature = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } $bytes = XdrJsonHelper::hexToBytes($v); XdrEncoder::assertMaxLength(strlen($bytes), 64, 'XdrSignature'); return $bytes; })($value['signature']);
         return new static($statement, $signature);
     }
 

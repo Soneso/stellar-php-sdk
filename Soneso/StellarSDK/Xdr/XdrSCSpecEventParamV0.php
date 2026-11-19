@@ -23,7 +23,9 @@ class XdrSCSpecEventParamV0 {
     }
 
     public function encode(): string {
+        XdrEncoder::assertMaxLength(strlen($this->doc), 1024, 'XdrSCSpecEventParamV0.doc');
         $bytes = XdrEncoder::string($this->doc);
+        XdrEncoder::assertMaxLength(strlen($this->name), 30, 'XdrSCSpecEventParamV0.name');
         $bytes .= XdrEncoder::string($this->name);
         $bytes .= $this->type->encode();
         $bytes .= $this->location->encode();
@@ -31,8 +33,8 @@ class XdrSCSpecEventParamV0 {
     }
 
     public static function decode(XdrBuffer $xdr): XdrSCSpecEventParamV0 {
-        $doc = $xdr->readString();
-        $name = $xdr->readString();
+        $doc = $xdr->readString(1024);
+        $name = $xdr->readString(30);
         $type = XdrSCSpecTypeDef::decode($xdr);
         $location = XdrSCSpecEventParamLocationV0::decode($xdr);
         return new XdrSCSpecEventParamV0($doc, $name, $type, $location);
@@ -91,6 +93,7 @@ class XdrSCSpecEventParamV0 {
             throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['doc']));
         }
         $doc = XdrJsonHelper::unescapeString($value['doc']);
+        XdrEncoder::assertMaxLength(strlen($doc), 1024, 'XdrSCSpecEventParamV0.doc');
         if (!array_key_exists('name', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field name for XdrSCSpecEventParamV0'
@@ -100,6 +103,7 @@ class XdrSCSpecEventParamV0 {
             throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($value['name']));
         }
         $name = XdrJsonHelper::unescapeString($value['name']);
+        XdrEncoder::assertMaxLength(strlen($name), 30, 'XdrSCSpecEventParamV0.name');
         if (!array_key_exists('type', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field type for XdrSCSpecEventParamV0'

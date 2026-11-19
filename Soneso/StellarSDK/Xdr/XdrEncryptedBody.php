@@ -17,11 +17,12 @@ class XdrEncryptedBody {
     }
 
     public function encode(): string {
+        XdrEncoder::assertMaxLength(strlen($this->encryptedBody), 64000, 'XdrEncryptedBody');
         return XdrEncoder::opaqueVariable($this->encryptedBody);
     }
 
     public static function decode(XdrBuffer $xdr): XdrEncryptedBody {
-        return new XdrEncryptedBody($xdr->readOpaqueVariable());
+        return new XdrEncryptedBody($xdr->readOpaqueVariable(64000));
     }
 
     public function toBase64Xdr(): string {
@@ -49,7 +50,9 @@ class XdrEncryptedBody {
                 'Expected string for XdrEncryptedBody JSON value, got ' . get_debug_type($value)
             );
         }
-        return new static(XdrJsonHelper::hexToBytes($value));
+        $bytes = XdrJsonHelper::hexToBytes($value);
+        XdrEncoder::assertMaxLength(strlen($bytes), 64000, 'XdrEncryptedBody');
+        return new static($bytes);
     }
 
     /**
