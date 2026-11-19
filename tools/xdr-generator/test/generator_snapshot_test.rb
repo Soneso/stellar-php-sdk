@@ -12,6 +12,15 @@ class GeneratorSnapshotTest < Minitest::Test
   # Configuration sanity checks
   # ------------------------------------------------------------------
 
+  def test_generated_txrep_round_trips_read_through_wrappers
+    files = Dir.glob(File.join(OUTPUT_DIR, '..', '..', 'StellarSDKTests', 'Unit', 'Xdr', 'Generated', '*.php'))
+    refute_empty files
+    files.each do |file|
+      base_reads = File.read(file).scan(/\b(Xdr\w+)Base::fromTxRep\(/).flatten & BASE_WRAPPER_TYPES
+      assert_empty base_reads, "#{File.basename(file)} reads through bases: #{base_reads.join(', ')}"
+    end
+  end
+
   def test_txrep_integer_widths
     { 'XdrPrice.php' => ['parseInt32', '.n'], 'XdrSCValBase.php' => ['parseUint64', '.u64'],
       'XdrSetOptionsOperation.php' => ['parseUint32', '.lowThreshold'],
@@ -87,6 +96,12 @@ class GeneratorSnapshotTest < Minitest::Test
 
   def test_snapshot_xdr_price
     assert_snapshot_match("XdrPrice.php")
+  end
+
+  def test_snapshot_struct_wrapper_constructors
+    %w[XdrTransactionBase XdrTransactionV0Base XdrManageDataOperationBase XdrTimeBoundsBase].each do |type|
+      assert_snapshot_match("#{type}.php")
+    end
   end
 
   def test_snapshot_xdr_asset

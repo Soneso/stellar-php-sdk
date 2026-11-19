@@ -2738,7 +2738,7 @@ class XdrContractGenTest extends TestCase
         $original = new XdrMuxedAccountMed25519(42, str_repeat("\xAB", 32));
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrMuxedAccountMed25519Base::fromTxRep($lines, 'test');
+        $reconstructed = XdrMuxedAccountMed25519::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrMuxedAccountMed25519');
     }
 
@@ -2756,7 +2756,7 @@ class XdrContractGenTest extends TestCase
         $original = XdrSCAddress::forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrSCAddressBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrSCAddress::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCAddress');
     }
 
@@ -2774,7 +2774,7 @@ class XdrContractGenTest extends TestCase
         $original = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrContractExecutableBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrContractExecutable::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrContractExecutable');
     }
 
@@ -2801,7 +2801,7 @@ class XdrContractGenTest extends TestCase
         $original = new XdrSCVal(new XdrSCValType(XdrSCValType::SCV_VOID));
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrSCValBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrSCVal::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrSCVal');
     }
 

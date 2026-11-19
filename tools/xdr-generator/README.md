@@ -103,6 +103,7 @@ Soneso/StellarSDK/Xdr/XdrSCVal.php       <- hand-maintained (factory methods suc
 ```
 
 The full list of wrapper types is in `generator/type_overrides.rb` (`BASE_WRAPPER_TYPES`).
+`WRAPPER_CONSTRUCTORS` in that file lists the struct wrappers whose constructor differs from the base, with the arguments the generated `decode()`, `fromTxRep()` and `fromJsonValue()` pass to it.
 
 ## Override files
 

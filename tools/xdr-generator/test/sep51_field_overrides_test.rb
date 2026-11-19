@@ -185,6 +185,26 @@ class Sep51FieldOverridesTest < Minitest::Test
   # Override-precedence-chain enforcement
   # ------------------------------------------------------------------
 
+  def test_struct_wrapper_uses_base_field_overrides_and_wrapper_error_name
+    registry = SEP51_FIELD_OVERRIDES
+    Object.send(:remove_const, :SEP51_FIELD_OVERRIDES)
+    Object.const_set(:SEP51_FIELD_OVERRIDES, registry.merge(
+      ['XdrTransactionBase', 'fee'] => {
+        proc: { to: ->(value) { "probeTo(#{value})" }, from: ->(value) { "probeFrom(#{value})" } }
+      }
+    ).freeze)
+    field = { name: 'fee', xdr_name: 'fee', php_type: 'int', decl: nil,
+              is_optional: false, is_array: false, is_ext_point: false }
+    out = StringIO.new
+    @gen.send(:render_struct_sep51_methods, out, 'XdrTransaction', 'XdrTransactionBase', [field])
+    assert out.string.include?('probeTo($this->fee)'), 'Base-keyed override must apply to the JSON writer'
+    assert out.string.include?("probeFrom($value['fee'])"), 'Base-keyed override must apply to the JSON reader'
+    assert_includes out.string, 'Expected object for XdrTransaction JSON value'
+  ensure
+    Object.send(:remove_const, :SEP51_FIELD_OVERRIDES)
+    Object.const_set(:SEP51_FIELD_OVERRIDES, registry)
+  end
+
   def test_strkey_encoder_method_picks_hex_or_raw_per_encoding_discriminator
     assert_equal 'encodeLiquidityPoolIdHex',
                  @gen.send(:strkey_encoder_method, :liquidity_pool, :hex, :encode)

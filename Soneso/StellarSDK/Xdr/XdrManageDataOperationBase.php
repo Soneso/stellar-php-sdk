@@ -35,7 +35,9 @@ class XdrManageDataOperationBase {
         if ($xdr->readOptionalPresence('XdrManageDataOperation.dataValue')) {
             $dataValue = $xdr->readOpaqueVariable();
         }
-        return new static($dataName, $dataValue);
+        return is_a(static::class, XdrManageDataOperation::class, true)
+            ? new static($dataName, new XdrDataValue($dataValue))
+            : new static($dataName, $dataValue);
     }
 
     public function getDataName(): string { return $this->dataName; }
@@ -72,33 +74,25 @@ class XdrManageDataOperationBase {
             );
         }
         XdrJsonHelper::rejectUnknownFields($value, ['data_name', 'data_value'], 'XdrManageDataOperation');
-        if (!array_key_exists('data_name', $value)) {
-            throw new InvalidArgumentException(
-                'Missing required field data_name for XdrManageDataOperation'
-            );
-        }
-        if (!array_key_exists('data_value', $value)) {
-            throw new InvalidArgumentException(
-                'Missing required field data_value for XdrManageDataOperation'
-            );
+        foreach (['data_name', 'data_value'] as $required) {
+            if (!array_key_exists($required, $value)) {
+                throw new InvalidArgumentException('Missing required field ' . $required . ' for XdrManageDataOperation');
+            }
         }
         if (!is_string($value['data_name'])) {
-            throw new InvalidArgumentException(
-                'Expected string for data_name, got ' . get_debug_type($value['data_name'])
-            );
+            throw new InvalidArgumentException('Expected string for data_name, got ' . get_debug_type($value['data_name']));
         }
         $dataName = XdrJsonHelper::unescapeString($value['data_name']);
-        $rawBytes = null;
+        $dataValue = null;
         if ($value['data_value'] !== null) {
             if (!is_string($value['data_value'])) {
-                throw new InvalidArgumentException(
-                    'Expected hex string or null for data_value, got ' . get_debug_type($value['data_value'])
-                );
+                throw new InvalidArgumentException('Expected hex string or null for data_value, got ' . get_debug_type($value['data_value']));
             }
-            $rawBytes = XdrJsonHelper::hexToBytes($value['data_value']);
+            $dataValue = XdrJsonHelper::hexToBytes($value['data_value']);
         }
-        // Wrapper signature: (string $key, XdrDataValue $value).
-        return new static($dataName, new XdrDataValue($rawBytes));
+        return is_a(static::class, XdrManageDataOperation::class, true)
+            ? new static($dataName, new XdrDataValue($dataValue))
+            : new static($dataName, $dataValue);
     }
 
     /**
@@ -141,6 +135,8 @@ class XdrManageDataOperationBase {
         if ($dataValuePresent !== null && $dataValuePresent === 'true') {
             $dataValue = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.dataValue') ?? '');
         }
-        return new static($dataName, $dataValue);
+        return is_a(static::class, XdrManageDataOperation::class, true)
+            ? new static($dataName, new XdrDataValue($dataValue))
+            : new static($dataName, $dataValue);
     }
 }

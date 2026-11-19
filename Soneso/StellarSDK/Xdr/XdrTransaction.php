@@ -49,53 +49,6 @@ class XdrTransaction extends XdrTransactionBase
         parent::__construct($sourceAccount, $fee, $sequenceNumber, $preconditions, $memo, $operations, $ext);
     }
 
-    public static function decode(XdrBuffer $xdr): static {
-        $sourceAccount = XdrMuxedAccount::decode($xdr);
-        $fee = $xdr->readUnsignedInteger32();
-        $sequenceNumber = XdrSequenceNumber::decode($xdr);
-        $preconditions = XdrPreconditions::decode($xdr);
-        $memo = XdrMemo::decode($xdr);
-        $operations = [];
-        $operationsSize = $xdr->readArrayLength();
-        for ($i = 0; $i < $operationsSize; $i++) {
-            $operations[] = XdrOperation::decode($xdr);
-        }
-        $ext = XdrTransactionExt::decode($xdr);
-        return new static($sourceAccount, $sequenceNumber, $operations, $fee, $memo, $preconditions, $ext);
-    }
-
-    /**
-     * @return XdrMuxedAccount
-     */
-    public function getSourceAccount(): XdrMuxedAccount
-    {
-        return $this->sourceAccount;
-    }
-
-    /**
-     * @return int
-     */
-    public function getFee(): int
-    {
-        return $this->fee;
-    }
-
-    /**
-     * @return XdrSequenceNumber
-     */
-    public function getSequenceNumber(): XdrSequenceNumber
-    {
-        return $this->sequenceNumber;
-    }
-
-    /**
-     * @return XdrPreconditions
-     */
-    public function getPreconditions(): XdrPreconditions
-    {
-        return $this->preconditions;
-    }
-
     /**
      * @return XdrTimeBounds|null
      */
@@ -107,29 +60,5 @@ class XdrTransaction extends XdrTransactionBase
             return $this->preconditions->getV2()->getTimeBounds();
         }
         return null;
-    }
-
-    /**
-     * @return XdrMemo
-     */
-    public function getMemo(): XdrMemo
-    {
-        return $this->memo;
-    }
-
-    /**
-     * @return array<XdrOperation>
-     */
-    public function getOperations(): array
-    {
-        return $this->operations;
-    }
-
-    /**
-     * @return XdrTransactionExt
-     */
-    public function getExt(): XdrTransactionExt
-    {
-        return $this->ext;
     }
 }

@@ -256,9 +256,13 @@ class XdrSCValBase {
     public function setStr(?string $str): void { $this->str = $str; }
     public function getSym(): ?string { return $this->sym; }
     public function setSym(?string $sym): void { $this->sym = $sym; }
+    /** @return array<XdrSCVal>|null */
     public function getVec(): ?array { return $this->vec; }
+    /** @param array<XdrSCVal>|null $vec */
     public function setVec(?array $vec): void { $this->vec = $vec; }
+    /** @return array<XdrSCMapEntry>|null */
     public function getMap(): ?array { return $this->map; }
+    /** @param array<XdrSCMapEntry>|null $map */
     public function setMap(?array $map): void { $this->map = $map; }
     public function getAddress(): ?XdrSCAddress { return $this->address; }
     public function setAddress(?XdrSCAddress $address): void { $this->address = $address; }

@@ -2644,19 +2644,8 @@ def has_from_txrep?(php_name)
   false
 end
 
-# Determine which class to use for fromTxRep calls.
-# For BASE_WRAPPER_TYPES, the wrapper may override fromTxRep.
+# Generated TxRep round trips read through the class users call.
 def from_txrep_class(php_name)
-  if BASE_WRAPPER_TYPES.include?(php_name)
-    wrapper_file = File.join("Soneso", "StellarSDK", "Xdr", "#{php_name}.php")
-    if File.exist?(wrapper_file) && File.read(wrapper_file).include?("function fromTxRep(")
-      return php_name
-    end
-    base_file = File.join("Soneso", "StellarSDK", "Xdr", "#{php_name}Base.php")
-    if File.exist?(base_file) && File.read(base_file).include?("function fromTxRep(")
-      return "#{php_name}Base"
-    end
-  end
   php_name
 end
 

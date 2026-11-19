@@ -6817,7 +6817,7 @@ class XdrLedgerEntriesGenTest extends TestCase
         $original = new XdrAssetAlphaNum4(str_repeat("\xAB", 4), XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'));
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrAssetAlphaNum4Base::fromTxRep($lines, 'test');
+        $reconstructed = XdrAssetAlphaNum4::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrAssetAlphaNum4');
     }
 
@@ -6826,7 +6826,7 @@ class XdrLedgerEntriesGenTest extends TestCase
         $original = new XdrAssetAlphaNum12(str_repeat("\xAB", 12), XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'));
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrAssetAlphaNum12Base::fromTxRep($lines, 'test');
+        $reconstructed = XdrAssetAlphaNum12::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrAssetAlphaNum12');
     }
 
@@ -7306,7 +7306,7 @@ class XdrLedgerEntriesGenTest extends TestCase
         $original = new XdrLedgerKeyAccount(XdrAccountID::fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'));
         $lines = [];
         $original->toTxRep('test', $lines);
-        $reconstructed = XdrLedgerKeyAccountBase::fromTxRep($lines, 'test');
+        $reconstructed = XdrLedgerKeyAccount::fromTxRep($lines, 'test');
         $this->assertEquals($original->toBase64Xdr(), $reconstructed->toBase64Xdr(), 'TxRep roundtrip failed for XdrLedgerKeyAccount');
     }
 

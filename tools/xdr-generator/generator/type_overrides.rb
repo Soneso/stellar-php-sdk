@@ -109,6 +109,17 @@ BASE_WRAPPER_TYPES = %w[
   XdrSCSpecUDTUnionCaseV0
 ].freeze
 
+# Wrapper constructor arguments over the decoded struct fields.
+WRAPPER_CONSTRUCTORS = {
+  'XdrTransaction' => %w[$sourceAccount $sequenceNumber $operations $fee $memo $preconditions $ext],
+  'XdrTransactionV0' => %w[$sourceAccountEd25519 $seqNum $operations $fee $memo $timeBounds $ext],
+  'XdrManageDataOperation' => ['$dataName', 'new XdrDataValue($dataValue)'],
+  'XdrTimeBounds' => [
+    "(new \\DateTime('@0'))->setTimestamp($minTimestamp)",
+    "(new \\DateTime('@0'))->setTimestamp($maxTimestamp)",
+  ],
+}.freeze
+
 # ---------------------------------------------------------------------------
 # SELF_REFERENCING_BASE_TYPES
 # Base types that import their own wrapper (e.g., XdrSCValBase has List<XdrSCVal>).
