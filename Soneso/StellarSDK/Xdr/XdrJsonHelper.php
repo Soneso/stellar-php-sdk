@@ -32,12 +32,19 @@ final class XdrJsonHelper
     private const UNKNOWN_FIELD_REPORT_LIMIT = 5;
 
     /**
-     * Object nesting depth accepted by the text decode path.
+     * Deepest nesting of JSON objects and arrays that XDR-JSON text may have.
      *
-     * Matches json_decode's own default so a document deeper than the
-     * duplicate-key pre-scan tracks is one json_decode rejects anyway.
+     * {@see self::decodeText} refuses a deeper document and {@see self::encodeText} a
+     * deeper value. The limit holds every value the binary decoder accepts: its depth
+     * guard ({@see XdrBuffer::DECODE_DEPTH_LIMIT}) lets the deepest record nest 1,028
+     * objects and arrays. It bounds the call stack that encoding, sorting with
+     * {@see self::ksortRecursive} and releasing a decoded value need, and it stays below
+     * 1,667, where json_decode's parser stops for objects nested as later members.
      */
-    private const DECODE_MAX_DEPTH = 512;
+    public const JSON_DEPTH_LIMIT = 1100;
+
+    /** json_decode's depth argument counts one level more than the containers it accepts. */
+    private const DECODE_DEPTH = self::JSON_DEPTH_LIMIT + 1;
 
     /**
      * SEP-51 String type: escape bytes per the SEP-51 String escape ladder.
@@ -615,13 +622,13 @@ final class XdrJsonHelper
      *
      * @param string $json Any valid JSON string.
      * @return string Canonical (sorted-keys, compact) JSON string.
-     * @throws JsonException On malformed input JSON.
+     * @throws JsonException On malformed input JSON, or input nested deeper than
+     *     {@see self::JSON_DEPTH_LIMIT}.
      */
     public static function canonicalJson(string $json): string
     {
-        $decoded = json_decode($json, false, 512, JSON_THROW_ON_ERROR);
-        $sorted = self::ksortRecursive($decoded, 512);
-        return json_encode($sorted, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $decoded = json_decode($json, false, self::DECODE_DEPTH, JSON_THROW_ON_ERROR);
+        return self::encodeText(self::ksortRecursive($decoded));
     }
 
     /**
@@ -635,17 +642,16 @@ final class XdrJsonHelper
      *     decode but covered for callers using this method directly on mixed structures).
      *   - Scalar / null: return as-is.
      *
-     * The $depth parameter bounds recursion depth, matching json_decode's own default of 512.
-     * Callers constructing deeply-nested PHP arrays by hand and passing them directly here
-     * (rather than via canonicalJson) should pass an appropriate depth bound. canonicalJson
-     * starts the recursion at depth=512 which aligns with json_decode's own limit.
+     * The $depth parameter bounds the recursion. Its default, {@see self::JSON_DEPTH_LIMIT},
+     * sorts every value canonicalJson decodes; a caller passing a value built by hand may
+     * pass another bound.
      *
      * @param mixed $value Any decoded JSON value.
      * @param int   $depth Remaining recursion depth. Throws when it reaches zero.
      * @return mixed The same structure with all object property keys sorted recursively.
      * @throws InvalidArgumentException When $depth is exhausted (nesting too deep).
      */
-    public static function ksortRecursive(mixed $value, int $depth = 512): mixed
+    public static function ksortRecursive(mixed $value, int $depth = self::JSON_DEPTH_LIMIT): mixed
     {
         if ($depth < 0) {
             throw new InvalidArgumentException(
@@ -826,7 +832,8 @@ final class XdrJsonHelper
      *
      * Every `fromJson(string $json)` entry point routes through here, so the
      * text-level input rules hold uniformly across all XDR types: the document is
-     * scanned for duplicate object keys and then parsed.
+     * scanned for duplicate object keys and for nesting deeper than
+     * {@see self::JSON_DEPTH_LIMIT}, and then parsed.
      *
      * The duplicate-key scan has to happen on the text because json_decode cannot
      * report duplicates — it resolves them last-value-wins, which would silently
@@ -840,13 +847,75 @@ final class XdrJsonHelper
      * @param string $json The raw JSON document.
      * @return mixed The decoded value, with objects as associative arrays.
      * @throws InvalidArgumentException When an object in $json repeats a key.
-     * @throws \JsonException When $json is not syntactically valid JSON.
+     * @throws \JsonException When $json is not syntactically valid JSON, or nests deeper
+     *     than JSON_DEPTH_LIMIT (code JSON_ERROR_DEPTH, the message names the limit).
      * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md
      */
     public static function decodeText(string $json): mixed
     {
         self::rejectDuplicateKeys($json);
-        return json_decode($json, true, self::DECODE_MAX_DEPTH, JSON_THROW_ON_ERROR);
+        return json_decode($json, true, self::DECODE_DEPTH, JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * Encode a SEP-0051 JSON value as text. Every `toJson()` routes through here, so the
+     * SDK never writes text that {@see self::decodeText} refuses.
+     *
+     * @param mixed $value The value-level form, as `toJsonValue()` returns it.
+     * @return string The JSON text.
+     * @throws \JsonException When $value nests deeper than {@see self::JSON_DEPTH_LIMIT}
+     *     (code JSON_ERROR_DEPTH, the message names the limit), or when json_encode fails
+     *     otherwise, for example because the remaining call stack cannot hold the nesting.
+     */
+    public static function encodeText(mixed $value): string
+    {
+        try {
+            return json_encode(
+                $value,
+                JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
+                self::JSON_DEPTH_LIMIT
+            );
+        } catch (JsonException $e) {
+            // Where PHP checks the call stack, json_encode reports a nesting the stack
+            // cannot hold with JSON_ERROR_DEPTH too; only a value deeper than the limit
+            // gets the limit's message.
+            if ($e->getCode() === JSON_ERROR_DEPTH && self::nestsDeeperThanLimit($value)) {
+                throw self::depthLimitExceeded($e);
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Whether $value nests arrays and objects deeper than JSON_DEPTH_LIMIT, $value itself
+     * counting as the first level. The walk keeps its own stack, so it cannot exhaust the
+     * call stack, and stops at the first node deeper than the limit.
+     *
+     * @param array<mixed>|object $value
+     */
+    private static function nestsDeeperThanLimit(array|object $value): bool
+    {
+        $depth = 0;
+        $pending = [[$value, 1]];
+        while ($pending !== [] && $depth <= self::JSON_DEPTH_LIMIT) {
+            [$node, $depth] = array_pop($pending);
+            foreach ((array) $node as $child) {
+                if (is_array($child) || is_object($child)) {
+                    $pending[] = [$child, $depth + 1];
+                }
+            }
+        }
+        return $depth > self::JSON_DEPTH_LIMIT;
+    }
+
+    /** The exception for XDR-JSON nested deeper than JSON_DEPTH_LIMIT, with code JSON_ERROR_DEPTH. */
+    private static function depthLimitExceeded(?JsonException $previous = null): JsonException
+    {
+        return new JsonException(
+            'XDR-JSON nesting depth limit (' . self::JSON_DEPTH_LIMIT . ') exceeded',
+            JSON_ERROR_DEPTH,
+            $previous
+        );
     }
 
     /**
@@ -871,16 +940,17 @@ final class XdrJsonHelper
      * inside string content never disturb the structure being tracked.
      *
      * This is a structural scan, not a JSON validator. On a structural fault it
-     * cannot navigate past — an unbalanced brace, an unterminated string, an
-     * unresolvable escape, nesting beyond {@see self::DECODE_MAX_DEPTH} — it stops
-     * and returns, leaving json_decode to report the syntax error. It does not
-     * inspect scalar values, so a document that is both duplicate-keyed and
-     * otherwise malformed may surface either error depending on which fault the
-     * scan reaches first; both outcomes reject the document.
+     * cannot navigate past (an unbalanced brace, an unterminated string, an
+     * unresolvable escape) it stops and returns, leaving json_decode to report the
+     * syntax error. It does not inspect scalar values, so a document that is both
+     * duplicate-keyed and otherwise malformed may surface either error depending
+     * on which fault the scan reaches first; both outcomes reject the document.
      *
      * @param string $json The raw JSON document.
      * @throws InvalidArgumentException When an object in $json repeats a key. The message
      *     previews the key with anything that may be a secret seed replaced before the cap.
+     * @throws \JsonException When $json nests deeper than JSON_DEPTH_LIMIT (code
+     *     JSON_ERROR_DEPTH, the message names the limit).
      * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0051.md
      */
     public static function rejectDuplicateKeys(string $json): void
@@ -904,8 +974,8 @@ final class XdrJsonHelper
             }
 
             if ($c === '{' || $c === '[') {
-                if ($depth >= self::DECODE_MAX_DEPTH) {
-                    return;
+                if ($depth >= self::JSON_DEPTH_LIMIT) {
+                    throw self::depthLimitExceeded();
                 }
                 $frames[$depth] = $c === '{' ? [] : null;
                 $depth++;

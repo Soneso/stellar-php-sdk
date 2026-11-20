@@ -85,6 +85,18 @@ class GeneratorHelpersTest < Minitest::Test
     assert_includes php, '@throws InvalidArgumentException If an object in $json repeats a key, or if'
   end
 
+  # Every toJson() routes through XdrJsonHelper::encodeText, which holds the
+  # nesting limit; a type that called json_encode directly would write text
+  # the SDK refuses to read.
+  def test_to_json_facade_routes_through_the_shared_encode_entry
+    out = StringIO.new
+    @gen.send(:render_to_json_facade, out)
+
+    assert_includes out.string, 'return XdrJsonHelper::encodeText($this->toJsonValue());'
+    refute_includes out.string, 'json_encode',
+                    'toJson must not call json_encode directly; it bypasses the nesting limit'
+  end
+
   private
 
   # Emit the generator's fromJson facade as PHP source.

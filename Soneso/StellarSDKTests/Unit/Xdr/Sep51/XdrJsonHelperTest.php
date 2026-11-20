@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDKTests\Unit\Xdr\Sep51;
 
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Xdr\XdrJsonHelper;
 
@@ -19,6 +20,21 @@ use Soneso\StellarSDK\Xdr\XdrJsonHelper;
  */
 class XdrJsonHelperTest extends TestCase
 {
+    private string|false $nestingLimit;
+
+    protected function setUp(): void
+    {
+        // The debugger's call-stack limit must allow sorting at the nesting limit.
+        $this->nestingLimit = ini_set('xdebug.max_nesting_level', '20000');
+    }
+
+    protected function tearDown(): void
+    {
+        if ($this->nestingLimit !== false) {
+            ini_set('xdebug.max_nesting_level', $this->nestingLimit);
+        }
+    }
+
     // =========================================================================
     // escapeString / unescapeString
     // =========================================================================
@@ -1265,17 +1281,20 @@ class XdrJsonHelperTest extends TestCase
     }
 
     /**
-     * canonicalJson must throw \JsonException on input exceeding json_decode depth.
-     *
-     * json_decode enforces a default depth of 512. Inputs nested deeper than that
-     * must surface as \JsonException, not silently return null or produce wrong output.
+     * canonicalJson sorts input nested JSON_DEPTH_LIMIT deep and refuses one level more
+     * with \JsonException, not a null or a wrong output.
      */
-    public function testCanonical_excessDepthThrows(): void
+    public function testCanonical_nestingLimit(): void
     {
-        // Build a JSON string nested 600 levels deep — well beyond json_decode's 512 limit.
-        $json = str_repeat('{"a":', 600) . '"x"' . str_repeat('}', 600);
+        $limit = XdrJsonHelper::JSON_DEPTH_LIMIT;
+        $json = str_repeat('{"b":0,"a":', $limit) . '"x"' . str_repeat('}', $limit);
+        $this->assertSame(
+            str_repeat('{"a":', $limit) . '"x"' . str_repeat(',"b":0}', $limit),
+            XdrJsonHelper::canonicalJson($json)
+        );
         $this->expectException(\JsonException::class);
-        XdrJsonHelper::canonicalJson($json);
+        $this->expectExceptionCode(JSON_ERROR_DEPTH);
+        XdrJsonHelper::canonicalJson('[' . $json . ']');
     }
 
     /**
@@ -1508,6 +1527,23 @@ class XdrJsonHelperTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessageMatches('/maximum recursion depth/');
         XdrJsonHelper::ksortRecursive($value, 3);
+    }
+
+    public function testKsortRecursive_defaultDepthSortsTheNestingLimit(): void
+    {
+        $limit = XdrJsonHelper::JSON_DEPTH_LIMIT;
+        $value = 'x';
+        for ($i = 0; $i < $limit; $i++) {
+            $value = (object) ['b' => 0, 'a' => $value];
+        }
+        $sorted = XdrJsonHelper::ksortRecursive($value);
+        for ($i = 0; $i < $limit; $i++) {
+            $this->assertSame(['a', 'b'], array_keys((array) $sorted));
+            $sorted = $sorted->a;
+        }
+        $this->assertSame('x', $sorted);
+        $this->expectException(\InvalidArgumentException::class);
+        XdrJsonHelper::ksortRecursive((object) ['a' => $value]);
     }
 
     // =========================================================================
@@ -1833,16 +1869,17 @@ class XdrJsonHelperTest extends TestCase
         $this->assertTrue(true, 'No object in this document repeats a key');
     }
 
-    public function testDuplicateKeys_deepNestingDoesNotExhaustTheCallStack(): void
+    public function testDuplicateKeys_deepNestingIsRefusedWithoutExhaustingTheCallStack(): void
     {
         // The walk is a loop over an explicit frame stack rather than recursion,
-        // so input nesting never grows the PHP call stack. This document also
-        // runs past the depth cap, where the scan stands down; the point is that
-        // neither path lets nesting depth reach the interpreter's stack.
+        // so input nesting never grows the PHP call stack, and past the nesting
+        // limit the scan refuses the document.
         $depth = 20000;
         $json = str_repeat('{"a":', $depth) . '1' . str_repeat('}', $depth);
+        $this->expectException(\JsonException::class);
+        $this->expectExceptionCode(JSON_ERROR_DEPTH);
+        $this->expectExceptionMessage('XDR-JSON nesting depth limit (' . XdrJsonHelper::JSON_DEPTH_LIMIT . ') exceeded');
         XdrJsonHelper::rejectDuplicateKeys($json);
-        $this->assertTrue(true, 'Deeply nested input returns instead of aborting the process');
     }
 
     public function testDuplicateKeys_manyDistinctKeysStayFast(): void
@@ -1956,16 +1993,79 @@ class XdrJsonHelperTest extends TestCase
         XdrJsonHelper::decodeText('{"a":1,"a":2,');
     }
 
-    public function testDecodeText_nestingBeyondTheDecodeDepthSurfacesTheJsonError(): void
+    public function testDecodeText_nestingLimit(): void
     {
-        // Past json_decode's depth limit the scan stands down, and the depth error
-        // is the accurate verdict. No document json_decode accepts can outrun the
-        // scan this way, because exceeding the limit is itself a rejection.
-        $json = str_repeat('{"a":', 600) . '1' . str_repeat('}', 600);
-        XdrJsonHelper::rejectDuplicateKeys($json);
+        $limit = XdrJsonHelper::JSON_DEPTH_LIMIT;
+        $decoded = XdrJsonHelper::decodeText(str_repeat('[', $limit) . '1' . str_repeat(']', $limit));
+        for ($i = 0; $i < $limit; $i++) {
+            $this->assertSame([0], array_keys($decoded));
+            $decoded = $decoded[0];
+        }
+        $this->assertSame(1, $decoded);
+
+        // One level deeper, the scan refuses the document before json_decode parses it.
+        $this->expectException(\JsonException::class);
+        $this->expectExceptionCode(JSON_ERROR_DEPTH);
+        $this->expectExceptionMessage('XDR-JSON nesting depth limit (' . $limit . ') exceeded');
+        XdrJsonHelper::decodeText(str_repeat('{"a":', $limit + 1) . '1' . str_repeat('}', $limit + 1));
+    }
+
+    public function testEncodeText_nestingLimit(): void
+    {
+        $limit = XdrJsonHelper::JSON_DEPTH_LIMIT;
+        $value = 1;
+        for ($i = 0; $i < $limit; $i++) {
+            $value = [$value];
+        }
+        $this->assertSame(str_repeat('[', $limit) . '1' . str_repeat(']', $limit), XdrJsonHelper::encodeText($value));
 
         $this->expectException(\JsonException::class);
-        XdrJsonHelper::decodeText($json);
+        $this->expectExceptionCode(JSON_ERROR_DEPTH);
+        $this->expectExceptionMessage('XDR-JSON nesting depth limit (' . $limit . ') exceeded');
+        XdrJsonHelper::encodeText(['a' => $value]);
+    }
+
+    public function testEncodeText_writesSlashesAndUnicodeUnescaped(): void
+    {
+        $this->assertSame('{"a/é":"b/é"}', XdrJsonHelper::encodeText(['a/é' => 'b/é']));
+    }
+
+    public function testEncodeText_otherEncoderErrorsPassThrough(): void
+    {
+        $this->expectException(\JsonException::class);
+        $this->expectExceptionCode(JSON_ERROR_UTF8);
+        XdrJsonHelper::encodeText(["\xB1"]);
+    }
+
+    #[RequiresPhp('>= 8.3')]
+    public function testEncodeText_stackDepthErrorPassesThrough(): void
+    {
+        // With a small call stack, json_encode reports JSON_ERROR_DEPTH below the nesting limit.
+        $script = <<<'PHP'
+            require $argv[1];
+            $value = 1;
+            for ($i = 0; $i < 1000; $i++) {
+                $value = [$value];
+            }
+            try {
+                \Soneso\StellarSDK\Xdr\XdrJsonHelper::encodeText($value);
+            } catch (\Throwable $e) {
+                echo json_encode([get_class($e), $e->getMessage(), $e->getCode(), $e->getPrevious() === null]);
+            }
+            PHP;
+        $command = [
+            PHP_BINARY, '-n', '-d', 'zend.max_allowed_stack_size=131072', '-d', 'zend.reserved_stack_size=49152',
+            '-r', $script, '--', dirname(__DIR__, 5) . '/vendor/autoload.php',
+        ];
+        $process = proc_open($command, [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
+        $output = stream_get_contents($pipes[1]);
+        $errors = stream_get_contents($pipes[2]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+
+        $this->assertSame(0, proc_close($process), $errors);
+        $expected = [\JsonException::class, 'Maximum stack depth exceeded', JSON_ERROR_DEPTH, true];
+        $this->assertSame($expected, json_decode($output, true), $errors);
     }
 
     public function testDecodeText_rejectsRepeatBeforeParsing(): void

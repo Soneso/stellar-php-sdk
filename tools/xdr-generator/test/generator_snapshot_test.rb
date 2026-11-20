@@ -155,7 +155,7 @@ class GeneratorSnapshotTest < Minitest::Test
   SEP51_FROM_JSON_VALUE_SIGNATURE =
     /public\s+static\s+function\s+fromJsonValue\(mixed\s+\$value\)\s*:\s*static/.freeze
 
-  SEP51_TO_JSON_FACADE_BODY = /JSON_THROW_ON_ERROR\s*\|\s*JSON_UNESCAPED_SLASHES\s*\|\s*JSON_UNESCAPED_UNICODE/.freeze
+  SEP51_TO_JSON_FACADE_BODY = /return\s+XdrJsonHelper::encodeText\(\$this->toJsonValue\(\)\);/.freeze
 
   def test_sep51_xdr_asset_type_emits_required_methods
     assert_sep51_enum_shape("XdrAssetType.php", expected_arms: %w[
@@ -691,7 +691,7 @@ class GeneratorSnapshotTest < Minitest::Test
     assert_match SEP51_TO_JSON_FACADE_SIGNATURE, contents,
       "#{filename} missing toJson facade signature"
     assert_match SEP51_TO_JSON_FACADE_BODY, contents,
-      "#{filename} missing JSON encoder flag triple"
+      "#{filename} toJson facade does not encode through XdrJsonHelper::encodeText"
     assert_match SEP51_FROM_JSON_FACADE_SIGNATURE, contents,
       "#{filename} missing fromJson facade signature"
     assert_match SEP51_SCHEMA_STRIP, contents,
@@ -716,7 +716,7 @@ class GeneratorSnapshotTest < Minitest::Test
     assert_match SEP51_FROM_JSON_VALUE_SIGNATURE, contents,
       "#{filename} missing fromJsonValue signature"
     assert_match SEP51_TO_JSON_FACADE_BODY, contents,
-      "#{filename} missing JSON encoder flag triple"
+      "#{filename} toJson facade does not encode through XdrJsonHelper::encodeText"
     assert_match SEP51_SCHEMA_STRIP, contents,
       "#{filename} missing $schema strip in fromJsonValue"
 
@@ -736,7 +736,7 @@ class GeneratorSnapshotTest < Minitest::Test
     assert_match SEP51_FROM_JSON_VALUE_SIGNATURE, contents,
       "#{filename} missing fromJsonValue signature"
     assert_match SEP51_TO_JSON_FACADE_BODY, contents,
-      "#{filename} missing JSON encoder flag triple in toJson facade"
+      "#{filename} toJson facade does not encode through XdrJsonHelper::encodeText"
     assert_match SEP51_INVARIANT_DEFAULT_THROW, contents,
       "#{filename} missing throw-on-default arm in fromJsonValue"
 

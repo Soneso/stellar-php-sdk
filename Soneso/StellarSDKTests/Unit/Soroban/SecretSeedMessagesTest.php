@@ -856,28 +856,37 @@ class SecretSeedMessagesTest extends TestCase
         $this->assertSame("Invalid amount '1.5x" . $decimalTail, $error->getMessage());
     }
 
-    public function testDuplicateMapKeyTooDeepForJsonIsNotShown(): void
+    public function testDuplicateDeepMapKeyIsShownOnlyWhenItsCopyDecodes(): void
     {
         // Each level of the key adds frames to the JSON conversion; Xdebug, when loaded, limits
-        // the call depth, so its limit is raised for this key and restored afterwards.
+        // the call depth, so its limit is raised for these keys and restored afterwards.
         $previousLimit = ini_get('xdebug.max_nesting_level');
         ini_set('xdebug.max_nesting_level', '10000');
         try {
-            $key = XdrSCVal::forString(SecretSeedVariants::create()->seed);
-            for ($level = 0; $level < 300; $level++) {
-                $key = XdrSCVal::forVec([$key]);
+            $seed = SecretSeedVariants::create()->seed;
+            // 300 vectors nest 601 JSON levels; the deeper key nests more than the JSON limit
+            // allows and more recursive values than the binary decoder accepts for its copy.
+            foreach ([300, intdiv(XdrJsonHelper::JSON_DEPTH_LIMIT + 1, 2)] as $levels) {
+                $key = XdrSCVal::forString($seed);
+                $redacted = XdrSCVal::forString(SecretSeedVariants::SECRET_SEED);
+                for ($level = 0; $level < $levels; $level++) {
+                    $key = XdrSCVal::forVec([$key]);
+                    $redacted = XdrSCVal::forVec([$redacted]);
+                }
+                $error = $this->thrown(fn (string $v) => XdrSCVal::forMap([
+                    new XdrSCMapEntry($key, XdrSCVal::forVoid()),
+                    new XdrSCMapEntry($key, XdrSCVal::forTrue()),
+                ]), '', $levels . ' vectors');
+                $this->assertInstanceOf(InvalidArgumentException::class, $error);
+                $this->assertSame($levels === 300 ? 'Duplicate SCMap key (XDR JSON): ' . $redacted->toJson()
+                    : 'Duplicate SCMap key (not shown, it may hold a secret seed)', $error->getMessage());
+                $this->assertStringNotContainsString($seed, $error->getMessage());
             }
-            $error = $this->thrown(fn (string $v) => XdrSCVal::forMap([
-                new XdrSCMapEntry($key, XdrSCVal::forVoid()),
-                new XdrSCMapEntry($key, XdrSCVal::forTrue()),
-            ]), '', 'deep key');
         } finally {
             if ($previousLimit !== false) {
                 ini_set('xdebug.max_nesting_level', $previousLimit);
             }
         }
-        $this->assertInstanceOf(InvalidArgumentException::class, $error);
-        $this->assertSame('Duplicate SCMap key (not shown, it may hold a secret seed)', $error->getMessage());
     }
 
     /**

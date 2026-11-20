@@ -170,8 +170,8 @@ class XdrSCVal extends XdrSCValBase
      * Returns the error message for a duplicate map key. A key whose content holds nothing that
      * may be a secret seed is printed as XDR base64. Otherwise a copy of the key gets that content
      * replaced before it is serialized and is printed as XDR JSON, so no encoding of the original
-     * content reaches the message. A copy that cannot be decoded or encoded as JSON, such as one
-     * nested deeper than the JSON encoder allows, is not shown.
+     * content reaches the message. A key whose copy cannot be decoded or encoded as JSON, such as
+     * one nested deeper than the binary decoder allows, is not shown.
      */
     private static function duplicateMapKeyMessage(XdrSCVal $key) : string {
         if (!self::redactContent($key, false)) {

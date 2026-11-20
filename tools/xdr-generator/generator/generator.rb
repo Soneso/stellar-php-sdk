@@ -3030,26 +3030,8 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        };"
     out.puts "    }"
 
-    # toJson / fromJson — JSON-string facade over the value methods.
-    out.puts ""
-    out.puts "    /**"
-    out.puts "     * @throws JsonException If the value contains structures that cannot be encoded as JSON."
-    out.puts "     */"
-    out.puts "    public function toJson(): string {"
-    out.puts "        return json_encode("
-    out.puts "            $this->toJsonValue(),"
-    out.puts "            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE"
-    out.puts "        );"
-    out.puts "    }"
-    out.puts ""
-    out.puts "    /**"
-    out.puts "     * @throws JsonException If $json is not syntactically valid JSON."
-    out.puts "     * @throws InvalidArgumentException If an object in $json repeats a key, or if"
-    out.puts "     *         the JSON shape does not match this type."
-    out.puts "     */"
-    out.puts "    public static function fromJson(string $json): static {"
-    out.puts "        return static::fromJsonValue(XdrJsonHelper::decodeText($json));"
-    out.puts "    }"
+    render_to_json_facade(out)
+    render_from_json_facade(out)
   end
 
   # ---------------------------------------------------------------------------
@@ -4160,17 +4142,15 @@ class Generator < Xdrgen::Generators::Base
   end
 
   # Render the "public function toJson(): string" facade body that delegates
-  # to toJsonValue and applies the canonical encoder flag triple.
+  # to toJsonValue and encodes through XdrJsonHelper::encodeText, which holds
+  # the encoder flags and the nesting limit.
   def render_to_json_facade(out)
     out.puts ""
     out.puts "    /**"
     out.puts "     * @throws JsonException If the value contains structures that cannot be encoded as JSON."
     out.puts "     */"
     out.puts "    public function toJson(): string {"
-    out.puts "        return json_encode("
-    out.puts "            $this->toJsonValue(),"
-    out.puts "            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE"
-    out.puts "        );"
+    out.puts "        return XdrJsonHelper::encodeText($this->toJsonValue());"
     out.puts "    }"
   end
 
