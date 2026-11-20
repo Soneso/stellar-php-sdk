@@ -45,6 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `XdrDecoder::opaqueVariable()` and `XdrDecoder::string()` throw `InvalidArgumentException` for a length prefix, value, or padding that is cut off. Before this change, a cut-off length prefix raised a PHP warning and a `TypeError`, and a cut-off value or padding returned the available bytes.
 - `DeploySACWithAssetHostFunction` keeps a `HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2` host function with its constructor arguments when it reads one. Before this change, it wrote it back as `HOST_FUNCTION_TYPE_CREATE_CONTRACT`, so an imported transaction that deploys a Stellar Asset Contract this way got another hash.
 - `toJson()` and `fromJson()` write and read SEP-51 JSON for every value the binary decoder accepts, nested up to 1100 levels, and throw a `JsonException` for deeper JSON. Before this change, JSON nested deeper than 512 levels could be neither written nor read.
+- `XdrLedgerKey` XDR-JSON writes and reads the claimable balance and config setting keys with their `balance_id` and `config_setting_id` members, also inside transaction and ledger metadata. Before this change, it wrote both keys without the member and refused the form with it.
+- `XdrLedgerKey` TxRep writes and reads a config setting key under `configSetting.configSettingID`. Before this change, it wrote and read the key without its member name.
 
 ## [1.18.0] - 2026-11-14
 

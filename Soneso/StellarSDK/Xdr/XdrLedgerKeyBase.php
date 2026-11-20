@@ -148,11 +148,11 @@ class XdrLedgerKeyBase {
             XdrLedgerEntryType::TRUSTLINE => ['trustline' => $this->trustLine->toJsonValue()],
             XdrLedgerEntryType::OFFER => ['offer' => $this->offer->toJsonValue()],
             XdrLedgerEntryType::DATA => ['data' => $this->data->toJsonValue()],
-            XdrLedgerEntryType::CLAIMABLE_BALANCE => ['claimable_balance' => $this->balanceID->toJsonValue()],
+            XdrLedgerEntryType::CLAIMABLE_BALANCE => ['claimable_balance' => (new XdrLedgerKeyClaimableBalance($this->balanceID))->toJsonValue()],
             XdrLedgerEntryType::LIQUIDITY_POOL => ['liquidity_pool' => $this->liquidityPool->toJsonValue()],
             XdrLedgerEntryType::CONTRACT_DATA => ['contract_data' => $this->contractData->toJsonValue()],
             XdrLedgerEntryType::CONTRACT_CODE => ['contract_code' => $this->contractCode->toJsonValue()],
-            XdrLedgerEntryType::CONFIG_SETTING => ['config_setting' => $this->configSetting->toJsonValue()],
+            XdrLedgerEntryType::CONFIG_SETTING => ['config_setting' => (new XdrLedgerKeyConfigSetting($this->configSetting))->toJsonValue()],
             XdrLedgerEntryType::TTL => ['ttl' => $this->ttl->toJsonValue()],
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
@@ -183,11 +183,11 @@ class XdrLedgerKeyBase {
             'trustline' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::TRUSTLINE)); $r->trustLine = XdrLedgerKeyTrustLine::fromJsonValue($arm); return $r; })(),
             'offer' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::OFFER)); $r->offer = XdrLedgerKeyOffer::fromJsonValue($arm); return $r; })(),
             'data' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::DATA)); $r->data = XdrLedgerKeyData::fromJsonValue($arm); return $r; })(),
-            'claimable_balance' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::CLAIMABLE_BALANCE)); $r->balanceID = XdrClaimableBalanceID::fromJsonValue($arm); return $r; })(),
+            'claimable_balance' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::CLAIMABLE_BALANCE)); $r->balanceID = XdrLedgerKeyClaimableBalance::fromJsonValue($arm)->balanceID; return $r; })(),
             'liquidity_pool' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::LIQUIDITY_POOL)); $r->liquidityPool = XdrLedgerKeyLiquidityPool::fromJsonValue($arm); return $r; })(),
             'contract_data' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::CONTRACT_DATA)); $r->contractData = XdrLedgerKeyContractData::fromJsonValue($arm); return $r; })(),
             'contract_code' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::CONTRACT_CODE)); $r->contractCode = XdrLedgerKeyContractCode::fromJsonValue($arm); return $r; })(),
-            'config_setting' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::CONFIG_SETTING)); $r->configSetting = XdrConfigSettingID::fromJsonValue($arm); return $r; })(),
+            'config_setting' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::CONFIG_SETTING)); $r->configSetting = XdrLedgerKeyConfigSetting::fromJsonValue($arm)->configSettingID; return $r; })(),
             'ttl' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::TTL)); $r->ttl = XdrLedgerKeyTTL::fromJsonValue($arm); return $r; })(),
             default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrLedgerKeyBase: ' . XdrJsonHelper::safePreview($key)
@@ -231,7 +231,7 @@ class XdrLedgerKeyBase {
                 $this->data->toTxRep($prefix . '.data', $lines);
                 break;
             case XdrLedgerEntryType::CLAIMABLE_BALANCE:
-                $this->balanceID->toTxRep($prefix . '.claimableBalance', $lines);
+                (new XdrLedgerKeyClaimableBalance($this->balanceID))->toTxRep($prefix . '.claimableBalance', $lines);
                 break;
             case XdrLedgerEntryType::LIQUIDITY_POOL:
                 $this->liquidityPool->toTxRep($prefix . '.liquidityPool', $lines);
@@ -243,7 +243,7 @@ class XdrLedgerKeyBase {
                 $this->contractCode->toTxRep($prefix . '.contractCode', $lines);
                 break;
             case XdrLedgerEntryType::CONFIG_SETTING:
-                $this->configSetting->toTxRep($prefix . '.configSetting', $lines);
+                (new XdrLedgerKeyConfigSetting($this->configSetting))->toTxRep($prefix . '.configSetting', $lines);
                 break;
             case XdrLedgerEntryType::TTL:
                 $this->ttl->toTxRep($prefix . '.ttl', $lines);
@@ -270,7 +270,7 @@ class XdrLedgerKeyBase {
                 $result->data = XdrLedgerKeyData::fromTxRep($map, $prefix . '.data');
                 break;
             case XdrLedgerEntryType::CLAIMABLE_BALANCE:
-                $result->balanceID = XdrClaimableBalanceID::fromTxRep($map, $prefix . '.claimableBalance');
+                $result->balanceID = XdrLedgerKeyClaimableBalance::fromTxRep($map, $prefix . '.claimableBalance')->balanceID;
                 break;
             case XdrLedgerEntryType::LIQUIDITY_POOL:
                 $result->liquidityPool = XdrLedgerKeyLiquidityPool::fromTxRep($map, $prefix . '.liquidityPool');
@@ -282,7 +282,7 @@ class XdrLedgerKeyBase {
                 $result->contractCode = XdrLedgerKeyContractCode::fromTxRep($map, $prefix . '.contractCode');
                 break;
             case XdrLedgerEntryType::CONFIG_SETTING:
-                $result->configSetting = XdrConfigSettingID::fromTxRep($map, $prefix . '.configSetting');
+                $result->configSetting = XdrLedgerKeyConfigSetting::fromTxRep($map, $prefix . '.configSetting')->configSettingID;
                 break;
             case XdrLedgerEntryType::TTL:
                 $result->ttl = XdrLedgerKeyTTL::fromTxRep($map, $prefix . '.ttl');

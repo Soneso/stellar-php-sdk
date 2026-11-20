@@ -6,14 +6,18 @@
 
 namespace Soneso\StellarSDKTests\Unit\Xdr;
 
+use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Xdr\XdrAsset;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrConfigSettingID;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
+use Soneso\StellarSDK\Xdr\XdrLedgerEntryChange;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
+use Soneso\StellarSDK\Xdr\XdrLedgerKeyBase;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
@@ -28,6 +32,14 @@ class XdrLedgerKeyTest extends TestCase
 {
     private const TEST_ACCOUNT_ID = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
     private const TEST_ACCOUNT_ID_2 = 'GBFUYQUPRAG2YHKBBQSWKHFZRH5N4NIWKK3OVMUDLF7R6453BN4OUAVR';
+
+    // A claimable balance key and a config setting key, with the XDR-JSON the
+    // stellar-xdr reference decoder writes for them.
+    private const BALANCE_ID = 'BAAM5KYU5255X7RFUGBQ4OPDCHBBQCCG352JI65CJI4GXAYUZS5GMISN2Q';
+    private const CLAIMABLE_BALANCE_KEY = 'AAAABAAAAADOqxTuu9v+JaGDDjnjEcIYCEbfdJR7oko4a4MUzLpmIg==';
+    private const CLAIMABLE_BALANCE_KEY_JSON = '{"claimable_balance":{"balance_id":"' . self::BALANCE_ID . '"}}';
+    private const CONFIG_SETTING_KEY = 'AAAACAAAAAo=';
+    private const CONFIG_SETTING_KEY_JSON = '{"config_setting":{"config_setting_id":"state_archival"}}';
 
     // Factory Method Tests
 
@@ -146,6 +158,81 @@ class XdrLedgerKeyTest extends TestCase
 
         $this->assertEquals(XdrLedgerEntryType::ACCOUNT, $decoded->getType()->getValue());
         $this->assertEquals(self::TEST_ACCOUNT_ID, $decoded->getAccount()->getAccountID()->getAccountId());
+    }
+
+    // XDR-JSON Tests
+
+    public static function keyWithMemberCases(): array
+    {
+        return [
+            'claimable balance' => [self::CLAIMABLE_BALANCE_KEY, self::CLAIMABLE_BALANCE_KEY_JSON,
+                '{"claimable_balance":{"$schema":"https://schema","balance_id":"' . self::BALANCE_ID . '"}}'],
+            'config setting' => [self::CONFIG_SETTING_KEY, self::CONFIG_SETTING_KEY_JSON,
+                '{"config_setting":{"$schema":"https://schema","config_setting_id":"state_archival"}}'],
+        ];
+    }
+
+    #[DataProvider('keyWithMemberCases')]
+    public function testJsonWritesAndReadsTheKeyMember(string $xdr, string $json, string $jsonWithSchema): void
+    {
+        foreach ([XdrLedgerKey::class, XdrLedgerKeyBase::class] as $class) {
+            $this->assertSame($json, $class::fromBase64Xdr($xdr)->toJson());
+            $this->assertSame($xdr, $class::fromJson($json)->toBase64Xdr());
+            $this->assertSame($xdr, $class::fromJson($jsonWithSchema)->toBase64Xdr());
+        }
+    }
+
+    public static function keyWithoutValidMemberCases(): array
+    {
+        return [
+            'claimable balance without member' => ['{"claimable_balance":"' . self::BALANCE_ID . '"}',
+                'Expected object for XdrLedgerKeyClaimableBalance JSON value, got string'],
+            'config setting without member' => ['{"config_setting":"state_archival"}',
+                'Expected object for XdrLedgerKeyConfigSetting JSON value, got string'],
+            'claimable balance missing member' => ['{"claimable_balance":{}}',
+                'Missing required field balance_id for XdrLedgerKeyClaimableBalance'],
+            'config setting missing member' => ['{"config_setting":{}}',
+                'Missing required field config_setting_id for XdrLedgerKeyConfigSetting'],
+            'claimable balance extra member' => ['{"claimable_balance":{"balance_id":"' . self::BALANCE_ID . '","amount":"1"}}',
+                "Unknown field in JSON input for XdrLedgerKeyClaimableBalance: 'amount'"],
+            'config setting extra member' => ['{"config_setting":{"config_setting_id":"state_archival","value":"1"}}',
+                "Unknown field in JSON input for XdrLedgerKeyConfigSetting: 'value'"],
+            'claimable balance id as hex' => [
+                '{"claimable_balance":{"balance_id":"00000000ceab14eebbdbfe25a1830e39e311c2180846df74947ba24a386b8314ccba6622"}}',
+                'B-strkey must be 58 characters long, 72 characters given'],
+            'config setting id as XDR name' => ['{"config_setting":{"config_setting_id":"CONFIG_SETTING_STATE_ARCHIVAL"}}',
+                'Unknown XdrConfigSettingID JSON value: CONFIG_SETTING_STATE_ARCHIVAL'],
+        ];
+    }
+
+    #[DataProvider('keyWithoutValidMemberCases')]
+    public function testJsonRefusesAKeyWithoutAValidMemberObject(string $json, string $message): void
+    {
+        foreach ([XdrLedgerKey::class, XdrLedgerKeyBase::class] as $class) {
+            try {
+                $class::fromJson($json);
+                $this->fail($class . ' accepted ' . $json);
+            } catch (InvalidArgumentException $e) {
+                $this->assertSame($message, $e->getMessage());
+            }
+        }
+    }
+
+    public static function removedEntryCases(): array
+    {
+        // LedgerEntryChange values of type removed that carry the two keys, with their reference XDR-JSON.
+        return [
+            'claimable balance' => ['AAAAAgAAAAQAAAAAzqsU7rvb/iWhgw454xHCGAhG33SUe6JKOGuDFMy6ZiI=',
+                '{"removed":' . self::CLAIMABLE_BALANCE_KEY_JSON . '}'],
+            'config setting' => ['AAAAAgAAAAgAAAAK', '{"removed":' . self::CONFIG_SETTING_KEY_JSON . '}'],
+        ];
+    }
+
+    #[DataProvider('removedEntryCases')]
+    public function testJsonOfARemovedEntryCarriesTheKeyMember(string $xdr, string $json): void
+    {
+        $this->assertSame($json, XdrLedgerEntryChange::fromBase64Xdr($xdr)->toJson());
+        $this->assertSame($xdr, XdrLedgerEntryChange::fromJson($json)->toBase64Xdr());
     }
 
     // Getter/Setter Tests
