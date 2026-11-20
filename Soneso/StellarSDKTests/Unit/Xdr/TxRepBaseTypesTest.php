@@ -78,8 +78,6 @@ use Soneso\StellarSDK\Xdr\XdrFeeBumpTransactionInnerTx;
 use Soneso\StellarSDK\Xdr\XdrInt128Parts;
 use Soneso\StellarSDK\Xdr\XdrInt256Parts;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
-use Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositOperationBase;
-use Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawOperationBase;
 use Soneso\StellarSDK\Xdr\XdrPrice;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrSCContractInstance;
@@ -1945,84 +1943,6 @@ class TxRepBaseTypesTest extends TestCase
         $decoded = XdrFeeBumpTransactionInnerTx::fromBase64Xdr($original->toBase64Xdr());
         $this->assertEquals(XdrEnvelopeType::ENVELOPE_TYPE_TX, $decoded->getType()->getValue());
         $this->assertNotNull($decoded->getV1());
-    }
-
-    // ------------------------------------------------------------------
-    // XdrLiquidityPoolDepositOperationBase
-    // ------------------------------------------------------------------
-
-    public function testTxRepRoundtrip_XdrLiquidityPoolDepositOperationBase(): void
-    {
-        $poolIdBytes = $this->randomBytes(32);
-        $maxAmountA = new BigInteger(1000000000);
-        $maxAmountB = new BigInteger(2000000000);
-        $minPrice = new XdrPrice(1, 2);
-        $maxPrice = new XdrPrice(3, 1);
-
-        $original = new XdrLiquidityPoolDepositOperationBase(
-            $poolIdBytes,
-            $maxAmountA,
-            $maxAmountB,
-            $minPrice,
-            $maxPrice
-        );
-
-        $lines = [];
-        $original->toTxRep('op', $lines);
-
-        $this->assertArrayHasKey('op.liquidityPoolID', $lines);
-        $this->assertArrayHasKey('op.maxAmountA', $lines);
-        $this->assertArrayHasKey('op.maxAmountB', $lines);
-        $this->assertArrayHasKey('op.minPrice.n', $lines);
-        $this->assertArrayHasKey('op.maxPrice.d', $lines);
-        $this->assertEquals($maxAmountA->toString(), $lines['op.maxAmountA']);
-        $this->assertEquals($maxAmountB->toString(), $lines['op.maxAmountB']);
-
-        $restored = XdrLiquidityPoolDepositOperationBase::fromTxRep($lines, 'op');
-
-        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
-        $this->assertEquals($poolIdBytes, $restored->getLiquidityPoolID());
-        $this->assertEquals($maxAmountA->toString(), $restored->getMaxAmountA()->toString());
-        $this->assertEquals($maxAmountB->toString(), $restored->getMaxAmountB()->toString());
-        $this->assertEquals(1, $restored->getMinPrice()->getN());
-        $this->assertEquals(2, $restored->getMinPrice()->getD());
-    }
-
-    // ------------------------------------------------------------------
-    // XdrLiquidityPoolWithdrawOperationBase
-    // ------------------------------------------------------------------
-
-    public function testTxRepRoundtrip_XdrLiquidityPoolWithdrawOperationBase(): void
-    {
-        $poolIdBytes = $this->randomBytes(32);
-        $amount = new BigInteger(500000000);
-        $minAmountA = new BigInteger(100000000);
-        $minAmountB = new BigInteger(200000000);
-
-        $original = new XdrLiquidityPoolWithdrawOperationBase(
-            $poolIdBytes,
-            $amount,
-            $minAmountA,
-            $minAmountB
-        );
-
-        $lines = [];
-        $original->toTxRep('op', $lines);
-
-        $this->assertArrayHasKey('op.liquidityPoolID', $lines);
-        $this->assertArrayHasKey('op.amount', $lines);
-        $this->assertArrayHasKey('op.minAmountA', $lines);
-        $this->assertArrayHasKey('op.minAmountB', $lines);
-        $this->assertEquals($amount->toString(), $lines['op.amount']);
-        $this->assertEquals($minAmountA->toString(), $lines['op.minAmountA']);
-
-        $restored = XdrLiquidityPoolWithdrawOperationBase::fromTxRep($lines, 'op');
-
-        $this->assertEquals($original->toBase64Xdr(), $restored->toBase64Xdr());
-        $this->assertEquals($poolIdBytes, $restored->getLiquidityPoolID());
-        $this->assertEquals($amount->toString(), $restored->getAmount()->toString());
-        $this->assertEquals($minAmountA->toString(), $restored->getMinAmountA()->toString());
-        $this->assertEquals($minAmountB->toString(), $restored->getMinAmountB()->toString());
     }
 
     // ------------------------------------------------------------------

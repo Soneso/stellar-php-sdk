@@ -59,7 +59,7 @@ use phpseclib3\Math\BigInteger;
  *   - Bespoke types backed by a hand-written wrapper: XdrAccountID,
  *     XdrClaimableBalanceID, XdrSCAddress, XdrMuxedAccount,
  *     XdrMuxedAccountMed25519.
- *   - Wrapper types with field-name overrides: XdrAssetAlphaNum4,
+ *   - Types with field-name overrides: XdrAssetAlphaNum4,
  *     XdrAssetAlphaNum12, XdrAllowTrustOperationAsset,
  *     XdrLiquidityPoolDepositOperation, XdrLiquidityPoolWithdrawOperation,
  *     XdrLedgerKeyLiquidityPool.
@@ -937,8 +937,8 @@ class StellarSpecificTypesTest extends TestCase
         $poolIdHex = bin2hex($rawPoolId);
         $expectedStrKey = StrKey::encodeLiquidityPoolId($rawPoolId);
 
-        // The wrapper accepts a hex string poolId; the SEP-51 field override
-        // encodes the 32 bytes the generated resolver returns for it.
+        // The class holds the pool id as hexadecimal text; the SEP-51 field
+        // override encodes the 32 bytes the generated resolver returns for it.
         $price = new \Soneso\StellarSDK\Xdr\XdrPrice(1, 2);
         $op = new XdrLiquidityPoolDepositOperation(
             $poolIdHex,
@@ -1266,7 +1266,7 @@ class StellarSpecificTypesTest extends TestCase
         $this->assertSame($rawPoolId, $rt->liquidityPoolID);
     }
 
-    public function testXdrConfigUpgradeSetKeyBaseContractIDRoundTrip(): void
+    public function testXdrConfigUpgradeSetKeyContractIDRoundTrip(): void
     {
         // XdrConfigUpgradeSetKey stores its contract id as a 64-char hex
         // string; the registry entry encodes the 32 bytes its resolver returns.

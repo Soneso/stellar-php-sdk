@@ -99,9 +99,14 @@ class GeneratorSnapshotTest < Minitest::Test
   end
 
   def test_snapshot_struct_wrapper_constructors
-    %w[XdrTransactionBase XdrTransactionV0Base XdrManageDataOperationBase XdrTimeBoundsBase
-       XdrConfigUpgradeSetKeyBase XdrInnerTransactionResultPairBase
-       XdrLiquidityPoolDepositOperationBase XdrLiquidityPoolWithdrawOperationBase].each do |type|
+    %w[XdrTransactionBase XdrTransactionV0Base XdrManageDataOperationBase XdrTimeBoundsBase].each do |type|
+      assert_snapshot_match("#{type}.php")
+    end
+  end
+
+  def test_snapshot_struct_stored_fields
+    %w[XdrConfigUpgradeSetKey XdrInnerTransactionResultPair XdrLiquidityPoolDepositOperation
+       XdrLiquidityPoolWithdrawOperation].each do |type|
       assert_snapshot_match("#{type}.php")
     end
   end

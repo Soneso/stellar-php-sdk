@@ -9,7 +9,10 @@ use InvalidArgumentException;
 use JsonException;
 use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
-class XdrInnerTransactionResultPairBase {
+/**
+ * @phpstan-consistent-constructor
+ */
+class XdrInnerTransactionResultPair {
 
     public string $transactionHash;
     public XdrInnerTransactionResult $result;
@@ -26,7 +29,7 @@ class XdrInnerTransactionResultPairBase {
     }
 
     public static function decode(XdrBuffer $xdr): static {
-        $transactionHash = self::heldHashForm($xdr->readOpaqueFixed(32));
+        $transactionHash = bin2hex($xdr->readOpaqueFixed(32));
         $result = XdrInnerTransactionResult::decode($xdr);
         return new static($transactionHash, $result);
     }
@@ -37,31 +40,11 @@ class XdrInnerTransactionResultPairBase {
     public function setResult(XdrInnerTransactionResult $result): void { $this->result = $result; }
 
     /**
-     * True for XdrInnerTransactionResultPair and its subclasses, which hold the hash fields as text:
-     * 64 hexadecimal characters or the field's strkey. Other classes hold the 32 bytes.
-     */
-    private static function holdsHashesAsText(): bool {
-        return is_a(static::class, XdrInnerTransactionResultPair::class, true);
-    }
-
-    private static function heldHashForm(string $bytes): string {
-        return self::holdsHashesAsText() ? bin2hex($bytes) : $bytes;
-    }
-
-    /**
-     * Returns the 32 bytes of $value, a hash field in the form the called class holds.
-     * Hexadecimal text is taken in either letter case.
+     * Returns the 32 bytes of $value, 64 hexadecimal characters in either letter case.
      *
-     * @throws InvalidArgumentException when $value is not 32 bytes in a class that holds
-     * bytes, or not 64 hexadecimal characters in a class that holds text
+     * @throws InvalidArgumentException when $value is not 64 hexadecimal characters
      */
     private static function heldHashBytes(string $value, string $label, string $forms): string {
-        if (!self::holdsHashesAsText()) {
-            if (strlen($value) !== 32) {
-                throw new InvalidArgumentException($label . ' must be 32 bytes; ' . strlen($value) . ' bytes given');
-            }
-            return $value;
-        }
         $seedKind = SecretSeedRedaction::seedKind($value);
         if ($seedKind !== null) {
             throw new InvalidArgumentException($label . ' must be ' . $forms . ', ' . $seedKind . ' given');
@@ -78,7 +61,7 @@ class XdrInnerTransactionResultPairBase {
     /**
      * Returns the 32 bytes of the transaction hash for every generated writer.
      *
-     * @throws InvalidArgumentException when the field holds a value the called class does not take
+     * @throws InvalidArgumentException when the field does not hold 64 hexadecimal characters
      */
     private function transactionHashBytes(): string {
         $value = $this->transactionHash;
@@ -113,20 +96,20 @@ class XdrInnerTransactionResultPairBase {
         }
         if (!is_array($value)) {
             throw new InvalidArgumentException(
-                'Expected object for XdrInnerTransactionResultPairBase JSON value, got ' . get_debug_type($value)
+                'Expected object for XdrInnerTransactionResultPair JSON value, got ' . get_debug_type($value)
             );
         }
-        XdrJsonHelper::rejectUnknownFields($value, ['transaction_hash', 'result'], 'XdrInnerTransactionResultPairBase');
+        XdrJsonHelper::rejectUnknownFields($value, ['transaction_hash', 'result'], 'XdrInnerTransactionResultPair');
         if (!array_key_exists('transaction_hash', $value)) {
             throw new InvalidArgumentException(
-                'Missing required field transaction_hash for XdrInnerTransactionResultPairBase'
+                'Missing required field transaction_hash for XdrInnerTransactionResultPair'
             );
         }
         $transactionHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['transaction_hash']);
-        $transactionHash = self::heldHashForm($transactionHash);
+        $transactionHash = bin2hex($transactionHash);
         if (!array_key_exists('result', $value)) {
             throw new InvalidArgumentException(
-                'Missing required field result for XdrInnerTransactionResultPairBase'
+                'Missing required field result for XdrInnerTransactionResultPair'
             );
         }
         $result = XdrInnerTransactionResult::fromJsonValue($value['result']);

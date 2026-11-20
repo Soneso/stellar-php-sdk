@@ -38,8 +38,8 @@ SEP51_FIELD_OVERRIDES = {
   # XdrLedgerKey.liquidityPoolID is intentionally absent: the LIQUIDITY_POOL
   # arm of XdrLedgerKey delegates to XdrLedgerKeyLiquidityPool whose
   # liquidityPoolID is registered above.
-  ['XdrLiquidityPoolDepositOperationBase',  'liquidityPoolID']  => { strkey: :liquidity_pool },
-  ['XdrLiquidityPoolWithdrawOperationBase', 'liquidityPoolID']  => { strkey: :liquidity_pool },
+  ['XdrLiquidityPoolDepositOperation',      'liquidityPoolID']  => { strkey: :liquidity_pool },
+  ['XdrLiquidityPoolWithdrawOperation',     'liquidityPoolID']  => { strkey: :liquidity_pool },
   ['XdrTrustlineAssetBase',                 'liquidityPoolID']  => { strkey: :liquidity_pool },
   ['XdrLedgerKeyLiquidityPool',             'liquidityPoolID']  => { strkey: :liquidity_pool },
   ['XdrLiquidityPoolEntry',                 'liquidityPoolID']  => { strkey: :liquidity_pool },
@@ -50,7 +50,7 @@ SEP51_FIELD_OVERRIDES = {
   # contract id reaches the override resolved to 32 bytes; XdrContractEvent stores the
   # optional contractID (PHP property `hash`) as raw 32 bytes. Both emit the
   # canonical C-strkey, matching rs-stellar-xdr's ContractId serialisation.
-  ['XdrConfigUpgradeSetKeyBase',            'contractID']       => { strkey: :contract },
+  ['XdrConfigUpgradeSetKey',                'contractID']       => { strkey: :contract },
   ['XdrContractEvent',                      'hash']             => { strkey: :contract },
 
   # ContractExecutable wasm hash. The hand-written XdrContractExecutable

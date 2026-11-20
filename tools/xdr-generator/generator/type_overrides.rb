@@ -93,13 +93,9 @@ BASE_WRAPPER_TYPES = %w[
   XdrSignerKeyType
   XdrAllowTrustOperationAsset
   XdrTransactionEnvelope
-  XdrConfigUpgradeSetKey
-  XdrLiquidityPoolDepositOperation
-  XdrLiquidityPoolWithdrawOperation
   XdrAssetAlphaNum4
   XdrAssetAlphaNum12
   XdrChangeTrustOperation
-  XdrInnerTransactionResultPair
   XdrTimeBounds
   XdrOperationResultTr
   XdrManageDataOperation
@@ -107,6 +103,15 @@ BASE_WRAPPER_TYPES = %w[
   XdrChangeTrustAsset
   XdrTrustlineAsset
   XdrSCSpecUDTUnionCaseV0
+].freeze
+
+# Generated classes callers may extend: decode() and fromTxRep() return static, so a
+# subclass reads into itself, and each carries @phpstan-consistent-constructor.
+STATIC_READER_TYPES = %w[
+  XdrConfigUpgradeSetKey
+  XdrInnerTransactionResultPair
+  XdrLiquidityPoolDepositOperation
+  XdrLiquidityPoolWithdrawOperation
 ].freeze
 
 # Wrapper constructor arguments over the decoded struct fields.

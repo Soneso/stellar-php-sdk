@@ -26,10 +26,10 @@ SNAPSHOT_FILES = [
   "XdrTransactionV0Base.php",            # Base wrapper struct, optional time bounds
   "XdrManageDataOperationBase.php",      # Base wrapper struct, optional data value
   "XdrTimeBoundsBase.php",               # Base wrapper struct, DateTime conversion
-  "XdrConfigUpgradeSetKeyBase.php",      # Base wrapper struct, stored contract id and hash
-  "XdrInnerTransactionResultPairBase.php", # Base wrapper struct, stored hash
-  "XdrLiquidityPoolDepositOperationBase.php", # Base wrapper struct, stored pool id
-  "XdrLiquidityPoolWithdrawOperationBase.php", # Base wrapper struct, stored pool id
+  "XdrConfigUpgradeSetKey.php",          # Struct with static readers, stored contract id and hash
+  "XdrInnerTransactionResultPair.php",   # Struct with static readers, stored hash
+  "XdrLiquidityPoolDepositOperation.php", # Struct with static readers, stored pool id
+  "XdrLiquidityPoolWithdrawOperation.php", # Struct with static readers, stored pool id
 ].freeze
 
 FileUtils.mkdir_p(SNAPSHOT_DIR)

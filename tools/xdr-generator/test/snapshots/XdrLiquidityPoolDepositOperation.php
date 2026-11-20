@@ -11,7 +11,10 @@ use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
-class XdrLiquidityPoolDepositOperationBase {
+/**
+ * @phpstan-consistent-constructor
+ */
+class XdrLiquidityPoolDepositOperation {
 
     public string $liquidityPoolID;
     public BigInteger $maxAmountA;
@@ -37,7 +40,7 @@ class XdrLiquidityPoolDepositOperationBase {
     }
 
     public static function decode(XdrBuffer $xdr): static {
-        $liquidityPoolID = self::heldHashForm($xdr->readOpaqueFixed(32));
+        $liquidityPoolID = bin2hex($xdr->readOpaqueFixed(32));
         $maxAmountA = $xdr->readBigInteger64();
         $maxAmountB = $xdr->readBigInteger64();
         $minPrice = XdrPrice::decode($xdr);
@@ -57,31 +60,11 @@ class XdrLiquidityPoolDepositOperationBase {
     public function setMaxPrice(XdrPrice $maxPrice): void { $this->maxPrice = $maxPrice; }
 
     /**
-     * True for XdrLiquidityPoolDepositOperation and its subclasses, which hold the hash fields as text:
-     * 64 hexadecimal characters or the field's strkey. Other classes hold the 32 bytes.
-     */
-    private static function holdsHashesAsText(): bool {
-        return is_a(static::class, XdrLiquidityPoolDepositOperation::class, true);
-    }
-
-    private static function heldHashForm(string $bytes): string {
-        return self::holdsHashesAsText() ? bin2hex($bytes) : $bytes;
-    }
-
-    /**
-     * Returns the 32 bytes of $value, a hash field in the form the called class holds.
-     * Hexadecimal text is taken in either letter case.
+     * Returns the 32 bytes of $value, 64 hexadecimal characters in either letter case.
      *
-     * @throws InvalidArgumentException when $value is not 32 bytes in a class that holds
-     * bytes, or not 64 hexadecimal characters in a class that holds text
+     * @throws InvalidArgumentException when $value is not 64 hexadecimal characters
      */
     private static function heldHashBytes(string $value, string $label, string $forms): string {
-        if (!self::holdsHashesAsText()) {
-            if (strlen($value) !== 32) {
-                throw new InvalidArgumentException($label . ' must be 32 bytes; ' . strlen($value) . ' bytes given');
-            }
-            return $value;
-        }
         $seedKind = SecretSeedRedaction::seedKind($value);
         if ($seedKind !== null) {
             throw new InvalidArgumentException($label . ' must be ' . $forms . ', ' . $seedKind . ' given');
@@ -98,11 +81,11 @@ class XdrLiquidityPoolDepositOperationBase {
     /**
      * Returns the 32 bytes of the liquidity pool id for every generated writer.
      *
-     * @throws InvalidArgumentException when the field holds a value the called class does not take
+     * @throws InvalidArgumentException when the field does not hold an "L..." strkey or 64 hexadecimal characters
      */
     private function liquidityPoolIDBytes(): string {
         $value = $this->liquidityPoolID;
-        if (self::holdsHashesAsText() && strlen($value) === 56 && $value[0] === 'L') {
+        if (strlen($value) === 56 && $value[0] === 'L') {
             try {
                 return StrKey::decodeLiquidityPoolId($value);
             } catch (InvalidArgumentException $e) {
@@ -148,13 +131,13 @@ class XdrLiquidityPoolDepositOperationBase {
         }
         if (!is_array($value)) {
             throw new InvalidArgumentException(
-                'Expected object for XdrLiquidityPoolDepositOperationBase JSON value, got ' . get_debug_type($value)
+                'Expected object for XdrLiquidityPoolDepositOperation JSON value, got ' . get_debug_type($value)
             );
         }
-        XdrJsonHelper::rejectUnknownFields($value, ['liquidity_pool_id', 'max_amount_a', 'max_amount_b', 'min_price', 'max_price'], 'XdrLiquidityPoolDepositOperationBase');
+        XdrJsonHelper::rejectUnknownFields($value, ['liquidity_pool_id', 'max_amount_a', 'max_amount_b', 'min_price', 'max_price'], 'XdrLiquidityPoolDepositOperation');
         if (!array_key_exists('liquidity_pool_id', $value)) {
             throw new InvalidArgumentException(
-                'Missing required field liquidity_pool_id for XdrLiquidityPoolDepositOperationBase'
+                'Missing required field liquidity_pool_id for XdrLiquidityPoolDepositOperation'
             );
         }
         if (!is_string($value['liquidity_pool_id'])) {
@@ -163,28 +146,28 @@ class XdrLiquidityPoolDepositOperationBase {
             );
         }
         $liquidityPoolID = StrKey::decodeLiquidityPoolId($value['liquidity_pool_id']);
-        $liquidityPoolID = self::heldHashForm($liquidityPoolID);
+        $liquidityPoolID = bin2hex($liquidityPoolID);
         if (!array_key_exists('max_amount_a', $value)) {
             throw new InvalidArgumentException(
-                'Missing required field max_amount_a for XdrLiquidityPoolDepositOperationBase'
+                'Missing required field max_amount_a for XdrLiquidityPoolDepositOperation'
             );
         }
         $maxAmountA = new BigInteger(is_string($value['max_amount_a']) ? $value['max_amount_a'] : (string) (int) $value['max_amount_a']);
         if (!array_key_exists('max_amount_b', $value)) {
             throw new InvalidArgumentException(
-                'Missing required field max_amount_b for XdrLiquidityPoolDepositOperationBase'
+                'Missing required field max_amount_b for XdrLiquidityPoolDepositOperation'
             );
         }
         $maxAmountB = new BigInteger(is_string($value['max_amount_b']) ? $value['max_amount_b'] : (string) (int) $value['max_amount_b']);
         if (!array_key_exists('min_price', $value)) {
             throw new InvalidArgumentException(
-                'Missing required field min_price for XdrLiquidityPoolDepositOperationBase'
+                'Missing required field min_price for XdrLiquidityPoolDepositOperation'
             );
         }
         $minPrice = XdrPrice::fromJsonValue($value['min_price']);
         if (!array_key_exists('max_price', $value)) {
             throw new InvalidArgumentException(
-                'Missing required field max_price for XdrLiquidityPoolDepositOperationBase'
+                'Missing required field max_price for XdrLiquidityPoolDepositOperation'
             );
         }
         $maxPrice = XdrPrice::fromJsonValue($value['max_price']);
@@ -224,9 +207,6 @@ class XdrLiquidityPoolDepositOperationBase {
 
     public static function fromTxRep(array $map, string $prefix): static {
         $liquidityPoolID = TxRepHelper::getValue($map, $prefix . '.liquidityPoolID') ?? '';
-        if (!self::holdsHashesAsText()) {
-            $liquidityPoolID = TxRepHelper::hexToBytes($liquidityPoolID);
-        }
         $maxAmountA = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.maxAmountA') ?? '0', $prefix . '.maxAmountA'));
         $maxAmountB = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.maxAmountB') ?? '0', $prefix . '.maxAmountB'));
         $minPrice = XdrPrice::fromTxRep($map, $prefix . '.minPrice');

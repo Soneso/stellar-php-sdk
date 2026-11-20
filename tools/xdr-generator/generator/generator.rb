@@ -249,6 +249,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
     imports.each { |imp| out.puts imp }
     out.puts ""
+    out.puts "/**\n * @phpstan-consistent-constructor\n */" if STATIC_READER_TYPES.include?(struct_name)
     out.puts "class #{class_name} {"
     out.puts ""
 
@@ -296,13 +297,13 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
 
     # decode()
-    render_struct_decode(out, struct_name, class_name, fields, is_base)
+    render_struct_decode(out, struct_name, class_name, fields)
     out.puts ""
 
     # Getters and setters for backward compatibility
     render_struct_accessors(out, fields, typed_arrays: is_base)
 
-    members = field_storage_members(struct_name, fields)
+    members = field_storage_members(fields)
     if members
       write_php_block(out, members, "    ")
       out.puts ""
@@ -418,15 +419,15 @@ class Generator < Xdrgen::Generators::Base
     end
   end
 
-  # A FIELD_STORAGE_OVERRIDES field is a required 32-byte opaque field of a base
-  # wrapper struct whose readers construct the base form.
+  # A FIELD_STORAGE_OVERRIDES field is a required 32-byte opaque field of a
+  # generated class that no hand-written wrapper extends.
   def check_field_storage(struct_name, is_base, fields)
     fields.each do |f|
       next unless f[:storage]
-      next if is_base && !WRAPPER_CONSTRUCTORS.key?(struct_name) && !f[:is_optional] && !f[:is_array] &&
+      next if !is_base && !f[:is_optional] && !f[:is_array] &&
               decode_type_call(f[:php_type], typespec: f[:decl].type) == '$xdr->readOpaqueFixed(32)'
 
-      raise "FIELD_STORAGE_OVERRIDES entry #{struct_name}.#{f[:name]} is not a required 32-byte field of a base wrapper struct"
+      raise "FIELD_STORAGE_OVERRIDES entry #{struct_name}.#{f[:name]} is not a required 32-byte field of a class without a wrapper"
     end
   end
 
@@ -458,9 +459,8 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
   end
 
-  def render_struct_decode(out, struct_name, class_name, fields, is_base)
+  def render_struct_decode(out, struct_name, class_name, fields)
     _, _, return_type, _ = resolve_class_info(struct_name)
-    decode_class = is_base ? "static" : struct_name
     if struct_name == DELEGATE_DEPTH_TYPE
       out.puts '    // Nested delegate signatures per buffer, capped at XdrBuffer::RECURSION_LIMIT.'
       out.puts '    private static ?\\WeakMap $delegateDecodeDepth = null;'
@@ -471,12 +471,12 @@ class Generator < Xdrgen::Generators::Base
         if f[:is_ext_point]
           out.puts "        $xdr->readExtensionPoint('#{struct_name}');"
         elsif f[:storage]
-          out.puts "        $#{f[:name]} = self::heldHashForm(#{decode_type_call(f[:php_type], typespec: f[:decl].type)});"
+          out.puts "        $#{f[:name]} = bin2hex(#{decode_type_call(f[:php_type], typespec: f[:decl].type)});"
         else
           render_decode_field_php(out, f[:name], f, struct_name)
         end
       end
-      render_struct_construction(out, struct_name, fields, decode_class)
+      render_struct_construction(out, struct_name, fields, return_type)
     end
     out.puts "    }"
   end
@@ -1964,8 +1964,6 @@ class Generator < Xdrgen::Generators::Base
 
   def render_struct_txrep_methods(out, struct_name, class_name, fields)
     _, _, return_type, _ = resolve_class_info(struct_name)
-    is_base = BASE_WRAPPER_TYPES.include?(struct_name)
-    decode_class = is_base ? "static" : struct_name
 
     out.puts ""
     render_to_txrep_signature(out)
@@ -1982,7 +1980,7 @@ class Generator < Xdrgen::Generators::Base
       txrep_parse_field_to_local(out, struct_name, f, "        ")
     end
 
-    render_struct_construction(out, struct_name, fields, decode_class)
+    render_struct_construction(out, struct_name, fields, return_type)
 
     out.puts "    }"
   end
@@ -2137,13 +2135,9 @@ class Generator < Xdrgen::Generators::Base
     # Extension point fields are not in the constructor; skip.
     return if field[:is_ext_point]
 
-    # A stored field keeps the line's text where the class holds text, so the
-    # writers judge it as they judge a value given to the constructor.
+    # A stored field keeps the line's text; the writers judge it like a constructor value.
     if field[:storage]
       out.puts "#{indent}#{target} = TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '';"
-      out.puts "#{indent}if (!self::holdsHashesAsText()) {"
-      out.puts "#{indent}    #{target} = TxRepHelper::hexToBytes(#{target});"
-      out.puts "#{indent}}"
       return
     end
 
@@ -3206,7 +3200,7 @@ class Generator < Xdrgen::Generators::Base
   # native shape the SEP-51 wire form requires (string, int, array, null).
   #
   # The parent_type argument is the emission-target class name (e.g.
-  # "XdrLiquidityPoolDepositOperationBase" for Cat-B emission, the bare
+  # "XdrTimeBoundsBase" for Cat-B emission, the bare
   # type name for non-Cat-B types). It feeds the per-field override lookup
   # below; see SEP51_FIELD_OVERRIDES in sep51_field_overrides.rb.
   def struct_field_to_json_expr(field, parent_type = nil)
@@ -3409,7 +3403,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "            );"
       out.puts "        }"
       render_struct_field_from_json_inner(out, field, target, json_lookup, "        ", class_name)
-      out.puts "        #{target} = self::heldHashForm(#{target});" if field[:storage]
+      out.puts "        #{target} = bin2hex(#{target});" if field[:storage]
     end
   end
 
@@ -4560,8 +4554,8 @@ class Generator < Xdrgen::Generators::Base
   def resolve_class_info(php_name)
     is_base = BASE_WRAPPER_TYPES.include?(php_name)
     class_name = is_base ? "#{php_name}Base" : php_name
-    return_type = is_base ? "static" : class_name
-    new_expr = is_base ? "new static" : "new #{class_name}"
+    return_type = is_base || STATIC_READER_TYPES.include?(php_name) ? "static" : class_name
+    new_expr = return_type == "static" ? "new static" : "new #{class_name}"
     [is_base, class_name, return_type, new_expr]
   end
 

@@ -82,7 +82,7 @@ parameters:
         - ../../Soneso/StellarSDK/Xdr/XdrConfigSettingID.php
         - ../../Soneso/StellarSDK/Xdr/XdrConfigSettingSCPTiming.php
         - ../../Soneso/StellarSDK/Xdr/XdrConfigUpgradeSet.php
-        - ../../Soneso/StellarSDK/Xdr/XdrConfigUpgradeSetKeyBase.php
+        - ../../Soneso/StellarSDK/Xdr/XdrConfigUpgradeSetKey.php
         - ../../Soneso/StellarSDK/Xdr/XdrConstantProduct.php
         - ../../Soneso/StellarSDK/Xdr/XdrContractCodeCostInputs.php
         - ../../Soneso/StellarSDK/Xdr/XdrContractCodeEntry.php
@@ -162,7 +162,7 @@ parameters:
         - ../../Soneso/StellarSDK/Xdr/XdrInflationResult.php
         - ../../Soneso/StellarSDK/Xdr/XdrInflationResultCode.php
         - ../../Soneso/StellarSDK/Xdr/XdrInnerTransactionResult.php
-        - ../../Soneso/StellarSDK/Xdr/XdrInnerTransactionResultPairBase.php
+        - ../../Soneso/StellarSDK/Xdr/XdrInnerTransactionResultPair.php
         - ../../Soneso/StellarSDK/Xdr/XdrInnerTransactionResultResult.php
         - ../../Soneso/StellarSDK/Xdr/XdrInt128Parts.php
         - ../../Soneso/StellarSDK/Xdr/XdrInt256Parts.php
@@ -213,13 +213,13 @@ parameters:
         - ../../Soneso/StellarSDK/Xdr/XdrLiabilities.php
         - ../../Soneso/StellarSDK/Xdr/XdrLiquidityPoolBody.php
         - ../../Soneso/StellarSDK/Xdr/XdrLiquidityPoolConstantProductParameters.php
-        - ../../Soneso/StellarSDK/Xdr/XdrLiquidityPoolDepositOperationBase.php
+        - ../../Soneso/StellarSDK/Xdr/XdrLiquidityPoolDepositOperation.php
         - ../../Soneso/StellarSDK/Xdr/XdrLiquidityPoolDepositResult.php
         - ../../Soneso/StellarSDK/Xdr/XdrLiquidityPoolDepositResultCode.php
         - ../../Soneso/StellarSDK/Xdr/XdrLiquidityPoolEntry.php
         - ../../Soneso/StellarSDK/Xdr/XdrLiquidityPoolParameters.php
         - ../../Soneso/StellarSDK/Xdr/XdrLiquidityPoolType.php
-        - ../../Soneso/StellarSDK/Xdr/XdrLiquidityPoolWithdrawOperationBase.php
+        - ../../Soneso/StellarSDK/Xdr/XdrLiquidityPoolWithdrawOperation.php
         - ../../Soneso/StellarSDK/Xdr/XdrLiquidityPoolWithdrawResult.php
         - ../../Soneso/StellarSDK/Xdr/XdrLiquidityPoolWithdrawResultCode.php
         - ../../Soneso/StellarSDK/Xdr/XdrManageBuyOfferOperation.php

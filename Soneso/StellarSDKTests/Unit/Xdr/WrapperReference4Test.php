@@ -51,20 +51,18 @@ class WrapperReference4Test extends TestCase
         return json_decode(file_get_contents(__DIR__ . '/fixtures/wrapper-reference4.json'), true, 512, JSON_THROW_ON_ERROR);
     }
 
-    /** @return list<class-string> the base, the wrapper and a subclass of the wrapper */
+    /** @return list<class-string> the class of $type and a subclass of it */
     private static function classes(string $type): array
     {
-        $wrapper = 'Soneso\\StellarSDK\\Xdr\\' . $type;
-        return [$wrapper . 'Base', $wrapper, __NAMESPACE__ . '\\Reference4' . substr($type, 3)];
+        return ['Soneso\\StellarSDK\\Xdr\\' . $type, __NAMESPACE__ . '\\Reference4' . substr($type, 3)];
     }
 
-    /** @return array<string, string> the hash fields of $row in the form $class holds them */
-    private static function held(array $row, string $class): array
+    /** @return array<string, string> the hash fields of $row as the classes hold them, in hexadecimal */
+    private static function held(array $row): array
     {
         $values = [];
         foreach (array_filter(self::PARAMETERS[$row['type']], 'is_int') as $field => $offset) {
-            $raw = substr(base64_decode($row['b64'], true), $offset, 32);
-            $values[$field] = str_ends_with($class, 'Base') ? $raw : bin2hex($raw);
+            $values[$field] = bin2hex(substr(base64_decode($row['b64'], true), $offset, 32));
         }
         return $values;
     }
@@ -125,9 +123,9 @@ class WrapperReference4Test extends TestCase
             'fromJsonValue' => $class::fromJsonValue(json_decode($row['ref_json'], true, 512, JSON_THROW_ON_ERROR)),
         };
         self::assertSame($class, get_class($object));
-        self::assertHeld(self::held($row, $class), $object);
+        self::assertHeld(self::held($row), $object);
         self::assertWriters($row, $object);
-        self::assertHeld(self::held($row, $class), $object);
+        self::assertHeld(self::held($row), $object);
     }
 
     /** @return iterable<string, array{array, class-string, string, string, bool}> */
@@ -135,17 +133,14 @@ class WrapperReference4Test extends TestCase
     {
         foreach (self::rows() as $row) {
             foreach (self::classes($row['type']) as $class) {
-                foreach (self::held($row, $class) as $field => $value) {
-                    $inputs = ['held' => $value];
-                    if (!str_ends_with($class, 'Base')) {
-                        $inputs['upper case'] = strtoupper($value);
-                        $raw = hex2bin($value);
-                        match (self::FIELDS[$field][2]) {
-                            'C' => $inputs['strkey'] = StrKey::encodeContractId($raw),
-                            'L' => $inputs['strkey'] = StrKey::encodeLiquidityPoolId($raw),
-                            null => null,
-                        };
-                    }
+                foreach (self::held($row) as $field => $value) {
+                    $inputs = ['held' => $value, 'upper case' => strtoupper($value)];
+                    $raw = hex2bin($value);
+                    match (self::FIELDS[$field][2]) {
+                        'C' => $inputs['strkey'] = StrKey::encodeContractId($raw),
+                        'L' => $inputs['strkey'] = StrKey::encodeLiquidityPoolId($raw),
+                        null => null,
+                    };
                     foreach ($inputs as $form => $input) {
                         foreach (['constructor' => false, 'setter' => true] as $via => $setter) {
                             yield implode(':', [$row['type'], $row['label'], $class, $field, $form, $via])
@@ -177,7 +172,7 @@ class WrapperReference4Test extends TestCase
             if (!isset($row['txrep'])) {
                 continue;
             }
-            foreach (array_slice(self::classes($row['type']), 1) as $class) {
+            foreach (self::classes($row['type']) as $class) {
                 $hex = $row['txrep']['x.liquidityPoolID'];
                 foreach ([StrKey::encodeLiquidityPoolId(hex2bin($hex)), strtoupper($hex)] as $line) {
                     yield $row['type'] . ':' . $row['label'] . ':' . $class . ':' . $line => [$row, $class, $line];
@@ -262,14 +257,8 @@ class WrapperReference4Test extends TestCase
     {
         foreach (self::typeRows() as $row) {
             foreach (self::classes($row['type']) as $class) {
-                foreach (self::held($row, $class) as $field => $value) {
-                    $label = self::FIELDS[$field][0];
-                    $invalid = str_ends_with($class, 'Base')
-                        ? ['31 bytes' => [substr($value, 1), $label . ' must be 32 bytes; 31 bytes given'],
-                            '33 bytes' => ["\0" . $value, $label . ' must be 32 bytes; 33 bytes given'],
-                            'hexadecimal' => [bin2hex($value), $label . ' must be 32 bytes; 64 bytes given']]
-                        : self::textRejections($value, $field);
-                    foreach ($invalid as $name => [$input, $message]) {
+                foreach (self::held($row) as $field => $value) {
+                    foreach (self::textRejections($value, $field) as $name => [$input, $message]) {
                         yield implode(':', [$row['type'], $class, $field, $name]) => [$row, $class, $field, $input, $message];
                     }
                 }
@@ -313,8 +302,8 @@ class WrapperReference4Test extends TestCase
     public static function seedCases(): iterable
     {
         foreach (self::typeRows() as $row) {
-            foreach (array_slice(self::classes($row['type']), 1) as $class) {
-                foreach (array_keys(self::held($row, $class)) as $field) {
+            foreach (self::classes($row['type']) as $class) {
+                foreach (array_keys(self::held($row)) as $field) {
                     foreach (self::seedForms() as $form) {
                         yield implode(':', [$row['type'], $class, $field, $form]) => [$row, $class, $field, $form];
                     }
@@ -338,34 +327,5 @@ class WrapperReference4Test extends TestCase
             self::assertTrue(str_contains($error->getMessage(), SecretSeedVariants::SECRET_SEED), $name . ' names no secret seed');
             $variants->assertNotShown($error, $name);
         }
-    }
-
-    /** @return iterable<string, array{array, string}> form labels only, never a seed */
-    public static function baseTxRepSeedCases(): iterable
-    {
-        foreach (self::typeRows() as $row) {
-            if (isset($row['txrep'])) {
-                foreach (self::seedForms() as $form) {
-                    yield $row['type'] . ':' . $form => [$row, $form];
-                }
-            }
-        }
-    }
-
-    /**
-     * The TxRep reader of a base decodes the hexadecimal line and refuses a line holding a secret
-     * seed with a message that shows none of it.
-     */
-    #[DataProvider('baseTxRepSeedCases')]
-    public function testBaseTxRepReaderRedactsASeed(array $row, string $form): void
-    {
-        $variants = SecretSeedVariants::create();
-        $value = $variants->insideLongerValues()[$form];
-        $base = self::classes($row['type'])[0];
-        $error = self::thrown(fn () => $base::fromTxRep(['x.liquidityPoolID' => $value['input']] + $row['txrep'], 'x'));
-        self::assertTrue($error instanceof InvalidArgumentException, 'fromTxRep() did not throw InvalidArgumentException');
-        self::assertTrue($error->getMessage() === 'Invalid hex string: ' . $value['redacted'],
-            'fromTxRep() does not name the line with the seed replaced');
-        $variants->assertNotShown($error, 'fromTxRep()');
     }
 }
