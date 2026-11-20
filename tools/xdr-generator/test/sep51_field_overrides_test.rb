@@ -10,7 +10,7 @@ require_relative '../generator/generator'
 #
 # Two test categories:
 #   1. Generation tests — assert the PHP code emitted for each override
-#      kind (`:strkey :liquidity_pool` hex/raw, `:strkey :contract`,
+#      kind (`:strkey :liquidity_pool`, `:strkey :contract`,
 #      `:strkey :claimable_balance`, `:asset_code 4`, `:asset_code 12`,
 #      `:proc`) matches the literal expected PHP source, byte for byte.
 #   2. Round-trip tests — for each registered (parent_type, field_name),
@@ -50,12 +50,10 @@ class Sep51FieldOverridesTest < Minitest::Test
     end
   end
 
-  def test_registry_strkey_values_use_hex_or_raw_encoding
+  def test_registry_strkey_values_name_only_a_known_kind
     SEP51_FIELD_OVERRIDES.each_value do |spec|
       next unless spec.key?(:strkey)
-      assert spec.key?(:encoding), "strkey override missing :encoding key: #{spec.inspect}"
-      assert [:hex, :raw].include?(spec[:encoding]),
-             "strkey :encoding must be :hex or :raw; got #{spec[:encoding].inspect}"
+      assert_equal [:strkey], spec.keys, "strkey override takes only its kind: #{spec.inspect}"
       assert [:liquidity_pool, :contract, :claimable_balance].include?(spec[:strkey]),
              "Unknown strkey kind: #{spec[:strkey].inspect}"
     end
@@ -73,38 +71,20 @@ class Sep51FieldOverridesTest < Minitest::Test
   # Generation tests — emitted PHP source per override kind
   # ------------------------------------------------------------------
 
-  def test_strkey_liquidity_pool_hex_to_json_emits_hex_encoder
-    override = { strkey: :liquidity_pool, encoding: :hex }
-    php = @gen.send(:field_override_to_json_expr, override, '$this->liquidityPoolID')
-    assert_equal 'StrKey::encodeLiquidityPoolIdHex($this->liquidityPoolID)', php
-  end
-
   def test_strkey_liquidity_pool_raw_to_json_emits_raw_encoder
-    override = { strkey: :liquidity_pool, encoding: :raw }
+    override = { strkey: :liquidity_pool }
     php = @gen.send(:field_override_to_json_expr, override, '$this->liquidityPoolID')
     assert_equal 'StrKey::encodeLiquidityPoolId($this->liquidityPoolID)', php
   end
 
-  def test_strkey_contract_hex_to_json_emits_hex_encoder
-    override = { strkey: :contract, encoding: :hex }
-    php = @gen.send(:field_override_to_json_expr, override, '$this->contractID')
-    assert_equal 'StrKey::encodeContractIdHex($this->contractID)', php
-  end
-
   def test_strkey_contract_raw_to_json_emits_raw_encoder
-    override = { strkey: :contract, encoding: :raw }
+    override = { strkey: :contract }
     php = @gen.send(:field_override_to_json_expr, override, '$this->contractID')
     assert_equal 'StrKey::encodeContractId($this->contractID)', php
   end
 
-  def test_strkey_claimable_balance_hex_to_json_emits_hex_encoder
-    override = { strkey: :claimable_balance, encoding: :hex }
-    php = @gen.send(:field_override_to_json_expr, override, '$this->balanceId')
-    assert_equal 'StrKey::encodeClaimableBalanceIdHex($this->balanceId)', php
-  end
-
   def test_strkey_claimable_balance_raw_to_json_emits_raw_encoder
-    override = { strkey: :claimable_balance, encoding: :raw }
+    override = { strkey: :claimable_balance }
     php = @gen.send(:field_override_to_json_expr, override, '$this->balanceId')
     assert_equal 'StrKey::encodeClaimableBalanceId($this->balanceId)', php
   end
@@ -143,18 +123,18 @@ class Sep51FieldOverridesTest < Minitest::Test
   # From-side parser emission per kind
   # ------------------------------------------------------------------
 
-  def test_strkey_liquidity_pool_hex_from_json_emits_hex_decoder
+  def test_strkey_liquidity_pool_from_json_checks_the_string_then_decodes
     out = StringIO.new
-    override = { strkey: :liquidity_pool, encoding: :hex }
+    override = { strkey: :liquidity_pool }
     @gen.send(:render_field_override_from_json, out, override, '$x', '$value["liquidity_pool_id"]', '        ')
     rendered = out.string
-    assert_includes rendered, 'StrKey::decodeLiquidityPoolIdHex($value["liquidity_pool_id"])'
+    assert_includes rendered, 'StrKey::decodeLiquidityPoolId($value["liquidity_pool_id"])'
     assert_includes rendered, 'if (!is_string($value["liquidity_pool_id"]))'
   end
 
   def test_strkey_contract_raw_from_json_emits_raw_decoder
     out = StringIO.new
-    override = { strkey: :contract, encoding: :raw }
+    override = { strkey: :contract }
     @gen.send(:render_field_override_from_json, out, override, '$x', '$value["contract_id"]', '        ')
     rendered = out.string
     assert_includes rendered, 'StrKey::decodeContractId($value["contract_id"])'
@@ -205,24 +185,16 @@ class Sep51FieldOverridesTest < Minitest::Test
     Object.const_set(:SEP51_FIELD_OVERRIDES, registry)
   end
 
-  def test_strkey_encoder_method_picks_hex_or_raw_per_encoding_discriminator
-    assert_equal 'encodeLiquidityPoolIdHex',
-                 @gen.send(:strkey_encoder_method, :liquidity_pool, :hex, :encode)
-    assert_equal 'encodeLiquidityPoolId',
-                 @gen.send(:strkey_encoder_method, :liquidity_pool, :raw, :encode)
-    assert_equal 'decodeContractIdHex',
-                 @gen.send(:strkey_encoder_method, :contract, :hex, :decode)
-    assert_equal 'decodeContractId',
-                 @gen.send(:strkey_encoder_method, :contract, :raw, :decode)
-    assert_equal 'encodeClaimableBalanceIdHex',
-                 @gen.send(:strkey_encoder_method, :claimable_balance, :hex, :encode)
-    assert_equal 'decodeClaimableBalanceId',
-                 @gen.send(:strkey_encoder_method, :claimable_balance, :raw, :decode)
+  def test_strkey_encoder_method_names_the_binary_method_per_kind_and_direction
+    assert_equal 'encodeLiquidityPoolId', @gen.send(:strkey_encoder_method, :liquidity_pool, :encode)
+    assert_equal 'decodeContractId', @gen.send(:strkey_encoder_method, :contract, :decode)
+    assert_equal 'encodeClaimableBalanceId', @gen.send(:strkey_encoder_method, :claimable_balance, :encode)
+    assert_equal 'decodeClaimableBalanceId', @gen.send(:strkey_encoder_method, :claimable_balance, :decode)
   end
 
   def test_strkey_encoder_method_rejects_unknown_kind
     assert_raises(RuntimeError) do
-      @gen.send(:strkey_encoder_method, :unknown_kind, :hex, :encode)
+      @gen.send(:strkey_encoder_method, :unknown_kind, :encode)
     end
   end
 
@@ -243,27 +215,5 @@ class Sep51FieldOverridesTest < Minitest::Test
     ac_entries = SEP51_FIELD_OVERRIDES.select { |_, spec| spec.key?(:asset_code) }
     assert_equal 2, ac_entries.size,
                  'Expected exactly 2 asset_code field-override entries'
-  end
-
-  def test_storage_form_per_pool_id_site
-    # Deposit/Withdraw operation bases store hex (wrapper bin2hex).
-    # All other PoolID sites store raw (no wrapper override).
-    expected_encoding = {
-      ['XdrLiquidityPoolDepositOperationBase',  'liquidityPoolID'] => :hex,
-      ['XdrLiquidityPoolWithdrawOperationBase', 'liquidityPoolID'] => :hex,
-      ['XdrTrustlineAssetBase',                 'liquidityPoolID'] => :raw,
-      ['XdrLedgerKeyLiquidityPool',             'liquidityPoolID'] => :raw,
-      ['XdrLiquidityPoolEntry',                 'liquidityPoolID'] => :raw,
-      ['XdrClaimLiquidityAtom',                 'liquidityPoolID'] => :raw,
-      ['XdrHashIDPreimageRevokeID',             'liquidityPoolID'] => :raw,
-      ['XdrConfigUpgradeSetKeyBase',            'contractID']      => :hex,
-      ['XdrContractEvent',                      'hash']            => :raw,
-    }
-    expected_encoding.each do |key, expected|
-      spec = SEP51_FIELD_OVERRIDES[key]
-      refute_nil spec, "Missing field-override for #{key.inspect}"
-      assert_equal expected, spec[:encoding],
-                   "Storage form for #{key.inspect} drifted from audit document"
-    end
   end
 end

@@ -16,16 +16,11 @@
 #
 # Override-spec shapes:
 #
-#   { strkey: :liquidity_pool | :contract | :claimable_balance,
-#     encoding: :hex | :raw }
-#       Emit a StrKey encode/decode call. The :hex variant uses the hex-form
-#       StrKey method (encodeXxxIdHex / decodeXxxIdHex) and assumes the
-#       field's runtime storage form is a 64-char hex string. The :raw
-#       variant uses the binary-form method (encodeXxxId / decodeXxxId) and
-#       assumes the field's runtime storage form is a raw 32-byte buffer.
-#       The storage form is determined by reading the wrapper class's
-#       decode path (raw bytes by default; hex string when the wrapper
-#       converts via bin2hex after parent::decode).
+#   { strkey: :liquidity_pool | :contract | :claimable_balance }
+#       Emit the binary-form StrKey call (encodeXxxId / decodeXxxId). The
+#       field holds the raw 32 bytes; a field in FIELD_STORAGE_OVERRIDES
+#       (field_storage_overrides.rb) reaches the override as the 32 bytes
+#       its resolver returns.
 #
 #   { asset_code: 4 | 12 }
 #       Emit AssetCode4 / AssetCode12 trim-pad-escape semantics inline at
@@ -37,30 +32,26 @@
 #       Escape hatch for cases the standard kinds cannot handle. The lambdas
 #       receive the PHP field-access expression (e.g. "$this->fieldName")
 #       and must return the PHP source string the generator emits.
-#
-# Any change to a Cat-B wrapper's decode path that alters a field's
-# storage form requires the corresponding registry entry's `encoding`
-# value to be updated.
 
 SEP51_FIELD_OVERRIDES = {
   # PoolID -> L-strkey (7 sites verified by reading Soneso/StellarSDK/Xdr/).
   # XdrLedgerKey.liquidityPoolID is intentionally absent: the LIQUIDITY_POOL
   # arm of XdrLedgerKey delegates to XdrLedgerKeyLiquidityPool whose
   # liquidityPoolID is registered above.
-  ['XdrLiquidityPoolDepositOperationBase',  'liquidityPoolID']  => { strkey: :liquidity_pool, encoding: :hex },
-  ['XdrLiquidityPoolWithdrawOperationBase', 'liquidityPoolID']  => { strkey: :liquidity_pool, encoding: :hex },
-  ['XdrTrustlineAssetBase',                 'liquidityPoolID']  => { strkey: :liquidity_pool, encoding: :raw },
-  ['XdrLedgerKeyLiquidityPool',             'liquidityPoolID']  => { strkey: :liquidity_pool, encoding: :raw },
-  ['XdrLiquidityPoolEntry',                 'liquidityPoolID']  => { strkey: :liquidity_pool, encoding: :raw },
-  ['XdrClaimLiquidityAtom',                 'liquidityPoolID']  => { strkey: :liquidity_pool, encoding: :raw },
-  ['XdrHashIDPreimageRevokeID',             'liquidityPoolID']  => { strkey: :liquidity_pool, encoding: :raw },
+  ['XdrLiquidityPoolDepositOperationBase',  'liquidityPoolID']  => { strkey: :liquidity_pool },
+  ['XdrLiquidityPoolWithdrawOperationBase', 'liquidityPoolID']  => { strkey: :liquidity_pool },
+  ['XdrTrustlineAssetBase',                 'liquidityPoolID']  => { strkey: :liquidity_pool },
+  ['XdrLedgerKeyLiquidityPool',             'liquidityPoolID']  => { strkey: :liquidity_pool },
+  ['XdrLiquidityPoolEntry',                 'liquidityPoolID']  => { strkey: :liquidity_pool },
+  ['XdrClaimLiquidityAtom',                 'liquidityPoolID']  => { strkey: :liquidity_pool },
+  ['XdrHashIDPreimageRevokeID',             'liquidityPoolID']  => { strkey: :liquidity_pool },
 
   # ContractID -> C-strkey (sites outside SCAddress). XdrConfigUpgradeSetKey's
-  # PHP wrapper stores the value as a hex Hash; XdrContractEvent stores the
+  # contract id reaches the override resolved to 32 bytes; XdrContractEvent stores the
   # optional contractID (PHP property `hash`) as raw 32 bytes. Both emit the
   # canonical C-strkey, matching rs-stellar-xdr's ContractId serialisation.
-  ['XdrConfigUpgradeSetKeyBase',            'contractID']       => { strkey: :contract, encoding: :hex },
-  ['XdrContractEvent',                      'hash']             => { strkey: :contract, encoding: :raw },
+  ['XdrConfigUpgradeSetKeyBase',            'contractID']       => { strkey: :contract },
+  ['XdrContractEvent',                      'hash']             => { strkey: :contract },
 
   # ContractExecutable wasm hash. The hand-written XdrContractExecutable
   # wrapper stores the hash as a 64-character hex string (decode applies

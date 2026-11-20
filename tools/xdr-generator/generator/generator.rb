@@ -15,6 +15,7 @@ require_relative 'field_overrides'
 require_relative 'type_overrides'
 require_relative 'txrep_types'
 require_relative 'arm_storage_overrides'
+require_relative 'field_storage_overrides'
 require_relative 'cat_a_inline_targets'
 require_relative 'json_helpers'
 require_relative 'sep51_field_overrides'
@@ -230,15 +231,19 @@ class Generator < Xdrgen::Generators::Base
 
     # Collect field info
     fields = collect_struct_fields(struct, struct_name)
+    check_field_storage(struct_name, is_base, fields)
+    stored_fields = fields.select { |f| f[:storage] }
 
     has_big_integer = fields.any? { |f| f[:php_type] == "BigInteger" }
-    needs_strkey = sep51_needs_strkey?(struct_name, is_base, fields: fields)
+    needs_strkey = sep51_needs_strkey?(struct_name, is_base, fields: fields) ||
+                   stored_fields.any? { |f| f[:storage][:strkey] }
     emits_sep51_methods = emits_sep51?(struct_name, is_base)
 
     imports = ["use InvalidArgumentException;"]
     imports << "use JsonException;" if emits_sep51_methods
     imports << "use phpseclib3\\Math\\BigInteger;" if has_big_integer
     imports << "use Soneso\\StellarSDK\\Crypto\\StrKey;" if needs_strkey
+    imports << "use Soneso\\StellarSDK\\Soroban\\SecretSeedRedaction;" unless stored_fields.empty?
 
     out.puts GENERATED_HEADER
     out.puts ""
@@ -296,6 +301,12 @@ class Generator < Xdrgen::Generators::Base
 
     # Getters and setters for backward compatibility
     render_struct_accessors(out, fields, typed_arrays: is_base)
+
+    members = field_storage_members(struct_name, fields)
+    if members
+      write_php_block(out, members, "    ")
+      out.puts ""
+    end
 
     render_base64_methods(out)
     if emits_sep51?(struct_name, is_base)
@@ -402,8 +413,26 @@ class Generator < Xdrgen::Generators::Base
         elements_optional: elements_optional,
         max_length: is_ext ? nil : value_max_length(decl),
         label: "#{struct_name}.#{field_name}",
+        storage: is_ext ? nil : FIELD_STORAGE_OVERRIDES[[struct_name, field_name]],
       }
     end
+  end
+
+  # A FIELD_STORAGE_OVERRIDES field is a required 32-byte opaque field of a base
+  # wrapper struct whose readers construct the base form.
+  def check_field_storage(struct_name, is_base, fields)
+    fields.each do |f|
+      next unless f[:storage]
+      next if is_base && !WRAPPER_CONSTRUCTORS.key?(struct_name) && !f[:is_optional] && !f[:is_array] &&
+              decode_type_call(f[:php_type], typespec: f[:decl].type) == '$xdr->readOpaqueFixed(32)'
+
+      raise "FIELD_STORAGE_OVERRIDES entry #{struct_name}.#{f[:name]} is not a required 32-byte field of a base wrapper struct"
+    end
+  end
+
+  # The PHP expression a generated writer reads a struct field through.
+  def struct_field_accessor(field)
+    field[:storage] ? "$this->#{field_storage_resolver_name(field[:name])}()" : "$this->#{field[:name]}"
   end
 
   def render_struct_encode(out, struct_name, class_name, fields)
@@ -419,7 +448,7 @@ class Generator < Xdrgen::Generators::Base
       if f[:is_ext_point]
         out.puts "        #{prefix} XdrEncoder::integer32($this->#{f[:name]});"
       else
-        render_encode_field_php(out, "$this->#{f[:name]}", f, prefix)
+        render_encode_field_php(out, struct_field_accessor(f), f, prefix)
       end
     end
     if fields.empty?
@@ -441,6 +470,8 @@ class Generator < Xdrgen::Generators::Base
       fields.each do |f|
         if f[:is_ext_point]
           out.puts "        $xdr->readExtensionPoint('#{struct_name}');"
+        elsif f[:storage]
+          out.puts "        $#{f[:name]} = self::heldHashForm(#{decode_type_call(f[:php_type], typespec: f[:decl].type)});"
         else
           render_decode_field_php(out, f[:name], f, struct_name)
         end
@@ -1960,7 +1991,7 @@ class Generator < Xdrgen::Generators::Base
   def txrep_field_to_line(out, struct_name, field, indent)
     fname = field[:name]
     xdr_name = field[:xdr_name]
-    accessor = "$this->#{fname}"
+    accessor = struct_field_accessor(field)
 
     if field[:is_ext_point]
       out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = (string)$this->#{fname};"
@@ -2105,6 +2136,16 @@ class Generator < Xdrgen::Generators::Base
 
     # Extension point fields are not in the constructor; skip.
     return if field[:is_ext_point]
+
+    # A stored field keeps the line's text where the class holds text, so the
+    # writers judge it as they judge a value given to the constructor.
+    if field[:storage]
+      out.puts "#{indent}#{target} = TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '';"
+      out.puts "#{indent}if (!self::holdsHashesAsText()) {"
+      out.puts "#{indent}    #{target} = TxRepHelper::hexToBytes(#{target});"
+      out.puts "#{indent}}"
+      return
+    end
 
     php_type = field[:php_type]
     is_optional = field[:is_optional]
@@ -3175,7 +3216,7 @@ class Generator < Xdrgen::Generators::Base
       return "'v0'"
     end
 
-    accessor = "$this->#{field[:name]}"
+    accessor = struct_field_accessor(field)
 
     # Per-field override has highest precedence (precedence-chain step 1).
     # The override returns the entire to-JSON expression as a single PHP
@@ -3242,15 +3283,13 @@ class Generator < Xdrgen::Generators::Base
   end
 
   def strkey_field_override_to_json_expr(override, accessor)
-    encoder = strkey_encoder_method(override[:strkey], override[:encoding], :encode)
+    encoder = strkey_encoder_method(override[:strkey], :encode)
     "StrKey::#{encoder}(#{accessor})"
   end
 
-  # Map a (kind, encoding) pair to the matching StrKey method name. Kept
-  # in one place so the registry's :encoding discriminator drives the
-  # exact StrKey method picked at codegen time.
-  def strkey_encoder_method(kind, encoding, direction)
-    suffix = encoding == :hex ? 'Hex' : ''
+  # Map a strkey kind to the StrKey method that encodes its 32 bytes or decodes
+  # them, in one place for every override emission site.
+  def strkey_encoder_method(kind, direction)
     base =
       case kind
       when :liquidity_pool then 'LiquidityPoolId'
@@ -3259,7 +3298,7 @@ class Generator < Xdrgen::Generators::Base
       else
         raise "Unknown SEP51 strkey kind: #{kind.inspect}"
       end
-    direction == :encode ? "encode#{base}#{suffix}" : "decode#{base}#{suffix}"
+    direction == :encode ? "encode#{base}" : "decode#{base}"
   end
 
   def asset_code_field_override_to_json_expr(override, accessor)
@@ -3370,6 +3409,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "            );"
       out.puts "        }"
       render_struct_field_from_json_inner(out, field, target, json_lookup, "        ", class_name)
+      out.puts "        #{target} = self::heldHashForm(#{target});" if field[:storage]
     end
   end
 
@@ -3466,7 +3506,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "#{indent}}"
 
     if override.key?(:strkey)
-      decoder = strkey_encoder_method(override[:strkey], override[:encoding], :decode)
+      decoder = strkey_encoder_method(override[:strkey], :decode)
       out.puts "#{indent}#{target} = StrKey::#{decoder}(#{json_lookup});"
       return
     end
@@ -4007,7 +4047,7 @@ class Generator < Xdrgen::Generators::Base
   # expression.
   def field_override_from_json_expr(override, source)
     if override.key?(:strkey)
-      decoder = strkey_encoder_method(override[:strkey], override[:encoding], :decode)
+      decoder = strkey_encoder_method(override[:strkey], :decode)
       return "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value for SEP-51 field, got ' . get_debug_type($v)); } return StrKey::#{decoder}($v); })(#{source})"
     end
     if override.key?(:asset_code)

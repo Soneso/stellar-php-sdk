@@ -55,6 +55,7 @@ xdr-generator-test: $(XDR_SRCS)
 			generator_helpers_test \
 			json_helpers_test \
 			sep51_field_overrides_test \
+			field_storage_overrides_test \
 		].each { |t| require t }"'
 
 # Update snapshot baselines

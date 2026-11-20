@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use JsonException;
 use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 class XdrLiquidityPoolWithdrawOperationBase {
 
@@ -25,7 +26,7 @@ class XdrLiquidityPoolWithdrawOperationBase {
     }
 
     public function encode(): string {
-        $bytes = XdrEncoder::opaqueFixed($this->liquidityPoolID, 32);
+        $bytes = XdrEncoder::opaqueFixed($this->liquidityPoolIDBytes(), 32);
         $bytes .= XdrEncoder::bigInteger64($this->amount);
         $bytes .= XdrEncoder::bigInteger64($this->minAmountA);
         $bytes .= XdrEncoder::bigInteger64($this->minAmountB);
@@ -33,7 +34,7 @@ class XdrLiquidityPoolWithdrawOperationBase {
     }
 
     public static function decode(XdrBuffer $xdr): static {
-        $liquidityPoolID = $xdr->readOpaqueFixed(32);
+        $liquidityPoolID = self::heldHashForm($xdr->readOpaqueFixed(32));
         $amount = $xdr->readBigInteger64();
         $minAmountA = $xdr->readBigInteger64();
         $minAmountB = $xdr->readBigInteger64();
@@ -48,6 +49,67 @@ class XdrLiquidityPoolWithdrawOperationBase {
     public function setMinAmountA(BigInteger $minAmountA): void { $this->minAmountA = $minAmountA; }
     public function getMinAmountB(): BigInteger { return $this->minAmountB; }
     public function setMinAmountB(BigInteger $minAmountB): void { $this->minAmountB = $minAmountB; }
+
+    /**
+     * True for XdrLiquidityPoolWithdrawOperation and its subclasses, which hold the hash fields as text:
+     * 64 hexadecimal characters or the field's strkey. Other classes hold the 32 bytes.
+     */
+    private static function holdsHashesAsText(): bool {
+        return is_a(static::class, XdrLiquidityPoolWithdrawOperation::class, true);
+    }
+
+    private static function heldHashForm(string $bytes): string {
+        return self::holdsHashesAsText() ? bin2hex($bytes) : $bytes;
+    }
+
+    /**
+     * Returns the 32 bytes of $value, a hash field in the form the called class holds.
+     * Hexadecimal text is taken in either letter case.
+     *
+     * @throws InvalidArgumentException when $value is not 32 bytes in a class that holds
+     * bytes, or not 64 hexadecimal characters in a class that holds text
+     */
+    private static function heldHashBytes(string $value, string $label, string $forms): string {
+        if (!self::holdsHashesAsText()) {
+            if (strlen($value) !== 32) {
+                throw new InvalidArgumentException($label . ' must be 32 bytes; ' . strlen($value) . ' bytes given');
+            }
+            return $value;
+        }
+        $seedKind = SecretSeedRedaction::seedKind($value);
+        if ($seedKind !== null) {
+            throw new InvalidArgumentException($label . ' must be ' . $forms . ', ' . $seedKind . ' given');
+        }
+        if (strlen($value) !== 64 || !ctype_xdigit($value)) {
+            $preview = XdrJsonHelper::safePreview(SecretSeedRedaction::redactSecretSeeds($value));
+            throw new InvalidArgumentException(
+                $label . ' must be ' . $forms . ', "' . $preview . '" (' . strlen($value) . ' characters) given'
+            );
+        }
+        return hex2bin($value);
+    }
+
+    /**
+     * Returns the 32 bytes of the liquidity pool id for every generated writer.
+     *
+     * @throws InvalidArgumentException when the field holds a value the called class does not take
+     */
+    private function liquidityPoolIDBytes(): string {
+        $value = $this->liquidityPoolID;
+        if (self::holdsHashesAsText() && strlen($value) === 56 && $value[0] === 'L') {
+            try {
+                return StrKey::decodeLiquidityPoolId($value);
+            } catch (InvalidArgumentException $e) {
+                throw new InvalidArgumentException(
+                    'Liquidity pool id "' . XdrJsonHelper::safePreview(SecretSeedRedaction::redactSecretSeeds($value))
+                    . '" is not an "L..." strkey: ' . $e->getMessage(),
+                    0,
+                    $e
+                );
+            }
+        }
+        return self::heldHashBytes($value, 'Liquidity pool id', 'an "L..." strkey or 64 hexadecimal characters');
+    }
 
     public function toBase64Xdr(): string {
         return base64_encode($this->encode());
@@ -66,7 +128,7 @@ class XdrLiquidityPoolWithdrawOperationBase {
 
     public function toJsonValue(): array {
         return [
-            'liquidity_pool_id' => StrKey::encodeLiquidityPoolIdHex($this->liquidityPoolID),
+            'liquidity_pool_id' => StrKey::encodeLiquidityPoolId($this->liquidityPoolIDBytes()),
             'amount' => $this->amount->toString(),
             'min_amount_a' => $this->minAmountA->toString(),
             'min_amount_b' => $this->minAmountB->toString(),
@@ -93,7 +155,8 @@ class XdrLiquidityPoolWithdrawOperationBase {
                 'Expected string JSON value for SEP-51 field, got ' . get_debug_type($value['liquidity_pool_id'])
             );
         }
-        $liquidityPoolID = StrKey::decodeLiquidityPoolIdHex($value['liquidity_pool_id']);
+        $liquidityPoolID = StrKey::decodeLiquidityPoolId($value['liquidity_pool_id']);
+        $liquidityPoolID = self::heldHashForm($liquidityPoolID);
         if (!array_key_exists('amount', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field amount for XdrLiquidityPoolWithdrawOperationBase'
@@ -139,14 +202,17 @@ class XdrLiquidityPoolWithdrawOperationBase {
      * @param array<string, string> $lines
      */
     public function toTxRep(string $prefix, array &$lines): void {
-        $lines[$prefix . '.liquidityPoolID'] = TxRepHelper::bytesToHex($this->liquidityPoolID);
+        $lines[$prefix . '.liquidityPoolID'] = TxRepHelper::bytesToHex($this->liquidityPoolIDBytes());
         $lines[$prefix . '.amount'] = $this->amount->toString();
         $lines[$prefix . '.minAmountA'] = $this->minAmountA->toString();
         $lines[$prefix . '.minAmountB'] = $this->minAmountB->toString();
     }
 
     public static function fromTxRep(array $map, string $prefix): static {
-        $liquidityPoolID = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.liquidityPoolID') ?? '');
+        $liquidityPoolID = TxRepHelper::getValue($map, $prefix . '.liquidityPoolID') ?? '';
+        if (!self::holdsHashesAsText()) {
+            $liquidityPoolID = TxRepHelper::hexToBytes($liquidityPoolID);
+        }
         $amount = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.amount') ?? '0', $prefix . '.amount'));
         $minAmountA = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.minAmountA') ?? '0', $prefix . '.minAmountA'));
         $minAmountB = new BigInteger((string)TxRepHelper::parseInt64(TxRepHelper::getValue($map, $prefix . '.minAmountB') ?? '0', $prefix . '.minAmountB'));

@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK\Xdr;
 use InvalidArgumentException;
 use JsonException;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 class XdrConfigUpgradeSetKeyBase {
 
@@ -20,14 +21,14 @@ class XdrConfigUpgradeSetKeyBase {
     }
 
     public function encode(): string {
-        $bytes = XdrEncoder::opaqueFixed($this->contractID, 32);
-        $bytes .= XdrEncoder::opaqueFixed($this->contentHash, 32);
+        $bytes = XdrEncoder::opaqueFixed($this->contractIDBytes(), 32);
+        $bytes .= XdrEncoder::opaqueFixed($this->contentHashBytes(), 32);
         return $bytes;
     }
 
     public static function decode(XdrBuffer $xdr): static {
-        $contractID = $xdr->readOpaqueFixed(32);
-        $contentHash = $xdr->readOpaqueFixed(32);
+        $contractID = self::heldHashForm($xdr->readOpaqueFixed(32));
+        $contentHash = self::heldHashForm($xdr->readOpaqueFixed(32));
         return new static($contractID, $contentHash);
     }
 
@@ -35,6 +36,81 @@ class XdrConfigUpgradeSetKeyBase {
     public function setContractID(string $contractID): void { $this->contractID = $contractID; }
     public function getContentHash(): string { return $this->contentHash; }
     public function setContentHash(string $contentHash): void { $this->contentHash = $contentHash; }
+
+    /**
+     * True for XdrConfigUpgradeSetKey and its subclasses, which hold the hash fields as text:
+     * 64 hexadecimal characters or the field's strkey. Other classes hold the 32 bytes.
+     */
+    private static function holdsHashesAsText(): bool {
+        return is_a(static::class, XdrConfigUpgradeSetKey::class, true);
+    }
+
+    private static function heldHashForm(string $bytes): string {
+        return self::holdsHashesAsText() ? bin2hex($bytes) : $bytes;
+    }
+
+    /**
+     * Returns the 32 bytes of $value, a hash field in the form the called class holds.
+     * Hexadecimal text is taken in either letter case.
+     *
+     * @throws InvalidArgumentException when $value is not 32 bytes in a class that holds
+     * bytes, or not 64 hexadecimal characters in a class that holds text
+     */
+    private static function heldHashBytes(string $value, string $label, string $forms): string {
+        if (!self::holdsHashesAsText()) {
+            if (strlen($value) !== 32) {
+                throw new InvalidArgumentException($label . ' must be 32 bytes; ' . strlen($value) . ' bytes given');
+            }
+            return $value;
+        }
+        $seedKind = SecretSeedRedaction::seedKind($value);
+        if ($seedKind !== null) {
+            throw new InvalidArgumentException($label . ' must be ' . $forms . ', ' . $seedKind . ' given');
+        }
+        if (strlen($value) !== 64 || !ctype_xdigit($value)) {
+            $preview = XdrJsonHelper::safePreview(SecretSeedRedaction::redactSecretSeeds($value));
+            throw new InvalidArgumentException(
+                $label . ' must be ' . $forms . ', "' . $preview . '" (' . strlen($value) . ' characters) given'
+            );
+        }
+        return hex2bin($value);
+    }
+
+    /**
+     * Returns the 32 bytes of the contract id for every generated writer.
+     *
+     * @throws InvalidArgumentException when the field holds a value the called class does not take
+     */
+    private function contractIDBytes(): string {
+        $value = $this->contractID;
+        if (self::holdsHashesAsText() && strlen($value) === 56 && $value[0] === 'C') {
+            try {
+                return StrKey::decodeContractId($value);
+            } catch (InvalidArgumentException $e) {
+                // C is a hexadecimal digit: a hexadecimal value that fails the strkey
+                // reading falls to the hexadecimal rule below, which names its length.
+                if (!ctype_xdigit($value)) {
+                    throw new InvalidArgumentException(
+                        'Contract id "' . XdrJsonHelper::safePreview(SecretSeedRedaction::redactSecretSeeds($value))
+                        . '" is not a "C..." strkey: ' . $e->getMessage(),
+                        0,
+                        $e
+                    );
+                }
+            }
+        }
+        return self::heldHashBytes($value, 'Contract id', 'a "C..." strkey or 64 hexadecimal characters');
+    }
+
+    /**
+     * Returns the 32 bytes of the content hash for every generated writer.
+     *
+     * @throws InvalidArgumentException when the field holds a value the called class does not take
+     */
+    private function contentHashBytes(): string {
+        $value = $this->contentHash;
+        return self::heldHashBytes($value, 'Content hash', '64 hexadecimal characters');
+    }
 
     public function toBase64Xdr(): string {
         return base64_encode($this->encode());
@@ -53,8 +129,8 @@ class XdrConfigUpgradeSetKeyBase {
 
     public function toJsonValue(): array {
         return [
-            'contract_id' => StrKey::encodeContractIdHex($this->contractID),
-            'content_hash' => XdrJsonHelper::bytesToHex($this->contentHash),
+            'contract_id' => StrKey::encodeContractId($this->contractIDBytes()),
+            'content_hash' => XdrJsonHelper::bytesToHex($this->contentHashBytes()),
         ];
     }
 
@@ -78,13 +154,15 @@ class XdrConfigUpgradeSetKeyBase {
                 'Expected string JSON value for SEP-51 field, got ' . get_debug_type($value['contract_id'])
             );
         }
-        $contractID = StrKey::decodeContractIdHex($value['contract_id']);
+        $contractID = StrKey::decodeContractId($value['contract_id']);
+        $contractID = self::heldHashForm($contractID);
         if (!array_key_exists('content_hash', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field content_hash for XdrConfigUpgradeSetKeyBase'
             );
         }
         $contentHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['content_hash']);
+        $contentHash = self::heldHashForm($contentHash);
         return new static($contractID, $contentHash);
     }
 
