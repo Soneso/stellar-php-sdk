@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `XdrBuffer::assertFullyConsumed()` checks that a buffer holds no unread bytes.
 - `DeploySACWithAssetHostFunction` takes optional constructor arguments; with an argument list, including an empty one, it writes `HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2`.
+- `XdrJsonHelper::encodeText()` writes SEP-51 JSON text, and `XdrJsonHelper::JSON_DEPTH_LIMIT` holds its nesting limit of 1100 levels.
 
 ### Removed
 - `XdrConfigUpgradeSetKeyBase`, `XdrInnerTransactionResultPairBase`, `XdrLiquidityPoolDepositOperationBase` and `XdrLiquidityPoolWithdrawOperationBase`. The classes of the same name without `Base` are generated in full and keep their API.
@@ -43,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - XDR decoding rejects a string or variable-length opaque value whose padding bytes are not zero. Before this change, such a value decoded and re-encoded with zero padding, so two different byte strings decoded to the same value.
 - `XdrDecoder::opaqueVariable()` and `XdrDecoder::string()` throw `InvalidArgumentException` for a length prefix, value, or padding that is cut off. Before this change, a cut-off length prefix raised a PHP warning and a `TypeError`, and a cut-off value or padding returned the available bytes.
 - `DeploySACWithAssetHostFunction` keeps a `HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2` host function with its constructor arguments when it reads one. Before this change, it wrote it back as `HOST_FUNCTION_TYPE_CREATE_CONTRACT`, so an imported transaction that deploys a Stellar Asset Contract this way got another hash.
+- `toJson()` and `fromJson()` write and read SEP-51 JSON for every value the binary decoder accepts, nested up to 1100 levels, and throw a `JsonException` for deeper JSON. Before this change, JSON nested deeper than 512 levels could be neither written nor read.
 
 ## [1.18.0] - 2026-11-14
 

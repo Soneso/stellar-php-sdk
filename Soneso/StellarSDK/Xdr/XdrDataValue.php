@@ -121,10 +121,7 @@ class XdrDataValue
      */
     public function toJson(): string
     {
-        return json_encode(
-            $this->toJsonValue(),
-            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-        );
+        return XdrJsonHelper::encodeText($this->toJsonValue());
     }
 
     /**

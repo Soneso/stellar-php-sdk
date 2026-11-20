@@ -140,10 +140,7 @@ class XdrContractCodeEntryExtV1
     }
 
     public function toJson(): string {
-        return json_encode(
-            $this->toJsonValue(),
-            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-        );
+        return XdrJsonHelper::encodeText($this->toJsonValue());
     }
 
     public static function fromJson(string $json): static {

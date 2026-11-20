@@ -153,10 +153,7 @@ class XdrConfigUpgradeSetKey {
      * @throws JsonException If the value contains structures that cannot be encoded as JSON.
      */
     public function toJson(): string {
-        return json_encode(
-            $this->toJsonValue(),
-            JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-        );
+        return XdrJsonHelper::encodeText($this->toJsonValue());
     }
 
     /**
