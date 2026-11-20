@@ -31,6 +31,10 @@ class URISchemeTest extends TestCase
     private const TEST_SECRET = 'SC465CXQLIUL5S5Q62675EDD3HGTXWXKK4HFTHVDYF4GAAYFULPVDV7D';
     private const TEST_SIGNER_ACCOUNT = 'GBIFUEOM7HM5N335736UGYXAQSVHIMHD3KPGIZQGJXRRE6VSD4VRJVM4';
     private const TEST_XDR = 'AAAAAgAAAAA2YISI8AAPy2Fl+4Z5jvNHqRz9SClHHBH4vb/DhYrV5QAAAGQAAHGcAAAABAAAAAEAAAAAAAAAAAAAAABmgRXDAAAAAQAAABVIZWxsbywgU3RlbGxhciBXb3JsZCEAAAAAAAABAAAAAAAAAAEAAAAAbmgm1V2dg5V1mq1elMcG1txjSYKZ9wEgoSBaeW8UiFoAAAABVVNEQwAAAABzYWLsUZvT8QupERb1qVZfnpDqwMO7Q2f1k8PsYhVvswAAAAAF9eEAAAAAAAAAAAGFitXlAAAAQG3cOryMgNAXQMogDSkUspDbqA6E94tJnPE1B0gFxLEcrEZKbfNFoinkmXn5iVeN9Q6qE9sFuOaGnc2MyqOFnQM=';
+    // Testnet transaction 11446413...aadc: one CREATE_CONTRACT_V2 host function that deploys the Stellar
+    // Asset Contract of an AlphaNum4 asset with an empty constructor argument list, and one signature.
+    private const SAC_V2_ENVELOPE = 'AAAAAgAAAAAMCf4TNV9jU4d5QPRyB0MihH9zgsUW6keMIZsIAP/UDgABIWIAWNn5AAAAAQAAAAEAAAAAAAAAAAAAAABq/6QvAAAAAAAAAAEAAAAAAAAAGAAAAAMAAAABAAAAAUxXVjIAAAAADAn+EzVfY1OHeUD0cgdDIoR/c4LFFupHjCGbCAD/1A4AAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAABgAAAAFv3MrH8x/kbUTlOq9FidhQHGBb+ZN/BNe3GCwznhvb8wAAABQAAAABAAKrMQAAAAAAAAHcAAAAAAABIP4AAAABAP/UDgAAAEBDm1gYDzIAJHtXc0hWqix7I22s4B9ga7eWJp5+8eWxuT/608SPbN9y5hzli1R2NX9ARlcA5fNgcEUnW1Y6v8sD';
+    private const SAC_V2_NETWORK_HASH = '11446413b5a7a95f8bb18e616a5187f19a5a7b146fdef3c5c2c77e5ea87aaadc';
 
     // ==================== URIScheme Constructor Tests ====================
 
@@ -306,6 +310,36 @@ class URISchemeTest extends TestCase
         $this->assertNotNull($response->getCallBackResponse());
         $this->assertEquals(200, $response->getCallBackResponse()->getStatusCode());
         $this->assertNull($response->getSubmitTransactionResponse());
+    }
+
+    public function testSignAndSubmitTransactionKeepsSacCreateContractV2Transaction(): void
+    {
+        $history = [];
+        $stack = HandlerStack::create(new MockHandler([new Response(200, [], '')]));
+        $stack->push(Middleware::history($history));
+        $uriScheme = new URIScheme();
+        $uriScheme->setMockHandlerStack($stack);
+        $signer = KeyPair::random();
+        $uri = $uriScheme->generateSignTransactionURI(self::SAC_V2_ENVELOPE, callback: 'url:https://wallet.invalid/sep7/callback');
+
+        $uriScheme->signAndSubmitTransaction($uri, $signer, Network::testnet());
+
+        $this->assertCount(1, $history);
+        // The form field holds the URL-encoded base64 envelope.
+        parse_str((string)$history[0]['request']->getBody(), $form);
+        $submitted = base64_decode(urldecode($form['xdr']), true);
+        $fixture = base64_decode(self::SAC_V2_ENVELOPE, true);
+        // The fixture ends with its signature list: the count 1 and one 72-byte decorated signature.
+        // The bytes before it are ENVELOPE_TYPE_TX and the transaction, the tail of the signed payload.
+        $txEnd = strlen($fixture) - 4 - 72;
+        $this->assertSame(bin2hex(substr($fixture, 0, $txEnd)), bin2hex(substr($submitted, 0, $txEnd)));
+        $this->assertSame(bin2hex(pack('N', 2) . substr($fixture, $txEnd + 4)), bin2hex(substr($submitted, $txEnd, 4 + 72)));
+        $this->assertSame($txEnd + 4 + 2 * 72, strlen($submitted));
+        $hash = hash('sha256', hash('sha256', Network::testnet()->getNetworkPassphrase(), true) . substr($submitted, 0, $txEnd), true);
+        $this->assertSame(self::SAC_V2_NETWORK_HASH, bin2hex($hash));
+        $added = substr($submitted, $txEnd + 4 + 72);
+        $this->assertSame(bin2hex(substr($signer->getPublicKey(), -4) . pack('N', 64)), bin2hex(substr($added, 0, 8)));
+        $this->assertTrue($signer->verifySignature(substr($added, 8), $hash));
     }
 
     public function testSignAndSubmitTransactionSendsCallbackThroughInjectedHttpClient(): void

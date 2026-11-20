@@ -76,6 +76,11 @@ use function PHPUnit\Framework\assertCount;
 
 class TransactionTest extends TestCase
 {
+    // Testnet transaction 11446413...aadc (ledger 5822970): one CREATE_CONTRACT_V2 host function that
+    // deploys the Stellar Asset Contract of an AlphaNum4 asset with an empty constructor argument list.
+    private const SAC_V2_ENVELOPE = 'AAAAAgAAAAAMCf4TNV9jU4d5QPRyB0MihH9zgsUW6keMIZsIAP/UDgABIWIAWNn5AAAAAQAAAAEAAAAAAAAAAAAAAABq/6QvAAAAAAAAAAEAAAAAAAAAGAAAAAMAAAABAAAAAUxXVjIAAAAADAn+EzVfY1OHeUD0cgdDIoR/c4LFFupHjCGbCAD/1A4AAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAABgAAAAFv3MrH8x/kbUTlOq9FidhQHGBb+ZN/BNe3GCwznhvb8wAAABQAAAABAAKrMQAAAAAAAAHcAAAAAAABIP4AAAABAP/UDgAAAEBDm1gYDzIAJHtXc0hWqix7I22s4B9ga7eWJp5+8eWxuT/608SPbN9y5hzli1R2NX9ARlcA5fNgcEUnW1Y6v8sD';
+    private const SAC_V2_NETWORK_HASH = '11446413b5a7a95f8bb18e616a5187f19a5a7b146fdef3c5c2c77e5ea87aaadc';
+
     private KeyPair $sourceKeyPair;
     private Account $sourceAccount;
     private string $sourceAccountId;
@@ -709,6 +714,36 @@ class TransactionTest extends TestCase
         $envelope->setFeeBump(new XdrFeeBumpTransactionEnvelope($tx, []));
 
         $this->assertImportedHash($envelope, pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP) . $tx->encode());
+    }
+
+    public function testImportedSacCreateContractV2EnvelopeKeepsItsBytesAndNetworkHash(): void
+    {
+        $imported = AbstractTransaction::fromEnvelopeBase64XdrString(self::SAC_V2_ENVELOPE);
+
+        $this->assertSame(self::SAC_V2_ENVELOPE, $imported->toEnvelopeXdrBase64());
+        $this->assertSame(self::SAC_V2_NETWORK_HASH, bin2hex($imported->hash(Network::testnet())));
+    }
+
+    public function testImportedFeeBumpOfSacCreateContractV2KeepsItsBytesAndHashes(): void
+    {
+        $network = Network::testnet();
+        // The V1 envelope follows the 4-byte ENVELOPE_TYPE_TX discriminant.
+        $innerTx = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX));
+        $innerTx->setV1(XdrTransactionV1Envelope::decode(new XdrBuffer(substr(base64_decode(self::SAC_V2_ENVELOPE), 4))));
+        $tx = new XdrFeeBumpTransaction(new XdrMuxedAccount(str_repeat("\x22", 32)), 200000, $innerTx,
+            new XdrFeeBumpTransactionExt(0));
+        $envelope = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP));
+        $envelope->setFeeBump(new XdrFeeBumpTransactionEnvelope($tx,
+            [new XdrDecoratedSignature(str_repeat("\x22", 4), str_repeat("\x33", 64))]));
+        $input = base64_encode($envelope->encode());
+
+        $imported = AbstractTransaction::fromEnvelopeBase64XdrString($input);
+
+        $this->assertInstanceOf(FeeBumpTransaction::class, $imported);
+        $this->assertSame($input, $imported->toEnvelopeXdrBase64());
+        $this->assertSame(self::SAC_V2_NETWORK_HASH, bin2hex($imported->getInnerTx()->hash($network)));
+        $this->assertSame(bin2hex($this->expectedTransactionHash($network,
+            pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP) . $tx->encode())), bin2hex($imported->hash($network)));
     }
 
     private function assertImportedHash(XdrTransactionEnvelope $envelope, string $taggedTransaction): void
