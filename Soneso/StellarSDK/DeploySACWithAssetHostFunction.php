@@ -7,10 +7,14 @@
 namespace Soneso\StellarSDK;
 
 use Exception;
+use Soneso\StellarSDK\Xdr\XdrContractExecutable;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimage;
 use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
+use Soneso\StellarSDK\Xdr\XdrCreateContractArgsV2;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
+use Soneso\StellarSDK\Xdr\XdrSCVal;
 
 /**
  * Represents a Soroban host function for deploying a Stellar Asset Contract (SAC)
@@ -26,6 +30,8 @@ use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
  *
  * Each Stellar asset can have one canonical SAC, deployed using this host function.
  * The contract address is deterministically generated from the asset.
+ * Without a constructor argument list the host function is HOST_FUNCTION_TYPE_CREATE_CONTRACT;
+ * with one, also an empty one, it is HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2.
  *
  * Usage:
  * <code>
@@ -55,13 +61,20 @@ class DeploySACWithAssetHostFunction extends HostFunction
     public Asset $asset;
 
     /**
+     * @var array<XdrSCVal>|null $constructorArgs The constructor arguments, null for HOST_FUNCTION_TYPE_CREATE_CONTRACT
+     */
+    public ?array $constructorArgs;
+
+    /**
      * Constructs a new DeploySACWithAssetHostFunction
      *
      * @param Asset $asset The Stellar asset to deploy
+     * @param array<XdrSCVal>|null $constructorArgs The constructor arguments, null for HOST_FUNCTION_TYPE_CREATE_CONTRACT
      */
-    public function __construct(Asset $asset)
+    public function __construct(Asset $asset, ?array $constructorArgs = null)
     {
         $this->asset = $asset;
+        $this->constructorArgs = $constructorArgs;
         parent::__construct();
     }
 
@@ -71,7 +84,11 @@ class DeploySACWithAssetHostFunction extends HostFunction
      * @return XdrHostFunction The XDR host function
      */
     public function toXdr() : XdrHostFunction {
-        return XdrHostFunction::forDeploySACWithAsset($this->asset->toXdr());
+        if ($this->constructorArgs === null) {
+            return XdrHostFunction::forDeploySACWithAsset($this->asset->toXdr());
+        }
+        return XdrHostFunction::forCreatingContractV2WithArgs(new XdrCreateContractArgsV2(
+            XdrContractIDPreimage::forAsset($this->asset->toXdr()), XdrContractExecutable::forToken(), $this->constructorArgs));
     }
 
     /**
@@ -104,7 +121,9 @@ class DeploySACWithAssetHostFunction extends HostFunction
             throw new Exception("Invalid argument");
         }
 
-        return new DeploySACWithAssetHostFunction(Asset::fromXdr($xdrAsset));
+        $constructorArgs = $type->value === XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2 ?
+            $xdr->createContractV2?->constructorArgs : null;
+        return new DeploySACWithAssetHostFunction(Asset::fromXdr($xdrAsset), $constructorArgs);
     }
 
     /**
@@ -126,6 +145,23 @@ class DeploySACWithAssetHostFunction extends HostFunction
     public function setAsset(Asset $asset): void
     {
         $this->asset = $asset;
+    }
+
+    /**
+     * @return array<XdrSCVal>|null The constructor arguments, null for HOST_FUNCTION_TYPE_CREATE_CONTRACT
+     */
+    public function getConstructorArgs(): ?array
+    {
+        return $this->constructorArgs;
+    }
+
+    /**
+     * @param array<XdrSCVal>|null $constructorArgs The constructor arguments, null for HOST_FUNCTION_TYPE_CREATE_CONTRACT
+     * @return void
+     */
+    public function setConstructorArgs(?array $constructorArgs): void
+    {
+        $this->constructorArgs = $constructorArgs;
     }
 
 }

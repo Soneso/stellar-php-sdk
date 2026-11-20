@@ -7,6 +7,7 @@
 namespace Soneso\StellarSDKTests\Unit\Soroban;
 
 use phpseclib3\Math\BigInteger;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Asset;
@@ -24,11 +25,13 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrContractExecutable;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 use Soneso\StellarSDK\Xdr\XdrContractIDPreimage;
 use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
 use Soneso\StellarSDK\Xdr\XdrCreateContractArgs;
 use Soneso\StellarSDK\Xdr\XdrCreateContractArgsV2;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
+use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
 use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionOp;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
@@ -545,6 +548,8 @@ class HostFunctionTest extends TestCase
         /** @var DeploySACWithAssetHostFunction $hostFunction */
         $hostFunction = $operation->getFunction();
         $this->assertEquals("USD", $hostFunction->getAsset()->getCode());
+        $this->assertSame([], $hostFunction->getConstructorArgs());
+        $this->assertSame(bin2hex($xdrHostFunction->encode()), bin2hex($hostFunction->toXdr()->encode()));
     }
 
     public function testDeploySACWithNativeAssetFromXdrV2RoundTrip(): void
@@ -566,6 +571,103 @@ class HostFunctionTest extends TestCase
         /** @var DeploySACWithAssetHostFunction $hostFunction */
         $hostFunction = $operation->getFunction();
         $this->assertInstanceOf(AssetTypeNative::class, $hostFunction->getAsset());
+        $this->assertSame([], $hostFunction->getConstructorArgs());
+        $this->assertSame(bin2hex($xdrHostFunction->encode()), bin2hex($hostFunction->toXdr()->encode()));
+    }
+
+    /**
+     * @return array<string, array{Asset, array<XdrSCVal>|null}>
+     */
+    public static function sacArgumentListProvider(): array
+    {
+        $twoArgs = [XdrSCVal::forU32(7), XdrSCVal::forSymbol("admin")];
+        $assets = [
+            'native' => new AssetTypeNative(),
+            'AlphaNum4' => Asset::createNonNativeAsset("USD", self::TEST_ISSUER_ID),
+            'AlphaNum12' => Asset::createNonNativeAsset("USDLONGCODE1", self::TEST_ISSUER_ID),
+        ];
+        $cases = [];
+        foreach ($assets as $label => $asset) {
+            $cases["$label, CREATE_CONTRACT"] = [$asset, null];
+            $cases["$label, CREATE_CONTRACT_V2 without arguments"] = [$asset, []];
+            $cases["$label, CREATE_CONTRACT_V2 with two arguments"] = [$asset, $twoArgs];
+        }
+        return $cases;
+    }
+
+    /**
+     * @param array<XdrSCVal>|null $constructorArgs
+     */
+    #[DataProvider('sacArgumentListProvider')]
+    public function testDeploySACWithAssetFromXdrKeepsArmAndArguments(Asset $asset, ?array $constructorArgs): void
+    {
+        $input = self::sacHostFunctionXdr($asset, $constructorArgs)->encode();
+        $viaOperation = InvokeHostFunctionOperation::fromXdrOperation(
+            new XdrInvokeHostFunctionOp(XdrHostFunction::decode(new XdrBuffer($input)), []))->getFunction();
+        $viaFromXdr = DeploySACWithAssetHostFunction::fromXdr(XdrHostFunction::decode(new XdrBuffer($input)));
+
+        $this->assertInstanceOf(DeploySACWithAssetHostFunction::class, $viaOperation);
+        foreach (['fromXdrOperation' => $viaOperation, 'fromXdr' => $viaFromXdr] as $path => $imported) {
+            $this->assertSame(self::argsHex($constructorArgs), self::argsHex($imported->getConstructorArgs()), $path);
+            $this->assertSame(bin2hex($input), bin2hex($imported->toXdr()->encode()), $path);
+        }
+    }
+
+    public function testDeploySACWithAssetWritesTheArmOfItsArgumentList(): void
+    {
+        $asset = new AssetTypeNative();
+        $twoArgs = [XdrSCVal::forU32(7), XdrSCVal::forSymbol("admin")];
+        // Host function type (CREATE_CONTRACT 1, CREATE_CONTRACT_V2 3), CONTRACT_ID_PREIMAGE_FROM_ASSET,
+        // ASSET_TYPE_NATIVE, CONTRACT_EXECUTABLE_STELLAR_ASSET, and for V2 the argument count.
+        $this->assertSame('00000001000000010000000000000001', bin2hex(self::sacHostFunctionXdr($asset, null)->encode()));
+        $this->assertSame('0000000300000001000000000000000100000000', bin2hex(self::sacHostFunctionXdr($asset, [])->encode()));
+
+        $plain = new DeploySACWithAssetHostFunction($asset);
+        $this->assertNull($plain->getConstructorArgs());
+        $this->assertSame(bin2hex(self::sacHostFunctionXdr($asset, null)->encode()), bin2hex($plain->toXdr()->encode()));
+        foreach ([[], $twoArgs] as $constructorArgs) {
+            $hostFunction = new DeploySACWithAssetHostFunction($asset, $constructorArgs);
+            $this->assertSame(self::argsHex($constructorArgs), self::argsHex($hostFunction->getConstructorArgs()));
+            $this->assertSame(bin2hex(self::sacHostFunctionXdr($asset, $constructorArgs)->encode()),
+                bin2hex($hostFunction->toXdr()->encode()));
+        }
+
+        $hostFunction = new DeploySACWithAssetHostFunction($asset, $twoArgs);
+        foreach ([null, [], $twoArgs, null] as $step => $constructorArgs) {
+            $hostFunction->setConstructorArgs($constructorArgs);
+            $this->assertSame(self::argsHex($constructorArgs), self::argsHex($hostFunction->getConstructorArgs()), "step $step");
+            $this->assertSame(bin2hex(self::sacHostFunctionXdr($asset, $constructorArgs)->encode()),
+                bin2hex($hostFunction->toXdr()->encode()), "step $step");
+        }
+    }
+
+    /**
+     * Builds the asset deployment from the XDR types: CREATE_CONTRACT for null, CREATE_CONTRACT_V2 otherwise.
+     *
+     * @param array<XdrSCVal>|null $constructorArgs
+     */
+    private static function sacHostFunctionXdr(Asset $asset, ?array $constructorArgs): XdrHostFunction
+    {
+        $preimage = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET());
+        $preimage->asset = $asset->toXdr();
+        $executable = new XdrContractExecutable(XdrContractExecutableType::CONTRACT_EXECUTABLE_STELLAR_ASSET());
+        if ($constructorArgs === null) {
+            $xdr = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT());
+            $xdr->createContract = new XdrCreateContractArgs($preimage, $executable);
+        } else {
+            $xdr = new XdrHostFunction(XdrHostFunctionType::CREATE_CONTRACT_V2());
+            $xdr->createContractV2 = new XdrCreateContractArgsV2($preimage, $executable, $constructorArgs);
+        }
+        return $xdr;
+    }
+
+    /**
+     * @param array<XdrSCVal>|null $args
+     * @return array<string>|null
+     */
+    private static function argsHex(?array $args): ?array
+    {
+        return $args === null ? null : array_map(fn (XdrSCVal $arg): string => bin2hex($arg->encode()), $args);
     }
 
     // CreateContractFromExternalRefHostFunction Tests

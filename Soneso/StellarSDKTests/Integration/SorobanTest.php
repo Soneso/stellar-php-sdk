@@ -10,6 +10,7 @@ use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\AssetTypeCreditAlphanum4;
+use Soneso\StellarSDK\AssetTypeCreditAlphanum12;
 use Soneso\StellarSDK\ExtendFootprintTTLOperationBuilder;
 use Soneso\StellarSDK\ChangeTrustOperationBuilder;
 use Soneso\StellarSDK\CreateContractHostFunction;
@@ -45,6 +46,7 @@ use Soneso\StellarSDKTests\TestUtils;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
 use Soneso\StellarSDK\Xdr\XdrContractEvent;
 use Soneso\StellarSDK\Xdr\XdrDiagnosticEvent;
+use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
@@ -595,6 +597,31 @@ class SorobanTest extends TestCase
         } else {
             $this->fail();
         }
+
+        // deploy the asset contract of another asset as CREATE_CONTRACT_V2 with an empty argument list
+        $accountB = $this->server->getAccount($accountBId);
+        assertNotNull($accountB);
+        $sacV2Asset = new AssetTypeCreditAlphanum12("IOMSACV2", $this->accountAId);
+        $sacV2Op = (new InvokeHostFunctionOperationBuilder(new DeploySACWithAssetHostFunction($sacV2Asset, [])))->build();
+        $sacV2HostFunction = $sacV2Op->toOperationBody()->getInvokeHostFunctionOperation()?->hostFunction;
+        $this->assertEquals(XdrHostFunctionType::HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2, $sacV2HostFunction?->type->value);
+        $this->assertSame([], $sacV2HostFunction->createContractV2?->constructorArgs);
+        $transaction = (new TransactionBuilder($accountB))->addOperation($sacV2Op)->build();
+        $simulateResponse = $this->server->simulateTransaction(new SimulateTransactionRequest($transaction));
+        $this->assertNull($simulateResponse->error);
+        $this->assertNull($simulateResponse->resultError);
+        $transaction->setSorobanTransactionData($simulateResponse->getTransactionData());
+        $transaction->addResourceFee($simulateResponse->minResourceFee);
+        $transaction->sign($accountBKeyPair, $this->network);
+        $sacV2EnvelopeXdr = $transaction->toEnvelopeXdrBase64();
+        $this->assertEquals($sacV2EnvelopeXdr,
+            Transaction::fromEnvelopeBase64XdrString($sacV2EnvelopeXdr)->toEnvelopeXdrBase64());
+        $sendResponse = $this->server->sendTransaction($transaction);
+        $this->assertNull($sendResponse->error);
+        $this->assertSame(bin2hex($transaction->hash($this->network)), $sendResponse->hash);
+        $statusResponse = $this->pollStatus($this->server, $sendResponse->hash);
+        $this->assertEquals(GetTransactionResponse::STATUS_SUCCESS, $statusResponse?->status);
+        $this->assertNotNull($statusResponse->getCreatedContractId());
 
         // test contract data fetching
         $entry = $this->server->getContractData(
