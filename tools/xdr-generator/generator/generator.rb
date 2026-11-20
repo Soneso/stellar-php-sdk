@@ -1437,9 +1437,12 @@ class Generator < Xdrgen::Generators::Base
 
   def build_typed_arm(arm, union_name, field_name, xdr_name, labels, raw_cases, is_default)
     arm_info = resolve_php_arm_info(arm, union_name)
+    member_of = nil
 
     if FIELD_TYPE_OVERRIDES.key?(union_name) && FIELD_TYPE_OVERRIDES[union_name].key?(field_name)
-      arm_info[:php_type] = FIELD_TYPE_OVERRIDES[union_name][field_name]
+      override_type = FIELD_TYPE_OVERRIDES[union_name][field_name]
+      member_of = struct_stored_as_member(arm.declaration, arm_info[:php_type], override_type)
+      arm_info[:php_type] = override_type
       arm_info[:typespec] = nil
     end
 
@@ -1461,7 +1464,22 @@ class Generator < Xdrgen::Generators::Base
       is_default: is_default,
       max_length: value_max_length(arm.declaration),
       label: "#{union_name}.#{field_name}",
+      member_of: member_of,
     }
+  end
+
+  # When an arm type override stores a single-member struct as that member,
+  # returns the generated struct class and the member's PHP field; otherwise
+  # nil. XDR-JSON and TxRep wrap the stored value in that class, so both
+  # formats carry the member name.
+  def struct_stored_as_member(decl, struct_class, override_type)
+    struct = decl.respond_to?(:type) ? decl.type : nil
+    return nil unless struct.is_a?(AST::Definitions::Struct) && struct.members.size == 1
+
+    member = struct.members.first
+    return nil unless php_type_string(member.declaration, member) == override_type
+
+    { struct_class: struct_class, field: resolve_field_name(struct_class, member.name.to_s) }
   end
 
   # Extract the raw case value as either a String identifier (e.g. "SCV_BOOL")
@@ -2383,6 +2401,11 @@ class Generator < Xdrgen::Generators::Base
       write_php_block(out, override, indent)
       return
     end
+    member_of = arm[:member_of]
+    if member_of
+      out.puts "#{indent}(new #{member_of[:struct_class]}(#{accessor}))->toTxRep($prefix . '.#{xdr_field}', $lines);"
+      return
+    end
 
     case style
     when :string
@@ -2489,6 +2512,11 @@ class Generator < Xdrgen::Generators::Base
     override = arm_storage_override(union_name, field, :from_txrep)
     if override
       write_php_block(out, override, indent)
+      return
+    end
+    member_of = arm[:member_of]
+    if member_of
+      out.puts "#{indent}#{target} = #{member_of[:struct_class]}::fromTxRep($map, $prefix . '.#{xdr_field}')->#{member_of[:field]};"
       return
     end
     key = "$prefix . '.#{xdr_field}'"
@@ -3738,6 +3766,8 @@ class Generator < Xdrgen::Generators::Base
     if override
       return field_override_to_json_expr(override, accessor)
     end
+    member_of = arm[:member_of]
+    return "(new #{member_of[:struct_class]}(#{accessor}))->toJsonValue()" if member_of
 
     case arm[:encode_style]
     when :string
@@ -3988,6 +4018,8 @@ class Generator < Xdrgen::Generators::Base
     if override
       return field_override_from_json_expr(override, source)
     end
+    member_of = arm[:member_of]
+    return "#{member_of[:struct_class]}::fromJsonValue(#{source})->#{member_of[:field]}" if member_of
 
     case arm[:decode_style]
     when :string

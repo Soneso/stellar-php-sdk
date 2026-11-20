@@ -308,7 +308,8 @@ FIELD_TYPE_OVERRIDES = {
   # Key uses resolved name (after FIELD_OVERRIDES rename destination → accountMergeOp)
   "XdrOperationBody" => { "accountMergeOp" => "XdrAccountMergeOperation" },
 
-  # XdrLedgerKey: unwrap single-field nested structs to match hand-written SDK types
+  # XdrLedgerKey: unwrap single-field nested structs to match hand-written SDK types;
+  # XDR-JSON and TxRep keep the struct with its member name (struct_stored_as_member).
   # Keys use resolved field names (after FIELD_OVERRIDES rename)
   "XdrLedgerKey" => {
     "balanceID" => "XdrClaimableBalanceID",

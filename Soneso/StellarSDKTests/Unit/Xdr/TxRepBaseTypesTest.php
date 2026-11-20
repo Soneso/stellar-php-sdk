@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDKTests\Unit\Xdr;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
@@ -966,8 +967,11 @@ class TxRepBaseTypesTest extends TestCase
         $lines = [];
         $original->toTxRep('lk', $lines);
 
-        // Base uses prefix .claimableBalance (not .claimableBalance.balanceID as the wrapper does)
-        $this->assertArrayHasKey('lk.claimableBalance.type', $lines);
+        $this->assertSame([
+            'lk.type' => 'CLAIMABLE_BALANCE',
+            'lk.claimableBalance.balanceID.type' => 'CLAIMABLE_BALANCE_ID_TYPE_V0',
+            'lk.claimableBalance.balanceID.v0' => $balanceIdHex,
+        ], $lines);
 
         $restored = XdrLedgerKeyBase::fromTxRep($lines, 'lk');
 
@@ -1044,7 +1048,10 @@ class TxRepBaseTypesTest extends TestCase
         $lines = [];
         $original->toTxRep('lk', $lines);
 
-        $this->assertArrayHasKey('lk.configSetting', $lines);
+        $this->assertSame([
+            'lk.type' => 'CONFIG_SETTING',
+            'lk.configSetting.configSettingID' => 'CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES',
+        ], $lines);
 
         $restored = XdrLedgerKeyBase::fromTxRep($lines, 'lk');
 
@@ -2854,7 +2861,7 @@ class TxRepBaseTypesTest extends TestCase
     }
 
     // ------------------------------------------------------------------
-    // XdrLedgerKey — TTL and CONFIG_SETTING arms
+    // XdrLedgerKey: TTL, CLAIMABLE_BALANCE and CONFIG_SETTING arms
     // ------------------------------------------------------------------
 
     public function testLedgerKeyTtlArm(): void
@@ -2884,15 +2891,59 @@ class TxRepBaseTypesTest extends TestCase
         $lines = [];
         $original->toTxRep('lk', $lines);
 
-        $this->assertArrayHasKey('lk.type', $lines);
-        $this->assertSame('CONFIG_SETTING', $lines['lk.type']);
-        $this->assertArrayHasKey('lk.configSetting', $lines);
+        $this->assertSame([
+            'lk.type' => 'CONFIG_SETTING',
+            'lk.configSetting.configSettingID' => 'CONFIG_SETTING_CONTRACT_BANDWIDTH_V0',
+        ], $lines);
 
         $restored = XdrLedgerKey::fromTxRep($lines, 'lk');
 
         $this->assertSame(XdrLedgerEntryType::CONFIG_SETTING, $restored->getType()->getValue());
         $this->assertNotNull($restored->getConfigSetting());
         $this->assertSame($original->toBase64Xdr(), $restored->toBase64Xdr());
+    }
+
+    public function testLedgerKeyClaimableBalanceArm(): void
+    {
+        $keyXdr = 'AAAABAAAAADOqxTuu9v+JaGDDjnjEcIYCEbfdJR7oko4a4MUzLpmIg==';
+
+        $lines = [];
+        XdrLedgerKey::fromBase64Xdr($keyXdr)->toTxRep('lk', $lines);
+
+        $this->assertSame([
+            'lk.type' => 'CLAIMABLE_BALANCE',
+            'lk.claimableBalance.balanceID.type' => 'CLAIMABLE_BALANCE_ID_TYPE_V0',
+            'lk.claimableBalance.balanceID.v0' => 'ceab14eebbdbfe25a1830e39e311c2180846df74947ba24a386b8314ccba6622',
+        ], $lines);
+        $this->assertSame($keyXdr, XdrLedgerKey::fromTxRep($lines, 'lk')->toBase64Xdr());
+    }
+
+    public static function ledgerKeyWithoutMemberPathCases(): array
+    {
+        return [
+            'claimable balance' => [[
+                'lk.type' => 'CLAIMABLE_BALANCE',
+                'lk.claimableBalance.type' => 'CLAIMABLE_BALANCE_ID_TYPE_V0',
+                'lk.claimableBalance.v0' => 'ceab14eebbdbfe25a1830e39e311c2180846df74947ba24a386b8314ccba6622',
+            ], 'Missing TxRep value for: lk.claimableBalance.balanceID.type'],
+            'config setting' => [[
+                'lk.type' => 'CONFIG_SETTING',
+                'lk.configSetting' => 'CONFIG_SETTING_STATE_ARCHIVAL',
+            ], 'Missing TxRep value for: lk.configSetting.configSettingID'],
+        ];
+    }
+
+    #[DataProvider('ledgerKeyWithoutMemberPathCases')]
+    public function testLedgerKeyRefusesThePathWithoutTheMember(array $map, string $message): void
+    {
+        foreach ([XdrLedgerKey::class, XdrLedgerKeyBase::class] as $class) {
+            try {
+                $class::fromTxRep($map, 'lk');
+                $this->fail($class . ' read a ledger key without its member path');
+            } catch (\InvalidArgumentException $e) {
+                $this->assertSame($message, $e->getMessage());
+            }
+        }
     }
 
     public function testLedgerKeyDefaultArm(): void
