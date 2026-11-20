@@ -12,7 +12,6 @@ use Soneso\StellarSDK\Xdr\XdrConfigSettingEntry;
 use Soneso\StellarSDK\Xdr\XdrConfigSettingID;
 use Soneso\StellarSDK\Xdr\XdrConfigUpgradeSet;
 use Soneso\StellarSDK\Xdr\XdrConfigUpgradeSetKey;
-use Soneso\StellarSDK\Xdr\XdrConfigUpgradeSetKeyBase;
 use Soneso\StellarSDK\Xdr\XdrContractEvent;
 use Soneso\StellarSDK\Xdr\XdrContractEventBody;
 use Soneso\StellarSDK\Xdr\XdrContractEventBodyV0;
@@ -1258,19 +1257,6 @@ class XdrLedgerGenTest extends TestCase
         $newVal = str_repeat("\xAB", 32);
         $obj->setContentHash($newVal);
         $this->assertSame($newVal, $obj->getContentHash());
-    }
-
-    public function testXdrConfigUpgradeSetKeyBaseGettersSetters(): void
-    {
-        $obj = new XdrConfigUpgradeSetKeyBase(str_repeat("\xAB", 32), str_repeat("\xAB", 32));
-        $this->assertNotNull($obj->getContractID());
-        $this->assertNotNull($obj->getContentHash());
-        $encoded = $obj->encode();
-        $decoded = XdrConfigUpgradeSetKeyBase::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode());
-        $b64 = $obj->toBase64Xdr();
-        $fromB64 = XdrConfigUpgradeSetKeyBase::fromBase64Xdr($b64);
-        $this->assertEquals($encoded, $fromB64->encode());
     }
 
     public function testXdrLedgerUpgrade_XdrLedgerUpgradeType_LEDGER_UPGRADE_VERSION_ArmRoundTrip(): void

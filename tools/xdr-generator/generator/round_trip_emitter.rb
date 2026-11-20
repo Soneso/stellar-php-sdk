@@ -5,6 +5,7 @@ require 'open3'
 require 'tempfile'
 require 'digest'
 require 'set'
+require_relative 'field_storage_overrides'
 
 # Round-trip test emitter for the SEP-51 (XDR-JSON) deliverable.
 #
@@ -947,23 +948,27 @@ class RoundTripEmitter
           // Find any opaqueFixed call referencing $this->memberName and
           // capture the literal length argument. The largest declared
           // length wins; encoders for the same property must agree on
-          // the same exact length so this reduction is safe.
+          // the same exact length so this reduction is safe. A FIELD_STORAGE_OVERRIDES
+          // field is written through $this->memberName#{FIELD_STORAGE_RESOLVER_SUFFIX}() and holds its
+          // bytes as hexadecimal text.
           $pattern = '/opaqueFixed\\s*\\(\\s*\\$this->'
               . preg_quote($memberName, '/')
-              . '\\s*,\\s*([0-9]+)\\s*\\)/';
+              . '(#{FIELD_STORAGE_RESOLVER_SUFFIX}\\(\\))?\\s*,\\s*([0-9]+)\\s*\\)/';
           // Fixed-length array of opaque strings inside a struct: pattern
           // such as `for ($i = 0; $i < N; $i++) opaqueFixed($this->m[$i], M)`.
           $indexPattern = '/opaqueFixed\\s*\\(\\s*\\$this->'
               . preg_quote($memberName, '/')
               . '\\s*\\[\\s*\\$i\\s*\\]\\s*,\\s*([0-9]+)\\s*\\)/';
           $maxLen = 0;
+          $stored = false;
           foreach ($sources as $fileName) {
               $src = @file_get_contents($fileName);
               if ($src === false) continue;
               if (preg_match_all($pattern, $src, $mm)) {
-                  foreach ($mm[1] as $ln) {
+                  foreach ($mm[2] as $i => $ln) {
                       $n = (int)$ln;
                       if ($n > $maxLen) $maxLen = $n;
+                      $stored = $stored || $mm[1][$i] !== '';
                   }
               }
               if (preg_match_all($indexPattern, $src, $mm2)) {
@@ -974,7 +979,7 @@ class RoundTripEmitter
               }
           }
           if ($maxLen > 0) {
-              return $cache[$cacheKey] = str_repeat("\\0", $maxLen);
+              return $cache[$cacheKey] = $stored ? str_repeat('0', 2 * $maxLen) : str_repeat("\\0", $maxLen);
           }
           return $cache[$cacheKey] = '';
       }

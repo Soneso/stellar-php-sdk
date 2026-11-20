@@ -104,6 +104,13 @@ class GeneratorSnapshotTest < Minitest::Test
     end
   end
 
+  def test_snapshot_struct_stored_fields
+    %w[XdrConfigUpgradeSetKey XdrInnerTransactionResultPair XdrLiquidityPoolDepositOperation
+       XdrLiquidityPoolWithdrawOperation].each do |type|
+      assert_snapshot_match("#{type}.php")
+    end
+  end
+
   def test_snapshot_xdr_asset
     assert_snapshot_match("XdrAsset.php")
   end

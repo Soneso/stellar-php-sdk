@@ -10,11 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `XdrBuffer::assertFullyConsumed()` checks that a buffer holds no unread bytes.
 
+### Removed
+- `XdrConfigUpgradeSetKeyBase`, `XdrInnerTransactionResultPairBase`, `XdrLiquidityPoolDepositOperationBase` and `XdrLiquidityPoolWithdrawOperationBase`. The classes of the same name without `Base` are generated in full and keep their API.
+
 ### Fixed
 - `fromBase64Xdr()` and the other readers of a complete XDR value throw when bytes follow the value: an `InvalidArgumentException`, or the `ContractChallengeValidationError` of `WebAuthForContracts::decodeAuthorizationEntries()`. Before this change, the trailing bytes were ignored.
 - `XdrTransaction::fromTxRep()` and `XdrTransactionV0::fromTxRep()` build the transaction from valid TxRep. Before this change, they threw a `TypeError`.
 - `XdrTimeBounds::fromTxRep()` returns its dates in UTC, as `decode()` does.
 - `fromJson()` works on `XdrTransactionBase`, `XdrTransactionV0Base`, `XdrManageDataOperationBase` and `XdrTimeBoundsBase`.
+- SEP-51 JSON of `XdrConfigUpgradeSetKey` and `XdrInnerTransactionResultPair` writes `content_hash` and `transaction_hash` as 64 hexadecimal characters. Before this change, it wrote 128, and the classes could not read the standard form.
+- `XdrLiquidityPoolDepositOperation`, `XdrLiquidityPoolWithdrawOperation`, `XdrConfigUpgradeSetKey` and `XdrInnerTransactionResultPair` reject a malformed id or hash with an `InvalidArgumentException` in every writer. Before this change, a liquidity pool id or inner transaction hash that was too long was truncated, and one with non-hexadecimal characters was encoded as other bytes.
+- A liquidity pool id given as an L address converts to SEP-51 JSON and is written to TxRep as hexadecimal, and `XdrConfigUpgradeSetKey` takes a C address as contract id. Before this change, `toJson()` and `encode()` threw for them, and TxRep wrote the L address.
+- `TxRepHelper::hexToBytes()` and the TxRep readers built on it replace a secret seed inside an invalid hexadecimal value with `a secret seed (S...)` in the error message. Before this change, a value that held a quoted or prefixed secret seed appeared in full in the error.
 - SEP-45 `WebAuthForContracts::jwtToken()` throws `ContractChallengeRequestErrorResponse` for a challenge response whose `authorization_entries` or `network_passphrase` is not a string, and `SubmitContractChallengeErrorResponseException` for a token response that is not a JSON object or array; a `token` or `error` value that is not a string counts as absent. Before this change, such responses threw a `TypeError`.
 - SEP-10 `WebAuth::jwtToken()` throws `ChallengeRequestErrorResponse` for a challenge response without a string `transaction`, and `SubmitCompletedChallengeErrorResponseException` for a token response that is not a JSON object or array; a `token` or `error` value that is not a string counts as absent. `ChallengeResponse::getTransaction()` returns null for a response without a transaction. Before this change, such responses threw a PHP `Error` or `TypeError`.
 - A response body that is valid JSON but neither an object nor an array, such as a string, a number or `null`, throws the same exception as an invalid JSON body. Before this change, it threw a `TypeError`.

@@ -364,6 +364,31 @@ class SecretSeedMessagesTest extends TestCase
         $this->assertSame($prefix . $other, $error->getMessage());
     }
 
+    /**
+     * @return array<string, array{string}> the forms of SecretSeedVariants::insideLongerValues(), labels only
+     */
+    public static function seedInsideLongerValueForms(): array
+    {
+        $forms = [];
+        foreach (array_keys(SecretSeedVariants::create()->insideLongerValues()) as $form) {
+            $forms[$form] = [$form];
+        }
+        return $forms;
+    }
+
+    #[DataProvider('seedInsideLongerValueForms')]
+    public function testHexToBytesReplacesASeedInsideTheValue(string $form): void
+    {
+        // The test asserts with fixed failure texts, so a failing case prints no seed.
+        $variants = SecretSeedVariants::create();
+        $value = $variants->insideLongerValues()[$form];
+        $error = $this->thrown(fn (string $v) => TxRepHelper::hexToBytes($v), $value['input'], $form);
+        $this->assertTrue($error instanceof InvalidArgumentException, $form . ': no InvalidArgumentException');
+        $this->assertTrue($error->getMessage() === 'Invalid hex string: ' . $value['redacted'],
+            $form . ': the message does not show the value with the seed replaced');
+        $variants->assertNotShown($error, $form);
+    }
+
     public function testMuxedAccountFromTxRepNamesTheKindOnly(): void
     {
         // The message keeps the first letter of the value, which the reader trims, and names

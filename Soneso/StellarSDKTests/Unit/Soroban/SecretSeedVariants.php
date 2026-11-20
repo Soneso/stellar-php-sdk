@@ -71,6 +71,35 @@ final class SecretSeedVariants
     }
 
     /**
+     * The seed inside longer values that do not start with "S" or "s", so a key position names
+     * none of them by a kind, each with the text redactSecretSeeds() leaves of it: the value
+     * with the seed part replaced by "a secret seed (S...)".
+     *
+     * @return array<string, array{input: string, redacted: string}>
+     */
+    public function insideLongerValues(): array
+    {
+        // Without its last two characters, the seed after a strkey letter and a quote fills the
+        // 56 characters of a "C..." or "L..." strkey.
+        $fragment = substr($this->seed, 0, -2);
+        $forms = [
+            'quoted' => ['"', $this->seed, '"'],
+            'quoted lowercase' => ['"', strtolower($this->seed), '"'],
+            'prefixed' => ['x', $this->seed, ''],
+            'embedded' => ['ab', $this->seed, 'cd'],
+            // 30 letters ahead carry the seed beyond the 80 bytes XdrJsonHelper::safePreview() shows.
+            'long' => [str_repeat('a', 30), $this->seed, ''],
+            'C-quoted fragment' => ['C"', $fragment, ''],
+            'L-quoted fragment' => ['L"', $fragment, ''],
+        ];
+        $values = [];
+        foreach ($forms as $name => [$before, $part, $after]) {
+            $values[$name] = ['input' => $before . $part . $after, 'redacted' => $before . self::SECRET_SEED . $after];
+        }
+        return $values;
+    }
+
+    /**
      * Asserts that neither the message of $error nor the message of any exception it wraps
      * holds a part of the seed of 16 characters or more, in any letter case.
      */

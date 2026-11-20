@@ -168,7 +168,9 @@ class TxRepHelper
         }
 
         if (!ctype_xdigit($h)) {
-            throw new InvalidArgumentException('Invalid hex string: ' . SecretSeedRedaction::keyForMessage($hex));
+            throw new InvalidArgumentException(
+                'Invalid hex string: ' . SecretSeedRedaction::redactSecretSeeds(SecretSeedRedaction::keyForMessage($hex))
+            );
         }
 
         return (string)hex2bin($h);

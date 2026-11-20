@@ -94,7 +94,6 @@ use Soneso\StellarSDK\Xdr\XdrInflationResult;
 use Soneso\StellarSDK\Xdr\XdrInflationResultCode;
 use Soneso\StellarSDK\Xdr\XdrInnerTransactionResult;
 use Soneso\StellarSDK\Xdr\XdrInnerTransactionResultPair;
-use Soneso\StellarSDK\Xdr\XdrInnerTransactionResultPairBase;
 use Soneso\StellarSDK\Xdr\XdrInnerTransactionResultResult;
 use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
 use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionOp;
@@ -105,13 +104,11 @@ use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolConstantProductParameters;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositOperation;
-use Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositOperationBase;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResult;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolDepositResultCode;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolParameters;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolType;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawOperation;
-use Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawOperationBase;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResult;
 use Soneso\StellarSDK\Xdr\XdrLiquidityPoolWithdrawResultCode;
 use Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation;
@@ -2774,22 +2771,6 @@ class XdrTransactionGenTest extends TestCase
         $this->assertSame($newVal, $obj->getMaxPrice());
     }
 
-    public function testXdrLiquidityPoolDepositOperationBaseGettersSetters(): void
-    {
-        $obj = new XdrLiquidityPoolDepositOperationBase(str_repeat("\xAB", 32), new BigInteger('123456789'), new BigInteger('123456789'), new XdrPrice(42, 42), new XdrPrice(42, 42));
-        $this->assertNotNull($obj->getLiquidityPoolID());
-        $this->assertNotNull($obj->getMaxAmountA());
-        $this->assertNotNull($obj->getMaxAmountB());
-        $this->assertNotNull($obj->getMinPrice());
-        $this->assertNotNull($obj->getMaxPrice());
-        $encoded = $obj->encode();
-        $decoded = XdrLiquidityPoolDepositOperationBase::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode());
-        $b64 = $obj->toBase64Xdr();
-        $fromB64 = XdrLiquidityPoolDepositOperationBase::fromBase64Xdr($b64);
-        $this->assertEquals($encoded, $fromB64->encode());
-    }
-
     public function testXdrLiquidityPoolWithdrawOperationStructRoundTrip(): void
     {
         $original = new XdrLiquidityPoolWithdrawOperation(str_repeat('ab', 32), new BigInteger('1000'), new BigInteger('1000'), new BigInteger('1000'));
@@ -2870,21 +2851,6 @@ class XdrTransactionGenTest extends TestCase
         $newVal = new BigInteger('123456789');
         $obj->setMinAmountB($newVal);
         $this->assertSame($newVal, $obj->getMinAmountB());
-    }
-
-    public function testXdrLiquidityPoolWithdrawOperationBaseGettersSetters(): void
-    {
-        $obj = new XdrLiquidityPoolWithdrawOperationBase(str_repeat("\xAB", 32), new BigInteger('123456789'), new BigInteger('123456789'), new BigInteger('123456789'));
-        $this->assertNotNull($obj->getLiquidityPoolID());
-        $this->assertNotNull($obj->getAmount());
-        $this->assertNotNull($obj->getMinAmountA());
-        $this->assertNotNull($obj->getMinAmountB());
-        $encoded = $obj->encode();
-        $decoded = XdrLiquidityPoolWithdrawOperationBase::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode());
-        $b64 = $obj->toBase64Xdr();
-        $fromB64 = XdrLiquidityPoolWithdrawOperationBase::fromBase64Xdr($b64);
-        $this->assertEquals($encoded, $fromB64->encode());
     }
 
     public function testXdrHostFunctionTypeEnumRoundTrip(): void
@@ -14165,19 +14131,6 @@ class XdrTransactionGenTest extends TestCase
         $newVal = new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0));
         $obj->setResult($newVal);
         $this->assertSame($newVal, $obj->getResult());
-    }
-
-    public function testXdrInnerTransactionResultPairBaseGettersSetters(): void
-    {
-        $obj = new XdrInnerTransactionResultPairBase(str_repeat("\xAB", 32), new XdrInnerTransactionResult(new BigInteger('0'), new XdrInnerTransactionResultResult(new XdrTransactionResultCode(XdrTransactionResultCode::TOO_EARLY)), new XdrTransactionResultExt(0)));
-        $this->assertNotNull($obj->getTransactionHash());
-        $this->assertNotNull($obj->getResult());
-        $encoded = $obj->encode();
-        $decoded = XdrInnerTransactionResultPairBase::decode(new XdrBuffer($encoded));
-        $this->assertEquals($encoded, $decoded->encode());
-        $b64 = $obj->toBase64Xdr();
-        $fromB64 = XdrInnerTransactionResultPairBase::fromBase64Xdr($b64);
-        $this->assertEquals($encoded, $fromB64->encode());
     }
 
     public function testXdrTransactionResultStructRoundTrip(): void
