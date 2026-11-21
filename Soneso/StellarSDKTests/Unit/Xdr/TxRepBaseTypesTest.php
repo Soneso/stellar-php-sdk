@@ -67,7 +67,6 @@ use Soneso\StellarSDK\Xdr\XdrAllowTrustOperationAssetBase;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceIDBase;
 use Soneso\StellarSDK\Xdr\XdrContractExecutable;
 use Soneso\StellarSDK\Xdr\XdrContractIDPreimage;
-use Soneso\StellarSDK\Xdr\XdrContractIDPreimageFromAddress;
 use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
 use Soneso\StellarSDK\Xdr\XdrCreateContractArgs;
 use Soneso\StellarSDK\Xdr\XdrCreateContractArgsV2;
@@ -1494,12 +1493,7 @@ class TxRepBaseTypesTest extends TestCase
         $contractIdBytes = $this->randomBytes(32);
         $contractAddr = XdrSCAddress::forContractId(bin2hex($contractIdBytes));
         $saltBytes = $this->randomBytes(32);
-        // Construct via the base so fromAddress is set directly (the wrapper
-        // forAddress() factory only sets flattened fields that are synced during
-        // encode(), not during toTxRep() which reads fromAddress directly).
-        $preimage = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS());
-        $preimage->fromAddress = new XdrContractIDPreimageFromAddress($contractAddr, $saltBytes);
-        return $preimage;
+        return XdrContractIDPreimage::forAddress($contractAddr, bin2hex($saltBytes));
     }
 
     public function testHostFunctionBaseCreateContractV2Roundtrip(): void
@@ -2141,7 +2135,7 @@ class TxRepBaseTypesTest extends TestCase
     }
 
     // ------------------------------------------------------------------
-    // XdrLedgerKey wrapper — liquidity pool hex sync
+    // XdrLedgerKey wrapper: liquidity pool id alias
     // ------------------------------------------------------------------
 
     public function testLedgerKeyWrapperLiquidityPoolHexFieldSync(): void
@@ -2152,12 +2146,15 @@ class TxRepBaseTypesTest extends TestCase
 
         $this->assertEquals($poolIdHex, $ledgerKey->getLiquidityPoolID());
 
-        // Encode forces the hex → binary sync
-        $xdrBase64 = $ledgerKey->toBase64Xdr();
-        $this->assertNotEmpty($xdrBase64);
+        $lines = [];
+        $ledgerKey->toTxRep('lk', $lines);
+        $this->assertSame(['lk.type' => 'LIQUIDITY_POOL', 'lk.liquidityPool.liquidityPoolID' => $poolIdHex], $lines);
 
-        // Decode syncs binary → hex
-        $decoded = XdrLedgerKey::fromBase64Xdr($xdrBase64);
+        $restored = XdrLedgerKey::fromTxRep($lines, 'lk');
+        $this->assertEquals(XdrLedgerEntryType::LIQUIDITY_POOL, $restored->getType()->getValue());
+        $this->assertEquals($poolIdHex, $restored->getLiquidityPoolID());
+
+        $decoded = XdrLedgerKey::fromBase64Xdr($ledgerKey->toBase64Xdr());
         $this->assertEquals(XdrLedgerEntryType::LIQUIDITY_POOL, $decoded->getType()->getValue());
         $this->assertEquals($poolIdHex, $decoded->getLiquidityPoolID());
     }
@@ -2718,10 +2715,7 @@ class TxRepBaseTypesTest extends TestCase
     {
         $contractIdAddress = XdrSCAddress::forAccountId(KeyPair::random()->getAccountId());
         $salt = $this->randomBytes(32);
-        $preimage = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS());
-        // Directly set fromAddress so toTxRep works without needing encode() to sync
-        $preimage->fromAddress = new XdrContractIDPreimageFromAddress($contractIdAddress, $salt);
-        return $preimage;
+        return XdrContractIDPreimage::forAddress($contractIdAddress, bin2hex($salt));
     }
 
     private function buildMinimalWasmExecutable(): XdrContractExecutable

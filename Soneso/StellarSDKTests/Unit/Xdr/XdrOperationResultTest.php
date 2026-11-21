@@ -65,6 +65,9 @@ use phpseclib3\Math\BigInteger;
 
 class XdrOperationResultTest extends TestCase
 {
+    private const MANAGE_BUY_OFFER_MALFORMED = 'AAAADP////8=';
+    private const MANAGE_BUY_OFFER_MALFORMED_JSON = '{"manage_buy_offer":"malformed"}';
+
     #[Test]
     public function testManageOfferResultNonSuccess(): void
     {
@@ -154,6 +157,109 @@ class XdrOperationResultTest extends TestCase
 
         $this->assertEquals(XdrOperationType::MANAGE_BUY_OFFER, $decoded->getType()->getValue());
         $this->assertNotNull($decoded->getManageOfferResult());
+    }
+
+    /**
+     * A manage buy offer result given as manageOfferResult writes binary XDR and
+     * XDR-JSON and leaves the result in manageBuyOfferResult. The bytes are
+     * MANAGE_BUY_OFFER (12) and MANAGE_OFFER_MALFORMED (-1); the JSON is the
+     * stellar-xdr reference decoder's output for them.
+     */
+    #[Test]
+    public function testOperationResultTrManageBuyOfferAliasWritesEveryFormat(): void
+    {
+        $writers = [
+            'binary XDR' => [static fn (XdrOperationResultTr $tr) => $tr->toBase64Xdr(), self::MANAGE_BUY_OFFER_MALFORMED],
+            'XDR-JSON' => [static fn (XdrOperationResultTr $tr) => $tr->toJson(), self::MANAGE_BUY_OFFER_MALFORMED_JSON],
+        ];
+        foreach ($writers as $format => [$write, $expected]) {
+            $tr = new XdrOperationResultTr(new XdrOperationType(XdrOperationType::MANAGE_BUY_OFFER));
+            $tr->setManageOfferResult(self::manageOfferResult(XdrManageOfferResultCode::MALFORMED));
+            $this->assertSame($expected, $write($tr), $format);
+            $this->assertSame(XdrManageOfferResultCode::MALFORMED,
+                $tr->getManageBuyOfferResult()->getCode()->getValue(), $format);
+        }
+    }
+
+    /**
+     * Binary XDR and XDR-JSON readers set manageOfferResult to the manage buy offer result.
+     */
+    #[Test]
+    public function testOperationResultTrManageBuyOfferAliasIsSetByEveryReader(): void
+    {
+        $reads = [
+            'binary XDR' => XdrOperationResultTr::fromBase64Xdr(self::MANAGE_BUY_OFFER_MALFORMED),
+            'XDR-JSON' => XdrOperationResultTr::fromJson(self::MANAGE_BUY_OFFER_MALFORMED_JSON),
+        ];
+        foreach ($reads as $format => $tr) {
+            $this->assertSame(XdrOperationType::MANAGE_BUY_OFFER, $tr->getType()->getValue(), $format);
+            $this->assertSame(XdrManageOfferResultCode::MALFORMED,
+                $tr->getManageOfferResult()->getCode()->getValue(), $format);
+            $this->assertSame($tr->getManageBuyOfferResult(), $tr->getManageOfferResult(), $format);
+        }
+    }
+
+    /**
+     * The readers of a class that extends XdrOperationResultTr return that class
+     * with the alias set.
+     */
+    #[Test]
+    public function testOperationResultTrReadersReturnTheCalledClass(): void
+    {
+        $subclass = get_class(new class extends XdrOperationResultTr {});
+        $reads = [
+            'binary XDR' => $subclass::fromBase64Xdr(self::MANAGE_BUY_OFFER_MALFORMED),
+            'XDR-JSON' => $subclass::fromJson(self::MANAGE_BUY_OFFER_MALFORMED_JSON),
+        ];
+        foreach ($reads as $format => $tr) {
+            $this->assertInstanceOf($subclass, $tr, $format);
+            $this->assertSame(XdrManageOfferResultCode::MALFORMED,
+                $tr->getManageOfferResult()->getCode()->getValue(), $format);
+        }
+    }
+
+    /**
+     * Every arm writes back the bytes it was read from. The value of each arm is
+     * the operation type followed by the result code -1, a failure code of every
+     * operation result; the stellar-xdr reference decoder reads these bytes as
+     * that failure, for example {"inflation":"not_time"} for type 9.
+     */
+    #[Test]
+    public function testOperationResultTrWritesEveryArmBack(): void
+    {
+        for ($type = XdrOperationType::CREATE_ACCOUNT; $type <= XdrOperationType::RESTORE_FOOTPRINT; $type++) {
+            $bytes = pack('N', $type) . "\xff\xff\xff\xff";
+            $tr = XdrOperationResultTr::decode(new XdrBuffer($bytes));
+            $this->assertSame($type, $tr->getType()->getValue());
+            $this->assertSame(bin2hex($bytes), bin2hex($tr->encode()), "operation type $type");
+        }
+    }
+
+    /**
+     * For a manage buy offer result, manageOfferResult wins over manageBuyOfferResult
+     * in every writer; for a manage sell offer result, manageBuyOfferResult stays as it is.
+     */
+    #[Test]
+    public function testOperationResultTrManageOfferResultWinsForManageBuyOffer(): void
+    {
+        $build = static function (int $type): XdrOperationResultTr {
+            $tr = new XdrOperationResultTr(new XdrOperationType($type));
+            $tr->setManageOfferResult(self::manageOfferResult(XdrManageOfferResultCode::MALFORMED));
+            $tr->setManageBuyOfferResult(self::manageOfferResult(XdrManageOfferResultCode::LOW_RESERVE));
+            return $tr;
+        };
+        $this->assertSame(self::MANAGE_BUY_OFFER_MALFORMED, $build(XdrOperationType::MANAGE_BUY_OFFER)->toBase64Xdr());
+        $this->assertSame(self::MANAGE_BUY_OFFER_MALFORMED_JSON, $build(XdrOperationType::MANAGE_BUY_OFFER)->toJson());
+
+        // MANAGE_SELL_OFFER (3) and MANAGE_OFFER_MALFORMED (-1).
+        $sell = $build(XdrOperationType::MANAGE_SELL_OFFER);
+        $this->assertSame('00000003ffffffff', bin2hex($sell->encode()));
+        $this->assertSame(XdrManageOfferResultCode::LOW_RESERVE, $sell->getManageBuyOfferResult()->getCode()->getValue());
+    }
+
+    private static function manageOfferResult(int $code): XdrManageOfferResult
+    {
+        return new XdrManageOfferResult(new XdrManageOfferResultCode($code));
     }
 
     #[Test]

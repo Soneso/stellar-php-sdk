@@ -97,7 +97,6 @@ BASE_WRAPPER_TYPES = %w[
   XdrAssetAlphaNum12
   XdrChangeTrustOperation
   XdrTimeBounds
-  XdrOperationResultTr
   XdrManageDataOperation
   XdrTransactionV0
   XdrChangeTrustAsset
@@ -112,6 +111,7 @@ STATIC_READER_TYPES = %w[
   XdrInnerTransactionResultPair
   XdrLiquidityPoolDepositOperation
   XdrLiquidityPoolWithdrawOperation
+  XdrOperationResultTr
 ].freeze
 
 # Wrapper constructor arguments over the decoded struct fields.

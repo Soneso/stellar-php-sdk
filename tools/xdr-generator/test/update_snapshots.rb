@@ -30,6 +30,9 @@ SNAPSHOT_FILES = [
   "XdrInnerTransactionResultPair.php",   # Struct with static readers, stored hash
   "XdrLiquidityPoolDepositOperation.php", # Struct with static readers, stored pool id
   "XdrLiquidityPoolWithdrawOperation.php", # Struct with static readers, stored pool id
+  "XdrLedgerKeyBase.php",                # Base wrapper union, liquidity pool id alias
+  "XdrContractIDPreimageBase.php",       # Base wrapper union, address, salt and asset aliases
+  "XdrOperationResultTr.php",            # Union with static readers, alias without TxRep
 ].freeze
 
 FileUtils.mkdir_p(SNAPSHOT_DIR)

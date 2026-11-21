@@ -7,7 +7,9 @@
 namespace Soneso\StellarSDKTests\Unit\Xdr;
 
 use phpseclib3\Math\BigInteger;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Xdr\XdrAsset;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
@@ -15,6 +17,8 @@ use Soneso\StellarSDK\Xdr\XdrContractExecutable;
 use Soneso\StellarSDK\Xdr\XdrContractExecutableExternalRef;
 use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
 use Soneso\StellarSDK\Xdr\XdrContractIDPreimage;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimageBase;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimageFromAddress;
 use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
 use Soneso\StellarSDK\Xdr\XdrCreateContractArgs;
 use Soneso\StellarSDK\Xdr\XdrCreateContractArgsV2;
@@ -49,6 +53,15 @@ class XdrSorobanTest extends TestCase
     private const TEST_ACCOUNT_ED25519 = 'fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210';
     private const TEST_WASM_ID = 'abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789';
     private const TEST_SALT = 'ef00000000000000000000000000000000000000000000000000000000000000';
+
+    // The account of the ed25519 key 0xab repeated 32 times, as the stellar-xdr
+    // reference decoder writes it, and the XDR of that account as an SCAddress and
+    // as the issuer of the alphanum4 asset USDC.
+    private const PREIMAGE_ACCOUNT = 'GCV2XK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2WIHP';
+    private const PREIMAGE_ADDRESS_HEX = '00000000' . '00000000'
+        . 'abababababababababababababababababababababababababababababababab';
+    private const PREIMAGE_ASSET_HEX = '00000001' . '55534443' . '00000000'
+        . 'abababababababababababababababababababababababababababababababab';
 
     /**
      * Test XdrSorobanCredentials with address credentials.
@@ -193,6 +206,181 @@ class XdrSorobanTest extends TestCase
             XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
             $decoded->getType()->getValue()
         );
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function preimageArmCases(): array
+    {
+        return ['from address' => ['address'], 'from asset' => ['asset']];
+    }
+
+    /**
+     * A preimage whose arm is given through the alias fields writes binary XDR,
+     * XDR-JSON and TxRep, and each writer leaves the value in the arm field.
+     */
+    #[DataProvider('preimageArmCases')]
+    public function testContractIDPreimageAliasesWriteEveryFormat(string $arm): void
+    {
+        [$xdr, $json, $txRep] = self::preimageForms($arm);
+        $builds = [
+            'factory' => static fn () => $arm === 'address'
+                ? XdrContractIDPreimage::forAddress(self::preimageAddress(), str_repeat('11', 32))
+                : XdrContractIDPreimage::forAsset(self::preimageAsset()),
+        ];
+        foreach ([XdrContractIDPreimage::class, XdrContractIDPreimageBase::class] as $class) {
+            $builds["$class setters"] = static function () use ($arm, $class) {
+                if ($arm === 'address') {
+                    $preimage = new $class(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS());
+                    $preimage->setAddress(self::preimageAddress());
+                    $preimage->setSalt(str_repeat("\x11", 32));
+                } else {
+                    $preimage = new $class(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET());
+                    $preimage->setAsset(self::preimageAsset());
+                }
+                return $preimage;
+            };
+        }
+        foreach ($builds as $label => $build) {
+            $preimage = $build();
+            $this->assertSame($xdr, $preimage->toBase64Xdr(), $label);
+            $this->assertPreimageArm($arm, $preimage, $label);
+
+            $preimage = $build();
+            $this->assertSame($json, $preimage->toJson(), $label);
+            $this->assertPreimageArm($arm, $preimage, $label);
+
+            $preimage = $build();
+            $lines = [];
+            $preimage->toTxRep('pre', $lines);
+            $this->assertSame($txRep, $lines, $label);
+            $this->assertPreimageArm($arm, $preimage, $label);
+        }
+    }
+
+    /**
+     * Binary XDR, XDR-JSON and TxRep readers set the alias fields of the arm they read.
+     */
+    #[DataProvider('preimageArmCases')]
+    public function testContractIDPreimageAliasesAreSetByEveryReader(string $arm): void
+    {
+        [$xdr, $json, $txRep] = self::preimageForms($arm);
+        foreach ([XdrContractIDPreimage::class, XdrContractIDPreimageBase::class] as $class) {
+            $reads = [
+                'binary XDR' => $class::fromBase64Xdr($xdr),
+                'XDR-JSON' => $class::fromJson($json),
+                'TxRep' => $class::fromTxRep($txRep, 'pre'),
+            ];
+            foreach ($reads as $format => $preimage) {
+                $label = "$class $format";
+                $this->assertInstanceOf($class, $preimage);
+                if ($arm === 'address') {
+                    $this->assertSame(self::PREIMAGE_ADDRESS_HEX, bin2hex($preimage->getAddress()->encode()), $label);
+                    $this->assertSame(str_repeat("\x11", 32), $preimage->getSalt(), $label);
+                    $this->assertNull($preimage->getAsset(), $label);
+                } else {
+                    $this->assertSame(self::PREIMAGE_ASSET_HEX, bin2hex($preimage->getAsset()->encode()), $label);
+                    $this->assertNull($preimage->getAddress(), $label);
+                    $this->assertNull($preimage->getSalt(), $label);
+                }
+                $this->assertPreimageArm($arm, $preimage, $label);
+                $this->assertSame($xdr, $preimage->toBase64Xdr(), $label);
+            }
+        }
+    }
+
+    /**
+     * The alias fields win over the arm fields in every writer: address and salt
+     * when both are set, asset when it is set, whatever the discriminant.
+     */
+    public function testContractIDPreimageAliasesWinOverArmFields(): void
+    {
+        $other = new XdrContractIDPreimageFromAddress(self::preimageAddress(), str_repeat("\x22", 32));
+        $writers = [
+            'binary XDR' => static fn (XdrContractIDPreimage $p) => $p->toBase64Xdr(),
+            'XDR-JSON' => static fn (XdrContractIDPreimage $p) => $p->toJson(),
+            'TxRep' => static function (XdrContractIDPreimage $p) {
+                $lines = [];
+                $p->toTxRep('pre', $lines);
+                return $lines;
+            },
+        ];
+        foreach ($writers as $format => $write) {
+            [$xdr, $json, $txRep] = self::preimageForms('address');
+            $expected = ['binary XDR' => $xdr, 'XDR-JSON' => $json, 'TxRep' => $txRep][$format];
+
+            $preimage = XdrContractIDPreimage::forAddress(self::preimageAddress(), str_repeat('11', 32));
+            $preimage->setFromAddress($other);
+            $this->assertSame($expected, $write($preimage), "address and salt, $format");
+
+            // Without a salt the alias address is not used.
+            $preimage = new XdrContractIDPreimage(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS());
+            $preimage->setAddress(XdrSCAddress::forContractId(self::TEST_CONTRACT_ID));
+            $preimage->setFromAddress(new XdrContractIDPreimageFromAddress(self::preimageAddress(), str_repeat("\x11", 32)));
+            $this->assertSame($expected, $write($preimage), "address without salt, $format");
+
+            [$xdr, $json, $txRep] = self::preimageForms('asset');
+            $expected = ['binary XDR' => $xdr, 'XDR-JSON' => $json, 'TxRep' => $txRep][$format];
+            $preimage = XdrContractIDPreimage::forAsset(self::preimageAsset());
+            $preimage->setFromAsset(new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)));
+            $preimage->setAddress(self::preimageAddress());
+            $preimage->setSalt(str_repeat("\x11", 32));
+            $this->assertSame($expected, $write($preimage), "asset, $format");
+            $this->assertSame(self::PREIMAGE_ASSET_HEX, bin2hex($preimage->getFromAsset()->encode()), "asset, $format");
+            $this->assertSame(str_repeat("\x11", 32), $preimage->getFromAddress()->salt, "inactive arm, $format");
+        }
+    }
+
+    private function assertPreimageArm(string $arm, XdrContractIDPreimageBase $preimage, string $label): void
+    {
+        if ($arm === 'address') {
+            $this->assertSame(self::PREIMAGE_ADDRESS_HEX, bin2hex($preimage->getFromAddress()->address->encode()), $label);
+            $this->assertSame(str_repeat("\x11", 32), $preimage->getFromAddress()->salt, $label);
+        } else {
+            $this->assertSame(self::PREIMAGE_ASSET_HEX, bin2hex($preimage->getFromAsset()->encode()), $label);
+        }
+    }
+
+    /**
+     * Binary XDR, XDR-JSON and TxRep of the preimage of an arm. The bytes are
+     * written from the XDR definition, the JSON is the stellar-xdr reference
+     * decoder's output for them, and the TxRep lines follow SEP-11.
+     *
+     * @return array{string, string, array<string, string>}
+     */
+    private static function preimageForms(string $arm): array
+    {
+        if ($arm === 'address') {
+            return [
+                base64_encode(hex2bin('00000000' . self::PREIMAGE_ADDRESS_HEX . str_repeat('11', 32))),
+                '{"address":{"address":"' . self::PREIMAGE_ACCOUNT . '","salt":"' . str_repeat('11', 32) . '"}}',
+                [
+                    'pre.type' => 'CONTRACT_ID_PREIMAGE_FROM_ADDRESS',
+                    'pre.fromAddress.address.type' => 'SC_ADDRESS_TYPE_ACCOUNT',
+                    'pre.fromAddress.address.accountId' => self::PREIMAGE_ACCOUNT,
+                    'pre.fromAddress.salt' => str_repeat('11', 32),
+                ],
+            ];
+        }
+        return [
+            base64_encode(hex2bin('00000001' . self::PREIMAGE_ASSET_HEX)),
+            '{"asset":{"credit_alphanum4":{"asset_code":"USDC","issuer":"' . self::PREIMAGE_ACCOUNT . '"}}}',
+            [
+                'pre.type' => 'CONTRACT_ID_PREIMAGE_FROM_ASSET',
+                'pre.fromAsset' => 'USDC:' . self::PREIMAGE_ACCOUNT,
+            ],
+        ];
+    }
+
+    private static function preimageAddress(): XdrSCAddress
+    {
+        return XdrSCAddress::forAccountId(self::PREIMAGE_ACCOUNT);
+    }
+
+    private static function preimageAsset(): XdrAsset
+    {
+        return Asset::createNonNativeAsset('USDC', self::PREIMAGE_ACCOUNT)->toXdr();
     }
 
     /**

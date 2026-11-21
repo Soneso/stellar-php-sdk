@@ -2,7 +2,8 @@
 
 # Union arms whose PHP field holds its value in a representation other than the
 # raw bytes the XDR declaration gives, and the code every generated reader and
-# writer of such a field uses.
+# writer of such a field uses. ARM_ALIAS_OVERRIDES below lists the alias fields
+# some unions keep beside an arm field.
 #
 # XdrSCAddress keeps the contract id and the liquidity pool id as the 32-byte
 # hash in hexadecimal and accepts the "C..." / "L..." strkey spelling as well,
@@ -264,6 +265,132 @@ ARM_STORAGE_HELPERS = {
 }.freeze
 
 # ---------------------------------------------------------------------------
+# ARM_ALIAS_OVERRIDES
+# Unions whose SDK API keeps a second field beside an arm field: an alias that
+# holds the arm's value in another shape, or the field of another arm that also
+# stands for it. Keyed by <PhpUnionName>:
+#
+#   properties: the alias properties the generated class declares, each with a
+#               getter, a setter and the doc comment given; an alias that is an
+#               arm field already is not listed
+#   to_arms:    statements that copy the aliases into the arm fields; every
+#               generated writer (encode, toTxRep, toJsonValue) runs them first,
+#               so the arm fields hold the resolved value after a write
+#   from_arms:  statements that fill the aliases from the arm fields; every
+#               generated reader (decode, fromTxRep, fromJsonValue) runs them on
+#               the value it read
+#
+# The emitter wraps to_arms and from_arms in two private methods of the class,
+# ARM_ALIAS_TO_ARMS_METHOD and ARM_ALIAS_FROM_ARMS_METHOD. Bodies are written
+# unindented and use $this.
+#
+# When an alias and its arm field are both set, the writers apply one
+# precedence per type: the liquidityPool arm field of XdrLedgerKey wins over its
+# alias; address and salt (when both are set) and asset of XdrContractIDPreimage
+# win over their arm fields, whatever the discriminant; manageOfferResult of
+# XdrOperationResultTr wins over manageBuyOfferResult for a MANAGE_BUY_OFFER
+# result. The alias of XdrLedgerKey holds the pool id as 64 hexadecimal
+# characters or as an "L..." strkey and is checked before it is copied: the
+# TxRep writer of XdrLedgerKeyLiquidityPool writes the bytes it holds as
+# hexadecimal without checking their length.
+# ---------------------------------------------------------------------------
+ARM_ALIAS_TO_ARMS_METHOD = 'resolveAliasFields'
+ARM_ALIAS_FROM_ARMS_METHOD = 'fillAliasFields'
+
+ARM_ALIAS_OVERRIDES = {
+  'XdrLedgerKey' => {
+    properties: [
+      {
+        name: 'liquidityPoolID',
+        type: 'string',
+        doc: <<~DOC.chomp,
+          The pool id of the LIQUIDITY_POOL arm as 64 hexadecimal characters or an
+          "L..." strkey. liquidityPool takes precedence when both are set.
+        DOC
+      },
+    ],
+    to_arms: <<~PHP.chomp,
+      if ($this->liquidityPoolID !== null && $this->liquidityPool === null) {
+          $idHex = str_starts_with($this->liquidityPoolID, 'L')
+              ? StrKey::decodeLiquidityPoolIdHex($this->liquidityPoolID)
+              : $this->liquidityPoolID;
+          if (strlen($idHex) !== 64 || !ctype_xdigit($idHex)) {
+              $given = SecretSeedRedaction::seedKind($this->liquidityPoolID)
+                  ?? '"' . XdrJsonHelper::safePreview(SecretSeedRedaction::redactSecretSeeds($this->liquidityPoolID)) . '"';
+              throw new InvalidArgumentException(
+                  'Liquidity pool id must be an "L..." strkey or 64 hexadecimal characters, ' . $given . ' given'
+              );
+          }
+          $this->liquidityPool = new XdrLedgerKeyLiquidityPool(hex2bin($idHex));
+      }
+    PHP
+    from_arms: <<~PHP.chomp,
+      if ($this->liquidityPool !== null) {
+          $this->liquidityPoolID = bin2hex($this->liquidityPool->liquidityPoolID);
+      }
+    PHP
+  },
+  'XdrContractIDPreimage' => {
+    properties: [
+      {
+        name: 'address',
+        type: 'XdrSCAddress',
+        doc: <<~DOC.chomp,
+          The address of the CONTRACT_ID_PREIMAGE_FROM_ADDRESS arm. Together with salt
+          it takes precedence over fromAddress.
+        DOC
+      },
+      {
+        name: 'salt',
+        type: 'string',
+        doc: <<~DOC.chomp,
+          The 32-byte salt of the CONTRACT_ID_PREIMAGE_FROM_ADDRESS arm. Together with
+          address it takes precedence over fromAddress.
+        DOC
+      },
+      {
+        name: 'asset',
+        type: 'XdrAsset',
+        doc: <<~DOC.chomp,
+          The asset of the CONTRACT_ID_PREIMAGE_FROM_ASSET arm. It takes precedence
+          over fromAsset.
+        DOC
+      },
+    ],
+    to_arms: <<~PHP.chomp,
+      if ($this->address !== null && $this->salt !== null) {
+          $this->fromAddress = new XdrContractIDPreimageFromAddress($this->address, $this->salt);
+      }
+      if ($this->asset !== null) {
+          $this->fromAsset = $this->asset;
+      }
+    PHP
+    from_arms: <<~PHP.chomp,
+      if ($this->fromAddress !== null) {
+          $this->address = $this->fromAddress->address;
+          $this->salt = $this->fromAddress->salt;
+      }
+      if ($this->fromAsset !== null) {
+          $this->asset = $this->fromAsset;
+      }
+    PHP
+  },
+  'XdrOperationResultTr' => {
+    properties: [],
+    to_arms: <<~PHP.chomp,
+      if ($this->type->getValue() === XdrOperationType::MANAGE_BUY_OFFER && $this->manageOfferResult !== null) {
+          $this->manageBuyOfferResult = $this->manageOfferResult;
+      }
+    PHP
+    from_arms: <<~PHP.chomp,
+      if ($this->manageBuyOfferResult !== null) {
+          $this->manageOfferResult = $this->manageBuyOfferResult;
+      }
+    PHP
+  },
+}.freeze
+
+# ---------------------------------------------------------------------------
 # Lookup helpers
 # ---------------------------------------------------------------------------
 
@@ -278,4 +405,16 @@ end
 # none.
 def arm_storage_helpers(union_name)
   ARM_STORAGE_HELPERS[union_name]
+end
+
+# Returns the ARM_ALIAS_OVERRIDES entry of a union, or nil when it has none.
+def arm_aliases(union_name)
+  ARM_ALIAS_OVERRIDES[union_name]
+end
+
+# Returns the PHP the type's ARM_STORAGE_HELPERS and ARM_ALIAS_OVERRIDES bodies
+# emit, so the union can import the classes they call.
+def arm_storage_code(union_name)
+  aliases = arm_aliases(union_name)
+  [arm_storage_helpers(union_name), aliases && aliases[:to_arms], aliases && aliases[:from_arms]].compact.join("\n")
 end

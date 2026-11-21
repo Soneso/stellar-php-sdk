@@ -248,7 +248,7 @@ parameters:
         - ../../Soneso/StellarSDK/Xdr/XdrOperationMetaV2.php
         - ../../Soneso/StellarSDK/Xdr/XdrOperationResult.php
         - ../../Soneso/StellarSDK/Xdr/XdrOperationResultCode.php
-        - ../../Soneso/StellarSDK/Xdr/XdrOperationResultTrBase.php
+        - ../../Soneso/StellarSDK/Xdr/XdrOperationResultTr.php
         - ../../Soneso/StellarSDK/Xdr/XdrOperationType.php
         - ../../Soneso/StellarSDK/Xdr/XdrParallelTxExecutionStage.php
         - ../../Soneso/StellarSDK/Xdr/XdrParallelTxsComponent.php

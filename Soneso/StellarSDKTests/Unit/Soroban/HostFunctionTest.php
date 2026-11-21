@@ -9,6 +9,7 @@ namespace Soneso\StellarSDKTests\Unit\Soroban;
 use phpseclib3\Math\BigInteger;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\AbstractOperation;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\AssetTypeNative;
@@ -17,6 +18,7 @@ use Soneso\StellarSDK\CreateContractFromExternalRefWithConstructorHostFunction;
 use Soneso\StellarSDK\CreateContractHostFunction;
 use Soneso\StellarSDK\CreateContractWithConstructorHostFunction;
 use Soneso\StellarSDK\DeploySACWithAssetHostFunction;
+use Soneso\StellarSDK\HostFunction;
 use Soneso\StellarSDK\InvokeContractHostFunction;
 use Soneso\StellarSDK\InvokeHostFunctionOperation;
 use Soneso\StellarSDK\Network;
@@ -34,6 +36,7 @@ use Soneso\StellarSDK\Xdr\XdrHostFunction;
 use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
 use Soneso\StellarSDK\Xdr\XdrInvokeHostFunctionOp;
+use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
@@ -959,6 +962,53 @@ class HostFunctionTest extends TestCase
         $this->assertEquals("token-v1", $parsed->getTag());
         $this->assertCount(1, $parsed->getConstructorArgs());
         $this->assertEquals(base64_encode($hostFunction->toXdr()->encode()), base64_encode($parsed->toXdr()->encode()));
+    }
+
+    /**
+     * @return array<string, array{HostFunction}>
+     */
+    public static function contractCreationProvider(): array
+    {
+        $address = Address::fromAccountId(self::TEST_ACCOUNT_ID);
+        $owner = Address::fromContractId(self::TEST_OWNER_ID_HEX);
+        $salt = str_repeat("\x11", 32);
+        $wasmId = str_repeat('ab', 32);
+        $args = [XdrSCVal::forU32(7)];
+        $asset = Asset::createNonNativeAsset('USD', self::TEST_ISSUER_ID);
+        return [
+            'create contract' => [new CreateContractHostFunction($address, $wasmId, $salt)],
+            'create contract with constructor' =>
+                [new CreateContractWithConstructorHostFunction($address, $wasmId, $args, $salt)],
+            'create contract from external ref' =>
+                [new CreateContractFromExternalRefHostFunction($address, $owner, 'token-v1', $salt)],
+            'create contract from external ref with constructor' =>
+                [new CreateContractFromExternalRefWithConstructorHostFunction($address, $owner, 'token-v1', $args, $salt)],
+            'deploy SAC' => [new DeploySACWithAssetHostFunction($asset)],
+            'deploy SAC with constructor' => [new DeploySACWithAssetHostFunction($asset, $args)],
+        ];
+    }
+
+    /**
+     * A contract creation operation written as TxRep or XDR-JSON and read back gives
+     * its host function class the deployer, the salt or the asset of the preimage.
+     */
+    #[DataProvider('contractCreationProvider')]
+    public function testContractCreationReadFromTxRepAndJsonKeepsItsHostFunction(HostFunction $hostFunction): void
+    {
+        $operation = (new InvokeHostFunctionOperation($hostFunction))->toXdr();
+        $lines = [];
+        $operation->toTxRep('op', $lines);
+        $reads = [
+            'TxRep' => XdrOperation::fromTxRep($lines, 'op'),
+            'XDR-JSON' => XdrOperation::fromJson($operation->toJson()),
+        ];
+        foreach ($reads as $format => $read) {
+            $parsed = AbstractOperation::fromXdr($read);
+            $this->assertInstanceOf(InvokeHostFunctionOperation::class, $parsed, $format);
+            $function = $parsed->getFunction();
+            $this->assertInstanceOf(get_class($hostFunction), $function, $format);
+            $this->assertSame(bin2hex($hostFunction->toXdr()->encode()), bin2hex($function->toXdr()->encode()), $format);
+        }
     }
 
     public function testFromXdrOperationRejectsInvalidExecutableCombinations(): void
