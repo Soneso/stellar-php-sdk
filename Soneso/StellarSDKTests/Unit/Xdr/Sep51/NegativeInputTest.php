@@ -1341,24 +1341,24 @@ class NegativeInputTest extends TestCase
         $this->assertUnionRejects(\Soneso\StellarSDK\Xdr\XdrOperationResult::class, 'mixed', 'unknownArmKey');
     }
 
-    public function testNegative_XdrOperationResultTrBase_unknownDiscriminant(): void
+    public function testNegative_XdrOperationResultTr_unknownDiscriminant(): void
     {
-        $this->assertUnionRejects(\Soneso\StellarSDK\Xdr\XdrOperationResultTrBase::class, 'non_void', 'unknownDiscriminant');
+        $this->assertUnionRejects(\Soneso\StellarSDK\Xdr\XdrOperationResultTr::class, 'non_void', 'unknownDiscriminant');
     }
 
-    public function testNegative_XdrOperationResultTrBase_multiKeyDict(): void
+    public function testNegative_XdrOperationResultTr_multiKeyDict(): void
     {
-        $this->assertUnionRejects(\Soneso\StellarSDK\Xdr\XdrOperationResultTrBase::class, 'non_void', 'multiKeyDict');
+        $this->assertUnionRejects(\Soneso\StellarSDK\Xdr\XdrOperationResultTr::class, 'non_void', 'multiKeyDict');
     }
 
-    public function testNegative_XdrOperationResultTrBase_bareStringWrongPlace(): void
+    public function testNegative_XdrOperationResultTr_bareStringWrongPlace(): void
     {
-        $this->assertUnionRejects(\Soneso\StellarSDK\Xdr\XdrOperationResultTrBase::class, 'non_void', 'bareStringWrongPlace');
+        $this->assertUnionRejects(\Soneso\StellarSDK\Xdr\XdrOperationResultTr::class, 'non_void', 'bareStringWrongPlace');
     }
 
-    public function testNegative_XdrOperationResultTrBase_wrongType(): void
+    public function testNegative_XdrOperationResultTr_wrongType(): void
     {
-        $this->assertUnionRejects(\Soneso\StellarSDK\Xdr\XdrOperationResultTrBase::class, 'non_void', 'wrongType');
+        $this->assertUnionRejects(\Soneso\StellarSDK\Xdr\XdrOperationResultTr::class, 'non_void', 'wrongType');
     }
 
     public function testNegative_XdrPathPaymentStrictReceiveResult_unknownDiscriminant(): void

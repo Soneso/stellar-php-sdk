@@ -7,6 +7,8 @@ namespace Soneso\StellarSDK\Xdr;
 
 use InvalidArgumentException;
 use JsonException;
+use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 class XdrLedgerKeyBase {
 
@@ -22,6 +24,12 @@ class XdrLedgerKeyBase {
     public ?XdrConfigSettingID $configSetting = null;
     public ?XdrLedgerKeyTTL $ttl = null;
 
+    /**
+     * The pool id of the LIQUIDITY_POOL arm as 64 hexadecimal characters or an
+     * "L..." strkey. liquidityPool takes precedence when both are set.
+     */
+    public ?string $liquidityPoolID = null;
+
     public function __construct(?XdrLedgerEntryType $type = null) {
         if ($type !== null) {
             $this->type = $type;
@@ -29,6 +37,7 @@ class XdrLedgerKeyBase {
     }
 
     public function encode(): string {
+        $this->resolveAliasFields();
         $bytes = $this->type->encode();
         switch ($this->type->getValue()) {
             case XdrLedgerEntryType::ACCOUNT:
@@ -101,6 +110,7 @@ class XdrLedgerKeyBase {
                 $result->ttl = XdrLedgerKeyTTL::decode($xdr);
                 break;
         }
+        $result->fillAliasFields();
         return $result;
     }
 
@@ -126,6 +136,38 @@ class XdrLedgerKeyBase {
     public function setConfigSetting(?XdrConfigSettingID $configSetting): void { $this->configSetting = $configSetting; }
     public function getTtl(): ?XdrLedgerKeyTTL { return $this->ttl; }
     public function setTtl(?XdrLedgerKeyTTL $ttl): void { $this->ttl = $ttl; }
+    public function getLiquidityPoolID(): ?string { return $this->liquidityPoolID; }
+    public function setLiquidityPoolID(?string $liquidityPoolID): void { $this->liquidityPoolID = $liquidityPoolID; }
+
+    /**
+     * Copies the alias fields into the arm fields they stand for. Every writer
+     * calls it first, so the arm fields hold the value it writes.
+     */
+    private function resolveAliasFields(): void {
+        if ($this->liquidityPoolID !== null && $this->liquidityPool === null) {
+            $idHex = str_starts_with($this->liquidityPoolID, 'L')
+                ? StrKey::decodeLiquidityPoolIdHex($this->liquidityPoolID)
+                : $this->liquidityPoolID;
+            if (strlen($idHex) !== 64 || !ctype_xdigit($idHex)) {
+                $given = SecretSeedRedaction::seedKind($this->liquidityPoolID)
+                    ?? '"' . XdrJsonHelper::safePreview(SecretSeedRedaction::redactSecretSeeds($this->liquidityPoolID)) . '"';
+                throw new InvalidArgumentException(
+                    'Liquidity pool id must be an "L..." strkey or 64 hexadecimal characters, ' . $given . ' given'
+                );
+            }
+            $this->liquidityPool = new XdrLedgerKeyLiquidityPool(hex2bin($idHex));
+        }
+    }
+
+    /**
+     * Fills the alias fields from the arm fields. Every reader calls it on the
+     * value it read.
+     */
+    private function fillAliasFields(): void {
+        if ($this->liquidityPool !== null) {
+            $this->liquidityPoolID = bin2hex($this->liquidityPool->liquidityPoolID);
+        }
+    }
 
     public function toBase64Xdr(): string {
         return base64_encode($this->encode());
@@ -143,6 +185,7 @@ class XdrLedgerKeyBase {
     }
 
     public function toJsonValue(): mixed {
+        $this->resolveAliasFields();
         return match ($this->type->getValue()) {
             XdrLedgerEntryType::ACCOUNT => ['account' => $this->account->toJsonValue()],
             XdrLedgerEntryType::TRUSTLINE => ['trustline' => $this->trustLine->toJsonValue()],
@@ -178,7 +221,7 @@ class XdrLedgerKeyBase {
             );
         }
         $arm = $value[$key];
-        return match ($key) {
+        $result = match ($key) {
             'account' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::ACCOUNT)); $r->account = XdrLedgerKeyAccount::fromJsonValue($arm); return $r; })(),
             'trustline' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::TRUSTLINE)); $r->trustLine = XdrLedgerKeyTrustLine::fromJsonValue($arm); return $r; })(),
             'offer' => (static function () use ($arm) { $r = new static(new XdrLedgerEntryType(XdrLedgerEntryType::OFFER)); $r->offer = XdrLedgerKeyOffer::fromJsonValue($arm); return $r; })(),
@@ -193,6 +236,8 @@ class XdrLedgerKeyBase {
                 'Unknown arm key for XdrLedgerKeyBase: ' . XdrJsonHelper::safePreview($key)
             ),
         };
+        $result->fillAliasFields();
+        return $result;
     }
 
     /**
@@ -216,6 +261,7 @@ class XdrLedgerKeyBase {
      * @param array<string, string> $lines
      */
     public function toTxRep(string $prefix, array &$lines): void {
+        $this->resolveAliasFields();
         $this->type->toTxRep($prefix . '.type', $lines);
         switch ($this->type->getValue()) {
             case XdrLedgerEntryType::ACCOUNT:
@@ -290,6 +336,7 @@ class XdrLedgerKeyBase {
             default:
                 break;
         }
+        $result->fillAliasFields();
         return $result;
     }
 }

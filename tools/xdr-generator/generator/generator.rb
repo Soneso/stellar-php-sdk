@@ -55,8 +55,17 @@ class Generator < Xdrgen::Generators::Base
   def generate
     @generated_files = Set.new
     @emitted_files = []
+    @alias_unions = Set.new
     render_definitions(@top)
+    check_arm_alias_keys_rendered
     write_phpstan_exclusions
+  end
+
+  # Every ARM_ALIAS_OVERRIDES key names a union this run rendered, as a base
+  # class under a hand-written wrapper or as a full class.
+  def check_arm_alias_keys_rendered
+    unrendered = ARM_ALIAS_OVERRIDES.keys - @alias_unions.to_a
+    raise "ARM_ALIAS_OVERRIDES names no generated union: #{unrendered.join(', ')}" unless unrendered.empty?
   end
 
   private
@@ -526,6 +535,8 @@ class Generator < Xdrgen::Generators::Base
 
     disc_info = resolve_discriminant_info(union)
     arms = build_union_arms(union, union_name, disc_info)
+    aliases = arm_aliases(union_name)
+    check_arm_aliases(union_name, arms) if aliases
 
     # Check if this is an extension-point-only union (void-only, simplify to int)
     # This is handled at the field level in structs via EXTENSION_POINT_FIELDS,
@@ -533,19 +544,21 @@ class Generator < Xdrgen::Generators::Base
 
     # Imports
     needs_bigint = arms.any? { |a| !a[:void] && a[:php_type] == "BigInteger" }
-    needs_strkey = sep51_needs_strkey?(union_name, is_base, arms: arms)
+    needs_strkey = sep51_needs_strkey?(union_name, is_base, arms: arms) ||
+                   arm_storage_code(union_name).include?('StrKey::')
     emits_sep51_methods = emits_sep51?(union_name, is_base)
 
     imports = ["use InvalidArgumentException;"]
     imports << "use JsonException;" if emits_sep51_methods
     imports << "use phpseclib3\\Math\\BigInteger;" if needs_bigint
     imports << "use Soneso\\StellarSDK\\Crypto\\StrKey;" if needs_strkey
-    imports << "use Soneso\\StellarSDK\\Soroban\\SecretSeedRedaction;" if arm_storage_helpers_name_seeds?(union_name)
+    imports << "use Soneso\\StellarSDK\\Soroban\\SecretSeedRedaction;" if arm_storage_code(union_name).include?('SecretSeedRedaction::')
 
     out.puts GENERATED_HEADER
     out.puts ""
     imports.each { |imp| out.puts imp }
     out.puts ""
+    out.puts "/**\n * @phpstan-consistent-constructor\n */" if STATIC_READER_TYPES.include?(union_name)
     out.puts "class #{class_name} {"
     out.puts ""
 
@@ -563,6 +576,7 @@ class Generator < Xdrgen::Generators::Base
       next if arm[:void]
       out.puts "    public ?#{arm[:php_type]} $#{arm[:field_name]} = null;"
     end
+    render_arm_alias_properties(out, union_name)
 
     out.puts ""
 
@@ -586,14 +600,15 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
 
     # decode()
-    render_union_decode(out, union, union_name, class_name, disc_info, arms, is_base)
+    render_union_decode(out, union, union_name, class_name, disc_info, arms)
     out.puts ""
 
     # Getters and setters for backward compatibility
-    render_union_accessors(out, disc_info, arms, typed_arrays: is_base)
+    render_union_accessors(out, union_name, disc_info, arms, typed_arrays: is_base)
 
     # Members the type's ARM_STORAGE_OVERRIDES entries call
     render_arm_storage_helpers(out, union_name)
+    render_arm_alias_methods(out, union_name)
 
     render_base64_methods(out)
     if emits_sep51?(union_name, is_base)
@@ -627,15 +642,81 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
   end
 
-  # True when the type's ARM_STORAGE_HELPERS members call SecretSeedRedaction,
-  # which the union then imports.
-  def arm_storage_helpers_name_seeds?(union_name)
-    helpers = arm_storage_helpers(union_name)
-    !helpers.nil? && helpers.include?('SecretSeedRedaction::')
+  # An ARM_ALIAS_OVERRIDES entry declares new properties only, and its type has
+  # no stellar_json_overrides body, whose JSON methods would skip the aliases.
+  def check_arm_aliases(union_name, arms)
+    @alias_unions.add(union_name)
+    arm_fields = arms.reject { |a| a[:void] }.map { |a| a[:field_name] }
+    clashes = arm_aliases(union_name)[:properties].map { |p| p[:name] } & arm_fields
+    raise "ARM_ALIAS_OVERRIDES #{union_name} declares arm fields as aliases: #{clashes.join(', ')}" unless clashes.empty?
+    raise "ARM_ALIAS_OVERRIDES #{union_name} has a stellar_json_overrides body" if StellarJsonOverrides.has?(union_name)
+  end
+
+  # Emit the alias properties of the type's ARM_ALIAS_OVERRIDES entry.
+  def render_arm_alias_properties(out, union_name)
+    aliases = arm_aliases(union_name)
+    return unless aliases
+
+    aliases[:properties].each do |property|
+      out.puts ""
+      out.puts "    /**"
+      property[:doc].each_line { |line| out.puts "     * #{line.chomp}".rstrip }
+      out.puts "     */"
+      out.puts "    public ?#{property[:type]} $#{property[:name]} = null;"
+    end
+  end
+
+  # Emit the getters and setters of the type's alias properties.
+  def render_arm_alias_accessors(out, union_name)
+    aliases = arm_aliases(union_name)
+    return unless aliases
+
+    aliases[:properties].each do |property|
+      fn = property[:name]
+      uc_fn = "#{fn[0].upcase}#{fn[1..]}"
+      out.puts "    public function get#{uc_fn}(): ?#{property[:type]} { return $this->#{fn}; }"
+      out.puts "    public function set#{uc_fn}(?#{property[:type]} $#{fn}): void { $this->#{fn} = $#{fn}; }"
+    end
+  end
+
+  # Emit the two private methods that copy the type's aliases into the arm
+  # fields and back.
+  def render_arm_alias_methods(out, union_name)
+    aliases = arm_aliases(union_name)
+    return unless aliases
+
+    out.puts "    /**"
+    out.puts "     * Copies the alias fields into the arm fields they stand for. Every writer"
+    out.puts "     * calls it first, so the arm fields hold the value it writes."
+    out.puts "     */"
+    out.puts "    private function #{ARM_ALIAS_TO_ARMS_METHOD}(): void {"
+    write_php_block(out, aliases[:to_arms], "        ")
+    out.puts "    }"
+    out.puts ""
+    out.puts "    /**"
+    out.puts "     * Fills the alias fields from the arm fields. Every reader calls it on the"
+    out.puts "     * value it read."
+    out.puts "     */"
+    out.puts "    private function #{ARM_ALIAS_FROM_ARMS_METHOD}(): void {"
+    write_php_block(out, aliases[:from_arms], "        ")
+    out.puts "    }"
+    out.puts ""
+  end
+
+  # The statement a generated writer of the union runs first, or nil.
+  def arm_alias_resolve_call(union_name)
+    arm_aliases(union_name) ? "$this->#{ARM_ALIAS_TO_ARMS_METHOD}();" : nil
+  end
+
+  # The statement a generated reader of the union runs on its result, or nil.
+  def arm_alias_fill_call(union_name, target)
+    arm_aliases(union_name) ? "#{target}->#{ARM_ALIAS_FROM_ARMS_METHOD}();" : nil
   end
 
   def render_union_encode(out, union_name, class_name, disc_info, arms)
     out.puts "    public function encode(): string {"
+    resolve = arm_alias_resolve_call(union_name)
+    out.puts "        #{resolve}" if resolve
     if disc_info[:kind] == :int
       out.puts "        $bytes = XdrEncoder::integer32($this->#{disc_info[:field_name]});"
     else
@@ -677,9 +758,9 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    }"
   end
 
-  def render_union_decode(out, union, union_name, class_name, disc_info, arms, is_base)
+  def render_union_decode(out, union, union_name, class_name, disc_info, arms)
     _, _, return_type, _ = resolve_class_info(union_name)
-    decode_class = is_base ? "static" : union_name
+    decode_class = return_type
     out.puts "    public static function decode(XdrBuffer $xdr): #{return_type} {"
 
     render_decode_guard(out, union_name) do |out|
@@ -723,12 +804,14 @@ class Generator < Xdrgen::Generators::Base
       end
 
       out.puts "        }"
+      fill = arm_alias_fill_call(union_name, "$result")
+      out.puts "        #{fill}" if fill
       out.puts "        return $result;"
     end
     out.puts "    }"
   end
 
-  def render_union_accessors(out, disc_info, arms, typed_arrays: false)
+  def render_union_accessors(out, union_name, disc_info, arms, typed_arrays: false)
     # Discriminant getter/setter
     df = disc_info[:field_name]
     uc_disc = "#{df[0].upcase}#{df[1..]}"
@@ -748,6 +831,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "    /** @param #{array_type} $#{fn} */" if array_type
       out.puts "    public function set#{uc_fn}(#{type_hint} $#{fn}): void { $this->#{fn} = $#{fn}; }"
     end
+    render_arm_alias_accessors(out, union_name)
     out.puts ""
   end
 
@@ -2288,8 +2372,7 @@ class Generator < Xdrgen::Generators::Base
 
   def render_union_txrep_methods(out, union_name, class_name, union, disc_info, arms)
     _, _, return_type, _ = resolve_class_info(union_name)
-    is_base = BASE_WRAPPER_TYPES.include?(union_name)
-    decode_class = is_base ? "static" : union_name
+    decode_class = return_type
 
     df = disc_info[:field_name]
     xdr_disc = disc_info[:xdr_name]
@@ -2297,6 +2380,8 @@ class Generator < Xdrgen::Generators::Base
     # --- toTxRep ---
     out.puts ""
     render_to_txrep_signature(out)
+    resolve = arm_alias_resolve_call(union_name)
+    out.puts "        #{resolve}" if resolve
 
     # Emit discriminant
     if disc_info[:kind] == :enum
@@ -2383,6 +2468,8 @@ class Generator < Xdrgen::Generators::Base
     end
 
     out.puts "        }"
+    fill = arm_alias_fill_call(union_name, "$result")
+    out.puts "        #{fill}" if fill
     out.puts "        return $result;"
     out.puts "    }"
   end
@@ -3573,6 +3660,8 @@ class Generator < Xdrgen::Generators::Base
 
     out.puts ""
     out.puts "    public function toJsonValue(): mixed {"
+    resolve = arm_alias_resolve_call(union_name)
+    out.puts "        #{resolve}" if resolve
     render_union_to_json_body(out, disc_info, arms, arm_keys, class_name)
     out.puts "    }"
 
@@ -3581,7 +3670,8 @@ class Generator < Xdrgen::Generators::Base
     out.puts "        if (is_array($value) && array_key_exists('$schema', $value)) {"
     out.puts "            unset($value['$schema']);"
     out.puts "        }"
-    render_union_from_json_body(out, disc_info, arms, arm_keys, void_arm_strings, class_name)
+    render_union_from_json_body(out, disc_info, arms, arm_keys, void_arm_strings, class_name,
+                                fill: arm_alias_fill_call(union_name, "$result"))
     out.puts "    }"
 
     render_to_json_facade(out)
@@ -3791,8 +3881,9 @@ class Generator < Xdrgen::Generators::Base
 
   # Emit the body of fromJsonValue for a union. Strips $schema (already done
   # by the caller), validates input shape, and dispatches by void-string vs
-  # single-key-object.
-  def render_union_from_json_body(out, disc_info, arms, arm_keys, void_arm_strings, class_name)
+  # single-key-object. A given fill statement runs on the value an object input
+  # gives; a void arm string reads no arm field.
+  def render_union_from_json_body(out, disc_info, arms, arm_keys, void_arm_strings, class_name, fill: nil)
     has_void = !void_arm_strings.empty?
     has_non_void_in_arms = arms.any? { |a| !a[:void] }
 
@@ -3863,7 +3954,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "            );"
       out.puts "        }"
       out.puts "        $arm = $value[$key];"
-      out.puts "        return match ($key) {"
+      out.puts "        #{fill ? '$result =' : 'return'} match ($key) {"
       arm_keys.each do |entry|
         next if entry[:arm][:void]
         next if entry[:arm][:is_default]
@@ -3895,6 +3986,10 @@ class Generator < Xdrgen::Generators::Base
         out.puts "            ),"
       end
       out.puts "        };"
+      if fill
+        out.puts "        #{fill}"
+        out.puts "        return $result;"
+      end
       if default_non_void
         render_union_default_arm_helper(out, disc_info, default_non_void, class_name)
       end

@@ -9,6 +9,7 @@ namespace Soneso\StellarSDKTests\Unit\Xdr;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Xdr\XdrAsset;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
@@ -18,6 +19,7 @@ use Soneso\StellarSDK\Xdr\XdrLedgerEntryChange;
 use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrLedgerKeyBase;
+use Soneso\StellarSDK\Xdr\XdrLedgerKeyLiquidityPool;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSCValType;
@@ -40,6 +42,18 @@ class XdrLedgerKeyTest extends TestCase
     private const CLAIMABLE_BALANCE_KEY_JSON = '{"claimable_balance":{"balance_id":"' . self::BALANCE_ID . '"}}';
     private const CONFIG_SETTING_KEY = 'AAAACAAAAAo=';
     private const CONFIG_SETTING_KEY_JSON = '{"config_setting":{"config_setting_id":"state_archival"}}';
+
+    // A liquidity pool key for the pool id 0xcd repeated 32 times: the bytes are
+    // LIQUIDITY_POOL (5) and the id, the strkey and the XDR-JSON are the ones the
+    // stellar-xdr reference decoder writes for them, and the TxRep lines follow SEP-11.
+    private const POOL_ID_HEX = 'cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd';
+    private const POOL_ID_STRKEY = 'LDG43TONZXG43TONZXG43TONZXG43TONZXG43TONZXG43TONZXG4257M';
+    private const POOL_KEY = 'AAAABc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N';
+    private const POOL_KEY_JSON = '{"liquidity_pool":{"liquidity_pool_id":"' . self::POOL_ID_STRKEY . '"}}';
+    private const POOL_KEY_TXREP = [
+        'lk.type' => 'LIQUIDITY_POOL',
+        'lk.liquidityPool.liquidityPoolID' => self::POOL_ID_HEX,
+    ];
 
     // Factory Method Tests
 
@@ -233,6 +247,150 @@ class XdrLedgerKeyTest extends TestCase
     {
         $this->assertSame($json, XdrLedgerEntryChange::fromBase64Xdr($xdr)->toJson());
         $this->assertSame($xdr, XdrLedgerEntryChange::fromJson($json)->toBase64Xdr());
+    }
+
+    // Liquidity pool id alias Tests
+
+    public static function poolIdSpellingCases(): array
+    {
+        return [
+            'lower case hex' => [self::POOL_ID_HEX],
+            'upper case hex' => [strtoupper(self::POOL_ID_HEX)],
+            'L strkey' => [self::POOL_ID_STRKEY],
+        ];
+    }
+
+    /**
+     * A key whose pool id is given as the alias writes binary XDR, XDR-JSON and
+     * TxRep, and each writer leaves the pool id in the arm field.
+     */
+    #[DataProvider('poolIdSpellingCases')]
+    public function testPoolIdAliasWritesEveryFormat(string $poolId): void
+    {
+        $builds = [
+            'factory' => static fn () => XdrLedgerKey::forLiquidityPoolId($poolId),
+            'wrapper setter' => static function () use ($poolId) {
+                $key = new XdrLedgerKey(XdrLedgerEntryType::LIQUIDITY_POOL());
+                $key->setLiquidityPoolID($poolId);
+                return $key;
+            },
+            'base setter' => static function () use ($poolId) {
+                $key = new XdrLedgerKeyBase(XdrLedgerEntryType::LIQUIDITY_POOL());
+                $key->setLiquidityPoolID($poolId);
+                return $key;
+            },
+        ];
+        foreach ($builds as $label => $build) {
+            $key = $build();
+            $this->assertSame(self::POOL_KEY, $key->toBase64Xdr(), $label);
+            $this->assertSame(self::POOL_ID_HEX, bin2hex($key->getLiquidityPool()->liquidityPoolID), $label);
+
+            $key = $build();
+            $this->assertSame(self::POOL_KEY_JSON, $key->toJson(), $label);
+            $this->assertSame(self::POOL_ID_HEX, bin2hex($key->getLiquidityPool()->liquidityPoolID), $label);
+
+            $key = $build();
+            $lines = [];
+            $key->toTxRep('lk', $lines);
+            $this->assertSame(self::POOL_KEY_TXREP, $lines, $label);
+            $this->assertSame(self::POOL_ID_HEX, bin2hex($key->getLiquidityPool()->liquidityPoolID), $label);
+        }
+    }
+
+    /**
+     * Binary XDR, XDR-JSON and TxRep readers set the alias to the pool id in lower
+     * case hexadecimal.
+     */
+    public function testPoolIdAliasIsSetByEveryReader(): void
+    {
+        foreach ([XdrLedgerKey::class, XdrLedgerKeyBase::class] as $class) {
+            $reads = [
+                'binary XDR' => $class::fromBase64Xdr(self::POOL_KEY),
+                'XDR-JSON' => $class::fromJson(self::POOL_KEY_JSON),
+                'TxRep' => $class::fromTxRep(self::POOL_KEY_TXREP, 'lk'),
+            ];
+            foreach ($reads as $format => $key) {
+                $this->assertInstanceOf($class, $key);
+                $this->assertSame(self::POOL_ID_HEX, $key->getLiquidityPoolID(), "$class $format");
+                $this->assertSame(self::POOL_ID_HEX, bin2hex($key->getLiquidityPool()->liquidityPoolID), "$class $format");
+                $this->assertSame(self::POOL_KEY, $key->toBase64Xdr(), "$class $format");
+            }
+        }
+    }
+
+    /**
+     * When the alias and the arm field are both set, every writer writes the arm
+     * field and leaves the alias as it is.
+     */
+    public function testPoolIdArmFieldWinsOverAlias(): void
+    {
+        $build = static function (): XdrLedgerKey {
+            $key = XdrLedgerKey::forLiquidityPoolId(str_repeat('ef', 32));
+            $key->setLiquidityPool(new XdrLedgerKeyLiquidityPool(hex2bin(self::POOL_ID_HEX)));
+            return $key;
+        };
+        $key = $build();
+        $this->assertSame(self::POOL_KEY, $key->toBase64Xdr());
+        $this->assertSame(str_repeat('ef', 32), $key->getLiquidityPoolID());
+        $this->assertSame(self::POOL_KEY_JSON, $build()->toJson());
+        $lines = [];
+        $build()->toTxRep('lk', $lines);
+        $this->assertSame(self::POOL_KEY_TXREP, $lines);
+    }
+
+    public static function invalidPoolIdCases(): array
+    {
+        $prefix = 'Liquidity pool id must be an "L..." strkey or 64 hexadecimal characters, ';
+        return [
+            '62 hexadecimal characters' => [str_repeat('cd', 31), $prefix . '"' . str_repeat('cd', 31) . '" given'],
+            '66 hexadecimal characters' => [str_repeat('cd', 33), $prefix . '"' . str_repeat('cd', 33) . '" given'],
+            'not hexadecimal' => [str_repeat('zz', 32), $prefix . '"' . str_repeat('zz', 32) . '" given'],
+            'empty' => ['', $prefix . '"" given'],
+        ];
+    }
+
+    /**
+     * Every writer refuses an alias that is neither an "L..." strkey nor 64
+     * hexadecimal characters, and names it.
+     */
+    #[DataProvider('invalidPoolIdCases')]
+    public function testPoolIdAliasRefusesAnotherShape(string $poolId, string $message): void
+    {
+        $writers = [
+            'binary XDR' => static fn (XdrLedgerKey $key) => $key->toBase64Xdr(),
+            'XDR-JSON' => static fn (XdrLedgerKey $key) => $key->toJson(),
+            'TxRep' => static function (XdrLedgerKey $key) {
+                $lines = [];
+                $key->toTxRep('lk', $lines);
+            },
+        ];
+        foreach ($writers as $format => $write) {
+            try {
+                $write(XdrLedgerKey::forLiquidityPoolId($poolId));
+                $this->fail("$format accepted " . var_export($poolId, true));
+            } catch (InvalidArgumentException $e) {
+                $this->assertSame($message, $e->getMessage(), $format);
+            }
+        }
+    }
+
+    public function testPoolIdAliasErrorNamesASecretSeedByItsKind(): void
+    {
+        $seed = KeyPair::random()->getSecretSeed();
+        $prefix = 'Liquidity pool id must be an "L..." strkey or 64 hexadecimal characters, ';
+        $cases = [
+            $seed => 'a secret seed (S...)',
+            strtolower($seed) => 'a secret seed (S...)',
+            $seed . 'X' => 'a value starting with S (not shown, it may be a secret seed)',
+        ];
+        foreach ($cases as $value => $kind) {
+            try {
+                XdrLedgerKey::forLiquidityPoolId((string)$value)->toJson();
+                $this->fail('A value starting with S was accepted as a pool id');
+            } catch (InvalidArgumentException $e) {
+                $this->assertSame($prefix . $kind . ' given', $e->getMessage());
+            }
+        }
     }
 
     // Getter/Setter Tests

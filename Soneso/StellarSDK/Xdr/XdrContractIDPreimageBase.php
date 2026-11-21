@@ -14,6 +14,24 @@ class XdrContractIDPreimageBase {
     public ?XdrContractIDPreimageFromAddress $fromAddress = null;
     public ?XdrAsset $fromAsset = null;
 
+    /**
+     * The address of the CONTRACT_ID_PREIMAGE_FROM_ADDRESS arm. Together with salt
+     * it takes precedence over fromAddress.
+     */
+    public ?XdrSCAddress $address = null;
+
+    /**
+     * The 32-byte salt of the CONTRACT_ID_PREIMAGE_FROM_ADDRESS arm. Together with
+     * address it takes precedence over fromAddress.
+     */
+    public ?string $salt = null;
+
+    /**
+     * The asset of the CONTRACT_ID_PREIMAGE_FROM_ASSET arm. It takes precedence
+     * over fromAsset.
+     */
+    public ?XdrAsset $asset = null;
+
     public function __construct(?XdrContractIDPreimageType $type = null) {
         if ($type !== null) {
             $this->type = $type;
@@ -21,6 +39,7 @@ class XdrContractIDPreimageBase {
     }
 
     public function encode(): string {
+        $this->resolveAliasFields();
         $bytes = $this->type->encode();
         switch ($this->type->getValue()) {
             case XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS:
@@ -45,6 +64,7 @@ class XdrContractIDPreimageBase {
                 $result->fromAsset = XdrAsset::decode($xdr);
                 break;
         }
+        $result->fillAliasFields();
         return $result;
     }
 
@@ -54,6 +74,39 @@ class XdrContractIDPreimageBase {
     public function setFromAddress(?XdrContractIDPreimageFromAddress $fromAddress): void { $this->fromAddress = $fromAddress; }
     public function getFromAsset(): ?XdrAsset { return $this->fromAsset; }
     public function setFromAsset(?XdrAsset $fromAsset): void { $this->fromAsset = $fromAsset; }
+    public function getAddress(): ?XdrSCAddress { return $this->address; }
+    public function setAddress(?XdrSCAddress $address): void { $this->address = $address; }
+    public function getSalt(): ?string { return $this->salt; }
+    public function setSalt(?string $salt): void { $this->salt = $salt; }
+    public function getAsset(): ?XdrAsset { return $this->asset; }
+    public function setAsset(?XdrAsset $asset): void { $this->asset = $asset; }
+
+    /**
+     * Copies the alias fields into the arm fields they stand for. Every writer
+     * calls it first, so the arm fields hold the value it writes.
+     */
+    private function resolveAliasFields(): void {
+        if ($this->address !== null && $this->salt !== null) {
+            $this->fromAddress = new XdrContractIDPreimageFromAddress($this->address, $this->salt);
+        }
+        if ($this->asset !== null) {
+            $this->fromAsset = $this->asset;
+        }
+    }
+
+    /**
+     * Fills the alias fields from the arm fields. Every reader calls it on the
+     * value it read.
+     */
+    private function fillAliasFields(): void {
+        if ($this->fromAddress !== null) {
+            $this->address = $this->fromAddress->address;
+            $this->salt = $this->fromAddress->salt;
+        }
+        if ($this->fromAsset !== null) {
+            $this->asset = $this->fromAsset;
+        }
+    }
 
     public function toBase64Xdr(): string {
         return base64_encode($this->encode());
@@ -71,6 +124,7 @@ class XdrContractIDPreimageBase {
     }
 
     public function toJsonValue(): mixed {
+        $this->resolveAliasFields();
         return match ($this->type->getValue()) {
             XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS => ['address' => $this->fromAddress->toJsonValue()],
             XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET => ['asset' => $this->fromAsset->toJsonValue()],
@@ -98,13 +152,15 @@ class XdrContractIDPreimageBase {
             );
         }
         $arm = $value[$key];
-        return match ($key) {
+        $result = match ($key) {
             'address' => (static function () use ($arm) { $r = new static(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS)); $r->fromAddress = XdrContractIDPreimageFromAddress::fromJsonValue($arm); return $r; })(),
             'asset' => (static function () use ($arm) { $r = new static(new XdrContractIDPreimageType(XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ASSET)); $r->fromAsset = XdrAsset::fromJsonValue($arm); return $r; })(),
             default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrContractIDPreimageBase: ' . XdrJsonHelper::safePreview($key)
             ),
         };
+        $result->fillAliasFields();
+        return $result;
     }
 
     /**
@@ -128,6 +184,7 @@ class XdrContractIDPreimageBase {
      * @param array<string, string> $lines
      */
     public function toTxRep(string $prefix, array &$lines): void {
+        $this->resolveAliasFields();
         $this->type->toTxRep($prefix . '.type', $lines);
         switch ($this->type->getValue()) {
             case XdrContractIDPreimageType::CONTRACT_ID_PREIMAGE_FROM_ADDRESS:
@@ -154,6 +211,7 @@ class XdrContractIDPreimageBase {
             default:
                 break;
         }
+        $result->fillAliasFields();
         return $result;
     }
 }

@@ -8,7 +8,10 @@ namespace Soneso\StellarSDK\Xdr;
 use InvalidArgumentException;
 use JsonException;
 
-class XdrOperationResultTrBase {
+/**
+ * @phpstan-consistent-constructor
+ */
+class XdrOperationResultTr {
 
     public XdrOperationType $type;
     public ?XdrCreateAccountResult $createAccountResult = null;
@@ -46,6 +49,7 @@ class XdrOperationResultTrBase {
     }
 
     public function encode(): string {
+        $this->resolveAliasFields();
         $bytes = $this->type->encode();
         switch ($this->type->getValue()) {
             case XdrOperationType::CREATE_ACCOUNT:
@@ -220,6 +224,7 @@ class XdrOperationResultTrBase {
                 $result->restoreFootprintResult = XdrRestoreFootprintResult::decode($xdr);
                 break;
         }
+        $result->fillAliasFields();
         return $result;
     }
 
@@ -280,6 +285,26 @@ class XdrOperationResultTrBase {
     public function getRestoreFootprintResult(): ?XdrRestoreFootprintResult { return $this->restoreFootprintResult; }
     public function setRestoreFootprintResult(?XdrRestoreFootprintResult $restoreFootprintResult): void { $this->restoreFootprintResult = $restoreFootprintResult; }
 
+    /**
+     * Copies the alias fields into the arm fields they stand for. Every writer
+     * calls it first, so the arm fields hold the value it writes.
+     */
+    private function resolveAliasFields(): void {
+        if ($this->type->getValue() === XdrOperationType::MANAGE_BUY_OFFER && $this->manageOfferResult !== null) {
+            $this->manageBuyOfferResult = $this->manageOfferResult;
+        }
+    }
+
+    /**
+     * Fills the alias fields from the arm fields. Every reader calls it on the
+     * value it read.
+     */
+    private function fillAliasFields(): void {
+        if ($this->manageBuyOfferResult !== null) {
+            $this->manageOfferResult = $this->manageBuyOfferResult;
+        }
+    }
+
     public function toBase64Xdr(): string {
         return base64_encode($this->encode());
     }
@@ -296,6 +321,7 @@ class XdrOperationResultTrBase {
     }
 
     public function toJsonValue(): mixed {
+        $this->resolveAliasFields();
         return match ($this->type->getValue()) {
             XdrOperationType::CREATE_ACCOUNT => ['create_account' => $this->createAccountResult->toJsonValue()],
             XdrOperationType::PAYMENT => ['payment' => $this->paymentResult->toJsonValue()],
@@ -338,17 +364,17 @@ class XdrOperationResultTrBase {
         }
         if (!is_array($value) || count($value) !== 1) {
             throw new InvalidArgumentException(
-                'Expected single-key object for XdrOperationResultTrBase, got ' . get_debug_type($value)
+                'Expected single-key object for XdrOperationResultTr, got ' . get_debug_type($value)
             );
         }
         $key = array_key_first($value);
         if (!is_string($key)) {
             throw new InvalidArgumentException(
-                'Expected string arm key for XdrOperationResultTrBase, got ' . get_debug_type($key)
+                'Expected string arm key for XdrOperationResultTr, got ' . get_debug_type($key)
             );
         }
         $arm = $value[$key];
-        return match ($key) {
+        $result = match ($key) {
             'create_account' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::CREATE_ACCOUNT)); $r->createAccountResult = XdrCreateAccountResult::fromJsonValue($arm); return $r; })(),
             'payment' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::PAYMENT)); $r->paymentResult = XdrPaymentResult::fromJsonValue($arm); return $r; })(),
             'path_payment_strict_receive' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::PATH_PAYMENT_STRICT_RECEIVE)); $r->pathPaymentStrictReceiveResult = XdrPathPaymentStrictReceiveResult::fromJsonValue($arm); return $r; })(),
@@ -377,9 +403,11 @@ class XdrOperationResultTrBase {
             'extend_footprint_ttl' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::EXTEND_FOOTPRINT_TTL)); $r->extendFootprintTTLResult = XdrExtendFootprintTTLResult::fromJsonValue($arm); return $r; })(),
             'restore_footprint' => (static function () use ($arm) { $r = new static(new XdrOperationType(XdrOperationType::RESTORE_FOOTPRINT)); $r->restoreFootprintResult = XdrRestoreFootprintResult::fromJsonValue($arm); return $r; })(),
             default => throw new InvalidArgumentException(
-                'Unknown arm key for XdrOperationResultTrBase: ' . XdrJsonHelper::safePreview($key)
+                'Unknown arm key for XdrOperationResultTr: ' . XdrJsonHelper::safePreview($key)
             ),
         };
+        $result->fillAliasFields();
+        return $result;
     }
 
     /**

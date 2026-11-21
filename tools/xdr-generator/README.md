@@ -81,7 +81,7 @@ Generated test output goes to `Soneso/StellarSDKTests/Unit/Xdr/Generated/`.
 | `generator/field_overrides.rb` | Maps struct/union field names and per-field type overrides |
 | `generator/name_overrides.rb` | Maps XDR type names to PHP class names |
 | `generator/member_overrides.rb` | Maps enum constant names (prefix stripping, individual renames) |
-| `generator/arm_storage_overrides.rb` | Encode, decode, and TxRep emission for union arms whose PHP field holds a converted value, plus the class members that emission calls |
+| `generator/arm_storage_overrides.rb` | Encode, decode, and TxRep emission for union arms whose PHP field holds a converted value, plus the class members that emission calls, and the alias fields some unions keep beside an arm field |
 | `generator/field_storage_overrides.rb` | Struct fields that the generated class holds as hexadecimal or strkey text, plus the class members that resolve them |
 | `generator/sep51_field_overrides.rb` | SEP-51 emission of one field of one parent type |
 | `generator/stellar_json_overrides.rb` | Per-type SEP-51 method bodies for Stellar-specific types |
@@ -94,7 +94,7 @@ Generated test output goes to `Soneso/StellarSDKTests/Unit/Xdr/Generated/`.
 
 ## Base/wrapper pattern
 
-30 types generate a `*Base.php` file instead of a plain `*.php` file. These are types where the SDK has hand-maintained helper methods, such as factory methods, custom constructors, and StrKey encoding, that cannot be derived from the XDR spec alone.
+29 types generate a `*Base.php` file instead of a plain `*.php` file. These are types where the SDK has hand-maintained helper methods, such as factory methods, custom constructors, and StrKey encoding, that cannot be derived from the XDR spec alone.
 
 The hand-maintained wrapper file extends the generated base class:
 
@@ -114,7 +114,7 @@ The ten override files in `generator/` hold what the XDR definitions do not say.
 - **`field_overrides.rb`**: `FIELD_OVERRIDES` remaps field names (for example, `code` -> `resultCode`). `FIELD_TYPE_OVERRIDES` overrides the type of specific fields (for example, forcing `BigInteger` instead of `int`). A union arm whose override stores a single-member struct as that member keeps the struct in XDR-JSON and TxRep, so both formats carry the member name.
 - **`name_overrides.rb`**: Maps XDR type names to PHP class names where the SDK convention differs from the spec.
 - **`member_overrides.rb`**: `MEMBER_OVERRIDES` remaps individual enum constant names. `MEMBER_PREFIX_STRIP` strips common prefixes from enum constants (for example, `PAYMENT_SUCCESS` -> `SUCCESS`). These affect PHP constant names only; SEP-51 JSON wire names are always derived from the original XDR identifiers (`json_helpers.rb`).
-- **`arm_storage_overrides.rb`**: `ARM_STORAGE_OVERRIDES` supplies the `encode`/`decode`/`toTxRep`/`fromTxRep` emission for union arms whose PHP field holds something other than the raw bytes its XDR declaration gives (for example, `XdrSCAddress` keeps the contract id as hexadecimal). `ARM_STORAGE_HELPERS` emits the class members that emission calls, so the canonicalization has one implementation the generated readers and the hand-written wrapper share.
+- **`arm_storage_overrides.rb`**: `ARM_STORAGE_OVERRIDES` supplies the `encode`/`decode`/`toTxRep`/`fromTxRep` emission for union arms whose PHP field holds something other than the raw bytes its XDR declaration gives (for example, `XdrSCAddress` keeps the contract id as hexadecimal). `ARM_STORAGE_HELPERS` emits the class members that emission calls, so the canonicalization has one implementation the generated readers and the hand-written wrapper share. `ARM_ALIAS_OVERRIDES` lists the alias fields a union keeps beside an arm field (for example, `XdrLedgerKey` keeps the pool id as `liquidityPoolID` beside `liquidityPool`). The generated class declares them with their accessors, every generated writer copies them into the arm fields first, and every generated reader fills them on the value it returns.
 - **`field_storage_overrides.rb`**: `FIELD_STORAGE_OVERRIDES`, the struct twin of `ARM_STORAGE_OVERRIDES`, lists the 32-byte id and hash fields that the generated class holds as hexadecimal or strkey text (for example, `XdrLiquidityPoolDepositOperation` keeps the pool id as hexadecimal or an L address). The generated readers store each field as text, and every generated writer resolves it through one emitted resolver that checks its length.
 - **`sep51_field_overrides.rb`**: `SEP51_FIELD_OVERRIDES` changes the SEP-51 emission of one field of one parent type. It covers typedef-collapsed values, such as 32-byte ids that JSON writes as strkeys, and asset codes. It is separate from `FIELD_OVERRIDES` in `field_overrides.rb`.
 - **`stellar_json_overrides.rb`**: per-type SEP-51 method bodies for Stellar-specific types whose JSON form the default emission cannot produce. Examples are strkeys, unions that flatten to a string, and 128-bit and 256-bit integers. Per-field overrides take precedence over it.

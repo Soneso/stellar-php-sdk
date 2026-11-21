@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `XdrJsonHelper::encodeText()` writes SEP-51 JSON text, and `XdrJsonHelper::JSON_DEPTH_LIMIT` holds its nesting limit of 1100 levels.
 
 ### Removed
-- `XdrConfigUpgradeSetKeyBase`, `XdrInnerTransactionResultPairBase`, `XdrLiquidityPoolDepositOperationBase` and `XdrLiquidityPoolWithdrawOperationBase`. The classes of the same name without `Base` are generated in full and keep their API.
+- `XdrConfigUpgradeSetKeyBase`, `XdrInnerTransactionResultPairBase`, `XdrLiquidityPoolDepositOperationBase`, `XdrLiquidityPoolWithdrawOperationBase` and `XdrOperationResultTrBase`. The classes of the same name without `Base` are generated in full and keep their API.
 
 ### Fixed
 - `fromBase64Xdr()` and the other readers of a complete XDR value throw when bytes follow the value: an `InvalidArgumentException`, or the `ContractChallengeValidationError` of `WebAuthForContracts::decodeAuthorizationEntries()`. Before this change, the trailing bytes were ignored.
@@ -48,6 +48,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `XdrLedgerKey` XDR-JSON writes and reads the claimable balance and config setting keys with their `balance_id` and `config_setting_id` members, also inside transaction and ledger metadata. Before this change, it wrote both keys without the member and refused the form with it.
 - `XdrLedgerKey` TxRep writes and reads a config setting key under `configSetting.configSettingID`. Before this change, it wrote and read the key without its member name.
 - `ManageSellOfferOperation`, `ManageBuyOfferOperation`, and their builders accept any 64-bit signed offer id, so `AbstractOperation::fromXdr()` and `AbstractTransaction::fromEnvelopeBase64XdrString()` read, hash, and re-encode operations with a negative offer id. Before this change, a negative offer id threw `InvalidArgumentException`.
+- `XdrLedgerKey` writes SEP-51 JSON and TxRep for a pool id given through `forLiquidityPoolId()` or `setLiquidityPoolID()`, and `fromJson()` and `fromTxRep()` set `getLiquidityPoolID()`, as `decode()` does. Before this change, `toJson()` and `toTxRep()` threw an `Error` for such a key, and `getLiquidityPoolID()` returned null after the two readers.
+- `XdrLedgerKey` rejects a pool id given through `forLiquidityPoolId()` or `setLiquidityPoolID()` that is neither an L address nor 64 hexadecimal characters with an `InvalidArgumentException` in every writer. Before this change, `encode()` threw a `TypeError` for a pool id with non-hexadecimal characters.
+- `XdrContractIDPreimage` writes SEP-51 JSON and TxRep for a preimage built with `forAddress()` or `forAsset()`, and `fromJson()` and `fromTxRep()` set `getAddress()`, `getSalt()` and `getAsset()`, as `decode()` does. Before this change, `toJson()` and `toTxRep()` threw an `Error` or a `TypeError` for such a preimage, and the three getters returned null after the two readers.
+- An `InvokeHostFunctionOperation` that creates a contract or deploys a Stellar Asset Contract writes SEP-51 JSON and TxRep, and one read from them converts with `AbstractOperation::fromXdr()`. Before this change, the writers threw an `Error` or a `TypeError`, and `fromXdr()` threw an invalid argument `Exception`.
+- `XdrOperationResultTr` writes SEP-51 JSON for a manage buy offer result set through `setManageOfferResult()`, and `fromJson()` sets `getManageOfferResult()` for a manage buy offer result, as `decode()` does. Before this change, `toJson()` threw an `Error`, and `getManageOfferResult()` returned null after `fromJson()`.
 
 ## [1.18.0] - 2026-11-14
 
