@@ -1301,16 +1301,17 @@ class OperationBuilderTest extends TestCase
         $this->assertEquals(12345, $operation->getOfferId());
     }
 
-    public function testManageBuyOfferNegativeOfferIdThrows(): void
+    public function testManageBuyOfferKeepsNegativeOfferId(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Invalid offer id: -1");
-
         $selling = Asset::native();
         $buying = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
 
-        $builder = new ManageBuyOfferOperationBuilder($selling, $buying, "100.0", "2.5");
-        $builder->setOfferId(-1);
+        foreach ([-1, PHP_INT_MIN] as $offerId) {
+            $builder = new ManageBuyOfferOperationBuilder($selling, $buying, "100.0", "2.5");
+            $operation = $builder->setOfferId($offerId)->build();
+
+            $this->assertSame($offerId, $operation->getOfferId());
+        }
     }
 
     public function testManageBuyOfferWithSourceAccount(): void
@@ -1374,16 +1375,17 @@ class OperationBuilderTest extends TestCase
         $this->assertEquals(67890, $operation->getOfferId());
     }
 
-    public function testManageSellOfferNegativeOfferIdThrows(): void
+    public function testManageSellOfferKeepsNegativeOfferId(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Invalid offer id: -5");
-
         $selling = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
         $buying = Asset::native();
 
-        $builder = new ManageSellOfferOperationBuilder($selling, $buying, "50.0", "0.5");
-        $builder->setOfferId(-5);
+        foreach ([-5, PHP_INT_MIN] as $offerId) {
+            $builder = new ManageSellOfferOperationBuilder($selling, $buying, "50.0", "0.5");
+            $operation = $builder->setOfferId($offerId)->build();
+
+            $this->assertSame($offerId, $operation->getOfferId());
+        }
     }
 
     public function testManageSellOfferWithSourceAccount(): void

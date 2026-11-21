@@ -50,11 +50,16 @@ use Soneso\StellarSDK\Claimant;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrAllowTrustOperation;
 use Soneso\StellarSDK\Xdr\XdrAllowTrustOperationAsset;
+use Soneso\StellarSDK\Xdr\XdrAsset;
+use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation;
+use Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation;
 use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
+use Soneso\StellarSDK\Xdr\XdrPrice;
 use Soneso\StellarSDK\Xdr\XdrSetOptionsOperation;
 use Soneso\StellarSDK\Xdr\XdrLedgerKey;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
@@ -427,6 +432,74 @@ class OperationTest extends TestCase
         assertEquals(5, $parsed->getPrice()->getN());
         assertEquals(4, $parsed->getPrice()->getD());
         assertEquals(0, $parsed->getOfferId());
+    }
+
+    public static function manageSellOfferNegativeOfferIdProvider(): array
+    {
+        return [
+            '-1' => [-1, 'AAAAAAAAAAMAAAAAAAAAAVVTRAAAAAAAfzBiNMmJ6dZ/ad/ZMRmLYA89bOa2TCJAcB+2KwiDK4cAAAAAO5rKAAAAAAMAAAAC//////////8='],
+            'PHP_INT_MIN' => [PHP_INT_MIN, 'AAAAAAAAAAMAAAAAAAAAAVVTRAAAAAAAfzBiNMmJ6dZ/ad/ZMRmLYA89bOa2TCJAcB+2KwiDK4cAAAAAO5rKAAAAAAMAAAACgAAAAAAAAAA='],
+        ];
+    }
+
+    #[DataProvider('manageSellOfferNegativeOfferIdProvider')]
+    public function testManageSellOfferFromXdrPreservesNegativeOfferId(int $offerId, string $expectedBase64): void
+    {
+        $selling = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        $buying = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4));
+        $buying->setAlphaNum4(new XdrAssetAlphaNum4(
+            'USD',
+            XdrAccountID::fromAccountId('GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO')
+        ));
+        $body = new XdrOperationBody(new XdrOperationType(XdrOperationType::MANAGE_SELL_OFFER));
+        $body->setManageSellOfferOp(new XdrManageSellOfferOperation(
+            $selling,
+            $buying,
+            new BigInteger(1000000000),
+            new XdrPrice(3, 2),
+            $offerId
+        ));
+        $this->assertSame($expectedBase64, (new XdrOperation($body))->toBase64Xdr());
+
+        $parsed = AbstractOperation::fromXdr(XdrOperation::fromBase64Xdr($expectedBase64));
+
+        $this->assertInstanceOf(ManageSellOfferOperation::class, $parsed);
+        $this->assertSame($offerId, $parsed->getOfferId());
+        $this->assertSame($expectedBase64, $parsed->toXdr()->toBase64Xdr());
+    }
+
+    public static function negativeOfferIdProvider(): array
+    {
+        return [
+            '-1' => [-1],
+            'PHP_INT_MIN' => [PHP_INT_MIN],
+        ];
+    }
+
+    #[DataProvider('negativeOfferIdProvider')]
+    public function testManageBuyOfferFromXdrPreservesNegativeOfferId(int $offerId): void
+    {
+        $selling = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4));
+        $selling->setAlphaNum4(new XdrAssetAlphaNum4(
+            'USD',
+            XdrAccountID::fromAccountId('GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO')
+        ));
+        $buying = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        $body = new XdrOperationBody(new XdrOperationType(XdrOperationType::MANAGE_BUY_OFFER));
+        $body->setManageBuyOfferOp(new XdrManageBuyOfferOperation(
+            $selling,
+            $buying,
+            new BigInteger(500000000),
+            new XdrPrice(5, 4),
+            $offerId
+        ));
+        $base64 = (new XdrOperation($body))->toBase64Xdr();
+
+        $parsed = AbstractOperation::fromXdr(XdrOperation::fromBase64Xdr($base64));
+
+        $this->assertInstanceOf(ManageBuyOfferOperation::class, $parsed);
+        $this->assertSame($offerId, $parsed->getOfferId());
+        $this->assertSame($base64, $parsed->toXdr()->toBase64Xdr());
     }
 
     public function testCreatePassiveSellOfferFromXdr()
