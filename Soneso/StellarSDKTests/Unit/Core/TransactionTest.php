@@ -18,6 +18,7 @@ use Soneso\StellarSDK\CreateAccountOperation;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\FeeBumpTransaction;
 use Soneso\StellarSDK\InflationOperation;
+use Soneso\StellarSDK\ManageSellOfferOperation;
 use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
@@ -62,9 +63,13 @@ use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 use Soneso\StellarSDK\Xdr\XdrTransactionExt;
 use Soneso\StellarSDK\Xdr\XdrTransactionV0Ext;
 use Soneso\StellarSDK\Xdr\XdrTransactionV1Envelope;
+use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrAsset;
+use Soneso\StellarSDK\Xdr\XdrAssetAlphaNum4;
 use Soneso\StellarSDK\Xdr\XdrAssetType;
+use Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation;
 use Soneso\StellarSDK\Xdr\XdrPaymentOperation;
+use Soneso\StellarSDK\Xdr\XdrPrice;
 use InvalidArgumentException;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertNotNull;
@@ -744,6 +749,53 @@ class TransactionTest extends TestCase
         $this->assertSame(self::SAC_V2_NETWORK_HASH, bin2hex($imported->getInnerTx()->hash($network)));
         $this->assertSame(bin2hex($this->expectedTransactionHash($network,
             pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP) . $tx->encode())), bin2hex($imported->hash($network)));
+    }
+
+    public function testImportedManageSellOfferWithNegativeOfferIdPreservesEnvelopeAndHash(): void
+    {
+        $source = new XdrMuxedAccount(str_repeat("\x11", 32));
+        $selling = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE));
+        $buying = new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4));
+        $buying->setAlphaNum4(new XdrAssetAlphaNum4(
+            'USD',
+            XdrAccountID::fromAccountId('GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO')
+        ));
+        $body = new XdrOperationBody(new XdrOperationType(XdrOperationType::MANAGE_SELL_OFFER));
+        $body->setManageSellOfferOp(new XdrManageSellOfferOperation(
+            $selling,
+            $buying,
+            new BigInteger(1000000000),
+            new XdrPrice(3, 2),
+            -1
+        ));
+        $xdrTx = new XdrTransaction(
+            $source,
+            new XdrSequenceNumber(new BigInteger(101)),
+            [new XdrOperation($body)],
+            200,
+            new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE)),
+            new XdrPreconditions(XdrPreconditionType::NONE()),
+            new XdrTransactionExt(0)
+        );
+        $envelope = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX));
+        $envelope->setV1(new XdrTransactionV1Envelope($xdrTx, []));
+        $input = base64_encode($envelope->encode());
+
+        $network = Network::testnet();
+        $expectedHash = $this->expectedTransactionHash(
+            $network,
+            pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX) . $xdrTx->encode()
+        );
+
+        $imported = AbstractTransaction::fromEnvelopeBase64XdrString($input);
+
+        $this->assertInstanceOf(Transaction::class, $imported);
+        $ops = $imported->getOperations();
+        $this->assertCount(1, $ops);
+        $this->assertInstanceOf(ManageSellOfferOperation::class, $ops[0]);
+        $this->assertSame(-1, $ops[0]->getOfferId());
+        $this->assertSame($input, $imported->toEnvelopeXdrBase64());
+        $this->assertSame($expectedHash, $imported->hash($network));
     }
 
     private function assertImportedHash(XdrTransactionEnvelope $envelope, string $taggedTransaction): void

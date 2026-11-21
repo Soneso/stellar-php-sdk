@@ -6,7 +6,6 @@
 
 namespace Soneso\StellarSDK;
 
-use InvalidArgumentException;
 use Soneso\StellarSDK\Xdr\XdrManageSellOfferOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
@@ -34,7 +33,6 @@ class ManageSellOfferOperation extends AbstractOperation
      * @param string $amount The amount of the selling asset to sell (as a decimal string, set to "0" to delete)
      * @param Price $price The price of 1 unit of selling in terms of buying
      * @param int $offerId The offer ID (0 for new offers, or existing offer ID to update/delete)
-     * @throws InvalidArgumentException If the offer ID is negative
      */
     public function __construct(
         private Asset $selling,
@@ -43,9 +41,6 @@ class ManageSellOfferOperation extends AbstractOperation
         private Price $price,
         private int $offerId,
     ) {
-        if ($offerId < 0) {
-            throw new InvalidArgumentException("Invalid offer id: ".$offerId);
-        }
     }
 
     /**

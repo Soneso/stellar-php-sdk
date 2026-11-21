@@ -7,8 +7,6 @@
 
 namespace Soneso\StellarSDK;
 
-use InvalidArgumentException;
-
 /**
  * Builder for creating ManageSellOffer operations.
  *
@@ -63,13 +61,10 @@ class ManageSellOfferOperationBuilder
 
     /**
      * Sets offer ID. <code>0</code> creates a new offer. Set to existing offer ID to change it.
-     * @param int $offerId
+     * @param int $offerId The offer ID
      * @return ManageSellOfferOperationBuilder Builder object so you can chain methods.
      */
     public function setOfferId(int $offerId) : ManageSellOfferOperationBuilder {
-        if ($offerId < 0) {
-            throw new InvalidArgumentException("Invalid offer id: ".$offerId);
-        }
         $this->offerId = $offerId;
         return $this;
     }

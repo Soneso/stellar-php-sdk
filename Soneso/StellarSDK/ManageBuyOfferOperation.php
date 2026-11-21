@@ -6,7 +6,6 @@
 
 namespace Soneso\StellarSDK;
 
-use InvalidArgumentException;
 use Soneso\StellarSDK\Xdr\XdrManageBuyOfferOperation;
 use Soneso\StellarSDK\Xdr\XdrOperationBody;
 use Soneso\StellarSDK\Xdr\XdrOperationType;
@@ -39,9 +38,6 @@ class ManageBuyOfferOperation extends AbstractOperation
         private Price $price,
         private int $offerId,
     ) {
-        if ($offerId < 0) {
-            throw new InvalidArgumentException("Invalid offer id: ".$offerId);
-        }
     }
 
     /**
