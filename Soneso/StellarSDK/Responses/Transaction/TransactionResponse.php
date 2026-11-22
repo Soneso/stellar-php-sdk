@@ -442,8 +442,10 @@ class TransactionResponse extends Response
             $memoTypeStr = $json['memo_type'];
             $this->memo = match ($memoTypeStr) {
                 "none" => Memo::none(),
-                "text" => Memo::text($json['memo'] ?? ""),
-                "id" => Memo::id((int)$json['memo']),
+                "text" => isset($json['memo_bytes'])
+                    ? self::memoFromTextBytes($json['memo_bytes'])
+                    : Memo::text($json['memo'] ?? ""),
+                "id" => self::memoFromIdValue($json['memo'] ?? null),
                 "hash" => Memo::hash(($decodedHash = base64_decode($json['memo'], true)) === false ? throw new InvalidArgumentException('Invalid base64-encoded memo hash') : $decodedHash),
                 "return" => Memo::return(($decodedReturn = base64_decode($json['memo'], true)) === false ? throw new InvalidArgumentException('Invalid base64-encoded memo return hash') : $decodedReturn),
             };
@@ -477,5 +479,45 @@ class TransactionResponse extends Response
         $result = new TransactionResponse();
         $result->loadFromJson($json);
         return $result;
+    }
+
+    /**
+     * Builds a text memo from Horizon's base64-encoded raw memo_bytes field.
+     *
+     * @throws InvalidArgumentException If memo_bytes is not a valid base64 string or exceeds 28 bytes
+     */
+    private static function memoFromTextBytes(mixed $memoBytes): Memo
+    {
+        if (!is_string($memoBytes)) {
+            throw new InvalidArgumentException('Invalid base64-encoded memo bytes');
+        }
+        $decoded = base64_decode($memoBytes, true);
+        if ($decoded === false) {
+            throw new InvalidArgumentException('Invalid base64-encoded memo bytes');
+        }
+        return Memo::text($decoded);
+    }
+
+    /**
+     * Builds an id memo from Horizon's memo field.
+     *
+     * Validates through Memo first, then converts decimal strings up to PHP_INT_MAX
+     * to int to match Memo::fromXdr(); larger uint64 values remain decimal strings.
+     *
+     * @throws InvalidArgumentException If the value is not a valid uint64 id
+     */
+    private static function memoFromIdValue(mixed $value): Memo
+    {
+        $memo = new Memo(Memo::MEMO_TYPE_ID, $value);
+        if (!is_string($value)) {
+            return $memo;
+        }
+        $max = (string)PHP_INT_MAX;
+        $len = strlen($value);
+        $maxLen = strlen($max);
+        if ($len < $maxLen || ($len === $maxLen && strcmp($value, $max) <= 0)) {
+            return Memo::id((int)$value);
+        }
+        return $memo;
     }
 }
