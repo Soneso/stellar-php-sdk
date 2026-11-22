@@ -19,6 +19,7 @@ use Soneso\StellarSDK\SEP\URIScheme\SubmitUriSchemeTransactionResponse;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\URIScheme\URIScheme;
 use Soneso\StellarSDK\SEP\URIScheme\URISchemeError;
+use Soneso\StellarSDK\StellarSDK;
 use InvalidArgumentException;
 
 /**
@@ -35,6 +36,149 @@ class URISchemeTest extends TestCase
     // Asset Contract of an AlphaNum4 asset with an empty constructor argument list, and one signature.
     private const SAC_V2_ENVELOPE = 'AAAAAgAAAAAMCf4TNV9jU4d5QPRyB0MihH9zgsUW6keMIZsIAP/UDgABIWIAWNn5AAAAAQAAAAEAAAAAAAAAAAAAAABq/6QvAAAAAAAAAAEAAAAAAAAAGAAAAAMAAAABAAAAAUxXVjIAAAAADAn+EzVfY1OHeUD0cgdDIoR/c4LFFupHjCGbCAD/1A4AAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAABgAAAAFv3MrH8x/kbUTlOq9FidhQHGBb+ZN/BNe3GCwznhvb8wAAABQAAAABAAKrMQAAAAAAAAHcAAAAAAABIP4AAAABAP/UDgAAAEBDm1gYDzIAJHtXc0hWqix7I22s4B9ga7eWJp5+8eWxuT/608SPbN9y5hzli1R2NX9ARlcA5fNgcEUnW1Y6v8sD';
     private const SAC_V2_NETWORK_HASH = '11446413b5a7a95f8bb18e616a5187f19a5a7b146fdef3c5c2c77e5ea87aaadc';
+
+    private ?Client $origPublicClient = null;
+    private ?Client $origTestNetClient = null;
+    private ?Client $origFutureNetClient = null;
+
+    /** @var array<int, array<string, mixed>> */
+    private array $publicHistory = [];
+    /** @var array<int, array<string, mixed>> */
+    private array $testNetHistory = [];
+    /** @var array<int, array<string, mixed>> */
+    private array $futureNetHistory = [];
+
+    protected function tearDown(): void
+    {
+        if ($this->origPublicClient !== null) {
+            StellarSDK::getPublicNetInstance()->setHttpClient($this->origPublicClient);
+            $this->origPublicClient = null;
+        }
+        if ($this->origTestNetClient !== null) {
+            StellarSDK::getTestNetInstance()->setHttpClient($this->origTestNetClient);
+            $this->origTestNetClient = null;
+        }
+        if ($this->origFutureNetClient !== null) {
+            StellarSDK::getFutureNetInstance()->setHttpClient($this->origFutureNetClient);
+            $this->origFutureNetClient = null;
+        }
+        parent::tearDown();
+    }
+
+    private function getSampleSubmitTransactionJson(): string
+    {
+        return (string)json_encode([
+            'hash' => 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2',
+            'ledger' => 123456,
+            'envelope_xdr' => 'AAAAAgAAAAAaZHhEv9fdQe8/WK1IeSdsMkpO1w6GVO7pRIMqFlLAXgAAAGQDHvLTAAABIwAAAAEAAAAAAAAAAAAAAABmh4pDAAAAAQAAABgwLDA3NSUgRGFpbHkgZm9yIEhvbGRlcnMAAAABAAAAAQAAAABDkt3qvAkFIBzwQNUTIuVYO6lakWIP/qYVmqhwqWJiJwAAAAEAAAAALKh2/uxMx/7OQG16N5OsdpWPl0ZGSeDIVpWQqsOV2wIAAAABSFVOAAAAAABiq8tUUivvOui45p7YvZkJysGWP0Yf8WEC8im2+3vr5AAAAABaG1GYAAAAAAAAAAKpYmInAAAAQLmth39Fjo8TC05wn5ZOAw4lou2rkxAaK6k16lHYXlEcsYHZ/d+ga5bCgO9KV/sbKaZAUCC9KvFIplXkXffBxQ0WUsBeAAAAQC2w45T3S24shkJ7uyRl/P5xD86Xfi7qTYxmb8uh8PEcwlb5oqbnJcTlUV2uJs2+gzMlijNtAbrCm6wO+1YsJQ4=',
+            'result_xdr' => 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+            'result_meta_xdr' => 'AAAAAwAAAAAAAAACAAAAAwMgANMAAAAAAAAAABpkeES/191B7z9YrUh5J2wySk7XDoZU7ulEgyoWUsBeAAAAAAHJUdQDHvLTAAABIgAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAMAAAAAAyAAyAAAAABmh4mjAAAAAAAAAAEDIADTAAAAAAAAAAAaZHhEv9fdQe8/WK1IeSdsMkpO1w6GVO7pRIMqFlLAXgAAAAAByVHUAx7y0wAAASMAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAADAAAAAAMgANMAAAAAZoeJ4wAAAAAAAAABAAAABAAAAAMDIADTAAAAAQAAAABDkt3qvAkFIBzwQNUTIuVYO6lakWIP/qYVmqhwqWJiJwAAAAFIVU4AAAAAAGKry1RSK+866Ljmnti9mQnKwZY/Rh/xYQLyKbb7e+vkAAKTCBRhynx//////////wAAAAEAAAABAAAA1xsdUZsAAAAAAAAAAAAAAAAAAAAAAAAAAQMgANMAAAABAAAAAEOS3eq8CQUgHPBA1RMi5Vg7qVqRYg/+phWaqHCpYmInAAAAAUhVTgAAAAAAYqvLVFIr7zrouOae2L2ZCcrBlj9GH/FhAvIptvt76+QAApMHukZ45H//////////AAAAAQAAAAEAAADXGx1RmwAAAAAAAAAAAAAAAAAAAAAAAAADAx/LTQAAAAEAAAAALKh2/uxMx/7OQG16N5OsdpWPl0ZGSeDIVpWQqsOV2wIAAAABSFVOAAAAAABiq8tUUivvOui45p7YvZkJysGWP0Yf8WEC8im2+3vr5AAAAdVOSfYYf/////////8AAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEDIADTAAAAAQAAAAAsqHb+7EzH/s5AbXo3k6x2lY+XRkZJ4MhWlZCqw5XbAgAAAAFIVU4AAAAAAGKry1RSK+866Ljmnti9mQnKwZY/Rh/xYQLyKbb7e+vkAAAB1ahlR7B//////////wAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+        ]);
+    }
+
+    private function installHorizonMocks(): void
+    {
+        $publicSdk = StellarSDK::getPublicNetInstance();
+        $testNetSdk = StellarSDK::getTestNetInstance();
+        $futureNetSdk = StellarSDK::getFutureNetInstance();
+
+        $this->origPublicClient ??= $publicSdk->getHttpClient();
+        $this->origTestNetClient ??= $testNetSdk->getHttpClient();
+        $this->origFutureNetClient ??= $futureNetSdk->getHttpClient();
+
+        $this->publicHistory = [];
+        $this->testNetHistory = [];
+        $this->futureNetHistory = [];
+
+        $body = $this->getSampleSubmitTransactionJson();
+
+        $publicStack = HandlerStack::create(new MockHandler([new Response(200, [], $body)]));
+        $publicStack->push(Middleware::history($this->publicHistory));
+        $publicSdk->setHttpClient(new Client([
+            'base_uri' => StellarSDK::$PUBLIC_NET_HORIZON_URL,
+            'handler' => $publicStack,
+        ]));
+
+        $testNetStack = HandlerStack::create(new MockHandler([new Response(200, [], $body)]));
+        $testNetStack->push(Middleware::history($this->testNetHistory));
+        $testNetSdk->setHttpClient(new Client([
+            'base_uri' => StellarSDK::$TEST_NET_HORIZON_URL,
+            'handler' => $testNetStack,
+        ]));
+
+        $futureNetStack = HandlerStack::create(new MockHandler([new Response(200, [], $body)]));
+        $futureNetStack->push(Middleware::history($this->futureNetHistory));
+        $futureNetSdk->setHttpClient(new Client([
+            'base_uri' => StellarSDK::$FUTURE_NET_HORIZON_URL,
+            'handler' => $futureNetStack,
+        ]));
+    }
+
+    private function computeExpectedSignedV1EnvelopeBase64(
+        string $envelopeBase64,
+        KeyPair $signer,
+        string $networkPassphrase,
+    ): string {
+        $fixture = base64_decode($envelopeBase64, true);
+        $this->assertIsString($fixture);
+        // TEST_XDR is a V1 envelope ending with signature count 1 and one 72-byte decorated signature.
+        $txEnd = strlen($fixture) - 4 - 72;
+        $hash = hash(
+            'sha256',
+            hash('sha256', $networkPassphrase, true) . substr($fixture, 0, $txEnd),
+            true
+        );
+        $expectedEnvelope = substr($fixture, 0, $txEnd)
+            . pack('N', 2)
+            . substr($fixture, $txEnd + 4)
+            . substr($signer->getPublicKey(), -4)
+            . pack('N', 64)
+            . $signer->sign($hash);
+        return base64_encode($expectedEnvelope);
+    }
+
+    private function assertDirectHorizonSubmission(
+        ?Network $network,
+        string $expectedPassphrase,
+        string $expectedHost,
+        string $expectedTarget,
+    ): void {
+        $this->installHorizonMocks();
+
+        $uriScheme = new URIScheme();
+        $signer = KeyPair::fromSeed(self::TEST_SECRET);
+        // TEST_XDR carries a text memo so the SEP-29 memo check makes no account lookup request.
+        $uri = $uriScheme->generateSignTransactionURI(self::TEST_XDR);
+
+        $response = $uriScheme->signAndSubmitTransaction($uri, $signer, $network);
+
+        $this->assertNull($response->getCallBackResponse());
+        $this->assertNotNull($response->getSubmitTransactionResponse());
+        $this->assertTrue($response->getSubmitTransactionResponse()->isSuccessful());
+
+        $this->assertCount($expectedTarget === 'public' ? 1 : 0, $this->publicHistory);
+        $this->assertCount($expectedTarget === 'testnet' ? 1 : 0, $this->testNetHistory);
+        $this->assertCount($expectedTarget === 'futurenet' ? 1 : 0, $this->futureNetHistory);
+
+        $history = match ($expectedTarget) {
+            'public' => $this->publicHistory,
+            'testnet' => $this->testNetHistory,
+            'futurenet' => $this->futureNetHistory,
+        };
+        $request = $history[0]['request'];
+        $this->assertSame('POST', $request->getMethod());
+
+        $requestUri = $request->getUri();
+        $this->assertSame('https', $requestUri->getScheme());
+        $this->assertSame($expectedHost, $requestUri->getHost());
+        $this->assertSame('/transactions', $requestUri->getPath());
+
+        parse_str($requestUri->getQuery(), $query);
+        $this->assertIsString($query['tx'] ?? null);
+
+        $expectedBase64 = $this->computeExpectedSignedV1EnvelopeBase64(self::TEST_XDR, $signer, $expectedPassphrase);
+        $this->assertSame($expectedBase64, $query['tx']);
+    }
 
     // ==================== URIScheme Constructor Tests ====================
 
@@ -429,6 +573,288 @@ class URISchemeTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Service URL must use HTTPS');
         $uriScheme->signAndSubmitTransaction($uri, $keyPair, Network::testnet());
+    }
+
+    public function testSignAndSubmitTransactionSubmitsToPublicHorizon(): void
+    {
+        $this->assertDirectHorizonSubmission(
+            Network::public(),
+            'Public Global Stellar Network ; September 2015',
+            'horizon.stellar.org',
+            'public',
+        );
+        $this->assertDirectHorizonSubmission(
+            null,
+            'Public Global Stellar Network ; September 2015',
+            'horizon.stellar.org',
+            'public',
+        );
+    }
+
+    public function testSignAndSubmitTransactionSubmitsToTestnetHorizon(): void
+    {
+        $this->assertDirectHorizonSubmission(
+            Network::testnet(),
+            'Test SDF Network ; September 2015',
+            'horizon-testnet.stellar.org',
+            'testnet',
+        );
+    }
+
+    public function testSignAndSubmitTransactionSubmitsToFuturenetHorizon(): void
+    {
+        $this->assertDirectHorizonSubmission(
+            Network::futurenet(),
+            'Test SDF Future Network ; October 2022',
+            'horizon-futurenet.stellar.org',
+            'futurenet',
+        );
+    }
+
+    public function testSignAndSubmitTransactionRejectsCustomNetworkWithoutCallback(): void
+    {
+        $this->installHorizonMocks();
+
+        $uriScheme = new URIScheme();
+        $signer = KeyPair::fromSeed(self::TEST_SECRET);
+        $uri = $uriScheme->generateSignTransactionURI(self::TEST_XDR);
+        $customPassphrase = 'Custom Private Network ; 2026';
+
+        try {
+            $uriScheme->signAndSubmitTransaction($uri, $signer, new Network($customPassphrase));
+            $this->fail('Expected InvalidArgumentException for custom network without callback');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString($customPassphrase, $e->getMessage());
+            $this->assertStringContainsString('No Horizon URL', $e->getMessage());
+        }
+
+        $this->assertCount(0, $this->publicHistory);
+        $this->assertCount(0, $this->testNetHistory);
+        $this->assertCount(0, $this->futureNetHistory);
+    }
+
+    public function testSignAndSubmitTransactionPostsCustomNetworkToUrlCallback(): void
+    {
+        $this->installHorizonMocks();
+
+        $callbackHistory = [];
+        $stack = HandlerStack::create(new MockHandler([new Response(200, [], '')]));
+        $stack->push(Middleware::history($callbackHistory));
+
+        $uriScheme = new URIScheme();
+        $uriScheme->setMockHandlerStack($stack);
+
+        $signer = KeyPair::fromSeed(self::TEST_SECRET);
+        $customPassphrase = 'Custom Private Network ; 2026';
+        $callbackUrl = 'https://wallet.invalid/sep7/custom-callback';
+        $uri = $uriScheme->generateSignTransactionURI(self::TEST_XDR, callback: 'url:' . $callbackUrl);
+
+        $response = $uriScheme->signAndSubmitTransaction($uri, $signer, new Network($customPassphrase));
+
+        $this->assertNull($response->getSubmitTransactionResponse());
+        $this->assertNotNull($response->getCallBackResponse());
+        $this->assertSame(200, $response->getCallBackResponse()->getStatusCode());
+
+        $this->assertCount(1, $callbackHistory);
+        $this->assertCount(0, $this->publicHistory);
+        $this->assertCount(0, $this->testNetHistory);
+        $this->assertCount(0, $this->futureNetHistory);
+
+        $request = $callbackHistory[0]['request'];
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertSame($callbackUrl, (string)$request->getUri());
+        $this->assertSame('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
+
+        $body = (string)$request->getBody();
+        parse_str($body, $form);
+        $this->assertIsString($form['xdr'] ?? null);
+
+        $expectedBase64 = $this->computeExpectedSignedV1EnvelopeBase64(self::TEST_XDR, $signer, $customPassphrase);
+        $this->assertSame($expectedBase64, $form['xdr']);
+        $this->assertSame('xdr=' . urlencode($expectedBase64), $body);
+    }
+
+    public function testSignAndSubmitTransactionRejectsUnsupportedCallbacks(): void
+    {
+        $signer = KeyPair::fromSeed(self::TEST_SECRET);
+        $encodedXdr = urlencode(self::TEST_XDR);
+        $cases = [
+            ['web+stellar:tx?xdr=' . $encodedXdr . '&callback=foo:bar', 'foo:bar'],
+            ['web+stellar:tx?xdr=' . $encodedXdr . '&callback=foo%3Abar', 'foo:bar'],
+            ['web+stellar:tx?xdr=' . $encodedXdr . '&callback=', 'empty callback'],
+        ];
+
+        foreach ($cases as [$uri, $expectedFragment]) {
+            $this->installHorizonMocks();
+
+            $callbackHistory = [];
+            $stack = HandlerStack::create(new MockHandler([new Response(200, [], '')]));
+            $stack->push(Middleware::history($callbackHistory));
+
+            $uriScheme = new URIScheme();
+            $uriScheme->setMockHandlerStack($stack);
+
+            try {
+                $uriScheme->signAndSubmitTransaction($uri, $signer, Network::testnet());
+                $this->fail('Expected InvalidArgumentException for unsupported callback URI: ' . $uri);
+            } catch (InvalidArgumentException $e) {
+                $this->assertStringContainsString('Unsupported', $e->getMessage());
+                $this->assertStringContainsString($expectedFragment, $e->getMessage());
+            }
+
+            $this->assertCount(0, $callbackHistory);
+            $this->assertCount(0, $this->publicHistory);
+            $this->assertCount(0, $this->testNetHistory);
+            $this->assertCount(0, $this->futureNetHistory);
+        }
+    }
+
+    public function testSignAndSubmitTransactionRejectsUnparseableHttpsCallback(): void
+    {
+        $this->installHorizonMocks();
+
+        $callbackHistory = [];
+        $stack = HandlerStack::create(new MockHandler([new Response(200, [], '')]));
+        $stack->push(Middleware::history($callbackHistory));
+
+        $uriScheme = new URIScheme();
+        $uriScheme->setMockHandlerStack($stack);
+
+        $signer = KeyPair::fromSeed(self::TEST_SECRET);
+        $uri = 'web+stellar:tx?xdr=' . urlencode(self::TEST_XDR) . '&callback=url:https:///x';
+
+        try {
+            $uriScheme->signAndSubmitTransaction($uri, $signer, Network::testnet());
+            $this->fail('Expected InvalidArgumentException for unparseable HTTPS callback URL');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('Service URL cannot be parsed.', $e->getMessage());
+            $this->assertStringNotContainsString('https:///x', $e->getMessage());
+        }
+
+        $this->assertCount(0, $callbackHistory);
+        $this->assertCount(0, $this->publicHistory);
+        $this->assertCount(0, $this->testNetHistory);
+        $this->assertCount(0, $this->futureNetHistory);
+    }
+
+    public function testSignAndSubmitTransactionRejectsHttpsCallbackWithoutHost(): void
+    {
+        $this->installHorizonMocks();
+
+        $callbackHistory = [];
+        $stack = HandlerStack::create(new MockHandler([new Response(200, [], '')]));
+        $stack->push(Middleware::history($callbackHistory));
+
+        $uriScheme = new URIScheme();
+        $uriScheme->setMockHandlerStack($stack);
+
+        $signer = KeyPair::fromSeed(self::TEST_SECRET);
+        $uri = 'web+stellar:tx?xdr=' . urlencode(self::TEST_XDR) . '&callback=url:https:';
+
+        try {
+            $uriScheme->signAndSubmitTransaction($uri, $signer, Network::testnet());
+            $this->fail('Expected InvalidArgumentException for HTTPS callback URL without host');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('Service URL has no host.', $e->getMessage());
+            $this->assertStringNotContainsString('https:', $e->getMessage());
+        }
+
+        $this->assertCount(0, $callbackHistory);
+        $this->assertCount(0, $this->publicHistory);
+        $this->assertCount(0, $this->testNetHistory);
+        $this->assertCount(0, $this->futureNetHistory);
+    }
+
+    public function testSignAndSubmitTransactionSubmitsFeeBumpEnvelopeToPublicHorizon(): void
+    {
+        $this->installHorizonMocks();
+
+        $innerV1Envelope = base64_decode(self::TEST_XDR, true);
+        $this->assertIsString($innerV1Envelope);
+        $signer = KeyPair::fromSeed(self::TEST_SECRET);
+
+        // XDR TransactionEnvelope (ENVELOPE_TYPE_TX_FEE_BUMP = 5):
+        // type(5) | feeSource(KEY_TYPE_ED25519=0 + 32-byte key) | fee(int64=400) | innerTx(V1 envelope) | ext(0) | signatures.len(0).
+        // The inner transaction from TEST_XDR carries a text memo so SEP-29 makes no account lookup.
+        $feeBumpPrefix = pack('N', 5)
+            . pack('N', 0)
+            . $signer->getPublicKey()
+            . pack('J', 400)
+            . $innerV1Envelope
+            . pack('N', 0);
+        $unsignedFeeBumpBase64 = base64_encode($feeBumpPrefix . pack('N', 0));
+
+        $uriScheme = new URIScheme();
+        $uri = $uriScheme->generateSignTransactionURI($unsignedFeeBumpBase64);
+
+        $response = $uriScheme->signAndSubmitTransaction($uri, $signer, Network::public());
+
+        $this->assertNull($response->getCallBackResponse());
+        $this->assertNotNull($response->getSubmitTransactionResponse());
+        $this->assertTrue($response->getSubmitTransactionResponse()->isSuccessful());
+
+        $this->assertCount(1, $this->publicHistory);
+        $this->assertCount(0, $this->testNetHistory);
+        $this->assertCount(0, $this->futureNetHistory);
+
+        $request = $this->publicHistory[0]['request'];
+        $this->assertSame('POST', $request->getMethod());
+
+        $requestUri = $request->getUri();
+        $this->assertSame('https', $requestUri->getScheme());
+        $this->assertSame('horizon.stellar.org', $requestUri->getHost());
+        $this->assertSame('/transactions', $requestUri->getPath());
+
+        parse_str($requestUri->getQuery(), $query);
+        $this->assertIsString($query['tx'] ?? null);
+
+        $publicPassphrase = 'Public Global Stellar Network ; September 2015';
+        $feeBumpHash = hash(
+            'sha256',
+            hash('sha256', $publicPassphrase, true) . $feeBumpPrefix,
+            true
+        );
+        $expectedSignedFeeBump = $feeBumpPrefix
+            . pack('N', 1)
+            . substr($signer->getPublicKey(), -4)
+            . pack('N', 64)
+            . $signer->sign($feeBumpHash);
+
+        $this->assertSame(base64_encode($expectedSignedFeeBump), $query['tx']);
+    }
+
+    public function testGetParameterValueAndSignAndSubmitHandleMissingQueryAndUnparseableUri(): void
+    {
+        $uriScheme = new URIScheme();
+        $signer = KeyPair::fromSeed(self::TEST_SECRET);
+        $uris = [
+            'web+stellar:tx',
+            'http:///example.com',
+            'web+stellar:tx?xdr[]=a',
+        ];
+
+        $warnings = [];
+        set_error_handler(static function (int $severity, string $message) use (&$warnings): bool {
+            $warnings[] = [$severity, $message];
+            return true;
+        });
+
+        try {
+            foreach ($uris as $uri) {
+                $this->assertNull($uriScheme->getParameterValue('xdr', $uri));
+
+                try {
+                    $uriScheme->signAndSubmitTransaction($uri, $signer, Network::testnet());
+                    $this->fail('Expected InvalidArgumentException for URI: ' . $uri);
+                } catch (InvalidArgumentException $e) {
+                    $this->assertStringContainsString('invalid url: ' . $uri, $e->getMessage());
+                }
+            }
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertSame([], $warnings);
     }
 
     // ==================== checkUIRSchemeIsValid Tests ====================

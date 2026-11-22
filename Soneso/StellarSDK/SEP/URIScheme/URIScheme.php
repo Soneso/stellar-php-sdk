@@ -278,39 +278,53 @@ class URIScheme
     }
 
     /**
-     * Signs a transaction from a SEP-7 URI and submits it to network or callback URL.
+     * Signs a transaction from a SEP-7 URI and submits it to Horizon or a callback URL.
      *
-     * This method extracts the transaction from the URI, signs it with the provided keypair,
-     * and submits it either to a callback URL (if specified) or directly to the Stellar network.
+     * This method extracts the transaction from the URI, signs it with the provided keypair
+     * for the given network (defaulting to the public network), and submits it according to
+     * the callback parameter:
+     * - When a callback parameter is present, it must start with "url:" and target an HTTPS
+     *   URL that parses and has a host (or HTTP for localhost, 127.0.0.1, or [::1]). The
+     *   signed envelope is POSTed as form field "xdr" to that URL; this works for any
+     *   network, including custom network passphrases. Any other present callback value,
+     *   including an empty value, is rejected before any request.
+     * - When no callback parameter is present, the signed transaction is submitted directly
+     *   to the StellarSDK Horizon singleton matching the network passphrase: public
+     *   (horizon.stellar.org), testnet (horizon-testnet.stellar.org), or futurenet
+     *   (horizon-futurenet.stellar.org). Any other network passphrase has no known Horizon
+     *   URL and is rejected before any request.
      *
      * Security Warning: This method performs actual transaction signing and submission.
      * Always validate the URI using checkUIRSchemeIsValid() and obtain explicit user
      * consent before calling this method. Never auto-submit transactions without user review.
      *
      * @param string $url Complete SEP-7 URI containing transaction XDR
-     * @param KeyPair $signerKeyPair Keypair used to sign the transaction
+     * @param KeyPair $signerKeyPair Keypair used to sign the transaction (must include private key)
      * @param Network|null $network Stellar network (defaults to public network if omitted)
      * @return SubmitUriSchemeTransactionResponse Response containing either submitTransactionResponse or callBackResponse
      *
-     * @throws AccountRequiresMemoException If the transaction is submitted directly to the network and a destination account requires a memo that the transaction does not carry
-     * @throws HorizonRequestException If submission to Stellar network fails
+     * @throws AccountRequiresMemoException If the transaction is submitted directly to Horizon and a destination account requires a memo that the transaction does not carry
+     * @throws HorizonRequestException If submission to Horizon fails
      * @throws GuzzleException If HTTP request to callback URL fails
-     * @throws InvalidArgumentException If URL does not contain valid XDR parameter
+     * @throws InvalidArgumentException If the URL has no valid XDR parameter, the signer keypair has no private key, the callback parameter is present without a "url:" prefix (including empty), the callback URL cannot be parsed, is HTTPS without a host, or is neither HTTPS nor HTTP for localhost, 127.0.0.1, or [::1], or no callback is present for a network passphrase with no known Horizon URL
      *
      * @see SubmitUriSchemeTransactionResponse
      */
     public function signAndSubmitTransaction(string $url, KeyPair $signerKeyPair, ?Network $network = null) : SubmitUriSchemeTransactionResponse {
 
-        $net = Network::public();
-        if ($network !== null) {
-            $net = $network;
-        }
+        $net = $network ?? Network::public();
         $envelope = $this->getXdrTransactionEnvelope($url);
         $absTransaction = AbstractTransaction::fromEnvelopeXdr($envelope);
         $absTransaction->sign($signerKeyPair,$net);
 
         $callback = $this->getParameterValue(URIScheme::callbackParameterName, $url);
-        if ($callback !== null && str_starts_with($callback, "url:")) {
+        if ($callback !== null) {
+            if (!str_starts_with($callback, "url:")) {
+                $message = $callback === ''
+                    ? 'Unsupported empty callback value. Only "url:" callbacks are supported.'
+                    : sprintf('Unsupported callback "%s". Only "url:" callbacks are supported.', $callback);
+                throw new InvalidArgumentException($message);
+            }
             $callbackUrl = substr($callback, 4);
             UrlValidator::validateHttpsRequired($callbackUrl);
             $headers = array();
@@ -325,7 +339,15 @@ class URIScheme
             ]);
             return new SubmitUriSchemeTransactionResponse(null,$res);
         } else {
-            $sdk = $net->getNetworkPassphrase() == Network::testnet()->getNetworkPassphrase() ? StellarSDK::getTestNetInstance() : StellarSDK::getPublicNetInstance();
+            $passphrase = $net->getNetworkPassphrase();
+            $sdk = match ($passphrase) {
+                Network::public()->getNetworkPassphrase() => StellarSDK::getPublicNetInstance(),
+                Network::testnet()->getNetworkPassphrase() => StellarSDK::getTestNetInstance(),
+                Network::futurenet()->getNetworkPassphrase() => StellarSDK::getFutureNetInstance(),
+                default => throw new InvalidArgumentException(
+                    sprintf('No Horizon URL is known for network passphrase "%s".', $passphrase)
+                ),
+            };
             $response = $sdk->submitTransaction($absTransaction);
             return new SubmitUriSchemeTransactionResponse($response,null);
         }
@@ -432,17 +454,22 @@ class URIScheme
     /**
      * Extracts a parameter value from a SEP-7 URI.
      *
-     * Utility method for parsing query parameters from SEP-7 URIs.
-     * Handles standard URL parsing and returns null if parameter not found.
+     * Parses the query string of the URI and returns the value of the named parameter,
+     * or null if the URI cannot be parsed, has no query string, or does not carry a
+     * string value for that parameter.
      *
      * @param string $parameterName Name of the query parameter to extract
      * @param string $url Complete SEP-7 URI containing query parameters
      * @return string|null Parameter value if found, null otherwise
      */
     public function getParameterValue(string $parameterName, string $url): ?string {
-        $url_components = parse_url($url);
-        parse_str($url_components['query'], $params);
-        return $params[$parameterName] ?? null;
+        $query = parse_url($url, PHP_URL_QUERY);
+        if (!is_string($query)) {
+            return null;
+        }
+        parse_str($query, $params);
+        $value = $params[$parameterName] ?? null;
+        return is_string($value) ? $value : null;
     }
 
     /**

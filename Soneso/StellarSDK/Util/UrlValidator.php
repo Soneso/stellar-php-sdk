@@ -14,24 +14,32 @@ use InvalidArgumentException;
 class UrlValidator
 {
     /**
-     * Validates that a service URL uses HTTPS.
+     * Validates that a service URL parses and uses HTTPS with a host.
      *
-     * HTTP is only allowed for localhost and 127.0.0.1 to support local development.
-     * All other URLs must use HTTPS to protect sensitive data in transit.
+     * HTTP is only allowed for localhost, 127.0.0.1, and [::1] to support local development.
+     * All other URLs must use HTTPS with a host to protect sensitive data in transit.
      *
      * @param string $url The service URL to validate
-     * @throws InvalidArgumentException If the URL does not use HTTPS and is not localhost
+     * @throws InvalidArgumentException If the URL cannot be parsed, uses HTTPS without a host, or does not use HTTPS (or HTTP for localhost, 127.0.0.1, or [::1])
      */
     public static function validateHttpsRequired(string $url): void
     {
-        $scheme = strtolower(parse_url($url, PHP_URL_SCHEME) ?? '');
+        $parsed = parse_url($url);
+        if ($parsed === false) {
+            throw new InvalidArgumentException('Service URL cannot be parsed.');
+        }
+
+        $scheme = strtolower($parsed['scheme'] ?? '');
+        $host = strtolower($parsed['host'] ?? '');
 
         if ($scheme === 'https') {
+            if ($host === '') {
+                throw new InvalidArgumentException('Service URL has no host.');
+            }
             return;
         }
 
         if ($scheme === 'http') {
-            $host = strtolower(parse_url($url, PHP_URL_HOST) ?? '');
             if ($host === 'localhost' || $host === '127.0.0.1' || $host === '[::1]') {
                 return;
             }
