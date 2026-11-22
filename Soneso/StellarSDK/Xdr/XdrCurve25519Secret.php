@@ -46,7 +46,7 @@ class XdrCurve25519Secret {
 
     public function toJsonValue(): array {
         return [
-            'key' => XdrJsonHelper::bytesToHex($this->key),
+            'key' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->key, 32)),
         ];
     }
 
@@ -68,7 +68,7 @@ class XdrCurve25519Secret {
         if (!is_string($value['key'])) {
             throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($value['key']));
         }
-        $key = XdrJsonHelper::hexToBytes($value['key']);
+        $key = XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($value['key']), 32);
         return new static($key);
     }
 

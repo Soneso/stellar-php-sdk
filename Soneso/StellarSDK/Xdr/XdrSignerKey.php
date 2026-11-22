@@ -203,13 +203,13 @@ class XdrSignerKey {
         $this->type->toTxRep($prefix . '.type', $lines);
         switch ($this->type->getValue()) {
             case XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519:
-                $lines[$prefix . '.ed25519'] = TxRepHelper::bytesToHex($this->ed25519);
+                $lines[$prefix . '.ed25519'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->ed25519, 32));
                 break;
             case XdrSignerKeyType::SIGNER_KEY_TYPE_PRE_AUTH_TX:
-                $lines[$prefix . '.preAuthTx'] = TxRepHelper::bytesToHex($this->preAuthTx);
+                $lines[$prefix . '.preAuthTx'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->preAuthTx, 32));
                 break;
             case XdrSignerKeyType::SIGNER_KEY_TYPE_HASH_X:
-                $lines[$prefix . '.hashX'] = TxRepHelper::bytesToHex($this->hashX);
+                $lines[$prefix . '.hashX'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->hashX, 32));
                 break;
             case XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD:
                 $this->signedPayload->toTxRep($prefix . '.ed25519SignedPayload', $lines);
@@ -224,13 +224,13 @@ class XdrSignerKey {
         $result = new XdrSignerKey($disc);
         switch ($result->type->getValue()) {
             case XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519:
-                $result->ed25519 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.ed25519') ?? '');
+                $result->ed25519 = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.ed25519') ?? ''), 32);
                 break;
             case XdrSignerKeyType::SIGNER_KEY_TYPE_PRE_AUTH_TX:
-                $result->preAuthTx = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.preAuthTx') ?? '');
+                $result->preAuthTx = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.preAuthTx') ?? ''), 32);
                 break;
             case XdrSignerKeyType::SIGNER_KEY_TYPE_HASH_X:
-                $result->hashX = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.hashX') ?? '');
+                $result->hashX = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.hashX') ?? ''), 32);
                 break;
             case XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD:
                 $result->signedPayload = XdrSignedPayload::fromTxRep($map, $prefix . '.ed25519SignedPayload');

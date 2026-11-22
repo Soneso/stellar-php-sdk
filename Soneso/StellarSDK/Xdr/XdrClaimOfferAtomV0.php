@@ -77,7 +77,7 @@ class XdrClaimOfferAtomV0 {
 
     public function toJsonValue(): array {
         return [
-            'seller_ed25519' => XdrJsonHelper::bytesToHex($this->sellerEd25519),
+            'seller_ed25519' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->sellerEd25519, 32)),
             'offer_id' => XdrJsonHelper::int64ToString($this->offerId),
             'asset_sold' => $this->assetSold->toJsonValue(),
             'amount_sold' => $this->amountSold->toString(),
@@ -101,7 +101,7 @@ class XdrClaimOfferAtomV0 {
                 'Missing required field seller_ed25519 for XdrClaimOfferAtomV0'
             );
         }
-        $sellerEd25519 = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['seller_ed25519']);
+        $sellerEd25519 = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['seller_ed25519']);
         if (!array_key_exists('offer_id', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field offer_id for XdrClaimOfferAtomV0'

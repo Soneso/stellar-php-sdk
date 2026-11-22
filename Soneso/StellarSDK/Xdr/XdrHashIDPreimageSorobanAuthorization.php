@@ -64,7 +64,7 @@ class XdrHashIDPreimageSorobanAuthorization {
 
     public function toJsonValue(): array {
         return [
-            'network_id' => XdrJsonHelper::bytesToHex($this->networkID),
+            'network_id' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->networkID, 32)),
             'nonce' => XdrJsonHelper::int64ToString($this->nonce),
             'signature_expiration_ledger' => $this->signatureExpirationLedger,
             'invocation' => $this->invocation->toJsonValue(),
@@ -86,7 +86,7 @@ class XdrHashIDPreimageSorobanAuthorization {
                 'Missing required field network_id for XdrHashIDPreimageSorobanAuthorization'
             );
         }
-        $networkID = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['network_id']);
+        $networkID = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['network_id']);
         if (!array_key_exists('nonce', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field nonce for XdrHashIDPreimageSorobanAuthorization'

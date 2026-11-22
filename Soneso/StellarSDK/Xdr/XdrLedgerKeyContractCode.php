@@ -46,7 +46,7 @@ class XdrLedgerKeyContractCode {
 
     public function toJsonValue(): array {
         return [
-            'hash' => XdrJsonHelper::bytesToHex($this->hash),
+            'hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->hash, 32)),
         ];
     }
 
@@ -65,7 +65,7 @@ class XdrLedgerKeyContractCode {
                 'Missing required field hash for XdrLedgerKeyContractCode'
             );
         }
-        $hash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['hash']);
+        $hash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['hash']);
         return new static($hash);
     }
 
@@ -90,11 +90,11 @@ class XdrLedgerKeyContractCode {
      * @param array<string, string> $lines
      */
     public function toTxRep(string $prefix, array &$lines): void {
-        $lines[$prefix . '.hash'] = TxRepHelper::bytesToHex($this->hash);
+        $lines[$prefix . '.hash'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->hash, 32));
     }
 
     public static function fromTxRep(array $map, string $prefix): XdrLedgerKeyContractCode {
-        $hash = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.hash') ?? '');
+        $hash = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.hash') ?? ''), 32);
         return new XdrLedgerKeyContractCode($hash);
     }
 }

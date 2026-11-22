@@ -52,7 +52,7 @@ class XdrHashIDPreimageContractID {
 
     public function toJsonValue(): array {
         return [
-            'network_id' => XdrJsonHelper::bytesToHex($this->networkID),
+            'network_id' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->networkID, 32)),
             'contract_id_preimage' => $this->contractIDPreimage->toJsonValue(),
         ];
     }
@@ -72,7 +72,7 @@ class XdrHashIDPreimageContractID {
                 'Missing required field network_id for XdrHashIDPreimageContractID'
             );
         }
-        $networkID = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['network_id']);
+        $networkID = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['network_id']);
         if (!array_key_exists('contract_id_preimage', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field contract_id_preimage for XdrHashIDPreimageContractID'

@@ -46,7 +46,7 @@ class XdrLedgerKeyTTL {
 
     public function toJsonValue(): array {
         return [
-            'key_hash' => XdrJsonHelper::bytesToHex($this->keyHash),
+            'key_hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->keyHash, 32)),
         ];
     }
 
@@ -65,7 +65,7 @@ class XdrLedgerKeyTTL {
                 'Missing required field key_hash for XdrLedgerKeyTTL'
             );
         }
-        $keyHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['key_hash']);
+        $keyHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['key_hash']);
         return new static($keyHash);
     }
 
@@ -90,11 +90,11 @@ class XdrLedgerKeyTTL {
      * @param array<string, string> $lines
      */
     public function toTxRep(string $prefix, array &$lines): void {
-        $lines[$prefix . '.keyHash'] = TxRepHelper::bytesToHex($this->keyHash);
+        $lines[$prefix . '.keyHash'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->keyHash, 32));
     }
 
     public static function fromTxRep(array $map, string $prefix): XdrLedgerKeyTTL {
-        $keyHash = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.keyHash') ?? '');
+        $keyHash = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.keyHash') ?? ''), 32);
         return new XdrLedgerKeyTTL($keyHash);
     }
 }

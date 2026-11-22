@@ -68,8 +68,8 @@ class XdrFreezeBypassTxsDelta {
 
     public function toJsonValue(): array {
         return [
-            'add_txs' => array_map(static function ($item) { return XdrJsonHelper::bytesToHex($item); }, $this->addTxs),
-            'remove_txs' => array_map(static function ($item) { return XdrJsonHelper::bytesToHex($item); }, $this->removeTxs),
+            'add_txs' => array_map(static function ($item) { return XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($item, 32)); }, $this->addTxs),
+            'remove_txs' => array_map(static function ($item) { return XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($item, 32)); }, $this->removeTxs),
         ];
     }
 
@@ -93,7 +93,7 @@ class XdrFreezeBypassTxsDelta {
                 throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
             $out = [];
-            foreach ($v as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($item); }
+            foreach ($v as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($item); }
             return $out;
         })($value['add_txs']);
         if (!array_key_exists('remove_txs', $value)) {
@@ -106,7 +106,7 @@ class XdrFreezeBypassTxsDelta {
                 throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
             $out = [];
-            foreach ($v as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($item); }
+            foreach ($v as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($item); }
             return $out;
         })($value['remove_txs']);
         return new static($addTxs, $removeTxs);

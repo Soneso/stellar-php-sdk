@@ -59,7 +59,7 @@ class XdrContractCodeEntry {
     public function toJsonValue(): array {
         return [
             'ext' => $this->ext->toJsonValue(),
-            'hash' => XdrJsonHelper::bytesToHex($this->cHash),
+            'hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->cHash, 32)),
             'code' => $this->code->toJsonValue(),
         ];
     }
@@ -85,7 +85,7 @@ class XdrContractCodeEntry {
                 'Missing required field hash for XdrContractCodeEntry'
             );
         }
-        $cHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['hash']);
+        $cHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['hash']);
         if (!array_key_exists('code', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field code for XdrContractCodeEntry'

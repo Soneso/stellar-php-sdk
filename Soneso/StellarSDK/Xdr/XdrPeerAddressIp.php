@@ -72,8 +72,8 @@ class XdrPeerAddressIp {
 
     public function toJsonValue(): mixed {
         return match ($this->type->getValue()) {
-            XdrIPAddrType::IPv4 => ['i_pv4' => XdrJsonHelper::bytesToHex($this->ipv4)],
-            XdrIPAddrType::IPv6 => ['i_pv6' => XdrJsonHelper::bytesToHex($this->ipv6)],
+            XdrIPAddrType::IPv4 => ['i_pv4' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->ipv4, 4))],
+            XdrIPAddrType::IPv6 => ['i_pv6' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->ipv6, 16))],
             // @codeCoverageIgnoreStart
             default => throw new InvalidArgumentException(
                 'Unknown discriminant for type on XdrIPAddrType'
@@ -99,13 +99,13 @@ class XdrPeerAddressIp {
         }
         $arm = $value[$key];
         return match ($key) {
-            'i_pv4' => (static function () use ($arm) { $r = new static(new XdrIPAddrType(XdrIPAddrType::IPv4)); $r->ipv4 = XdrJsonHelper::hexToBytes((string) $arm); return $r; })(),
-            'i_pv6' => (static function () use ($arm) { $r = new static(new XdrIPAddrType(XdrIPAddrType::IPv6)); $r->ipv6 = XdrJsonHelper::hexToBytes((string) $arm); return $r; })(),
+            'i_pv4' => (static function () use ($arm) { $r = new static(new XdrIPAddrType(XdrIPAddrType::IPv4)); $r->ipv4 = XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes((string) $arm), 4); return $r; })(),
+            'i_pv6' => (static function () use ($arm) { $r = new static(new XdrIPAddrType(XdrIPAddrType::IPv6)); $r->ipv6 = XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes((string) $arm), 16); return $r; })(),
             // Deprecated input aliases: wire names emitted by SDK releases
             // up to 1.11.x. Accepted for compatibility; toJsonValue never
             // emits them.
-            'ipv4' => (static function () use ($arm) { $r = new static(new XdrIPAddrType(XdrIPAddrType::IPv4)); $r->ipv4 = XdrJsonHelper::hexToBytes((string) $arm); return $r; })(),
-            'ipv6' => (static function () use ($arm) { $r = new static(new XdrIPAddrType(XdrIPAddrType::IPv6)); $r->ipv6 = XdrJsonHelper::hexToBytes((string) $arm); return $r; })(),
+            'ipv4' => (static function () use ($arm) { $r = new static(new XdrIPAddrType(XdrIPAddrType::IPv4)); $r->ipv4 = XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes((string) $arm), 4); return $r; })(),
+            'ipv6' => (static function () use ($arm) { $r = new static(new XdrIPAddrType(XdrIPAddrType::IPv6)); $r->ipv6 = XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes((string) $arm), 16); return $r; })(),
             default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrPeerAddressIp: ' . XdrJsonHelper::safePreview($key)
             ),

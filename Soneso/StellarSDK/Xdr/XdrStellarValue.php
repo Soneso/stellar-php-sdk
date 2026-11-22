@@ -73,7 +73,7 @@ class XdrStellarValue {
 
     public function toJsonValue(): array {
         return [
-            'tx_set_hash' => XdrJsonHelper::bytesToHex($this->txSetHash),
+            'tx_set_hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->txSetHash, 32)),
             'close_time' => XdrJsonHelper::uint64ToString($this->closeTime),
             'upgrades' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->upgrades),
             'ext' => $this->ext->toJsonValue(),
@@ -95,7 +95,7 @@ class XdrStellarValue {
                 'Missing required field tx_set_hash for XdrStellarValue'
             );
         }
-        $txSetHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['tx_set_hash']);
+        $txSetHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['tx_set_hash']);
         if (!array_key_exists('close_time', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field close_time for XdrStellarValue'

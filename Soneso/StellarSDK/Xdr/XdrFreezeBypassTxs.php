@@ -54,7 +54,7 @@ class XdrFreezeBypassTxs {
 
     public function toJsonValue(): array {
         return [
-            'tx_hashes' => array_map(static function ($item) { return XdrJsonHelper::bytesToHex($item); }, $this->txHashes),
+            'tx_hashes' => array_map(static function ($item) { return XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($item, 32)); }, $this->txHashes),
         ];
     }
 
@@ -78,7 +78,7 @@ class XdrFreezeBypassTxs {
                 throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
             $out = [];
-            foreach ($v as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($item); }
+            foreach ($v as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($item); }
             return $out;
         })($value['tx_hashes']);
         return new static($txHashes);

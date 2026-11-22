@@ -103,7 +103,7 @@ class XdrTransactionV0Base {
 
     public function toJsonValue(): array {
         return [
-            'source_account_ed25519' => XdrJsonHelper::bytesToHex($this->sourceAccountEd25519),
+            'source_account_ed25519' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->sourceAccountEd25519, 32)),
             'fee' => $this->fee,
             'seq_num' => $this->seqNum->toJsonValue(),
             'time_bounds' => ($this->timeBounds !== null ? $this->timeBounds->toJsonValue() : null),
@@ -131,7 +131,7 @@ class XdrTransactionV0Base {
         if (!is_string($value['source_account_ed25519'])) {
             throw new InvalidArgumentException('Expected hex string for source_account_ed25519, got ' . get_debug_type($value['source_account_ed25519']));
         }
-        $sourceAccountEd25519 = XdrJsonHelper::hexToBytes($value['source_account_ed25519']);
+        $sourceAccountEd25519 = XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($value['source_account_ed25519']), 32);
         if (!is_int($value['fee'])) {
             throw new InvalidArgumentException('Expected int for fee, got ' . get_debug_type($value['fee']));
         }
@@ -175,7 +175,7 @@ class XdrTransactionV0Base {
      * @param array<string, string> $lines
      */
     public function toTxRep(string $prefix, array &$lines): void {
-        $lines[$prefix . '.sourceAccountEd25519'] = TxRepHelper::bytesToHex($this->sourceAccountEd25519);
+        $lines[$prefix . '.sourceAccountEd25519'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->sourceAccountEd25519, 32));
         $lines[$prefix . '.fee'] = (string)$this->fee;
         $this->seqNum->toTxRep($prefix . '.seqNum', $lines);
         if ($this->timeBounds !== null) {
@@ -193,7 +193,7 @@ class XdrTransactionV0Base {
     }
 
     public static function fromTxRep(array $map, string $prefix): static {
-        $sourceAccountEd25519 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.sourceAccountEd25519') ?? '');
+        $sourceAccountEd25519 = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.sourceAccountEd25519') ?? ''), 32);
         $fee = TxRepHelper::parseUint32(TxRepHelper::getValue($map, $prefix . '.fee') ?? '0', $prefix . '.fee');
         $seqNum = XdrSequenceNumber::fromTxRep($map, $prefix . '.seqNum');
         $timeBounds = null;

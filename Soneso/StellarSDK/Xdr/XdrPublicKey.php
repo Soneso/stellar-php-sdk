@@ -106,7 +106,7 @@ class XdrPublicKey {
         $this->type->toTxRep($prefix . '.type', $lines);
         switch ($this->type->getValue()) {
             case XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519:
-                $lines[$prefix . '.ed25519'] = TxRepHelper::bytesToHex($this->ed25519);
+                $lines[$prefix . '.ed25519'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->ed25519, 32));
                 break;
             default:
                 break;
@@ -118,7 +118,7 @@ class XdrPublicKey {
         $result = new XdrPublicKey($disc);
         switch ($result->type->getValue()) {
             case XdrPublicKeyType::PUBLIC_KEY_TYPE_ED25519:
-                $result->ed25519 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.ed25519') ?? '');
+                $result->ed25519 = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.ed25519') ?? ''), 32);
                 break;
             default:
                 break;

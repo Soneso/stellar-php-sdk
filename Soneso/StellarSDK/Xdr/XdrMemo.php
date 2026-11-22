@@ -117,14 +117,14 @@ class XdrMemo {
                         'XdrMemo hash field is null'
                     );
                 }
-                return ['hash' => XdrJsonHelper::bytesToHex($this->hash)];
+                return ['hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->hash, 32))];
             case XdrMemoType::MEMO_RETURN:
                 if ($this->returnHash === null) {
                     throw new InvalidArgumentException(
                         'XdrMemo returnHash field is null'
                     );
                 }
-                return ['return' => XdrJsonHelper::bytesToHex($this->returnHash)];
+                return ['return' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->returnHash, 32))];
             default:
                 throw new InvalidArgumentException(
                     'Unknown XdrMemo discriminant: ' . $this->type->getValue()
@@ -183,7 +183,7 @@ class XdrMemo {
                 );
             }
             $result = new static(new XdrMemoType(XdrMemoType::MEMO_HASH));
-            $result->hash = XdrJsonHelper::hexToBytes($value['hash']);
+            $result->hash = XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($value['hash']), 32);
             return $result;
         }
         if ($key === 'return') {
@@ -193,7 +193,7 @@ class XdrMemo {
                 );
             }
             $result = new static(new XdrMemoType(XdrMemoType::MEMO_RETURN));
-            $result->returnHash = XdrJsonHelper::hexToBytes($value['return']);
+            $result->returnHash = XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($value['return']), 32);
             return $result;
         }
         throw new InvalidArgumentException(
@@ -233,10 +233,10 @@ class XdrMemo {
                 $lines[$prefix . '.id'] = sprintf('%u', $this->id);
                 break;
             case XdrMemoType::MEMO_HASH:
-                $lines[$prefix . '.hash'] = TxRepHelper::bytesToHex($this->hash);
+                $lines[$prefix . '.hash'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->hash, 32));
                 break;
             case XdrMemoType::MEMO_RETURN:
-                $lines[$prefix . '.retHash'] = TxRepHelper::bytesToHex($this->returnHash);
+                $lines[$prefix . '.retHash'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->returnHash, 32));
                 break;
             default:
                 break;
@@ -257,10 +257,10 @@ class XdrMemo {
                 $result->id = TxRepHelper::parseUint64(TxRepHelper::getValue($map, $prefix . '.id') ?? '0', $prefix . '.id');
                 break;
             case XdrMemoType::MEMO_HASH:
-                $result->hash = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.hash') ?? '');
+                $result->hash = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.hash') ?? ''), 32);
                 break;
             case XdrMemoType::MEMO_RETURN:
-                $result->returnHash = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.retHash') ?? '');
+                $result->returnHash = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.retHash') ?? ''), 32);
                 break;
             default:
                 break;

@@ -92,20 +92,21 @@ class Sep51FieldOverridesTest < Minitest::Test
   def test_asset_code_4_to_json_emits_rtrim_then_escape
     override = { asset_code: 4 }
     php = @gen.send(:field_override_to_json_expr, override, '$this->assetCode')
-    assert_equal "XdrJsonHelper::escapeString(rtrim($this->assetCode, \"\\x00\"))", php
+    assert_equal "XdrJsonHelper::escapeString(rtrim(XdrEncoder::checkFixedLength($this->assetCode, 4, true), \"\\x00\"))", php
   end
 
   def test_asset_code_12_to_json_emits_trim_pad_to_5_then_escape
     override = { asset_code: 12 }
     php = @gen.send(:field_override_to_json_expr, override, '$this->assetCode')
-    # The emitted body is a static IIFE that trims, applies the
-    # AssetCode4-vs-AssetCode12 distinguishability pad, and escapes. An
-    # all-NUL code serialises as five escaped NULs via the pad branch,
-    # matching the rs-stellar-xdr reference; no input is rejected.
-    assert_includes php, 'rtrim($bytes, "\\x00")'
+    # The emitted body is a static IIFE that checks the raw width (at most
+    # 12 bytes) before trimming, applies the AssetCode4-vs-AssetCode12
+    # distinguishability pad, and escapes. An all-NUL code serialises as
+    # five escaped NULs via the pad branch, matching the rs-stellar-xdr
+    # reference.
+    assert_includes php, 'rtrim(XdrEncoder::checkFixedLength($bytes, 12, true), "\\x00")'
     assert_includes php, 'str_pad($trimmed, 5, "\\x00", STR_PAD_RIGHT)'
     assert_includes php, 'XdrJsonHelper::escapeString($trimmed)'
-    refute_includes php, 'throw', 'the emit path must serialise every AssetCode12, including all-NUL'
+    refute_includes php, 'throw', 'the emit path must serialise every AssetCode12 up to 12 bytes, including all-NUL'
   end
 
   def test_proc_kind_dispatches_to_lambda

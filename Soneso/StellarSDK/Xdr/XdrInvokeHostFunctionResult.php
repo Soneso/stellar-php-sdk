@@ -75,7 +75,7 @@ class XdrInvokeHostFunctionResult {
 
     public function toJsonValue(): mixed {
         return match ($this->type->getValue()) {
-            XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_SUCCESS => ['success' => XdrJsonHelper::bytesToHex($this->success)],
+            XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_SUCCESS => ['success' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->success, 32))],
             XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_MALFORMED => 'malformed',
             XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_TRAPPED => 'trapped',
             XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED => 'resource_limit_exceeded',
@@ -121,7 +121,7 @@ class XdrInvokeHostFunctionResult {
         }
         $arm = $value[$key];
         return match ($key) {
-            'success' => (static function () use ($arm) { $r = new static(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_SUCCESS)); $r->success = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($arm); return $r; })(),
+            'success' => (static function () use ($arm) { $r = new static(new XdrInvokeHostFunctionResultCode(XdrInvokeHostFunctionResultCode::INVOKE_HOST_FUNCTION_SUCCESS)); $r->success = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($arm); return $r; })(),
             default => throw new InvalidArgumentException(
                 'Unknown arm key for XdrInvokeHostFunctionResult: ' . XdrJsonHelper::safePreview($key)
             ),

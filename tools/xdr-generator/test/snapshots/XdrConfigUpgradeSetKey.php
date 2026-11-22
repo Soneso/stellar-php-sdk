@@ -144,7 +144,7 @@ class XdrConfigUpgradeSetKey {
                 'Missing required field content_hash for XdrConfigUpgradeSetKey'
             );
         }
-        $contentHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['content_hash']);
+        $contentHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['content_hash']);
         $contentHash = bin2hex($contentHash);
         return new static($contractID, $contentHash);
     }

@@ -858,11 +858,12 @@ class Generator < Xdrgen::Generators::Base
     case decl
     when AST::Declarations::Opaque
       if decl.fixed?
-        size = decl.size
+        size = resolve_size(decl)
         render_scalar_typedef(php_name,
           ->(fn) { "XdrEncoder::opaqueFixed($this->#{fn}, #{size})" },
           "$xdr->readOpaqueFixed(#{size})",
-          :opaque)
+          :opaque,
+          fixed_info: { size: size, padded: PADDED_OPAQUE_TYPES.include?(php_name) })
       else
         render_scalar_typedef(php_name,
           ->(fn) { "XdrEncoder::opaqueVariable($this->#{fn})" },
@@ -979,7 +980,7 @@ class Generator < Xdrgen::Generators::Base
   end
 
   # Renders a single-field typedef wrapper class (opaque fixed/variable, string).
-  def render_scalar_typedef(php_name, encode_expr, decode_expr, scalar_kind = :opaque, max = nil)
+  def render_scalar_typedef(php_name, encode_expr, decode_expr, scalar_kind = :opaque, max = nil, fixed_info: nil)
     _, class_name, return_type, new_expr = resolve_class_info(php_name)
     out = open_output_file(class_name)
 
@@ -1020,11 +1021,11 @@ class Generator < Xdrgen::Generators::Base
       if StellarJsonOverrides.has?(php_name)
         render_overridden_sep51_methods(out, php_name, class_name)
       else
-        render_scalar_typedef_sep51_methods(out, php_name, field_name, scalar_kind, bound)
+        render_scalar_typedef_sep51_methods(out, php_name, field_name, scalar_kind, bound, fixed_info)
       end
     end
     if should_generate_txrep?(php_name)
-      render_scalar_typedef_txrep_methods(out, php_name, class_name, return_type, field_name, scalar_kind, bound)
+      render_scalar_typedef_txrep_methods(out, php_name, class_name, return_type, field_name, scalar_kind, bound, fixed_info)
     end
     out.puts "}"
     out.close
@@ -2033,6 +2034,10 @@ class Generator < Xdrgen::Generators::Base
     "XdrSCBytes", "XdrDataValue",
   ].freeze
 
+  # Fixed-length opaque typedefs whose binary encoders right-pad shorter values
+  # with NUL bytes (XdrAssetAlphaNum4, XdrAssetAlphaNum12, XdrAllowTrustOperationAsset).
+  PADDED_OPAQUE_TYPES = Set["XdrAssetCode4", "XdrAssetCode12"].freeze
+
   # Determines whether a field whose php_type is "string" (via TYPE_OVERRIDES)
   # represents binary opaque data. Checks the typespec's resolved typedef name
   # against OPAQUE_STRING_TYPES. Returns true for opaque, false for text strings.
@@ -2160,7 +2165,8 @@ class Generator < Xdrgen::Generators::Base
 
     # Opaque declarations (string in PHP, binary data)
     if decl.is_a?(AST::Declarations::Opaque)
-      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = TxRepHelper::bytesToHex(#{accessor});"
+      checked = field[:storage] ? accessor : fixed_length_check_expr(accessor, fixed_opaque_info_for_decl(decl))
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = TxRepHelper::bytesToHex(#{checked});"
       return
     end
 
@@ -2187,7 +2193,8 @@ class Generator < Xdrgen::Generators::Base
       out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = #{accessor}->toString();"
     when "string"
       if is_opaque_string_field?(field)
-        out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = TxRepHelper::bytesToHex(#{accessor});"
+        checked = field[:storage] ? accessor : fixed_length_check_expr(accessor, fixed_opaque_info_for_decl(field[:decl]))
+        out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = TxRepHelper::bytesToHex(#{checked});"
       else
         out.puts "#{indent}$lines[$prefix . '.#{xdr_name}'] = TxRepHelper::escapeString(#{accessor});"
       end
@@ -2213,8 +2220,9 @@ class Generator < Xdrgen::Generators::Base
     when "BigInteger"
       out.puts "#{indent}$lines[$prefix . '.#{xdr_name}[' . $i . ']'] = #{accessor}->toString();"
     when "string"
-      # For array elements we default to hex (opaque) — text arrays are rare in XDR
-      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}[' . $i . ']'] = TxRepHelper::bytesToHex(#{accessor});"
+      # For array elements we default to hex (opaque); text arrays are rare in XDR.
+      checked = fixed_length_check_expr(accessor, fixed_opaque_info_for_typespec(typespec))
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_name}[' . $i . ']'] = TxRepHelper::bytesToHex(#{checked});"
     else
       # Named XDR type — delegate
       out.puts "#{indent}#{accessor}->toTxRep($prefix . '.#{xdr_name}[' . $i . ']', $lines);"
@@ -2301,7 +2309,9 @@ class Generator < Xdrgen::Generators::Base
 
     # Opaque declarations
     if decl.is_a?(AST::Declarations::Opaque)
-      out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '');"
+      raw = "TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '')"
+      checked = fixed_length_check_expr(raw, fixed_opaque_info_for_decl(decl))
+      out.puts "#{indent}#{target} = #{checked};"
     # String declarations (text)
     elsif decl.is_a?(AST::Declarations::String)
       out.puts "#{indent}#{target} = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '');"
@@ -2331,7 +2341,9 @@ class Generator < Xdrgen::Generators::Base
       out.puts "#{indent}#{target} = #{txrep_integer_from(field[:decl].type, php_type, "$prefix . '.#{xdr_name}'")};"
     when "string"
       if is_opaque_string_field?(field)
-        out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '');"
+        raw = "TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '')"
+        checked = fixed_length_check_expr(raw, fixed_opaque_info_for_decl(field[:decl]))
+        out.puts "#{indent}#{target} = #{checked};"
       else
         out.puts "#{indent}#{target} = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}') ?? '');"
       end
@@ -2359,7 +2371,9 @@ class Generator < Xdrgen::Generators::Base
       out.puts "#{indent}#{target} = #{txrep_integer_from(typespec, element_type, "$prefix . '.#{xdr_name}[' . $i . ']'")};"
     when "string"
       # Array elements default to hex (opaque)
-      out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}[' . $i . ']') ?? '');"
+      raw = "TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_name}[' . $i . ']') ?? '')"
+      checked = fixed_length_check_expr(raw, fixed_opaque_info_for_typespec(typespec))
+      out.puts "#{indent}#{target} = #{checked};"
     else
       # Named XDR type
       out.puts "#{indent}#{target} = #{element_type}::fromTxRep($map, $prefix . '.#{xdr_name}[' . $i . ']');"
@@ -2498,7 +2512,8 @@ class Generator < Xdrgen::Generators::Base
     when :string
       out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::escapeString(#{accessor});"
     when :opaque_fixed
-      out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::bytesToHex(#{accessor});"
+      checked = fixed_length_check_expr(accessor, { size: arm[:fixed_size], padded: false })
+      out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::bytesToHex(#{checked});"
     when :opaque_var
       out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::bytesToHex(#{accessor});"
     when :array
@@ -2553,7 +2568,8 @@ class Generator < Xdrgen::Generators::Base
       out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = #{accessor}->toString();"
     when "string"
       if is_opaque_arm?(arm)
-        out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::bytesToHex(#{accessor});"
+        checked = fixed_length_check_expr(accessor, fixed_opaque_info_for_typespec(arm[:typespec]))
+        out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::bytesToHex(#{checked});"
       else
         out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::escapeString(#{accessor});"
       end
@@ -2577,7 +2593,8 @@ class Generator < Xdrgen::Generators::Base
         out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = #{accessor}->toString();"
       when "string"
         if is_opaque_arm?(arm)
-          out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::bytesToHex(#{accessor});"
+          checked = fixed_length_check_expr(accessor, fixed_opaque_info_for_typespec(arm[:inner_typespec] || arm[:typespec]))
+          out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::bytesToHex(#{checked});"
         else
           out.puts "#{indent}$lines[$prefix . '.#{xdr_field}'] = TxRepHelper::escapeString(#{accessor});"
         end
@@ -2614,7 +2631,9 @@ class Generator < Xdrgen::Generators::Base
       out.puts "#{indent}#{target} = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
       txrep_emit_max_check(out, arm, target, key, indent)
     when :opaque_fixed
-      out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
+      raw = "TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '')"
+      checked = fixed_length_check_expr(raw, { size: arm[:fixed_size], padded: false })
+      out.puts "#{indent}#{target} = #{checked};"
     when :opaque_var
       out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
       txrep_emit_max_check(out, arm, target, key, indent)
@@ -2674,7 +2693,9 @@ class Generator < Xdrgen::Generators::Base
       out.puts "#{indent}#{target} = #{txrep_integer_from(arm[:typespec], php_type, "$prefix . '.#{xdr_field}'")};"
     when "string"
       if is_opaque_arm?(arm)
-        out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
+        raw = "TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '')"
+        checked = fixed_length_check_expr(raw, fixed_opaque_info_for_typespec(arm[:typespec]))
+        out.puts "#{indent}#{target} = #{checked};"
       else
         out.puts "#{indent}#{target} = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
       end
@@ -2698,7 +2719,9 @@ class Generator < Xdrgen::Generators::Base
         out.puts "#{indent}#{target} = #{txrep_integer_from(arm[:inner_typespec] || arm[:typespec], inner_type, "$prefix . '.#{xdr_field}'")};"
       when "string"
         if is_opaque_arm?(arm)
-          out.puts "#{indent}#{target} = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
+          raw = "TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '')"
+          checked = fixed_length_check_expr(raw, fixed_opaque_info_for_typespec(arm[:inner_typespec] || arm[:typespec]))
+          out.puts "#{indent}#{target} = #{checked};"
         else
           out.puts "#{indent}#{target} = TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix . '.#{xdr_field}') ?? '');"
         end
@@ -2712,7 +2735,7 @@ class Generator < Xdrgen::Generators::Base
   # Uses the arm's typespec to check against OPAQUE_STRING_TYPES and the
   # typedef chain, similar to is_opaque_string_field? for struct fields.
   def is_opaque_arm?(arm)
-    typespec = arm[:typespec]
+    typespec = arm[:inner_typespec] || arm[:typespec]
     return false unless typespec.is_a?(AST::Typespecs::Simple)
 
     resolved = typespec.resolved_type
@@ -2789,8 +2812,12 @@ class Generator < Xdrgen::Generators::Base
     when "BigInteger"
       out.puts "        $lines[$prefix] = $this->#{field_name}->toString();"
     when "string"
-      # Simple typedef wrapping string — treat as text (escapeString)
-      out.puts "        $lines[$prefix] = TxRepHelper::escapeString($this->#{field_name});"
+      if (info = fixed_opaque_info_for_typespec(typespec))
+        out.puts "        $lines[$prefix] = TxRepHelper::bytesToHex(#{fixed_length_check_expr("$this->#{field_name}", info)});"
+      else
+        # Simple typedef wrapping string: treat as text (escapeString)
+        out.puts "        $lines[$prefix] = TxRepHelper::escapeString($this->#{field_name});"
+      end
     else
       # Named XDR type — delegate to inner type's toTxRep
       out.puts "        $this->#{field_name}->toTxRep($prefix, $lines);"
@@ -2807,7 +2834,12 @@ class Generator < Xdrgen::Generators::Base
     when "BigInteger"
       out.puts "        return new #{decode_class}(#{txrep_integer_from(typespec, php_type, "$prefix")});"
     when "string"
-      render_txrep_typedef_return(out, decode_class, "TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix) ?? '')", bound)
+      if (info = fixed_opaque_info_for_typespec(typespec))
+        read_expr = fixed_length_check_expr("TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix) ?? '')", info)
+      else
+        read_expr = "TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix) ?? '')"
+      end
+      render_txrep_typedef_return(out, decode_class, read_expr, bound)
     else
       # Named XDR type — delegate to inner type's fromTxRep
       out.puts "        return new #{decode_class}(#{php_type}::fromTxRep($map, $prefix));"
@@ -2827,7 +2859,7 @@ class Generator < Xdrgen::Generators::Base
   end
 
   # Scalar typedef TxRep: opaque (hex) or string (escape) wrapper.
-  def render_scalar_typedef_txrep_methods(out, php_name, class_name, return_type, field_name, scalar_kind, bound)
+  def render_scalar_typedef_txrep_methods(out, php_name, class_name, return_type, field_name, scalar_kind, bound, fixed_info = nil)
     is_base = BASE_WRAPPER_TYPES.include?(php_name)
     decode_class = is_base ? "static" : class_name
 
@@ -2835,7 +2867,7 @@ class Generator < Xdrgen::Generators::Base
     render_to_txrep_signature(out)
     case scalar_kind
     when :opaque
-      out.puts "        $lines[$prefix] = TxRepHelper::bytesToHex($this->#{field_name});"
+      out.puts "        $lines[$prefix] = TxRepHelper::bytesToHex(#{fixed_length_check_expr("$this->#{field_name}", fixed_info)});"
     when :string
       out.puts "        $lines[$prefix] = TxRepHelper::escapeString($this->#{field_name});"
     end
@@ -2843,8 +2875,13 @@ class Generator < Xdrgen::Generators::Base
 
     out.puts ""
     out.puts "    public static function fromTxRep(array $map, string $prefix): #{return_type} {"
-    reader = scalar_kind == :opaque ? 'TxRepHelper::hexToBytes' : 'TxRepHelper::unescapeString'
-    render_txrep_typedef_return(out, decode_class, "#{reader}(TxRepHelper::getValue($map, $prefix) ?? '')", bound)
+    read_expr =
+      if scalar_kind == :opaque
+        fixed_length_check_expr("TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix) ?? '')", fixed_info)
+      else
+        "TxRepHelper::unescapeString(TxRepHelper::getValue($map, $prefix) ?? '')"
+      end
+    render_txrep_typedef_return(out, decode_class, read_expr, bound)
     out.puts "    }"
   end
 
@@ -2873,7 +2910,8 @@ class Generator < Xdrgen::Generators::Base
     when "BigInteger"
       out.puts "            $lines[$prefix . '[' . $i . ']'] = #{accessor}->toString();"
     when "string"
-      out.puts "            $lines[$prefix . '[' . $i . ']'] = TxRepHelper::bytesToHex(#{accessor});"
+      checked = fixed_length_check_expr(accessor, fixed_opaque_info_for_typespec(decl.type))
+      out.puts "            $lines[$prefix . '[' . $i . ']'] = TxRepHelper::bytesToHex(#{checked});"
     else
       if TXREP_COMPACT_TYPES.key?(element_type)
         fmt = TXREP_COMPACT_TYPES[element_type][:format]
@@ -2905,7 +2943,9 @@ class Generator < Xdrgen::Generators::Base
     when "BigInteger"
       out.puts "            $#{field_name}[] = #{txrep_integer_from(decl.type, element_type, "$prefix . '[' . $i . ']'")};"
     when "string"
-      out.puts "            $#{field_name}[] = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '[' . $i . ']') ?? '');"
+      raw = "TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '[' . $i . ']') ?? '')"
+      checked = fixed_length_check_expr(raw, fixed_opaque_info_for_typespec(decl.type))
+      out.puts "            $#{field_name}[] = #{checked};"
     else
       if TXREP_COMPACT_TYPES.key?(element_type)
         parse = TXREP_COMPACT_TYPES[element_type][:parse]
@@ -3348,12 +3388,13 @@ class Generator < Xdrgen::Generators::Base
       element_type = php_type_for_typespec(element_typespec)
       array_to_json_expr(accessor, element_type, element_typespec, field[:elements_optional])
     when AST::Declarations::Opaque
-      bytes_to_json_expr(accessor)
+      checked = field[:storage] ? accessor : fixed_length_check_expr(accessor, fixed_opaque_info_for_decl(decl))
+      bytes_to_json_expr(checked)
     when AST::Declarations::String
       "XdrJsonHelper::escapeString(#{accessor})"
     else
       typespec = decl.respond_to?(:type) ? decl.type : nil
-      simple_value_to_json_expr(field[:php_type], typespec, accessor)
+      simple_value_to_json_expr(field[:php_type], typespec, accessor, skip_fixed_check: !field[:storage].nil?)
     end
   end
 
@@ -3396,16 +3437,16 @@ class Generator < Xdrgen::Generators::Base
     width = override[:asset_code]
     case width
     when 4
-      # AssetCode4: trim trailing \x00, then SEP-51-escape.
-      "XdrJsonHelper::escapeString(rtrim(#{accessor}, \"\\x00\"))"
+      # AssetCode4: check width (at most 4 bytes), trim trailing \x00, then SEP-51-escape.
+      "XdrJsonHelper::escapeString(rtrim(XdrEncoder::checkFixedLength(#{accessor}, 4, true), \"\\x00\"))"
     when 12
-      # AssetCode12: trim trailing \x00; if trimmed length <= 4, right-pad
-      # with \x00 to exactly 5 (preserves AssetCode4 vs AssetCode12
-      # distinguishability per SEP-51 spec); if 5..12, leave as-is. An
-      # all-NUL code therefore serialises as five escaped NULs
-      # ("\0\0\0\0\0"), matching the rs-stellar-xdr reference. Then escape.
+      # AssetCode12: check width (at most 12 bytes), trim trailing \x00; if trimmed
+      # length <= 4, right-pad with \x00 to exactly 5 (preserves AssetCode4 vs
+      # AssetCode12 distinguishability per SEP-51 spec); if 5..12, leave as-is. An
+      # all-NUL code therefore serialises as five escaped NULs ("\0\0\0\0\0"),
+      # matching the rs-stellar-xdr reference. Then escape.
       "(static function (string $bytes): string {\n" +
-      "            $trimmed = rtrim($bytes, \"\\x00\");\n" +
+      "            $trimmed = rtrim(XdrEncoder::checkFixedLength($bytes, 12, true), \"\\x00\");\n" +
       "            if (strlen($trimmed) <= 4) {\n" +
       "                $trimmed = str_pad($trimmed, 5, \"\\x00\", STR_PAD_RIGHT);\n" +
       "            }\n" +
@@ -3513,7 +3554,8 @@ class Generator < Xdrgen::Generators::Base
     target = "$#{field[:name]}"
     kind, expected, expression = case key
     when 'fee' then ['int', 'int', source]
-    when 'source_account_ed25519' then ['string', 'hex string', "XdrJsonHelper::hexToBytes(#{source})"]
+    when 'source_account_ed25519'
+      ['string', 'hex string', fixed_length_check_expr("XdrJsonHelper::hexToBytes(#{source})", fixed_opaque_info_for_decl(field[:decl]))]
     when 'data_name' then ['string', 'string', "XdrJsonHelper::unescapeString(#{source})"]
     when 'data_value' then ['string', 'hex string or null', "XdrJsonHelper::hexToBytes(#{source})"]
     when 'min_time', 'max_time' then ['uint64', 'uint64 JSON value (string or int)', "XdrJsonHelper::stringToUint64(#{source})"]
@@ -3574,7 +3616,9 @@ class Generator < Xdrgen::Generators::Base
       out.puts "#{indent}if (!is_string(#{json_lookup})) {"
       out.puts "#{indent}    throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type(#{json_lookup}));"
       out.puts "#{indent}}"
-      out.puts "#{indent}#{target} = XdrJsonHelper::hexToBytes(#{json_lookup});"
+      raw = "XdrJsonHelper::hexToBytes(#{json_lookup})"
+      checked = fixed_length_check_expr(raw, fixed_opaque_info_for_decl(decl))
+      out.puts "#{indent}#{target} = #{checked};"
       out.puts "#{indent}#{check}" if check
     when AST::Declarations::String
       out.puts "#{indent}if (!is_string(#{json_lookup})) {"
@@ -3862,7 +3906,9 @@ class Generator < Xdrgen::Generators::Base
     case arm[:encode_style]
     when :string
       "XdrJsonHelper::escapeString(#{accessor})"
-    when :opaque_fixed, :opaque_var
+    when :opaque_fixed
+      bytes_to_json_expr(fixed_length_check_expr(accessor, { size: arm[:fixed_size], padded: false }))
+    when :opaque_var
       bytes_to_json_expr(accessor)
     when :array
       array_to_json_expr(accessor, arm[:element_type], arm[:element_typespec], false)
@@ -4057,8 +4103,9 @@ class Generator < Xdrgen::Generators::Base
     "(static function () use ($arm) { $r = #{constructor}; $r->#{arm[:field_name]} = #{parse_expr}; #{check}return $r; })()"
   end
 
-  # The check of a string or opaque arm read from JSON, followed by a space;
-  # array arms are checked in their reader, typedef-typed arms in the typedef reader.
+  # The maximum-length check of a string or variable-opaque arm read from JSON,
+  # followed by a space; fixed-opaque arms are checked in union_arm_from_json_expr,
+  # array arms in their reader, and typedef-typed arms in the typedef reader.
   def union_arm_json_check(arm)
     return '' unless %i[string opaque_var].include?(arm[:decode_style])
     check = max_length_check(arm, "$r->#{arm[:field_name]}", "'#{arm[:label]}'")
@@ -4119,7 +4166,9 @@ class Generator < Xdrgen::Generators::Base
     case arm[:decode_style]
     when :string
       "XdrJsonHelper::unescapeString((string) #{source})"
-    when :opaque_fixed, :opaque_var
+    when :opaque_fixed
+      fixed_length_check_expr("XdrJsonHelper::hexToBytes((string) #{source})", { size: arm[:fixed_size], padded: false })
+    when :opaque_var
       "XdrJsonHelper::hexToBytes((string) #{source})"
     when :array
       array_from_json_expr(source, arm[:element_type], arm[:element_typespec], arm)
@@ -4206,12 +4255,12 @@ class Generator < Xdrgen::Generators::Base
 
   # Render SEP-51 methods for a scalar typedef wrapper (opaque or string).
   # scalar_kind is :opaque (hex form) or :string (escaped-ASCII form).
-  def render_scalar_typedef_sep51_methods(out, php_name, field_name, scalar_kind, bound)
+  def render_scalar_typedef_sep51_methods(out, php_name, field_name, scalar_kind, bound, fixed_info = nil)
     out.puts ""
     out.puts "    public function toJsonValue(): string {"
     case scalar_kind
     when :opaque
-      out.puts "        return XdrJsonHelper::bytesToHex($this->#{field_name});"
+      out.puts "        return XdrJsonHelper::bytesToHex(#{fixed_length_check_expr("$this->#{field_name}", fixed_info)});"
     when :string
       out.puts "        return XdrJsonHelper::escapeString($this->#{field_name});"
     end
@@ -4224,14 +4273,19 @@ class Generator < Xdrgen::Generators::Base
     out.puts "                'Expected string for #{php_name} JSON value, got ' . get_debug_type($value)"
     out.puts "            );"
     out.puts "        }"
-    reader = scalar_kind == :opaque ? 'XdrJsonHelper::hexToBytes' : 'XdrJsonHelper::unescapeString'
+    read_expr =
+      if scalar_kind == :opaque
+        fixed_length_check_expr('XdrJsonHelper::hexToBytes($value)', fixed_info)
+      else
+        'XdrJsonHelper::unescapeString($value)'
+      end
     check = max_length_check(bound, '$bytes', "'#{php_name}'")
     if check
-      out.puts "        $bytes = #{reader}($value);"
+      out.puts "        $bytes = #{read_expr};"
       out.puts "        #{check}"
       out.puts "        return new static($bytes);"
     else
-      out.puts "        return new static(#{reader}($value));"
+      out.puts "        return new static(#{read_expr});"
     end
     out.puts "    }"
 
@@ -4303,7 +4357,7 @@ class Generator < Xdrgen::Generators::Base
   # Build the to-JSON expression for a typed primitive or named-XDR value.
   # Bool stays bool; int32/uint32 stay raw int; int64/uint64 emit base-10
   # string; named types delegate to their own toJsonValue.
-  def simple_value_to_json_expr(php_type, typespec, accessor)
+  def simple_value_to_json_expr(php_type, typespec, accessor, skip_fixed_check: false)
     # BigInteger short-circuits the typespec path because the underlying
     # storage is a phpseclib3 BigInteger, not a PHP int. The wire form is
     # the base-10 string `BigInteger::toString()` produces, which matches the
@@ -4327,7 +4381,7 @@ class Generator < Xdrgen::Generators::Base
       # at the leaf if the chain bottoms out there; otherwise as the
       # underlying primitive's wire form.
       typedef_form = resolve_typedef_json_form(typespec)
-      return typedef_form_to_json_expr(typedef_form, accessor) if typedef_form
+      return typedef_form_to_json_expr(typedef_form, accessor, skip_fixed_check: skip_fixed_check) if typedef_form
     end
 
     case php_type
@@ -4493,16 +4547,17 @@ class Generator < Xdrgen::Generators::Base
     resolved = typespec.resolved_type
     return nil unless resolved.is_a?(AST::Definitions::Typedef)
     return nil unless TYPE_OVERRIDES.key?(name(resolved))
-    form = resolve_typedef_json_form_inner(resolved.declaration)
+    padded = PADDED_OPAQUE_TYPES.include?(name(resolved))
+    form = resolve_typedef_json_form_inner(resolved.declaration, padded: padded)
     form && form.merge(name: name(resolved))
   end
 
   # :hex_variable and :string forms carry the declared maximum as :max.
-  def resolve_typedef_json_form_inner(decl)
+  def resolve_typedef_json_form_inner(decl, padded: false)
     case decl
     when AST::Declarations::Opaque
       if decl.fixed?
-        { kind: :hex_fixed, size: resolve_size(decl) }
+        { kind: :hex_fixed, size: resolve_size(decl), padded: padded }
       else
         { kind: :hex_variable, max: declared_max(decl) }
       end
@@ -4514,15 +4569,19 @@ class Generator < Xdrgen::Generators::Base
       width = primitive_width(ut)
       return { kind: :primitive, width: width } if width
       if ut.is_a?(AST::Typespecs::Simple) && ut.resolved_type.is_a?(AST::Definitions::Typedef)
-        return resolve_typedef_json_form_inner(ut.resolved_type.declaration)
+        next_padded = padded || PADDED_OPAQUE_TYPES.include?(name(ut.resolved_type))
+        return resolve_typedef_json_form_inner(ut.resolved_type.declaration, padded: next_padded)
       end
       nil
     end
   end
 
-  def typedef_form_to_json_expr(form, accessor)
+  def typedef_form_to_json_expr(form, accessor, skip_fixed_check: false)
     case form[:kind]
-    when :hex_fixed, :hex_variable
+    when :hex_fixed
+      checked = skip_fixed_check ? accessor : fixed_length_check_expr(accessor, { size: form[:size], padded: form[:padded] })
+      bytes_to_json_expr(checked)
+    when :hex_variable
       bytes_to_json_expr(accessor)
     when :string
       "XdrJsonHelper::escapeString(#{accessor})"
@@ -4542,7 +4601,10 @@ class Generator < Xdrgen::Generators::Base
     check = max_length_check({ max_length: form[:max] }, '$bytes', "'#{form[:name]}'")
     result = ->(read) { check ? "$bytes = #{read}; #{check} return $bytes;" : "return #{read};" }
     case form[:kind]
-    when :hex_fixed, :hex_variable
+    when :hex_fixed
+      read = fixed_length_check_expr('XdrJsonHelper::hexToBytes($v)', { size: form[:size], padded: form[:padded] })
+      "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return #{read}; })(#{source})"
+    when :hex_variable
       "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } #{result.call('XdrJsonHelper::hexToBytes($v)')} })(#{source})"
     when :string
       "(static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected string JSON value, got ' . get_debug_type($v)); } #{result.call('XdrJsonHelper::unescapeString($v)')} })(#{source})"
@@ -4894,16 +4956,43 @@ class Generator < Xdrgen::Generators::Base
     max && "XdrEncoder::assertMaxLength(strlen(#{item}), #{max}, '#{label}[]');"
   end
 
-  # Returns the fixed size N when typespec is a typedef that wraps opaque[N],
-  # otherwise returns nil. Ported from the Flutter generator.
-  def fixed_opaque_typedef_size(typespec)
+  # Returns { size: N, padded: bool } when typespec resolves through any number
+  # of typedef hops to opaque[N], otherwise nil. padded is true when any typedef
+  # along the chain is in PADDED_OPAQUE_TYPES (AssetCode4, AssetCode12).
+  def fixed_opaque_info_for_typespec(typespec, padded: false)
     return nil unless typespec.is_a?(AST::Typespecs::Simple)
     return nil unless typespec.respond_to?(:resolved_type)
     resolved = typespec.resolved_type
     return nil unless resolved.is_a?(AST::Definitions::Typedef)
+
+    padded ||= PADDED_OPAQUE_TYPES.include?(name(resolved))
     decl = resolved.declaration
-    return nil unless decl.is_a?(AST::Declarations::Opaque) && decl.fixed?
-    resolve_size(decl)
+    if decl.is_a?(AST::Declarations::Opaque)
+      return decl.fixed? ? { size: resolve_size(decl), padded: padded } : nil
+    end
+    return nil unless decl.respond_to?(:type)
+    fixed_opaque_info_for_typespec(decl.type, padded: padded)
+  end
+
+  # Returns { size: N, padded: bool } for an AST declaration (inline opaque[N]
+  # or a typedef chain to opaque[N]), otherwise nil.
+  def fixed_opaque_info_for_decl(decl)
+    if decl.is_a?(AST::Declarations::Opaque)
+      return decl.fixed? ? { size: resolve_size(decl), padded: false } : nil
+    end
+    return nil unless decl.respond_to?(:type)
+    fixed_opaque_info_for_typespec(decl.type)
+  end
+
+  # Wraps a PHP byte-string expression in XdrEncoder::checkFixedLength when
+  # info is present; returns expr unchanged when info is nil.
+  def fixed_length_check_expr(expr, info)
+    return expr unless info
+    if info[:padded]
+      "XdrEncoder::checkFixedLength(#{expr}, #{info[:size]}, true)"
+    else
+      "XdrEncoder::checkFixedLength(#{expr}, #{info[:size]})"
+    end
   end
 
   # Generate a field name from class name for typedefs

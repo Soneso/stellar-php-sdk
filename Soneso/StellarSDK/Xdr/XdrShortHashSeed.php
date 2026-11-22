@@ -46,7 +46,7 @@ class XdrShortHashSeed {
 
     public function toJsonValue(): array {
         return [
-            'seed' => XdrJsonHelper::bytesToHex($this->seed),
+            'seed' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->seed, 16)),
         ];
     }
 
@@ -68,7 +68,7 @@ class XdrShortHashSeed {
         if (!is_string($value['seed'])) {
             throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($value['seed']));
         }
-        $seed = XdrJsonHelper::hexToBytes($value['seed']);
+        $seed = XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($value['seed']), 16);
         return new static($seed);
     }
 

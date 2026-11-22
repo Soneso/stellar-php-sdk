@@ -567,7 +567,7 @@ class TxRepHelper
      *
      * @param XdrAsset $asset The XDR asset.
      * @return string The TxRep asset string.
-     * @throws InvalidArgumentException For unsupported asset types.
+     * @throws InvalidArgumentException For unsupported asset types or an asset code longer than 4 or 12 bytes.
      */
     public static function formatAsset(XdrAsset $asset): string
     {
@@ -580,14 +580,14 @@ class TxRepHelper
                 if ($a4 === null) {
                     throw new InvalidArgumentException('Missing alphaNum4 in asset');
                 }
-                return self::assetCodeFromString($a4->getAssetCode()) . ':' . $a4->getIssuer()->getAccountId();
+                return self::assetCodeFromString($a4->getAssetCode(), 4) . ':' . $a4->getIssuer()->getAccountId();
 
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
                 $a12 = $asset->getAlphaNum12();
                 if ($a12 === null) {
                     throw new InvalidArgumentException('Missing alphaNum12 in asset');
                 }
-                return self::assetCodeFromString($a12->getAssetCode()) . ':' . $a12->getIssuer()->getAccountId();
+                return self::assetCodeFromString($a12->getAssetCode(), 12) . ':' . $a12->getIssuer()->getAccountId();
 
             default:
                 throw new InvalidArgumentException(
@@ -654,7 +654,7 @@ class TxRepHelper
      *
      * @param XdrChangeTrustAsset $asset The XDR change-trust asset.
      * @return string The TxRep asset string.
-     * @throws InvalidArgumentException For pool share or unsupported asset types.
+     * @throws InvalidArgumentException For pool share or unsupported asset types, or an asset code longer than 4 or 12 bytes.
      */
     public static function formatChangeTrustAsset(XdrChangeTrustAsset $asset): string
     {
@@ -667,14 +667,14 @@ class TxRepHelper
                 if ($a4 === null) {
                     throw new InvalidArgumentException('Missing alphaNum4 in change trust asset');
                 }
-                return self::assetCodeFromString($a4->getAssetCode()) . ':' . $a4->getIssuer()->getAccountId();
+                return self::assetCodeFromString($a4->getAssetCode(), 4) . ':' . $a4->getIssuer()->getAccountId();
 
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
                 $a12 = $asset->getAlphaNum12();
                 if ($a12 === null) {
                     throw new InvalidArgumentException('Missing alphaNum12 in change trust asset');
                 }
-                return self::assetCodeFromString($a12->getAssetCode()) . ':' . $a12->getIssuer()->getAccountId();
+                return self::assetCodeFromString($a12->getAssetCode(), 12) . ':' . $a12->getIssuer()->getAccountId();
 
             case XdrAssetType::ASSET_TYPE_POOL_SHARE:
                 throw new InvalidArgumentException(
@@ -750,7 +750,7 @@ class TxRepHelper
      *
      * @param XdrTrustlineAsset $asset The XDR trustline asset.
      * @return string The TxRep asset string.
-     * @throws InvalidArgumentException For unsupported asset types.
+     * @throws InvalidArgumentException For unsupported asset types, an asset code longer than 4 or 12 bytes, or a pool ID that is not 32 bytes.
      */
     public static function formatTrustlineAsset(XdrTrustlineAsset $asset): string
     {
@@ -763,21 +763,21 @@ class TxRepHelper
                 if ($a4 === null) {
                     throw new InvalidArgumentException('Missing alphaNum4 in trustline asset');
                 }
-                return self::assetCodeFromString($a4->getAssetCode()) . ':' . $a4->getIssuer()->getAccountId();
+                return self::assetCodeFromString($a4->getAssetCode(), 4) . ':' . $a4->getIssuer()->getAccountId();
 
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
                 $a12 = $asset->getAlphaNum12();
                 if ($a12 === null) {
                     throw new InvalidArgumentException('Missing alphaNum12 in trustline asset');
                 }
-                return self::assetCodeFromString($a12->getAssetCode()) . ':' . $a12->getIssuer()->getAccountId();
+                return self::assetCodeFromString($a12->getAssetCode(), 12) . ':' . $a12->getIssuer()->getAccountId();
 
             case XdrAssetType::ASSET_TYPE_POOL_SHARE:
                 $poolId = $asset->getLiquidityPoolID();
                 if ($poolId === null) {
                     throw new InvalidArgumentException('Missing liquidityPoolID in pool share trustline asset');
                 }
-                return bin2hex($poolId);
+                return bin2hex(XdrEncoder::checkFixedLength($poolId, 32));
 
             default:
                 throw new InvalidArgumentException(
@@ -968,7 +968,7 @@ class TxRepHelper
      *
      * @param XdrAllowTrustOperationAsset $asset The XDR allow-trust asset.
      * @return string The asset code string.
-     * @throws InvalidArgumentException For unsupported asset types.
+     * @throws InvalidArgumentException For unsupported asset types or an asset code longer than 4 or 12 bytes.
      */
     public static function formatAllowTrustAsset(XdrAllowTrustOperationAsset $asset): string
     {
@@ -978,14 +978,14 @@ class TxRepHelper
                 if ($code === null) {
                     throw new InvalidArgumentException('Missing assetCode4 in allow trust asset');
                 }
-                return self::assetCodeFromString($code);
+                return self::assetCodeFromString($code, 4);
 
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
                 $code = $asset->getAssetCode12();
                 if ($code === null) {
                     throw new InvalidArgumentException('Missing assetCode12 in allow trust asset');
                 }
-                return self::assetCodeFromString($code);
+                return self::assetCodeFromString($code, 12);
 
             default:
                 throw new InvalidArgumentException(
@@ -1035,14 +1035,16 @@ class TxRepHelper
      *
      * XDR stores asset codes as null-padded fixed-length fields. The PHP SDK's
      * XdrBuffer::readOpaqueFixedString() strips trailing nulls when decoding, but
-     * raw binary fields may still contain them. This method ensures trailing null
-     * bytes are removed.
+     * raw binary fields may still contain them. This method verifies the raw value
+     * fits within the declared fixed width before removing trailing null bytes.
      *
      * @param string $code Raw asset code string (may have trailing null bytes).
+     * @param int $expectedLength Fixed byte width declared by the XDR asset code type (4 or 12).
      * @return string Clean asset code without trailing nulls.
+     * @throws InvalidArgumentException If $code exceeds $expectedLength bytes.
      */
-    private static function assetCodeFromString(string $code): string
+    private static function assetCodeFromString(string $code, int $expectedLength): string
     {
-        return rtrim($code, "\x00");
+        return rtrim(XdrEncoder::checkFixedLength($code, $expectedLength, true), "\x00");
     }
 }

@@ -105,7 +105,7 @@ class XdrInnerTransactionResultPair {
                 'Missing required field transaction_hash for XdrInnerTransactionResultPair'
             );
         }
-        $transactionHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['transaction_hash']);
+        $transactionHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['transaction_hash']);
         $transactionHash = bin2hex($transactionHash);
         if (!array_key_exists('result', $value)) {
             throw new InvalidArgumentException(

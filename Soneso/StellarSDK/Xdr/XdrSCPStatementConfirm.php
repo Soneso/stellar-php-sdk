@@ -74,7 +74,7 @@ class XdrSCPStatementConfirm {
             'n_prepared' => $this->nPrepared,
             'n_commit' => $this->nCommit,
             'n_h' => $this->nH,
-            'quorum_set_hash' => XdrJsonHelper::bytesToHex($this->quorumSetHash),
+            'quorum_set_hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->quorumSetHash, 32)),
         ];
     }
 
@@ -117,7 +117,7 @@ class XdrSCPStatementConfirm {
                 'Missing required field quorum_set_hash for XdrSCPStatementConfirm'
             );
         }
-        $quorumSetHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['quorum_set_hash']);
+        $quorumSetHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['quorum_set_hash']);
         return new static($ballot, $nPrepared, $nCommit, $nH, $quorumSetHash);
     }
 

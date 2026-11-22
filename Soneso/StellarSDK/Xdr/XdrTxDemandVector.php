@@ -52,7 +52,7 @@ class XdrTxDemandVector {
     }
 
     public function toJsonValue(): array {
-        return array_map(static function ($item) { return XdrJsonHelper::bytesToHex($item); }, $this->txDemandVector);
+        return array_map(static function ($item) { return XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($item, 32)); }, $this->txDemandVector);
     }
 
     public static function fromJsonValue(mixed $value): static {
@@ -63,7 +63,7 @@ class XdrTxDemandVector {
         }
         XdrEncoder::assertMaxLength(count($value), 1000, 'XdrTxDemandVector');
         $out = [];
-        foreach ($value as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($item); }
+        foreach ($value as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($item); }
         return new static($out);
     }
 

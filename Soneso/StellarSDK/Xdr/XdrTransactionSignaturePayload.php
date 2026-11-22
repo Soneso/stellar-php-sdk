@@ -52,7 +52,7 @@ class XdrTransactionSignaturePayload {
 
     public function toJsonValue(): array {
         return [
-            'network_id' => XdrJsonHelper::bytesToHex($this->networkId),
+            'network_id' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->networkId, 32)),
             'tagged_transaction' => $this->taggedTransaction->toJsonValue(),
         ];
     }
@@ -72,7 +72,7 @@ class XdrTransactionSignaturePayload {
                 'Missing required field network_id for XdrTransactionSignaturePayload'
             );
         }
-        $networkId = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['network_id']);
+        $networkId = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['network_id']);
         if (!array_key_exists('tagged_transaction', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field tagged_transaction for XdrTransactionSignaturePayload'

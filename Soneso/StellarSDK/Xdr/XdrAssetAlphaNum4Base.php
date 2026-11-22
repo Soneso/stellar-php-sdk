@@ -52,7 +52,7 @@ class XdrAssetAlphaNum4Base {
 
     public function toJsonValue(): array {
         return [
-            'asset_code' => XdrJsonHelper::escapeString(rtrim($this->assetCode, "\x00")),
+            'asset_code' => XdrJsonHelper::escapeString(rtrim(XdrEncoder::checkFixedLength($this->assetCode, 4, true), "\x00")),
             'issuer' => $this->issuer->toJsonValue(),
         ];
     }
@@ -114,12 +114,12 @@ class XdrAssetAlphaNum4Base {
      * @param array<string, string> $lines
      */
     public function toTxRep(string $prefix, array &$lines): void {
-        $lines[$prefix . '.assetCode'] = TxRepHelper::bytesToHex($this->assetCode);
+        $lines[$prefix . '.assetCode'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->assetCode, 4, true));
         $lines[$prefix . '.issuer'] = TxRepHelper::formatAccountId($this->issuer);
     }
 
     public static function fromTxRep(array $map, string $prefix): static {
-        $assetCode = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.assetCode') ?? '');
+        $assetCode = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.assetCode') ?? ''), 4, true);
         $issuer = TxRepHelper::parseAccountId(TxRepHelper::getValue($map, $prefix . '.issuer') ?? '');
         return new static($assetCode, $issuer);
     }

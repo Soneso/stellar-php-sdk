@@ -80,21 +80,21 @@ class XdrAllowTrustOperationAssetBase {
                         'XdrAllowTrustOperationAsset assetCode4 field is null'
                     );
                 }
-                // AssetCode4: rtrim trailing \x00 then SEP-51 escape.
-                return XdrJsonHelper::escapeString(rtrim($this->assetCode4, "\x00"));
+                // AssetCode4: check width (at most 4 bytes), rtrim trailing \x00 then SEP-51 escape.
+                return XdrJsonHelper::escapeString(rtrim(XdrEncoder::checkFixedLength($this->assetCode4, 4, true), "\x00"));
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
                 if ($this->assetCode12 === null) {
                     throw new InvalidArgumentException(
                         'XdrAllowTrustOperationAsset assetCode12 field is null'
                     );
                 }
-                // AssetCode12: rtrim trailing \x00; if the trimmed
-                // length <= 4 right-pad to exactly 5 (preserves
+                // AssetCode12: check width (at most 12 bytes), rtrim trailing \x00;
+                // if the trimmed length <= 4 right-pad to exactly 5 (preserves
                 // AssetCode4-vs-AssetCode12 distinguishability per
                 // SEP-0051 §"Asset Code Types"; an all-NUL code
                 // serialises as five escaped NULs, matching the
                 // rs-stellar-xdr reference).
-                $trimmed = rtrim($this->assetCode12, "\x00");
+                $trimmed = rtrim(XdrEncoder::checkFixedLength($this->assetCode12, 12, true), "\x00");
                 if (strlen($trimmed) <= 4) {
                     $trimmed = str_pad($trimmed, 5, "\x00", STR_PAD_RIGHT);
                 }
@@ -170,10 +170,10 @@ class XdrAllowTrustOperationAssetBase {
         $this->type->toTxRep($prefix . '.type', $lines);
         switch ($this->type->getValue()) {
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4:
-                $lines[$prefix . '.assetCode4'] = TxRepHelper::bytesToHex($this->assetCode4);
+                $lines[$prefix . '.assetCode4'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->assetCode4, 4, true));
                 break;
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
-                $lines[$prefix . '.assetCode12'] = TxRepHelper::bytesToHex($this->assetCode12);
+                $lines[$prefix . '.assetCode12'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->assetCode12, 12, true));
                 break;
             default:
                 break;
@@ -185,10 +185,10 @@ class XdrAllowTrustOperationAssetBase {
         $result = new static($disc);
         switch ($result->type->getValue()) {
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM4:
-                $result->assetCode4 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.assetCode4') ?? '');
+                $result->assetCode4 = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.assetCode4') ?? ''), 4, true);
                 break;
             case XdrAssetType::ASSET_TYPE_CREDIT_ALPHANUM12:
-                $result->assetCode12 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.assetCode12') ?? '');
+                $result->assetCode12 = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.assetCode12') ?? ''), 12, true);
                 break;
             default:
                 break;

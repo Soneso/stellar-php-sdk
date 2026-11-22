@@ -60,7 +60,7 @@ class XdrTransactionSetV1 {
 
     public function toJsonValue(): array {
         return [
-            'previous_ledger_hash' => XdrJsonHelper::bytesToHex($this->previousLedgerHash),
+            'previous_ledger_hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->previousLedgerHash, 32)),
             'phases' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->phases),
         ];
     }
@@ -80,7 +80,7 @@ class XdrTransactionSetV1 {
                 'Missing required field previous_ledger_hash for XdrTransactionSetV1'
             );
         }
-        $previousLedgerHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['previous_ledger_hash']);
+        $previousLedgerHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['previous_ledger_hash']);
         if (!array_key_exists('phases', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field phases for XdrTransactionSetV1'

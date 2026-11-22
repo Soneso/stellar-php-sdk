@@ -53,7 +53,7 @@ class XdrDontHave {
     public function toJsonValue(): array {
         return [
             'type' => $this->type->toJsonValue(),
-            'req_hash' => XdrJsonHelper::bytesToHex($this->reqHash),
+            'req_hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->reqHash, 32)),
         ];
     }
 
@@ -79,7 +79,7 @@ class XdrDontHave {
                 'Missing required field req_hash for XdrDontHave'
             );
         }
-        $reqHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['req_hash']);
+        $reqHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['req_hash']);
         return new static($type, $reqHash);
     }
 
