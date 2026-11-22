@@ -137,10 +137,10 @@ class XdrLedgerHeader {
     public function toJsonValue(): array {
         return [
             'ledger_version' => $this->ledgerVersion,
-            'previous_ledger_hash' => XdrJsonHelper::bytesToHex($this->previousLedgerHash),
+            'previous_ledger_hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->previousLedgerHash, 32)),
             'scp_value' => $this->scpValue->toJsonValue(),
-            'tx_set_result_hash' => XdrJsonHelper::bytesToHex($this->txSetResultHash),
-            'bucket_list_hash' => XdrJsonHelper::bytesToHex($this->bucketListHash),
+            'tx_set_result_hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->txSetResultHash, 32)),
+            'bucket_list_hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->bucketListHash, 32)),
             'ledger_seq' => $this->ledgerSeq,
             'total_coins' => XdrJsonHelper::int64ToString($this->totalCoins),
             'fee_pool' => XdrJsonHelper::int64ToString($this->feePool),
@@ -149,7 +149,7 @@ class XdrLedgerHeader {
             'base_fee' => $this->baseFee,
             'base_reserve' => $this->baseReserve,
             'max_tx_set_size' => $this->maxTxSetSize,
-            'skip_list' => array_map(static function ($item) { return XdrJsonHelper::bytesToHex($item); }, $this->skipList),
+            'skip_list' => array_map(static function ($item) { return XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($item, 32)); }, $this->skipList),
             'ext' => $this->ext->toJsonValue(),
         ];
     }
@@ -175,7 +175,7 @@ class XdrLedgerHeader {
                 'Missing required field previous_ledger_hash for XdrLedgerHeader'
             );
         }
-        $previousLedgerHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['previous_ledger_hash']);
+        $previousLedgerHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['previous_ledger_hash']);
         if (!array_key_exists('scp_value', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field scp_value for XdrLedgerHeader'
@@ -187,13 +187,13 @@ class XdrLedgerHeader {
                 'Missing required field tx_set_result_hash for XdrLedgerHeader'
             );
         }
-        $txSetResultHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['tx_set_result_hash']);
+        $txSetResultHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['tx_set_result_hash']);
         if (!array_key_exists('bucket_list_hash', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field bucket_list_hash for XdrLedgerHeader'
             );
         }
-        $bucketListHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['bucket_list_hash']);
+        $bucketListHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['bucket_list_hash']);
         if (!array_key_exists('ledger_seq', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field ledger_seq for XdrLedgerHeader'
@@ -252,7 +252,7 @@ class XdrLedgerHeader {
                 throw new InvalidArgumentException('Expected JSON array, got ' . get_debug_type($v));
             }
             $out = [];
-            foreach ($v as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($item); }
+            foreach ($v as $item) { $out[] = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($item); }
             return $out;
         })($value['skip_list']);
         if (!array_key_exists('ext', $value)) {

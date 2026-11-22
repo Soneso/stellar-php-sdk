@@ -19,6 +19,29 @@ class XdrEncoder
     private static ?bool $nativeIsBigEndian = null; // used for caching whether the current platform is big endian.
 
     /**
+     * Checks a fixed-length opaque value against the byte length its XDR definition declares.
+     *
+     * Serves opaqueFixed(), TxRepHelper and the generated XDR-JSON and TxRep readers and writers.
+     * When $allowShorter is true, values shorter than $expectedLength are accepted (for asset codes
+     * that are right-padded with NUL bytes on binary encode).
+     *
+     * @internal
+     * @param string $value raw bytes to check
+     * @param int $expectedLength fixed byte length declared by the XDR definition
+     * @param bool $allowShorter if true, accept byte lengths from 0 up to $expectedLength
+     * @return string the unchanged $value
+     * @throws InvalidArgumentException if $value does not match the declared fixed length
+     */
+    public static function checkFixedLength(string $value, int $expectedLength, bool $allowShorter = false): string
+    {
+        $length = strlen($value);
+        if ($length > $expectedLength || (!$allowShorter && $length !== $expectedLength)) {
+            throw new InvalidArgumentException(sprintf('Unexpected length for value. Has length %s, expected %s', $length, $expectedLength));
+        }
+        return $value;
+    }
+
+    /**
      * @param string $value
      * @param int|null $expectedLength in bytes
      * @param bool $padUnexpectedLength If true, an unexpected length is padded instead of throwing an exception
@@ -26,16 +49,14 @@ class XdrEncoder
      */
     public static function opaqueFixed(string $value, ?int $expectedLength = null, bool $padUnexpectedLength = false): string
     {
-        $length = strlen($value);
-        // Length greater than expected length is always an error
-        if ($expectedLength && $length > $expectedLength) throw new InvalidArgumentException(sprintf('Unexpected length for value. Has length %s, expected %s', $length, $expectedLength));
-        if ($expectedLength && !$padUnexpectedLength && $length != $expectedLength) throw new InvalidArgumentException(sprintf('Unexpected length for value. Has length %s, expected %s', $length, $expectedLength));
-
-        if ($expectedLength && $length < $expectedLength) {
-            // Pad to exactly the declared fixed length. str_pad rather than
-            // applyPadding: the latter pads to the next multiple of the
-            // target length, which leaves an empty value unpadded.
-            $value = str_pad($value, $expectedLength, chr(0), STR_PAD_RIGHT);
+        if ($expectedLength) {
+            self::checkFixedLength($value, $expectedLength, $padUnexpectedLength);
+            if (strlen($value) < $expectedLength) {
+                // Pad to exactly the declared fixed length. str_pad rather than
+                // applyPadding: the latter pads to the next multiple of the
+                // target length, which leaves an empty value unpadded.
+                $value = str_pad($value, $expectedLength, chr(0), STR_PAD_RIGHT);
+            }
         }
 
         return self::applyPadding($value);

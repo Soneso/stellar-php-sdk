@@ -46,7 +46,7 @@ class XdrHmacSha256Mac {
 
     public function toJsonValue(): array {
         return [
-            'mac' => XdrJsonHelper::bytesToHex($this->mac),
+            'mac' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->mac, 32)),
         ];
     }
 
@@ -68,7 +68,7 @@ class XdrHmacSha256Mac {
         if (!is_string($value['mac'])) {
             throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($value['mac']));
         }
-        $mac = XdrJsonHelper::hexToBytes($value['mac']);
+        $mac = XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($value['mac']), 32);
         return new static($mac);
     }
 

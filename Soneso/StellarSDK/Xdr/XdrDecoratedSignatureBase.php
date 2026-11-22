@@ -53,7 +53,7 @@ class XdrDecoratedSignatureBase {
 
     public function toJsonValue(): array {
         return [
-            'hint' => XdrJsonHelper::bytesToHex($this->hint),
+            'hint' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->hint, 4)),
             'signature' => XdrJsonHelper::bytesToHex($this->signature),
         ];
     }
@@ -73,7 +73,7 @@ class XdrDecoratedSignatureBase {
                 'Missing required field hint for XdrDecoratedSignatureBase'
             );
         }
-        $hint = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['hint']);
+        $hint = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 4); })($value['hint']);
         if (!array_key_exists('signature', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field signature for XdrDecoratedSignatureBase'
@@ -104,12 +104,12 @@ class XdrDecoratedSignatureBase {
      * @param array<string, string> $lines
      */
     public function toTxRep(string $prefix, array &$lines): void {
-        $lines[$prefix . '.hint'] = TxRepHelper::bytesToHex($this->hint);
+        $lines[$prefix . '.hint'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->hint, 4));
         $lines[$prefix . '.signature'] = TxRepHelper::bytesToHex($this->signature);
     }
 
     public static function fromTxRep(array $map, string $prefix): static {
-        $hint = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.hint') ?? '');
+        $hint = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.hint') ?? ''), 4);
         $signature = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.signature') ?? '');
         XdrEncoder::assertMaxLength(strlen($signature), 64, $prefix . '.signature');
         return new static($hint, $signature);

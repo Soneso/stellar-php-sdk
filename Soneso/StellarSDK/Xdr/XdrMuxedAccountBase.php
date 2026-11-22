@@ -159,7 +159,7 @@ class XdrMuxedAccountBase {
         $this->type->toTxRep($prefix . '.type', $lines);
         switch ($this->type->getValue()) {
             case XdrCryptoKeyType::KEY_TYPE_ED25519:
-                $lines[$prefix . '.ed25519'] = TxRepHelper::bytesToHex($this->ed25519);
+                $lines[$prefix . '.ed25519'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->ed25519, 32));
                 break;
             case XdrCryptoKeyType::KEY_TYPE_MUXED_ED25519:
                 $this->med25519->toTxRep($prefix . '.med25519', $lines);
@@ -174,7 +174,7 @@ class XdrMuxedAccountBase {
         $result = new static($disc);
         switch ($result->type->getValue()) {
             case XdrCryptoKeyType::KEY_TYPE_ED25519:
-                $result->ed25519 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.ed25519') ?? '');
+                $result->ed25519 = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.ed25519') ?? ''), 32);
                 break;
             case XdrCryptoKeyType::KEY_TYPE_MUXED_ED25519:
                 $result->med25519 = XdrMuxedAccountMed25519::fromTxRep($map, $prefix . '.med25519');

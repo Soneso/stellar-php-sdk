@@ -173,7 +173,7 @@ class XdrTrustlineAssetBase {
                 $this->alphaNum12->toTxRep($prefix . '.alphaNum12', $lines);
                 break;
             case XdrAssetType::ASSET_TYPE_POOL_SHARE:
-                $lines[$prefix . '.liquidityPoolID'] = TxRepHelper::bytesToHex($this->liquidityPoolID);
+                $lines[$prefix . '.liquidityPoolID'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->liquidityPoolID, 32));
                 break;
             default:
                 break;
@@ -193,7 +193,7 @@ class XdrTrustlineAssetBase {
                 $result->alphaNum12 = XdrAssetAlphaNum12::fromTxRep($map, $prefix . '.alphaNum12');
                 break;
             case XdrAssetType::ASSET_TYPE_POOL_SHARE:
-                $result->liquidityPoolID = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.liquidityPoolID') ?? '');
+                $result->liquidityPoolID = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.liquidityPoolID') ?? ''), 32);
                 break;
             default:
                 break;

@@ -98,12 +98,12 @@ class XdrHello {
             'ledger_version' => $this->ledgerVersion,
             'overlay_version' => $this->overlayVersion,
             'overlay_min_version' => $this->overlayMinVersion,
-            'network_id' => XdrJsonHelper::bytesToHex($this->networkID),
+            'network_id' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->networkID, 32)),
             'version_str' => XdrJsonHelper::escapeString($this->versionStr),
             'listening_port' => $this->listeningPort,
             'peer_id' => $this->peerID->toJsonValue(),
             'cert' => $this->cert->toJsonValue(),
-            'nonce' => XdrJsonHelper::bytesToHex($this->nonce),
+            'nonce' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->nonce, 32)),
         ];
     }
 
@@ -140,7 +140,7 @@ class XdrHello {
                 'Missing required field network_id for XdrHello'
             );
         }
-        $networkID = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['network_id']);
+        $networkID = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['network_id']);
         if (!array_key_exists('version_str', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field version_str for XdrHello'
@@ -174,7 +174,7 @@ class XdrHello {
                 'Missing required field nonce for XdrHello'
             );
         }
-        $nonce = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['nonce']);
+        $nonce = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['nonce']);
         return new static($ledgerVersion, $overlayVersion, $overlayMinVersion, $networkID, $versionStr, $listeningPort, $peerID, $cert, $nonce);
     }
 

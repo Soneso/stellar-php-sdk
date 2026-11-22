@@ -58,7 +58,7 @@ class XdrLedgerHeaderHistoryEntry {
 
     public function toJsonValue(): array {
         return [
-            'hash' => XdrJsonHelper::bytesToHex($this->hash),
+            'hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->hash, 32)),
             'header' => $this->header->toJsonValue(),
             'ext' => $this->ext->toJsonValue(),
         ];
@@ -79,7 +79,7 @@ class XdrLedgerHeaderHistoryEntry {
                 'Missing required field hash for XdrLedgerHeaderHistoryEntry'
             );
         }
-        $hash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['hash']);
+        $hash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['hash']);
         if (!array_key_exists('header', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field header for XdrLedgerHeaderHistoryEntry'

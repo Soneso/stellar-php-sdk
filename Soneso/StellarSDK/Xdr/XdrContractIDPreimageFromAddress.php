@@ -53,7 +53,7 @@ class XdrContractIDPreimageFromAddress {
     public function toJsonValue(): array {
         return [
             'address' => $this->address->toJsonValue(),
-            'salt' => XdrJsonHelper::bytesToHex($this->salt),
+            'salt' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->salt, 32)),
         ];
     }
 
@@ -78,7 +78,7 @@ class XdrContractIDPreimageFromAddress {
                 'Missing required field salt for XdrContractIDPreimageFromAddress'
             );
         }
-        $salt = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['salt']);
+        $salt = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['salt']);
         return new static($address, $salt);
     }
 
@@ -104,12 +104,12 @@ class XdrContractIDPreimageFromAddress {
      */
     public function toTxRep(string $prefix, array &$lines): void {
         $this->address->toTxRep($prefix . '.address', $lines);
-        $lines[$prefix . '.salt'] = TxRepHelper::bytesToHex($this->salt);
+        $lines[$prefix . '.salt'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->salt, 32));
     }
 
     public static function fromTxRep(array $map, string $prefix): XdrContractIDPreimageFromAddress {
         $address = XdrSCAddress::fromTxRep($map, $prefix . '.address');
-        $salt = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.salt') ?? '');
+        $salt = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.salt') ?? ''), 32);
         return new XdrContractIDPreimageFromAddress($address, $salt);
     }
 }

@@ -97,7 +97,125 @@ class GeneratorHelpersTest < Minitest::Test
                     'toJson must not call json_encode directly; it bypasses the nesting limit'
   end
 
+  # ------------------------------------------------------------------
+  # Fixed vs variable opaque length checks in XDR-JSON and TxRep
+  # ------------------------------------------------------------------
+
+  def test_fixed_opaque_struct_field_emits_length_check_in_json_and_txrep
+    struct = find_ast_definition(:struct, 'ShortHashSeed')
+    fields = @gen.send(:collect_struct_fields, struct, 'XdrShortHashSeed')
+
+    json_out = StringIO.new
+    @gen.send(:render_struct_sep51_methods, json_out, 'XdrShortHashSeed', 'XdrShortHashSeed', fields)
+    assert_includes json_out.string, 'XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->seed, 16))'
+    assert_includes json_out.string, "$seed = XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($value['seed']), 16);"
+
+    txrep_out = StringIO.new
+    @gen.send(:render_struct_txrep_methods, txrep_out, 'XdrShortHashSeed', 'XdrShortHashSeed', fields)
+    assert_includes txrep_out.string, 'TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->seed, 16))'
+    assert_includes txrep_out.string, "$seed = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.seed') ?? ''), 16);"
+  end
+
+  def test_variable_opaque_struct_field_omits_fixed_length_check
+    struct = find_ast_definition(:struct, 'DecoratedSignature')
+    fields = @gen.send(:collect_struct_fields, struct, 'XdrDecoratedSignature')
+
+    json_out = StringIO.new
+    @gen.send(:render_struct_sep51_methods, json_out, 'XdrDecoratedSignature', 'XdrDecoratedSignatureBase', fields)
+    assert_includes json_out.string, 'XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->hint, 4))'
+    assert_includes json_out.string, "'signature' => XdrJsonHelper::bytesToHex($this->signature),"
+    refute_includes json_out.string, 'checkFixedLength($this->signature'
+
+    txrep_out = StringIO.new
+    @gen.send(:render_struct_txrep_methods, txrep_out, 'XdrDecoratedSignature', 'XdrDecoratedSignatureBase', fields)
+    assert_includes txrep_out.string, 'TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->hint, 4))'
+    assert_includes txrep_out.string, "$lines[$prefix . '.signature'] = TxRepHelper::bytesToHex($this->signature);"
+    assert_includes txrep_out.string, "$signature = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.signature') ?? '');"
+    refute_includes txrep_out.string, 'checkFixedLength($this->signature'
+
+    # Inline variable opaque<> field (SerializedBinaryFuseFilter.fingerprints) also omits checkFixedLength.
+    bf = find_ast_definition(:struct, 'SerializedBinaryFuseFilter')
+    bf_fields = @gen.send(:collect_struct_fields, bf, 'XdrSerializedBinaryFuseFilter')
+    bf_json = StringIO.new
+    @gen.send(:render_struct_sep51_methods, bf_json, 'XdrSerializedBinaryFuseFilter', 'XdrSerializedBinaryFuseFilter', bf_fields)
+    assert_includes bf_json.string, "'fingerprints' => XdrJsonHelper::bytesToHex($this->fingerprints),"
+    assert_includes bf_json.string, "$fingerprints = XdrJsonHelper::hexToBytes($value['fingerprints']);"
+    refute_includes bf_json.string, 'checkFixedLength'
+
+    bf_txrep = StringIO.new
+    @gen.send(:render_struct_txrep_methods, bf_txrep, 'XdrSerializedBinaryFuseFilter', 'XdrSerializedBinaryFuseFilter', bf_fields)
+    assert_includes bf_txrep.string, "$lines[$prefix . '.fingerprints'] = TxRepHelper::bytesToHex($this->fingerprints);"
+    assert_includes bf_txrep.string, "$fingerprints = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.fingerprints') ?? '');"
+    refute_includes bf_txrep.string, 'checkFixedLength'
+  end
+
+  def test_txrep_fixed_opaque_array_emits_element_length_checks
+    # No generated TxRep type currently carries a fixed-opaque array; pin both
+    # struct array fields and array typedefs against real AST declarations.
+    struct = find_ast_definition(:struct, 'FreezeBypassTxs')
+    fields = @gen.send(:collect_struct_fields, struct, 'XdrFreezeBypassTxs')
+    out = StringIO.new
+    @gen.send(:render_struct_txrep_methods, out, 'XdrFreezeBypassTxs', 'XdrFreezeBypassTxs', fields)
+    assert_includes out.string, "$lines[$prefix . '.txHashes[' . $i . ']'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->txHashes[$i], 32));"
+    assert_includes out.string, "$txHashes[] = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.txHashes[' . $i . ']') ?? ''), 32);"
+
+    td = find_ast_definition(:typedef, 'TxAdvertVector')
+    td_out = StringIO.new
+    @gen.send(:render_array_typedef_txrep_methods, td_out, 'XdrTxAdvertVector', 'XdrTxAdvertVector', 'XdrTxAdvertVector', 'txAdvertVector', 'string', td.declaration)
+    assert_includes td_out.string, "$lines[$prefix . '[' . $i . ']'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->txAdvertVector[$i], 32));"
+    assert_includes td_out.string, "$txAdvertVector[] = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '[' . $i . ']') ?? ''), 32);"
+  end
+
+  def test_fixed_opaque_info_for_typespec_follows_multi_hop_typedef_chains
+    # PoolID -> Hash -> opaque[32] (two typedef hops).
+    struct = find_ast_definition(:struct, 'LiquidityPoolDepositOp')
+    field = @gen.send(:collect_struct_fields, struct, 'XdrLiquidityPoolDepositOperation').find { |f| f[:xdr_name] == 'liquidityPoolID' }
+    assert_equal({ size: '32', padded: false }, @gen.send(:fixed_opaque_info_for_typespec, field[:decl].type))
+  end
+
+  def test_scalar_typedef_emits_fixed_length_check_when_fixed_and_omits_when_variable
+    fixed_json = StringIO.new
+    @gen.send(:render_scalar_typedef_sep51_methods, fixed_json, 'XdrFixedBlob', 'fixedBlob', :opaque, { max_length: nil }, { size: 16, padded: false })
+    assert_includes fixed_json.string, 'return XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->fixedBlob, 16));'
+    assert_includes fixed_json.string, 'return new static(XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($value), 16));'
+
+    fixed_txrep = StringIO.new
+    @gen.send(:render_scalar_typedef_txrep_methods, fixed_txrep, 'XdrFixedBlob', 'XdrFixedBlob', 'XdrFixedBlob', 'fixedBlob', :opaque, { max_length: nil }, { size: 16, padded: false })
+    assert_includes fixed_txrep.string, '$lines[$prefix] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->fixedBlob, 16));'
+    assert_includes fixed_txrep.string, "return new XdrFixedBlob(XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix) ?? ''), 16));"
+
+    var_json = StringIO.new
+    @gen.send(:render_scalar_typedef_sep51_methods, var_json, 'XdrVarBlob', 'varBlob', :opaque, { max_length: 64 }, nil)
+    assert_includes var_json.string, 'return XdrJsonHelper::bytesToHex($this->varBlob);'
+    refute_includes var_json.string, 'checkFixedLength'
+  end
+
   private
+
+  XDR_DIR = File.join(__dir__, '..', '..', '..', 'xdr')
+
+  def self.ast
+    @ast ||= begin
+      deprecated = Warning[:deprecated]
+      Warning[:deprecated] = false
+      Xdrgen::Compilation.new(Dir.glob(File.join(XDR_DIR, '*.x'))).ast
+    ensure
+      Warning[:deprecated] = deprecated
+    end
+  end
+
+  def find_ast_definition(kind, xdr_name)
+    # Load the AST first so xdrgen requires treetop before AST::Definitions constants autoload.
+    nodes = [self.class.ast]
+    klass = kind == :struct ? Xdrgen::AST::Definitions::Struct : Xdrgen::AST::Definitions::Typedef
+    until nodes.empty?
+      node = nodes.shift
+      match = node.definitions.find { |d| d.is_a?(klass) && d.name.to_s == xdr_name }
+      return match if match
+      nodes.concat(node.namespaces)
+    end
+    flunk "no #{klass} #{xdr_name} in #{XDR_DIR}"
+  end
 
   # Emit the generator's fromJson facade as PHP source.
   def emit_from_json_facade

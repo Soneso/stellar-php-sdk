@@ -74,7 +74,7 @@ class XdrSCPNomination {
 
     public function toJsonValue(): array {
         return [
-            'quorum_set_hash' => XdrJsonHelper::bytesToHex($this->quorumSetHash),
+            'quorum_set_hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->quorumSetHash, 32)),
             'votes' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->votes),
             'accepted' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->accepted),
         ];
@@ -95,7 +95,7 @@ class XdrSCPNomination {
                 'Missing required field quorum_set_hash for XdrSCPNomination'
             );
         }
-        $quorumSetHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['quorum_set_hash']);
+        $quorumSetHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['quorum_set_hash']);
         if (!array_key_exists('votes', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field votes for XdrSCPNomination'

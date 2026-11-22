@@ -96,11 +96,11 @@ class XdrLedgerKeyLiquidityPool {
      * @param array<string, string> $lines
      */
     public function toTxRep(string $prefix, array &$lines): void {
-        $lines[$prefix . '.liquidityPoolID'] = TxRepHelper::bytesToHex($this->liquidityPoolID);
+        $lines[$prefix . '.liquidityPoolID'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->liquidityPoolID, 32));
     }
 
     public static function fromTxRep(array $map, string $prefix): XdrLedgerKeyLiquidityPool {
-        $liquidityPoolID = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.liquidityPoolID') ?? '');
+        $liquidityPoolID = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.liquidityPoolID') ?? ''), 32);
         return new XdrLedgerKeyLiquidityPool($liquidityPoolID);
     }
 }

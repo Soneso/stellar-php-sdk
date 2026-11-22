@@ -60,7 +60,7 @@ class XdrSCPStatementExternalize {
         return [
             'commit' => $this->commit->toJsonValue(),
             'n_h' => $this->nH,
-            'commit_quorum_set_hash' => XdrJsonHelper::bytesToHex($this->commitQuorumSetHash),
+            'commit_quorum_set_hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->commitQuorumSetHash, 32)),
         ];
     }
 
@@ -91,7 +91,7 @@ class XdrSCPStatementExternalize {
                 'Missing required field commit_quorum_set_hash for XdrSCPStatementExternalize'
             );
         }
-        $commitQuorumSetHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['commit_quorum_set_hash']);
+        $commitQuorumSetHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['commit_quorum_set_hash']);
         return new static($commit, $nH, $commitQuorumSetHash);
     }
 

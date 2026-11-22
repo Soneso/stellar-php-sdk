@@ -52,7 +52,7 @@ class XdrTTLEntry {
 
     public function toJsonValue(): array {
         return [
-            'key_hash' => XdrJsonHelper::bytesToHex($this->keyHash),
+            'key_hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->keyHash, 32)),
             'live_until_ledger_seq' => $this->liveUntilLedgerSeq,
         ];
     }
@@ -72,7 +72,7 @@ class XdrTTLEntry {
                 'Missing required field key_hash for XdrTTLEntry'
             );
         }
-        $keyHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['key_hash']);
+        $keyHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['key_hash']);
         if (!array_key_exists('live_until_ledger_seq', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field live_until_ledger_seq for XdrTTLEntry'

@@ -71,8 +71,8 @@ class XdrStellarValueProposedMsValue {
     public function toJsonValue(): array {
         return [
             'close_time_ms' => XdrJsonHelper::uint64ToString($this->closeTimeMs),
-            'tx_set_hash' => XdrJsonHelper::bytesToHex($this->txSetHash),
-            'previous_ledger_hash' => XdrJsonHelper::bytesToHex($this->previousLedgerHash),
+            'tx_set_hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->txSetHash, 32)),
+            'previous_ledger_hash' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->previousLedgerHash, 32)),
             'previous_ledger_version' => $this->previousLedgerVersion,
             'lc_value_signature' => $this->lcValueSignature->toJsonValue(),
         ];
@@ -99,13 +99,13 @@ class XdrStellarValueProposedMsValue {
                 'Missing required field tx_set_hash for XdrStellarValueProposedMsValue'
             );
         }
-        $txSetHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['tx_set_hash']);
+        $txSetHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['tx_set_hash']);
         if (!array_key_exists('previous_ledger_hash', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field previous_ledger_hash for XdrStellarValueProposedMsValue'
             );
         }
-        $previousLedgerHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['previous_ledger_hash']);
+        $previousLedgerHash = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 32); })($value['previous_ledger_hash']);
         if (!array_key_exists('previous_ledger_version', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field previous_ledger_version for XdrStellarValueProposedMsValue'

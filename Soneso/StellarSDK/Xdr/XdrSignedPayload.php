@@ -100,12 +100,12 @@ class XdrSignedPayload {
      * @param array<string, string> $lines
      */
     public function toTxRep(string $prefix, array &$lines): void {
-        $lines[$prefix . '.ed25519'] = TxRepHelper::bytesToHex($this->ed25519);
+        $lines[$prefix . '.ed25519'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->ed25519, 32));
         $lines[$prefix . '.payload'] = TxRepHelper::bytesToHex($this->payload);
     }
 
     public static function fromTxRep(array $map, string $prefix): XdrSignedPayload {
-        $ed25519 = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.ed25519') ?? '');
+        $ed25519 = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.ed25519') ?? ''), 32);
         $payload = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.payload') ?? '');
         XdrEncoder::assertMaxLength(strlen($payload), 64, $prefix . '.payload');
         return new XdrSignedPayload($ed25519, $payload);

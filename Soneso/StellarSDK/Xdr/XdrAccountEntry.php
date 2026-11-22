@@ -126,7 +126,7 @@ class XdrAccountEntry {
             'inflation_dest' => ($this->inflationDest !== null ? $this->inflationDest->toJsonValue() : null),
             'flags' => $this->flags,
             'home_domain' => XdrJsonHelper::escapeString($this->homeDomain),
-            'thresholds' => XdrJsonHelper::bytesToHex($this->thresholds),
+            'thresholds' => XdrJsonHelper::bytesToHex(XdrEncoder::checkFixedLength($this->thresholds, 4)),
             'signers' => array_map(static function ($item) { return $item->toJsonValue(); }, $this->signers),
             'ext' => $this->ext->toJsonValue(),
         ];
@@ -192,7 +192,7 @@ class XdrAccountEntry {
                 'Missing required field thresholds for XdrAccountEntry'
             );
         }
-        $thresholds = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrJsonHelper::hexToBytes($v); })($value['thresholds']);
+        $thresholds = (static function ($v) { if (!is_string($v)) { throw new InvalidArgumentException('Expected hex string JSON value, got ' . get_debug_type($v)); } return XdrEncoder::checkFixedLength(XdrJsonHelper::hexToBytes($v), 4); })($value['thresholds']);
         if (!array_key_exists('signers', $value)) {
             throw new InvalidArgumentException(
                 'Missing required field signers for XdrAccountEntry'

@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `XdrContractIDPreimage` writes SEP-51 JSON and TxRep for a preimage built with `forAddress()` or `forAsset()`, and `fromJson()` and `fromTxRep()` set `getAddress()`, `getSalt()` and `getAsset()`, as `decode()` does. Before this change, `toJson()` and `toTxRep()` threw an `Error` or a `TypeError` for such a preimage, and the three getters returned null after the two readers.
 - An `InvokeHostFunctionOperation` that creates a contract or deploys a Stellar Asset Contract writes SEP-51 JSON and TxRep, and one read from them converts with `AbstractOperation::fromXdr()`. Before this change, the writers threw an `Error` or a `TypeError`, and `fromXdr()` threw an invalid argument `Exception`.
 - `XdrOperationResultTr` writes SEP-51 JSON for a manage buy offer result set through `setManageOfferResult()`, and `fromJson()` sets `getManageOfferResult()` for a manage buy offer result, as `decode()` does. Before this change, `toJson()` threw an `Error`, and `getManageOfferResult()` returned null after `fromJson()`.
+- The SEP-51 JSON and TxRep writers refuse a fixed-length opaque value whose length differs from its XDR definition, with an `InvalidArgumentException`. This includes an asset code longer than 4 or 12 bytes. The readers refuse such a value, except the TxRep readers that keep the hexadecimal text, such as for a liquidity pool id, which `encode()` checks. Before this change, the writers and the hexadecimal readers accepted such values.
 
 ## [1.18.0] - 2026-11-14
 

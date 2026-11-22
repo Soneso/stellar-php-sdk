@@ -135,7 +135,7 @@ class XdrClaimableBalanceIDBase {
         $this->type->toTxRep($prefix . '.type', $lines);
         switch ($this->type->getValue()) {
             case XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0:
-                $lines[$prefix . '.v0'] = TxRepHelper::bytesToHex($this->hash);
+                $lines[$prefix . '.v0'] = TxRepHelper::bytesToHex(XdrEncoder::checkFixedLength($this->hash, 32));
                 break;
             default:
                 break;
@@ -147,7 +147,7 @@ class XdrClaimableBalanceIDBase {
         $result = new static($disc);
         switch ($result->type->getValue()) {
             case XdrClaimableBalanceIDType::CLAIMABLE_BALANCE_ID_TYPE_V0:
-                $result->hash = TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.v0') ?? '');
+                $result->hash = XdrEncoder::checkFixedLength(TxRepHelper::hexToBytes(TxRepHelper::getValue($map, $prefix . '.v0') ?? ''), 32);
                 break;
             default:
                 break;
