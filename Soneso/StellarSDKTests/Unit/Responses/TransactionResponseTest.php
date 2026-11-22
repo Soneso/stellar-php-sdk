@@ -816,7 +816,8 @@ class TransactionResponseTest extends TestCase
         // Test memo text
         $jsonText = array_merge($this->getCompleteTransactionJson(), [
             'memo_type' => 'text',
-            'memo' => 'Test memo text'
+            'memo' => 'Test memo text',
+            'memo_bytes' => 'VGVzdCBtZW1vIHRleHQ=',
         ]);
         $responseText = TransactionResponse::fromJson($jsonText);
         $this->assertEquals('Test memo text', $responseText->getMemo()->getValue());
@@ -913,5 +914,219 @@ class TransactionResponseTest extends TestCase
         $this->expectExceptionMessage('XDR array count 1 exceeds the maximum of 0 for the 0 remaining bytes');
 
         TransactionResponse::fromJson($json);
+    }
+
+    public function testTextMemoDecodesNonUtf8MemoBytes(): void
+    {
+        $json = [
+            'memo_type' => 'text',
+            // 28 bytes of 0xFF, base64-encoded.
+            'memo_bytes' => '/////////////////////////////////////w==',
+            // Horizon replaces each invalid UTF-8 byte with U+FFFD (3 bytes, 84 bytes total).
+            'memo' => str_repeat("\xEF\xBF\xBD", 28),
+        ];
+
+        $memo = TransactionResponse::fromJson($json)->getMemo();
+
+        $this->assertSame(Memo::MEMO_TYPE_TEXT, $memo->getType());
+        $this->assertSame(str_repeat("\xFF", 28), $memo->getValue());
+    }
+
+    public function testTextMemoDecodesMemoBytesWithNulByte(): void
+    {
+        $json = [
+            'memo_type' => 'text',
+            // Raw bytes "a\x00b", base64-encoded.
+            'memo_bytes' => 'YQBi',
+            // Horizon strips NUL bytes from the memo string.
+            'memo' => 'ab',
+        ];
+
+        $memo = TransactionResponse::fromJson($json)->getMemo();
+
+        $this->assertSame(Memo::MEMO_TYPE_TEXT, $memo->getType());
+        $this->assertSame("a\x00b", $memo->getValue());
+    }
+
+    public function testTextMemoValidUtf8AndFallbacks(): void
+    {
+        $utf8Text = "hello caf\xC3\xA9";
+        $withBoth = TransactionResponse::fromJson([
+            'memo_type' => 'text',
+            'memo_bytes' => 'aGVsbG8gY2Fmw6k=',
+            'memo' => $utf8Text,
+        ])->getMemo();
+        $this->assertSame(Memo::MEMO_TYPE_TEXT, $withBoth->getType());
+        $this->assertSame($utf8Text, $withBoth->getValue());
+
+        $memoOnly = TransactionResponse::fromJson([
+            'memo_type' => 'text',
+            'memo' => 'fallback text',
+        ])->getMemo();
+        $this->assertSame(Memo::MEMO_TYPE_TEXT, $memoOnly->getType());
+        $this->assertSame('fallback text', $memoOnly->getValue());
+
+        $emptyText = TransactionResponse::fromJson([
+            'memo_type' => 'text',
+        ])->getMemo();
+        $this->assertSame(Memo::MEMO_TYPE_TEXT, $emptyText->getType());
+        $this->assertSame('', $emptyText->getValue());
+    }
+
+    public function testTextMemoRejectsInvalidMemoBytes(): void
+    {
+        $invalidBase64 = 'not!valid!base64';
+        try {
+            TransactionResponse::fromJson([
+                'memo_type' => 'text',
+                'memo_bytes' => $invalidBase64,
+                'memo' => 'ignored',
+            ]);
+            $this->fail('Expected InvalidArgumentException for invalid base64 memo_bytes');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame('Invalid base64-encoded memo bytes', $e->getMessage());
+            $this->assertStringNotContainsString($invalidBase64, $e->getMessage());
+        }
+
+        try {
+            TransactionResponse::fromJson([
+                'memo_type' => 'text',
+                'memo_bytes' => 123,
+                'memo' => 'ignored',
+            ]);
+            $this->fail('Expected InvalidArgumentException for non-string memo_bytes');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame('Invalid base64-encoded memo bytes', $e->getMessage());
+            $this->assertStringNotContainsString('123', $e->getMessage());
+        }
+    }
+
+    public function testTextMemoReadsMemoBytesWithoutMemo(): void
+    {
+        // Horizon removes NUL bytes from memo and omits it when nothing is left.
+        $json = [
+            'memo_type' => 'text',
+            'memo_bytes' => 'AA==',
+        ];
+
+        $memo = TransactionResponse::fromJson($json)->getMemo();
+
+        $this->assertSame(Memo::MEMO_TYPE_TEXT, $memo->getType());
+        $this->assertSame("\x00", $memo->getValue());
+    }
+
+    public function testTextMemoRejectsMemoBytesOverTextLimit(): void
+    {
+        $json = [
+            'memo_type' => 'text',
+            'memo_bytes' => 'YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=',
+        ];
+
+        try {
+            TransactionResponse::fromJson($json);
+            $this->fail('Expected InvalidArgumentException for memo_bytes over 28 bytes');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame('memo text is greater than the maximum of 28 bytes', $e->getMessage());
+        }
+    }
+
+    public function testIdMemoPreservesUnsignedUint64BoundaryValues(): void
+    {
+        $intCases = [
+            ['memo' => '0', 'expected' => 0],
+            ['memo' => '99', 'expected' => 99],
+            ['memo' => '123456789', 'expected' => 123456789],
+            ['memo' => '9223372036854775807', 'expected' => PHP_INT_MAX],
+            ['memo' => 42, 'expected' => 42],
+        ];
+        foreach ($intCases as $case) {
+            $memo = TransactionResponse::fromJson([
+                'memo_type' => 'id',
+                'memo' => $case['memo'],
+            ])->getMemo();
+            $this->assertSame(Memo::MEMO_TYPE_ID, $memo->getType());
+            $this->assertSame($case['expected'], $memo->getValue());
+        }
+
+        $maxUint64 = TransactionResponse::fromJson([
+            'memo_type' => 'id',
+            'memo' => '18446744073709551615',
+        ])->getMemo();
+        $this->assertSame(Memo::MEMO_TYPE_ID, $maxUint64->getType());
+        $this->assertSame('18446744073709551615', $maxUint64->getValue());
+        $this->assertSame(
+            "\x00\x00\x00\x02\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF",
+            $maxUint64->toXdr()->encode()
+        );
+
+        $firstAboveIntMax = TransactionResponse::fromJson([
+            'memo_type' => 'id',
+            'memo' => '9223372036854775808',
+        ])->getMemo();
+        $this->assertSame(Memo::MEMO_TYPE_ID, $firstAboveIntMax->getType());
+        $this->assertSame('9223372036854775808', $firstAboveIntMax->getValue());
+        $this->assertSame(
+            "\x00\x00\x00\x02\x80\x00\x00\x00\x00\x00\x00\x00",
+            $firstAboveIntMax->toXdr()->encode()
+        );
+    }
+
+    public function testIdMemoRejectsInvalidValues(): void
+    {
+        $cases = [
+            'string negative' => [
+                'json' => ['memo_type' => 'id', 'memo' => '-1'],
+                'message' => 'id memo value must be an unsigned decimal integer',
+            ],
+            'int negative' => [
+                'json' => ['memo_type' => 'id', 'memo' => -1],
+                'message' => 'value cannot be negative',
+            ],
+            'non-numeric string' => [
+                'json' => ['memo_type' => 'id', 'memo' => 'abc'],
+                'message' => 'id memo value must be an unsigned decimal integer',
+            ],
+            'decimal string' => [
+                'json' => ['memo_type' => 'id', 'memo' => '1.5'],
+                'message' => 'id memo value must be an unsigned decimal integer',
+            ],
+            'leading zero' => [
+                'json' => ['memo_type' => 'id', 'memo' => '01'],
+                'message' => 'id memo value must be an unsigned decimal integer',
+            ],
+            'above uint64 max' => [
+                'json' => ['memo_type' => 'id', 'memo' => '18446744073709551616'],
+                'message' => 'value cannot be larger than 18446744073709551615',
+            ],
+            'float value' => [
+                'json' => ['memo_type' => 'id', 'memo' => 1.5],
+                'message' => 'id memo value must be an int or an unsigned decimal string',
+            ],
+            'missing memo' => [
+                'json' => ['memo_type' => 'id'],
+                'message' => 'id memo value must be an int or an unsigned decimal string',
+            ],
+            'null value' => [
+                'json' => ['memo_type' => 'id', 'memo' => null],
+                'message' => 'id memo value must be an int or an unsigned decimal string',
+            ],
+            'bool value' => [
+                'json' => ['memo_type' => 'id', 'memo' => true],
+                'message' => 'id memo value must be an int or an unsigned decimal string',
+            ],
+            'array value' => [
+                'json' => ['memo_type' => 'id', 'memo' => []],
+                'message' => 'id memo value must be an int or an unsigned decimal string',
+            ],
+        ];
+
+        foreach ($cases as $label => $case) {
+            try {
+                TransactionResponse::fromJson($case['json']);
+                $this->fail('Expected InvalidArgumentException for ' . $label);
+            } catch (\InvalidArgumentException $e) {
+                $this->assertSame($case['message'], $e->getMessage(), $label);
+            }
+        }
     }
 }

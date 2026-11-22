@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `XdrConfigUpgradeSetKeyBase`, `XdrInnerTransactionResultPairBase`, `XdrLiquidityPoolDepositOperationBase`, `XdrLiquidityPoolWithdrawOperationBase` and `XdrOperationResultTrBase`. The classes of the same name without `Base` are generated in full and keep their API.
 
 ### Fixed
+- `TransactionResponse::fromJson()` reads a text memo from Horizon's `memo_bytes` field and returns its exact bytes; an invalid `memo_bytes` value throws an `InvalidArgumentException`. Before this change, a text memo with invalid UTF-8 or NUL bytes came back altered, and `fromJson()` threw when the altered text exceeded 28 bytes.
+- `TransactionResponse::fromJson()` returns an id memo above `PHP_INT_MAX` as an unsigned decimal string, as `Memo::fromXdr()` does, and throws an `InvalidArgumentException` for a `memo` that is not an unsigned 64-bit integer. Before this change, every id from 2^63 to 2^64-1 became `PHP_INT_MAX`, and an invalid value such as `abc` or `1.5` became an integer.
 - `fromBase64Xdr()` and the other readers of a complete XDR value throw when bytes follow the value: an `InvalidArgumentException`, or the `ContractChallengeValidationError` of `WebAuthForContracts::decodeAuthorizationEntries()`. Before this change, the trailing bytes were ignored.
 - `XdrTransaction::fromTxRep()` and `XdrTransactionV0::fromTxRep()` build the transaction from valid TxRep. Before this change, they threw a `TypeError`.
 - `XdrTimeBounds::fromTxRep()` returns its dates in UTC, as `decode()` does.
