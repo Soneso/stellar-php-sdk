@@ -320,7 +320,7 @@ class URIScheme
             $res = $this->httpClient->post($callbackUrl, [
                 'headers' => $headers,
                 'form_params' => [
-                    'xdr' => urlencode($absTransaction->toEnvelopeXdrBase64())
+                    'xdr' => $absTransaction->toEnvelopeXdrBase64()
                 ]
             ]);
             return new SubmitUriSchemeTransactionResponse(null,$res);

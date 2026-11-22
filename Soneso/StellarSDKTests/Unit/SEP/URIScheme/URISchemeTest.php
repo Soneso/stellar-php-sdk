@@ -325,9 +325,11 @@ class URISchemeTest extends TestCase
         $uriScheme->signAndSubmitTransaction($uri, $signer, Network::testnet());
 
         $this->assertCount(1, $history);
-        // The form field holds the URL-encoded base64 envelope.
+        // The form body carries the base64 envelope URL-encoded once, so parse_str yields the base64 string directly.
         parse_str((string)$history[0]['request']->getBody(), $form);
-        $submitted = base64_decode(urldecode($form['xdr']), true);
+        $this->assertIsString($form['xdr'] ?? null);
+        $submitted = base64_decode($form['xdr'], true);
+        $this->assertIsString($submitted);
         $fixture = base64_decode(self::SAC_V2_ENVELOPE, true);
         // The fixture ends with its signature list: the count 1 and one 72-byte decorated signature.
         // The bytes before it are ENVELOPE_TYPE_TX and the transaction, the tail of the signed payload.
@@ -340,6 +342,57 @@ class URISchemeTest extends TestCase
         $added = substr($submitted, $txEnd + 4 + 72);
         $this->assertSame(bin2hex(substr($signer->getPublicKey(), -4) . pack('N', 64)), bin2hex(substr($added, 0, 8)));
         $this->assertTrue($signer->verifySignature(substr($added, 8), $hash));
+    }
+
+    public function testSignAndSubmitTransactionEncodesCallbackXdrOnce(): void
+    {
+        $history = [];
+        $stack = HandlerStack::create(new MockHandler([new Response(200, [], '')]));
+        $stack->push(Middleware::history($history));
+        $uriScheme = new URIScheme();
+        $uriScheme->setMockHandlerStack($stack);
+        $signer = KeyPair::fromSeed(self::TEST_SECRET);
+        $uri = $uriScheme->generateSignTransactionURI(
+            self::TEST_XDR,
+            callback: 'url:https://wallet.invalid/sep7/callback'
+        );
+
+        $uriScheme->signAndSubmitTransaction($uri, $signer, Network::testnet());
+
+        $this->assertCount(1, $history);
+        $request = $history[0]['request'];
+        $this->assertSame('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
+
+        $body = (string)$request->getBody();
+        $this->assertStringStartsWith('xdr=', $body);
+        $this->assertStringNotContainsString('%25', $body);
+        // TEST_XDR holds '+', '/' and '=', so the body carries their form encoding.
+        $this->assertStringContainsString('%2B', $body);
+        $this->assertStringContainsString('%2F', $body);
+        $this->assertStringContainsString('%3D', $body);
+
+        parse_str($body, $form);
+        $this->assertIsString($form['xdr'] ?? null);
+
+        $fixture = base64_decode(self::TEST_XDR, true);
+        $this->assertIsString($fixture);
+        // TEST_XDR is a V1 envelope ending with signature count 1 and one 72-byte decorated signature.
+        $txEnd = strlen($fixture) - 4 - 72;
+        $hash = hash(
+            'sha256',
+            hash('sha256', Network::testnet()->getNetworkPassphrase(), true) . substr($fixture, 0, $txEnd),
+            true
+        );
+        $expectedEnvelope = substr($fixture, 0, $txEnd)
+            . pack('N', 2)
+            . substr($fixture, $txEnd + 4)
+            . substr($signer->getPublicKey(), -4)
+            . pack('N', 64)
+            . $signer->sign($hash);
+        $expectedBase64 = base64_encode($expectedEnvelope);
+
+        $this->assertSame($expectedBase64, $form['xdr']);
+        $this->assertSame('xdr=' . urlencode($expectedBase64), $body);
     }
 
     public function testSignAndSubmitTransactionSendsCallbackThroughInjectedHttpClient(): void
