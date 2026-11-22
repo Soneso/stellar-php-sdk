@@ -109,6 +109,34 @@ class UrlValidatorTest extends TestCase
         UrlValidator::validateHttpsRequired('ftp://files.stellar.org/data');
     }
 
+    public function testRejectsUnparseableHttpsTripleSlash(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Service URL cannot be parsed.');
+        UrlValidator::validateHttpsRequired('https:///x');
+    }
+
+    public function testRejectsUnparseableHttpsEmptyAuthority(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Service URL cannot be parsed.');
+        UrlValidator::validateHttpsRequired('https://');
+    }
+
+    public function testRejectsHttpsSchemeOnlyWithoutHost(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Service URL has no host.');
+        UrlValidator::validateHttpsRequired('https:');
+    }
+
+    public function testRejectsHttpsPathWithoutHost(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Service URL has no host.');
+        UrlValidator::validateHttpsRequired('https:x/cb');
+    }
+
     // validatePathSegment tests
 
     public function testPathSegmentAcceptsValidId(): void
