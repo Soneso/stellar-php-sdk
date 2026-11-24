@@ -12,15 +12,18 @@ use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
 use Soneso\StellarSDK\Constants\StellarConstants;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Util\Hash;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
+use Soneso\StellarSDK\Xdr\XdrOperation;
 use Soneso\StellarSDK\Xdr\XdrSequenceNumber;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
 use Soneso\StellarSDK\Xdr\XdrTransaction;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
 use Soneso\StellarSDK\Xdr\XdrTransactionExt;
+use Soneso\StellarSDK\Xdr\XdrTransactionV0;
 use Soneso\StellarSDK\Xdr\XdrTransactionV0Envelope;
 use Soneso\StellarSDK\Xdr\XdrTransactionV1Envelope;
 
@@ -63,6 +66,7 @@ class Transaction extends AbstractTransaction
     private Memo $memo;
     private ?TransactionPreconditions $preconditions;
     private ?XdrSorobanTransactionData $sorobanTransactionData = null;
+    private bool $decodedV0 = false;
 
     /**
      * Constructor.
@@ -277,12 +281,7 @@ class Transaction extends AbstractTransaction
     public function toXdr() : XdrTransaction {
         $xdrMuxedSourceAccount = $this->sourceAccount->toXdr();
         $xdrSequenceNr = new XdrSequenceNumber($this->sequenceNumber);
-        $xdrOperations = array();
-        foreach ($this->operations as $operation) {
-            if ($operation instanceof AbstractOperation) {
-                array_push($xdrOperations, $operation->toXdr());
-            }
-        }
+        $xdrOperations = $this->operationsToXdr();
         $xdrMemo = $this->memo->toXdr();
         $xdrCond = $this->preconditions?->toXdr();
         $xdrExt = null;
@@ -306,18 +305,68 @@ class Transaction extends AbstractTransaction
     /**
      * Converts this transaction to a complete XDR transaction envelope
      *
-     * The envelope includes the transaction data and all signatures.
+     * The envelope includes the transaction data and all signatures. A transaction
+     * decoded from a V0 envelope is written as ENVELOPE_TYPE_TX_V0 while its state
+     * fits V0 (no Soroban transaction data and no V2 preconditions); otherwise it is
+     * written as ENVELOPE_TYPE_TX.
      *
      * @return XdrTransactionEnvelope Complete transaction envelope ready for submission
      */
     public function toEnvelopeXdr(): XdrTransactionEnvelope
     {
+        if ($this->shouldWriteV0Envelope()) {
+            $xdrEnvelope = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0));
+            $xdrEnvelope->setV0(new XdrTransactionV0Envelope($this->toV0Xdr(), $this->getSignatures()));
+            return $xdrEnvelope;
+        }
         $xdrTransaction = $this->toXdr();
         $v1Envelope = new XdrTransactionV1Envelope($xdrTransaction, $this->getSignatures());
         $type = new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX);
         $xdrEnvelope = new XdrTransactionEnvelope($type);
         $xdrEnvelope->setV1($v1Envelope);
         return $xdrEnvelope;
+    }
+
+    /**
+     * Reports whether this transaction should be written as a V0 envelope.
+     *
+     * @return bool True when decoded from V0 and no V1-only fields are set
+     */
+    private function shouldWriteV0Envelope(): bool
+    {
+        return $this->decodedV0
+            && $this->sorobanTransactionData === null
+            && ($this->preconditions === null || !$this->preconditions->hasV2());
+    }
+
+    /**
+     * Converts this transaction to its V0 XDR body.
+     *
+     * @return XdrTransactionV0 V0 XDR format of this transaction
+     */
+    private function toV0Xdr(): XdrTransactionV0
+    {
+        return new XdrTransactionV0(
+            StrKey::decodeAccountId($this->sourceAccount->getEd25519AccountId()),
+            new XdrSequenceNumber($this->sequenceNumber),
+            $this->operationsToXdr(),
+            $this->fee,
+            $this->memo->toXdr(),
+            $this->preconditions?->getTimeBounds()?->toXdr(),
+        );
+    }
+
+    /**
+     * Converts all operations of this transaction to XDR.
+     *
+     * @return list<XdrOperation>
+     */
+    private function operationsToXdr(): array
+    {
+        return array_map(
+            static fn (AbstractOperation $operation) => $operation->toXdr(),
+            array_values($this->operations),
+        );
     }
 
     /**
@@ -351,8 +400,10 @@ class Transaction extends AbstractTransaction
     /**
      * Creates a Transaction object from a V0 transaction envelope XDR
      *
-     * V0 transactions are the older format. This method converts them to the current
-     * Transaction format for compatibility.
+     * The returned transaction writes a V0 envelope from toEnvelopeXdr() and
+     * toEnvelopeXdrBase64() while its state fits V0 (no Soroban transaction data
+     * and no V2 preconditions). Body writers (toXdr(), toXdrBase64()) and
+     * hashing use the V1 form.
      *
      * @param XdrTransactionV0Envelope $envelope The V0 XDR envelope to parse
      * @return Transaction The reconstructed transaction with signatures
@@ -374,6 +425,7 @@ class Transaction extends AbstractTransaction
             array_push($operations, AbstractOperation::fromXdr($operation));
         }
         $transaction = new Transaction($sourceAccount, $seqNr, $operations, $memo, $cond, $fee);
+        $transaction->decodedV0 = true;
         foreach($envelope->getSignatures() as $signature) {
             $transaction->addSignature($signature);
         }
