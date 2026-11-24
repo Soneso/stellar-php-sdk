@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `ClaimantPredicateResponse::getBeforeAbsoluteTimeEpoch()` returns Horizon's `abs_before_epoch` string unchanged, with `absBeforeEpoch` as a fallback, or null when absent.
 - `XdrBuffer::assertFullyConsumed()` checks that a buffer holds no unread bytes.
 - `DeploySACWithAssetHostFunction` takes optional constructor arguments; with an argument list, including an empty one, it writes `HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2`.
 - `XdrJsonHelper::encodeText()` writes SEP-51 JSON text, and `XdrJsonHelper::JSON_DEPTH_LIMIT` holds its nesting limit of 1100 levels.
@@ -18,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - `KeyPair::__debugInfo()` returns only `accountId` and `canSign`, so `var_dump()`, `print_r()` and `debug_zval_dump()` omit the secret seed and raw private key bytes. Before this change, dumping a signing `KeyPair` printed the secret seed and the raw private key bytes.
+- `TransactionResponse` preserves the raw envelope, result, result metadata and fee metadata XDR strings and decodes each on first getter access, caching only validated values. Before this change, undecodable XDR threw during `fromJson()` and aborted transaction pages and responses embedding a transaction.
+- `EffectResponse::fromJson()` preserves an unknown effect type as a base response with its common fields, so effects pages still parse. Before this change, an unknown type threw an `InvalidArgumentException` and aborted the page.
 - `XdrJsonHelper::ksortRecursive()` throws an `InvalidArgumentException` when a value nests more arrays or objects than `$depth`, counting an empty one. Before this change, an empty array or object passed one level beyond `$depth`.
 - `Price::fromString()` returns `false` for a value that is zero, negative, not a decimal number or not finite, and for a value whose continued fraction reaches a numerator or denominator above 2147483647. `ManageSellOfferOperationBuilder` and `ManageBuyOfferOperationBuilder` throw an `InvalidArgumentException` for such a price. Before this change, zero and text that is not a number raised a `DivisionByZeroError`, `1e-10` and `2147483648` gave a fraction outside the 32-bit range, and `1abc` gave 1/1.
 - `TxRep::transactionEnvelopeXdrBase64FromTxRep()` throws an `InvalidArgumentException` that names the key for a `MEMO_HASH` or `MEMO_RETURN` value that is not 64 hexadecimal digits. Before this change, such a value raised a PHP warning or failed with a length error that did not name the key.
