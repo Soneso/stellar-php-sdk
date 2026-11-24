@@ -36,12 +36,15 @@ use Soneso\StellarSDK\PathPaymentStrictReceiveOperationBuilder;
 use Soneso\StellarSDK\PathPaymentStrictSendOperationBuilder;
 use Soneso\StellarSDK\Price;
 use Soneso\StellarSDK\RevokeSponsorshipOperationBuilder;
+use Soneso\StellarSDK\SetOptionsOperation;
 use Soneso\StellarSDK\SetOptionsOperationBuilder;
 use Soneso\StellarSDK\SetTrustLineFlagsOperationBuilder;
 use Soneso\StellarSDK\Signer;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\Xdr\XdrClaimPredicate;
 use Soneso\StellarSDK\Xdr\XdrClaimPredicateType;
+use Soneso\StellarSDK\Xdr\XdrOperation;
+use Soneso\StellarSDK\Xdr\XdrSignerKeyType;
 
 class OperationBuilderTest extends TestCase
 {
@@ -247,6 +250,64 @@ class OperationBuilderTest extends TestCase
 
         $this->assertNotNull($operation->getSignerKey());
         $this->assertEquals(5, $operation->getSignerWeight());
+    }
+
+    public function testSetOptionsSignerEncodesAndDecodesXdr(): void
+    {
+        $signerAddress = 'GDRUPBJM7YIJ2NUNAIQJDJ2DQ2JDERY5SJVJVMM6MGE4UBDAMXBHARIA';
+        $signerKey = Signer::ed25519PublicKey(KeyPair::fromAccountId($signerAddress));
+        $operation = (new SetOptionsOperationBuilder())
+            ->setSigner($signerKey, 5)
+            ->build();
+
+        $xdrOp = $operation->toXdr();
+        $xdrSigner = $xdrOp->getBody()->getSetOptionsOp()->getSigner();
+        $this->assertNotNull($xdrSigner);
+        $this->assertSame(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519, $xdrSigner->getKey()->getType()->getValue());
+        $this->assertSame(
+            'e347852cfe109d368d022091a743869232471d926a9ab19e6189ca046065c270',
+            bin2hex($xdrSigner->getKey()->getEd25519())
+        );
+        $this->assertSame($signerAddress, StrKey::encodeAccountId($xdrSigner->getKey()->getEd25519()));
+        $this->assertSame(5, $xdrSigner->getWeight());
+
+        // Hand layout (84 bytes): sourceAccount=0 (4B), opType=5 (4B), 8 absent optionals (32B),
+        // signer present=1 (4B), keyType=0 (4B), 32-byte ed25519 key of $signerAddress, weight=5 (4B).
+        $expectedBase64 = 'AAAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAA40eFLP4QnTaNAiCRp0OGkjJHHZJqmrGeYYnKBGBlwnAAAAAF';
+        $this->assertSame($expectedBase64, $xdrOp->toBase64Xdr());
+
+        $decoded = SetOptionsOperation::fromXdr(XdrOperation::fromBase64Xdr($expectedBase64));
+        $this->assertInstanceOf(SetOptionsOperation::class, $decoded);
+        $this->assertNull($decoded->getSourceAccount());
+        $this->assertNotNull($decoded->getSignerKey());
+        $this->assertSame(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519, $decoded->getSignerKey()->getType()->getValue());
+        $this->assertSame($signerAddress, StrKey::encodeAccountId($decoded->getSignerKey()->getEd25519()));
+        $this->assertSame(5, $decoded->getSignerWeight());
+    }
+
+    public function testSetOptionsSignerNullWeightEncodesZero(): void
+    {
+        $signerAddress = 'GDRUPBJM7YIJ2NUNAIQJDJ2DQ2JDERY5SJVJVMM6MGE4UBDAMXBHARIA';
+        $signerKey = Signer::ed25519PublicKey(KeyPair::fromAccountId($signerAddress));
+        $operation = new SetOptionsOperation(signerKey: $signerKey, signerWeight: null);
+
+        $xdrOp = $operation->toXdr();
+        $xdrSigner = $xdrOp->getBody()->getSetOptionsOp()->getSigner();
+        $this->assertNotNull($xdrSigner);
+        $this->assertSame(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519, $xdrSigner->getKey()->getType()->getValue());
+        $this->assertSame($signerAddress, StrKey::encodeAccountId($xdrSigner->getKey()->getEd25519()));
+        $this->assertSame(0, $xdrSigner->getWeight());
+
+        // Same 84-byte layout with final 4-byte weight = 0.
+        $expectedBase64 = 'AAAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAA40eFLP4QnTaNAiCRp0OGkjJHHZJqmrGeYYnKBGBlwnAAAAAA';
+        $this->assertSame($expectedBase64, $xdrOp->toBase64Xdr());
+
+        $decoded = SetOptionsOperation::fromXdr(XdrOperation::fromBase64Xdr($expectedBase64));
+        $this->assertInstanceOf(SetOptionsOperation::class, $decoded);
+        $this->assertNotNull($decoded->getSignerKey());
+        $this->assertSame(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519, $decoded->getSignerKey()->getType()->getValue());
+        $this->assertSame($signerAddress, StrKey::encodeAccountId($decoded->getSignerKey()->getEd25519()));
+        $this->assertSame(0, $decoded->getSignerWeight());
     }
 
     public function testSetOptionsChainedMethods(): void

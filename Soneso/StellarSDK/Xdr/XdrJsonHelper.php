@@ -416,7 +416,7 @@ final class XdrJsonHelper
      *     when the uint64 value exceeds PHP_INT_MAX and is stored as a signed PHP int (the
      *     negative form is reinterpreted as the unsigned bit pattern via two's-complement).
      * @return string Base-10 decimal string of the assembled 128-bit unsigned integer.
-     * @throws InvalidArgumentException If hi or lo are not valid int64-fitting strings.
+     * @throws InvalidArgumentException On a malformed integer string; the range of a limb is not checked.
      */
     public static function uint128PartsToString(string $hi, string $lo): string
     {
@@ -460,7 +460,8 @@ final class XdrJsonHelper
      * or in PHP's signed two's-complement wrap form ("-1") — the internal uint64HalfToGmp
      * helper handles both representations for lossless assembly.
      *
-     * @param string $hiHi Signed int64 as base-10 string (range [-2^63, 2^63-1]).
+     * @param string $hiHi Signed int64 as base-10 string (range [-2^63, 2^63-1]), or its
+     *     unsigned two's-complement 64-bit form in [2^63, 2^64-1] (e.g. "18446744073709551615").
      * @param string $hiLo Unsigned uint64 as base-10 string. May be a negative base-10
      *     string when the uint64 value exceeds PHP_INT_MAX and is stored as a signed PHP int
      *     (the negative form is reinterpreted as the unsigned bit pattern via two's-complement).
@@ -642,18 +643,22 @@ final class XdrJsonHelper
      *     decode but covered for callers using this method directly on mixed structures).
      *   - Scalar / null: return as-is.
      *
-     * The $depth parameter bounds the recursion. Its default, {@see self::JSON_DEPTH_LIMIT},
-     * sorts every value canonicalJson decodes; a caller passing a value built by hand may
-     * pass another bound.
+     * The $depth parameter bounds the recursion: for $depth >= 0, at most $depth nested
+     * containers (arrays or objects) are allowed, counting the root and counting an empty
+     * container. A scalar or null consumes no depth and is valid at depth 0; an array or
+     * object at depth 0 throws, and a negative $depth throws for any value. Its default,
+     * {@see self::JSON_DEPTH_LIMIT}, sorts every value canonicalJson decodes; a caller
+     * passing a value built by hand may pass another bound.
      *
      * @param mixed $value Any decoded JSON value.
-     * @param int   $depth Remaining recursion depth. Throws when it reaches zero.
+     * @param int   $depth Maximum nested container count (>= 0); a negative value throws,
+     *     and an array or object throws at 0 while scalars and null pass.
      * @return mixed The same structure with all object property keys sorted recursively.
-     * @throws InvalidArgumentException When $depth is exhausted (nesting too deep).
+     * @throws InvalidArgumentException When $depth is negative or container nesting exceeds $depth.
      */
     public static function ksortRecursive(mixed $value, int $depth = self::JSON_DEPTH_LIMIT): mixed
     {
-        if ($depth < 0) {
+        if ($depth < 0 || ($depth === 0 && (is_object($value) || is_array($value)))) {
             throw new InvalidArgumentException(
                 'ksortRecursive: maximum recursion depth exceeded'
             );

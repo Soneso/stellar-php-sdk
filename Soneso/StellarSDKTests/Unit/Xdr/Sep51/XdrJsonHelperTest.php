@@ -6,6 +6,7 @@
 
 namespace Soneso\StellarSDKTests\Unit\Xdr\Sep51;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Xdr\XdrJsonHelper;
@@ -1297,6 +1298,21 @@ class XdrJsonHelperTest extends TestCase
         XdrJsonHelper::canonicalJson('[' . $json . ']');
     }
 
+    public function testCanonical_nestingLimitEmptyContainers(): void
+    {
+        $limit = XdrJsonHelper::JSON_DEPTH_LIMIT;
+        $arrJson = str_repeat('[', $limit) . str_repeat(']', $limit);
+        $this->assertSame($arrJson, XdrJsonHelper::canonicalJson($arrJson));
+
+        $objJson = str_repeat('{"b":0,"a":', $limit - 1) . '{}' . str_repeat('}', $limit - 1);
+        $expectedObjJson = str_repeat('{"a":', $limit - 1) . '{}' . str_repeat(',"b":0}', $limit - 1);
+        $this->assertSame($expectedObjJson, XdrJsonHelper::canonicalJson($objJson));
+
+        $this->expectException(\JsonException::class);
+        $this->expectExceptionCode(JSON_ERROR_DEPTH);
+        XdrJsonHelper::canonicalJson('[' . $arrJson . ']');
+    }
+
     /**
      * canonicalJson normalises bytes; it does not apply SEP-51 input rules.
      *
@@ -1543,6 +1559,142 @@ class XdrJsonHelperTest extends TestCase
         }
         $this->assertSame('x', $sorted);
         $this->expectException(\InvalidArgumentException::class);
+        XdrJsonHelper::ksortRecursive((object) ['a' => $value]);
+    }
+
+    public function testKsortRecursive_depthZeroAllowsScalarsAndNull(): void
+    {
+        $this->assertSame('x', XdrJsonHelper::ksortRecursive('x', 0));
+        $this->assertSame(42, XdrJsonHelper::ksortRecursive(42, 0));
+        $this->assertTrue(XdrJsonHelper::ksortRecursive(true, 0));
+        $this->assertNull(XdrJsonHelper::ksortRecursive(null, 0));
+    }
+
+    /**
+     * @return array<string, array{0: mixed}>
+     */
+    public static function ksortRecursiveDepthZeroContainerProvider(): array
+    {
+        return [
+            'empty array' => [[]],
+            'non-empty list' => [['x']],
+            'associative array' => [['b' => 1, 'a' => 2]],
+            'empty object' => [new \stdClass()],
+            'non-empty object' => [(object) ['a' => 'x']],
+        ];
+    }
+
+    #[DataProvider('ksortRecursiveDepthZeroContainerProvider')]
+    public function testKsortRecursive_depthZeroRejectsContainers(mixed $container): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/maximum recursion depth/');
+        XdrJsonHelper::ksortRecursive($container, 0);
+    }
+
+    /**
+     * @return array<string, array{0: mixed}>
+     */
+    public static function ksortRecursiveNegativeDepthProvider(): array
+    {
+        return [
+            'scalar' => ['x'],
+            'null' => [null],
+            'empty array' => [[]],
+            'empty object' => [new \stdClass()],
+        ];
+    }
+
+    #[DataProvider('ksortRecursiveNegativeDepthProvider')]
+    public function testKsortRecursive_negativeDepthThrows(mixed $value): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/maximum recursion depth/');
+        XdrJsonHelper::ksortRecursive($value, -1);
+    }
+
+    public function testKsortRecursive_smallDepthAllowsUpToLimitContainers(): void
+    {
+        $this->assertSame([[]], XdrJsonHelper::ksortRecursive([[]], 2));
+        $this->assertSame([['x']], XdrJsonHelper::ksortRecursive([['x']], 2));
+        $this->assertSame(['a' => [], 'b' => 0], XdrJsonHelper::ksortRecursive(['b' => 0, 'a' => []], 2));
+        $this->assertSame(
+            ['a' => ['c' => 2, 'd' => 1], 'b' => 0],
+            XdrJsonHelper::ksortRecursive(['b' => 0, 'a' => ['d' => 1, 'c' => 2]], 2)
+        );
+
+        $objEmpty = XdrJsonHelper::ksortRecursive((object) ['b' => 0, 'a' => new \stdClass()], 2);
+        $this->assertSame(['a', 'b'], array_keys((array) $objEmpty));
+        $this->assertSame(0, $objEmpty->b);
+        $this->assertInstanceOf(\stdClass::class, $objEmpty->a);
+        $this->assertSame([], (array) $objEmpty->a);
+
+        $objNonEmpty = XdrJsonHelper::ksortRecursive((object) ['b' => 0, 'a' => (object) ['d' => 1, 'c' => 'x']], 2);
+        $this->assertSame(['a', 'b'], array_keys((array) $objNonEmpty));
+        $this->assertSame(['c', 'd'], array_keys((array) $objNonEmpty->a));
+        $this->assertSame('x', $objNonEmpty->a->c);
+        $this->assertSame(1, $objNonEmpty->a->d);
+    }
+
+    /**
+     * @return array<string, array{0: mixed}>
+     */
+    public static function ksortRecursiveDepthTwoExceededProvider(): array
+    {
+        return [
+            'nested empty list' => [[[[]]]],
+            'nested non-empty list' => [[[['x']]]],
+            'nested empty associative array' => [['a' => ['a' => []]]],
+            'nested non-empty associative array' => [['a' => ['a' => ['a' => 'x']]]],
+            'nested empty object' => [(object) ['a' => (object) ['a' => new \stdClass()]]],
+            'nested non-empty object' => [(object) ['a' => (object) ['a' => (object) ['a' => 'x']]]],
+        ];
+    }
+
+    #[DataProvider('ksortRecursiveDepthTwoExceededProvider')]
+    public function testKsortRecursive_smallDepthRejectsOneLevelDeeper(mixed $value): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/maximum recursion depth/');
+        XdrJsonHelper::ksortRecursive($value, 2);
+    }
+
+    public function testKsortRecursive_defaultDepthEmptyArrayBoundary(): void
+    {
+        $limit = XdrJsonHelper::JSON_DEPTH_LIMIT;
+        $value = [];
+        for ($i = 1; $i < $limit; $i++) {
+            $value = [$value];
+        }
+        $sorted = XdrJsonHelper::ksortRecursive($value);
+        for ($i = 1; $i < $limit; $i++) {
+            $this->assertSame([0], array_keys($sorted));
+            $sorted = $sorted[0];
+        }
+        $this->assertSame([], $sorted);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/maximum recursion depth/');
+        XdrJsonHelper::ksortRecursive([$value]);
+    }
+
+    public function testKsortRecursive_defaultDepthEmptyObjectBoundary(): void
+    {
+        $limit = XdrJsonHelper::JSON_DEPTH_LIMIT;
+        $value = new \stdClass();
+        for ($i = 1; $i < $limit; $i++) {
+            $value = (object) ['b' => 0, 'a' => $value];
+        }
+        $sorted = XdrJsonHelper::ksortRecursive($value);
+        for ($i = 1; $i < $limit; $i++) {
+            $this->assertSame(['a', 'b'], array_keys((array) $sorted));
+            $sorted = $sorted->a;
+        }
+        $this->assertInstanceOf(\stdClass::class, $sorted);
+        $this->assertSame([], (array) $sorted);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/maximum recursion depth/');
         XdrJsonHelper::ksortRecursive((object) ['a' => $value]);
     }
 
