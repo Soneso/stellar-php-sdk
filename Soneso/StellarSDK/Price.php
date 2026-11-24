@@ -23,6 +23,9 @@ use Soneso\StellarSDK\Xdr\XdrPrice;
  */
 class Price
 {
+    private const MAX_INT32 = 2147483647;
+    private const DECIMAL_PATTERN = '/^\+?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/D';
+
     /**
      * Price constructor
      *
@@ -77,39 +80,61 @@ class Price
     /**
      * Creates a Price from a decimal string
      *
-     * Converts a decimal price (e.g., "1.5") into a rational fraction using
-     * continued fraction approximation to maintain precision. The approximation
-     * uses a tolerance of 1.e-9, which may result in precision limitations for
-     * certain decimal values. The resulting numerator and denominator are
-     * constrained by 32-bit integer limits.
+     * Converts a positive decimal price (e.g., "1.5") into a rational fraction
+     * using continued fraction approximation to maintain precision. Leading and
+     * trailing whitespace (space, \t, \n, \r, \v, \f) is ignored. The
+     * approximation uses a relative tolerance of 1.e-9. Returns false if the
+     * string is not a positive finite decimal number or if a continued-fraction
+     * convergent exceeds 2147483647 in the numerator or the denominator.
      *
      * @param string $price The decimal price as a string
      * @return Price|false The price object, or false if conversion fails
      */
     public static function fromString(string $price) : Price | false {
-        $price = Price::float2fraction($price);
-        if ($price) {
-            return new Price(intval($price["nominator"]), intval($price["denominator"]));
+        $trimmed = trim($price, " \t\n\r\v\f");
+        if (preg_match(self::DECIMAL_PATTERN, $trimmed) !== 1) {
+            return false;
+        }
+        $fraction = self::float2fraction((float) $trimmed);
+        if ($fraction !== false) {
+            return new Price($fraction["nominator"], $fraction["denominator"]);
         }
         return false;
     }
 
-    private static function float2fraction($n, $tolerance = 1.e-9) : array | false {
-        $n = (float) $n;
-        $h1=1; $h2=0;
-        $k1=0; $k2=1;
-        $b = 1/$n;
-        do {
-            $b = 1/$b;
-            $a = floor($b);
-            $aux = $h1; $h1 = $a*$h1+$h2; $h2 = $aux;
-            $aux = $k1; $k1 = $a*$k1+$k2; $k2 = $aux;
-            $b = $b-$a;
-        } while (abs($n-$h1/$k1) > $n*$tolerance);
-
-        if ( ! empty ( $h1 ) && ! empty ( $k1 ))
-            return array ( "nominator" => $h1, "denominator" => $k1, "str_view" => "$h1/$k1" ) ;
-        else
+    /**
+     * @return array{nominator: int, denominator: int}|false
+     */
+    private static function float2fraction(float $n, float $tolerance = 1.e-9) : array | false {
+        if (!is_finite($n) || $n <= 0.0) {
             return false;
+        }
+        $h1 = 1.0;
+        $h2 = 0.0;
+        $k1 = 0.0;
+        $k2 = 1.0;
+        $b = 1.0 / $n;
+        if (!is_finite($b)) {
+            return false;
+        }
+        do {
+            $b = 1.0 / $b;
+            if (!is_finite($b)) {
+                return false;
+            }
+            $a = floor($b);
+            $aux = $h1;
+            $h1 = $a * $h1 + $h2;
+            $h2 = $aux;
+            $aux = $k1;
+            $k1 = $a * $k1 + $k2;
+            $k2 = $aux;
+            if (!is_finite($h1) || !is_finite($k1) || $h1 > self::MAX_INT32 || $k1 > self::MAX_INT32) {
+                return false;
+            }
+            $b = $b - $a;
+        } while ($b != 0.0 && abs($n - $h1 / $k1) > $n * $tolerance);
+
+        return ["nominator" => (int) $h1, "denominator" => (int) $k1];
     }
 }

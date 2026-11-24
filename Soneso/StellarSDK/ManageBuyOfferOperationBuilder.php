@@ -6,6 +6,9 @@
 
 namespace Soneso\StellarSDK;
 
+use InvalidArgumentException;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
+
 /**
  * Builder for creating ManageBuyOffer operations.
  *
@@ -49,6 +52,7 @@ class ManageBuyOfferOperationBuilder
      * @param Asset $buying The asset being bought in this operation
      * @param string $amount The amount of asset to be bought
      * @param string $price The price of the asset being bought in terms of the asset being sold
+     * @throws InvalidArgumentException If the price cannot be converted to a positive 32-bit fraction
      */
     public function __construct(
         private Asset $selling,
@@ -56,7 +60,13 @@ class ManageBuyOfferOperationBuilder
         private string $amount,
         string $price,
     ) {
-        $this->price = Price::fromString($price);
+        $parsedPrice = Price::fromString($price);
+        if ($parsedPrice === false) {
+            throw new InvalidArgumentException(
+                'Invalid price: ' . SecretSeedRedaction::redactSecretSeeds($price),
+            );
+        }
+        $this->price = $parsedPrice;
     }
 
     /**

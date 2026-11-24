@@ -91,24 +91,6 @@ parameters:
 			path: Soneso/StellarSDK/PathPaymentStrictSendOperationBuilder.php
 
 		-
-			message: '#^Method Soneso\\StellarSDK\\Price\:\:float2fraction\(\) has parameter \$n with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: Soneso/StellarSDK/Price.php
-
-		-
-			message: '#^Method Soneso\\StellarSDK\\Price\:\:float2fraction\(\) has parameter \$tolerance with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: Soneso/StellarSDK/Price.php
-
-		-
-			message: '#^Method Soneso\\StellarSDK\\Price\:\:float2fraction\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: Soneso/StellarSDK/Price.php
-
-		-
 			message: '#^Class Soneso\\StellarSDK\\AssetTypeCreditAlphanum referenced with incorrect case\: Soneso\\StellarSDK\\AssetTypeCreditAlphaNum\.$#'
 			identifier: class.nameCase
 			count: 2

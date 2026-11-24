@@ -1350,6 +1350,34 @@ class OperationBuilderTest extends TestCase
         $this->assertInstanceOf(ManageBuyOfferOperationBuilder::class, $result);
     }
 
+    public static function invalidOfferPriceProvider(): array
+    {
+        return [
+            'zero' => ['0', 'Invalid price: 0'],
+            'empty string' => ['', 'Invalid price: '],
+            'non-numeric text' => ['abc', 'Invalid price: abc'],
+            'trailing text' => ['1abc', 'Invalid price: 1abc'],
+            'negative decimal' => ['-1.5', 'Invalid price: -1.5'],
+            'too small for 32-bit denominator' => ['1e-10', 'Invalid price: 1e-10'],
+            'above 32-bit numerator' => ['2147483648', 'Invalid price: 2147483648'],
+            'secret seed shape' => ['S' . str_repeat('A', 39), 'Invalid price: a secret seed (S...)'],
+        ];
+    }
+
+    #[DataProvider('invalidOfferPriceProvider')]
+    public function testManageBuyOfferInvalidPriceThrowsException(string $price, string $expectedMessage): void
+    {
+        $selling = Asset::native();
+        $buying = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+
+        try {
+            new ManageBuyOfferOperationBuilder($selling, $buying, "100.0", $price);
+            $this->fail('Expected InvalidArgumentException for invalid price');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame($expectedMessage, $e->getMessage());
+        }
+    }
+
     // ManageSellOfferOperationBuilder Tests
 
     public function testManageSellOfferBasic(): void
@@ -1422,6 +1450,20 @@ class OperationBuilderTest extends TestCase
 
         $result = $builder->setSourceAccount($this->sourceAccountId);
         $this->assertInstanceOf(ManageSellOfferOperationBuilder::class, $result);
+    }
+
+    #[DataProvider('invalidOfferPriceProvider')]
+    public function testManageSellOfferInvalidPriceThrowsException(string $price, string $expectedMessage): void
+    {
+        $selling = Asset::createNonNativeAsset("USD", $this->sourceAccountId);
+        $buying = Asset::native();
+
+        try {
+            new ManageSellOfferOperationBuilder($selling, $buying, "50.0", $price);
+            $this->fail('Expected InvalidArgumentException for invalid price');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame($expectedMessage, $e->getMessage());
+        }
     }
 
     // InvokeHostFunctionOperationBuilder Tests
