@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `XdrConfigUpgradeSetKeyBase`, `XdrInnerTransactionResultPairBase`, `XdrLiquidityPoolDepositOperationBase`, `XdrLiquidityPoolWithdrawOperationBase` and `XdrOperationResultTrBase`. The classes of the same name without `Base` are generated in full and keep their API.
 
 ### Fixed
+- `KeyPair::__debugInfo()` returns only `accountId` and `canSign`, so `var_dump()`, `print_r()` and `debug_zval_dump()` omit the secret seed and raw private key bytes. Before this change, dumping a signing `KeyPair` printed the secret seed and the raw private key bytes.
 - `TransactionResponse` preserves the raw envelope, result, result metadata and fee metadata XDR strings and decodes each on first getter access, caching only validated values. Before this change, undecodable XDR threw during `fromJson()` and aborted transaction pages and responses embedding a transaction.
 - `EffectResponse::fromJson()` preserves an unknown effect type as a base response with its common fields, so effects pages still parse. Before this change, an unknown type threw an `InvalidArgumentException` and aborted the page.
 - `XdrJsonHelper::ksortRecursive()` throws an `InvalidArgumentException` when a value nests more arrays or objects than `$depth`, counting an empty one. Before this change, an empty array or object passed one level beyond `$depth`.
