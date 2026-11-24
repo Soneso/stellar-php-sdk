@@ -22,6 +22,7 @@ use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\Toml\StellarToml;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrCryptoKeyType;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
 use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrMemoType;
@@ -174,13 +175,21 @@ class WebAuth
      *                       Only permitted if the client account id is a Stellar account (G...), never with a muxed
      *                       account (M...). Null means no memo; every id from 0 to 2^64-1, as an unsigned decimal string
      *                       above PHP_INT_MAX, is valid and is sent to the server and verified against the returned challenge.
-     * @param string|null $homeDomain optional, used for requesting the challenge depending on the home domain if needed. The web auth server may serve multiple home domains.
+     * @param string|null $homeDomain optional, home domain to request from a server that may serve multiple home domains.
+     *                       A non-null, non-empty value is sent as home_domain; the first operation's key must equal that value
+     *                       followed by " auth". Null or the empty string omits the parameter and validates against the server home domain.
      * @param string|null $clientDomain optional, domain of the client hosting it's stellar.toml. If clientDomain is provided,
      * you also need to provide the clientDomainKeyPair or a clientDomainSigningCallback for client domain transaction signing.
      * @param KeyPair|null $clientDomainKeyPair optional, KeyPair of the client domain account including the seed (used for signing the transaction if client domain is provided)
      * @param callable|null $clientDomainSigningCallback Optional callback for SEP-10 client domain verification when signing cannot be performed locally.
      * The callback receives a base64-encoded transaction envelope XDR string and must return the same transaction signed by the client domain account
      * as a base64-encoded transaction envelope XDR string. Used when the client domain signing key is not available locally (e.g., signing occurs on a separate server).
+     * Its answer is strictly decoded and its encoded transaction body must match the validated challenge, even if the callback takes its argument by reference.
+     * Challenge signatures, callback signatures and local signatures are merged in that order, taking each complete decorated signature once (at most 20).
+     * A client_domain operation requires authorization by the expected key, through a signature with the correct hint over the challenge hash for this network
+     * or through local signing with clientDomainKeyPair. A local key pair takes precedence over a stellar.toml lookup.
+     * A non-string answer or invalid base64 or XDR throws InvalidArgumentException; a wrong envelope type or changed body throws ChallengeValidationError;
+     * missing client domain authorization or more than 20 merged signatures throws ChallengeValidationErrorInvalidSignature before submission.
      * Callback signature: function(string $transactionXdr): string
      * @return string JWT token that can be used to authenticate requests to protected services.
      * @throws ChallengeValidationError
@@ -210,6 +219,8 @@ class WebAuth
                              ?KeyPair $clientDomainKeyPair = null,
                              ?callable $clientDomainSigningCallback = null) : string {
 
+        $expectedHomeDomain = $homeDomain !== null && $homeDomain !== '' ? $homeDomain : $this->serverHomeDomain;
+
         // get the challenge transaction from the web auth server
         $transaction = $this->getChallenge($clientAccountId, $memo, $homeDomain, $clientDomain);
 
@@ -232,14 +243,15 @@ class WebAuth
             }
         }
         // validate the transaction received from the web auth server.
-        $this->validateChallenge($transaction, $clientAccountId, $clientDomainSignerAccountId, $this->gracePeriod, $memo);
+        $this->validateChallenge($transaction, $clientAccountId, $expectedHomeDomain, $clientDomainSignerAccountId, $this->gracePeriod, $memo);
 
         if ($clientDomainKeyPair) {
             array_push($signers, $clientDomainKeyPair);
         }
 
         // sign the transaction received from the web auth server using the provided user/client keypair by parameter.
-        $signedTransaction = $this->signTransaction($transaction, $signers, $clientDomainSigningCallback);
+        $signedTransaction = $this->signTransaction($transaction, $signers, $clientDomainSigningCallback,
+            $clientDomainSignerAccountId, $clientDomainKeyPair);
 
         // request the jwt token by sending back the signed challenge transaction to the web auth server.
         return $this->sendSignedChallengeTransaction($signedTransaction);
@@ -286,24 +298,28 @@ class WebAuth
     }
 
     /**
-     * Decodes and signs the challenge transaction with the provided signer key pairs. If a clientDomainSigningCallback is provided,
-     * the callback will be called to also sign the transaction.
+     * Signs the validated challenge hash for the configured network. A callback receives a separate copy of the envelope string;
+     * its strictly decoded transaction body must be byte-identical to the validated body. The output retains the validated body
+     * and merges challenge, callback and local signatures in order, deduplicating complete decorated signatures in the callback path.
+     * When a client_domain operation and an expected key are present, a signature with that key's hint must verify over the challenge
+     * hash, either from the challenge, the callback or local client domain signing. This is checked before asking the user to sign.
      * @param string $challengeTransaction the base64 encoded transaction envelope to sign.
      * @param array<KeyPair> $signers the key pairs of the signers to sign the transaction with.
      * @param callable|null $clientDomainSigningCallback Optional callback for SEP-10 client domain verification when signing cannot be performed locally.
      * The callback receives a base64-encoded transaction envelope XDR string and must return the same transaction signed by the client domain account
      * as a base64-encoded transaction envelope XDR string. Used when the client domain signing key is not available locally (e.g., signing occurs on a separate server).
      * Callback signature: function(string $transactionXdr): string
+     * @param string|null $clientDomainAccountId Expected client domain signing key, resolved from the local key pair or stellar.toml.
+     * @param KeyPair|null $clientDomainKeyPair Optional local client domain signer, also included in $signers.
      * @return string the signed transaction as base64 encoded transaction envelope
-     * @throws ChallengeValidationError if the given base64 encoded transaction envelope has an invalid envelope type.
+     * @throws InvalidArgumentException if the callback answer is not a string or an envelope contains invalid base64, invalid XDR or trailing bytes.
+     * @throws ChallengeValidationError if an envelope has an invalid type or the callback returns a different transaction body.
+     * @throws ChallengeValidationErrorInvalidSignature if client domain authorization is missing or the callback path merges more than 20 signatures.
      * @throws \Soneso\StellarSDK\Crypto\CryptoException If a signer keypair fails to produce a signature
      */
-    private function signTransaction(string $challengeTransaction, array $signers, ?callable $clientDomainSigningCallback = null) : string {
-        $b64TxEnvelopeToSign = $challengeTransaction;
-        if ($clientDomainSigningCallback !== null) {
-            $b64TxEnvelopeToSign = $clientDomainSigningCallback($challengeTransaction);
-        }
-        $res = base64_decode($b64TxEnvelopeToSign, true);
+    private function signTransaction(string $challengeTransaction, array $signers, ?callable $clientDomainSigningCallback = null,
+                                     ?string $clientDomainAccountId = null, ?KeyPair $clientDomainKeyPair = null) : string {
+        $res = base64_decode($challengeTransaction, true);
         if ($res === false) {
             throw new InvalidArgumentException('Invalid base64-encoded transaction envelope');
         }
@@ -314,10 +330,86 @@ class WebAuth
             throw new ChallengeValidationError("Invalid transaction type");
         }
         $txHash = AbstractTransaction::fromEnvelopeXdr($envelopeXdr)->hash($this->network);
-        $signatures = $envelopeXdr->getV1()->getSignatures();
+        $validatedSignatures = $envelopeXdr->getV1()->getSignatures();
+        $signatures = $validatedSignatures;
+        $localDomainSignature = null;
+        $appendSignature = null;
+        if ($clientDomainSigningCallback !== null) {
+            $validatedBody = $envelopeXdr->getV1()->getTx()->encode();
+            // The callback may overwrite its argument by reference. All validation and signing baselines are independent of it.
+            $callbackArgument = $challengeTransaction;
+            $callbackResult = $clientDomainSigningCallback($callbackArgument);
+            if (!is_string($callbackResult)) {
+                throw new InvalidArgumentException('Invalid base64-encoded transaction envelope');
+            }
+            $res = base64_decode($callbackResult, true);
+            if ($res === false) {
+                throw new InvalidArgumentException('Invalid base64-encoded transaction envelope');
+            }
+            $xdr = new XdrBuffer($res);
+            $callbackEnvelope = XdrTransactionEnvelope::decode($xdr);
+            $xdr->assertFullyConsumed(XdrTransactionEnvelope::class);
+            if ($callbackEnvelope->getType()->getValue() != XdrEnvelopeType::ENVELOPE_TYPE_TX) {
+                throw new ChallengeValidationError("Invalid transaction type");
+            }
+            if ($callbackEnvelope->getV1()->getTx()->encode() !== $validatedBody) {
+                throw new ChallengeValidationError('Client domain signing callback returned a different transaction');
+            }
+
+            $signatures = [];
+            $encodedSignatures = [];
+            $appendSignature = static function (XdrDecoratedSignature $signature) use (&$signatures, &$encodedSignatures): void {
+                $encoded = $signature->encode();
+                if (!in_array($encoded, $encodedSignatures, true)) {
+                    if (count($signatures) === 20) {
+                        throw new ChallengeValidationErrorInvalidSignature('Invalid transaction envelope, more than 20 signatures');
+                    }
+                    $encodedSignatures[] = $encoded;
+                    $signatures[] = $signature;
+                }
+            };
+            foreach (array_merge($validatedSignatures, $callbackEnvelope->getV1()->getSignatures()) as $signature) {
+                $appendSignature($signature);
+            }
+
+            if ($clientDomainAccountId !== null) {
+                $requiresDomainSignature = false;
+                foreach ($envelopeXdr->getV1()->getTx()->getOperations() as $operation) {
+                    if ($operation->getBody()->getManageDataOperation()->getKey() === 'client_domain') {
+                        $requiresDomainSignature = true;
+                        break;
+                    }
+                }
+                if ($requiresDomainSignature) {
+                    $domainKey = KeyPair::fromAccountId($clientDomainAccountId);
+                    $authorizationSignatures = $signatures;
+                    if ($clientDomainKeyPair !== null) {
+                        $localDomainSignature = $clientDomainKeyPair->signDecorated($txHash);
+                        $authorizationSignatures[] = $localDomainSignature;
+                    }
+                    $authorized = false;
+                    foreach ($authorizationSignatures as $signature) {
+                        if ($signature->getHint() === $domainKey->getHint()
+                            && $domainKey->verifySignature($signature->getSignature(), $txHash)) {
+                            $authorized = true;
+                            break;
+                        }
+                    }
+                    if (!$authorized) {
+                        throw new ChallengeValidationErrorInvalidSignature('Invalid client domain signature');
+                    }
+                }
+            }
+        }
         foreach ($signers as $signer) {
             if ($signer instanceof KeyPair) {
-                array_push($signatures, $signer->signDecorated($txHash));
+                $signature = $signer === $clientDomainKeyPair && $localDomainSignature !== null
+                    ? $localDomainSignature : $signer->signDecorated($txHash);
+                if ($appendSignature !== null) {
+                    $appendSignature($signature);
+                } else {
+                    array_push($signatures, $signature);
+                }
             }
         }
         $envelopeXdr->getV1()->setSignatures($signatures);
@@ -351,10 +443,14 @@ class WebAuth
      * Validates the challenge transaction received from the web auth server.
      *
      * Performs comprehensive validation according to SEP-10 requirements including sequence number,
-     * signatures, time bounds, operations, source accounts, home domain, and web auth domain.
+     * signatures, time bounds, operations, source accounts, home domain, and web auth domain. The transaction source must be
+     * an unmuxed account equal to the server signing key. A muxed source is rejected also when the server signing key is an M address.
+     * Operation 0 must contain a 64-byte base64 nonce that strictly decodes to 48 bytes;
+     * nonce entropy is not assessed.
      *
      * @param string $challengeTransaction Base64-encoded XDR transaction envelope to validate.
      * @param string $userAccountId The client account ID that should be authenticated.
+     * @param string $expectedHomeDomain The resolved home domain: the first operation's key must equal this value followed by " auth".
      * @param string|null $clientDomainAccountId Optional client domain account for domain verification.
      * @param int|null $timeBoundsGracePeriod Optional grace period in seconds for time bounds validation.
      * @param int|string|null $memo The memo requested from the server: every id from 0 to 2^64-1, as an unsigned decimal string above PHP_INT_MAX.
@@ -373,7 +469,7 @@ class WebAuth
      * @throws ChallengeValidationErrorInvalidOperationType
      * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md#challenge SEP-10 Challenge Validation
      */
-    private function validateChallenge(string $challengeTransaction, string $userAccountId,  ?string $clientDomainAccountId = null, ?int $timeBoundsGracePeriod = null, int|string|null $memo = null) {
+    private function validateChallenge(string $challengeTransaction, string $userAccountId, string $expectedHomeDomain, ?string $clientDomainAccountId = null, ?int $timeBoundsGracePeriod = null, int|string|null $memo = null) {
         $res = base64_decode($challengeTransaction, true);
         if ($res === false) {
             throw new InvalidArgumentException('Invalid base64-encoded challenge transaction');
@@ -389,6 +485,10 @@ class WebAuth
         $transaction = $envelopeXdr->getV1()->getTx();
         if ($transaction->getSequenceNumber()->sequenceNumber->toString() != "0") {
             throw new ChallengeValidationErrorInvalidSeqNr("Invalid transaction, sequence number not 0");
+        }
+        if ($transaction->getSourceAccount()->getDiscriminant() !== XdrCryptoKeyType::KEY_TYPE_ED25519
+            || MuxedAccount::fromXdr($transaction->getSourceAccount())->getAccountId() !== $this->serverSigningKey) {
+            throw new ChallengeValidationErrorInvalidSourceAccount('Invalid transaction source account, expected the server signing key');
         }
 
         if ($transaction->getMemo()->getType()->getValue() != XdrMemoType::MEMO_NONE) {
@@ -442,11 +542,18 @@ class WebAuth
                 }
             }
 
-            if ($count == 0 && $dataName != ($this->serverHomeDomain . " auth")) {
+            if ($count == 0 && $dataName !== ($expectedHomeDomain . " auth")) {
                 throw new ChallengeValidationErrorInvalidHomeDomain("invalid home domain in operation[".$count."]");
             }
 
             $dataValue = $operation->getBody()->getManageDataOperation()->getValue();
+            if ($count === 0) {
+                $nonce = $dataValue->getValue();
+                $decodedNonce = $nonce !== null ? base64_decode($nonce, true) : false;
+                if ($nonce === null || strlen($nonce) !== 64 || $decodedNonce === false || strlen($decodedNonce) !== 48) {
+                    throw new ChallengeValidationError('Invalid nonce in operation[0]: expected 64 base64 bytes encoding 48 bytes');
+                }
+            }
             if ($count > 0 && $dataName == "web_auth_domain") {
                 $parse = parse_url($this->authEndpoint);
                 $host = $parse['host'];
@@ -527,7 +634,7 @@ class WebAuth
         if ($memo !== null) {
             $requestBuilder = $requestBuilder->forMemo($memo);
         }
-        if ($homeDomain) {
+        if ($homeDomain !== null && $homeDomain !== '') {
             $requestBuilder = $requestBuilder->forHomeDomain($homeDomain);
         }
         if ($clientDomain) {
