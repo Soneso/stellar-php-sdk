@@ -433,7 +433,7 @@ class TxRep
                 throw new InvalidArgumentException('missing ' . $prefix . '.hash');
             }
             $memo = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_HASH));
-            $memo->setHash(hex2bin($hashHex) ?: '');
+            $memo->setHash(self::decodeMemoHash($hashHex, $prefix . '.hash'));
             return $memo;
         }
 
@@ -443,11 +443,27 @@ class TxRep
                 throw new InvalidArgumentException('missing ' . $prefix . '.retHash');
             }
             $memo = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_RETURN));
-            $memo->setReturnHash(hex2bin($hashHex) ?: '');
+            $memo->setReturnHash(self::decodeMemoHash($hashHex, $prefix . '.retHash'));
             return $memo;
         }
 
         throw new InvalidArgumentException('Unknown memo type: ' . $memoTypeStr);
+    }
+
+    /**
+     * Validate and decode a hexadecimal MEMO_HASH or MEMO_RETURN value.
+     *
+     * @param string $hex The hexadecimal memo hash without an inline comment.
+     * @param string $key The TxRep key used in validation errors.
+     * @return string The decoded memo hash bytes.
+     * @throws InvalidArgumentException If the value is not exactly 64 hexadecimal digits.
+     */
+    private static function decodeMemoHash(string $hex, string $key): string
+    {
+        if (strlen($hex) !== StellarConstants::MEMO_HASH_LENGTH * 2 || !ctype_xdigit($hex)) {
+            throw new InvalidArgumentException('invalid ' . $key);
+        }
+        return (string)hex2bin($hex);
     }
 
     /**
