@@ -1595,6 +1595,177 @@ class SecretSeedMessagesTest extends TestCase
     }
 
     /**
+     * Call sites that format an invalid caller key with SecretSeedRedaction::keyForMessage()
+     * directly, tested with seeds embedded inside longer strings.
+     *
+     * @return array<string, array{Closure(string): mixed, Closure(string): string, string, string, string, string}>
+     */
+    public static function embeddedSeedKeyMessageSites(): array
+    {
+        $contractId = 'Contract id must be a "C..." strkey or a hexadecimal string, ';
+        $address = '; Address takes an account (G...) or contract (C...) address';
+        $muxedAddress = '; MuxedAddress takes an account (G...), muxed account (M...), contract (C...) or muxed '
+            . 'contract (W...) address';
+        $noNode = '" matched no node in this authorization entry';
+        $startingWithS = SecretSeedVariants::VALUE_STARTING_WITH_S;
+        $payload = str_repeat("\x07", 32);
+
+        return [
+            'Address::fromStrKey' => [
+                fn (string $v) => Address::fromStrKey($v),
+                fn (string $text) => 'Not a valid address strkey: ' . $text,
+                'Not a valid address strkey: ' . $startingWithS,
+                'Not a valid address strkey: ' . $startingWithS,
+                'prefix XABC suffix',
+                'Not a valid address strkey: prefix XABC suffix',
+            ],
+            'ContractSpec Address parameter' => [
+                fn (string $v) => (new ContractSpec([]))->nativeToXdrSCVal($v, XdrSCSpecTypeDef::ADDRESS()),
+                fn (string $text) => 'Invalid address format: ' . $text . $address,
+                'Invalid address format: ' . $startingWithS . $address,
+                'Invalid address format: ' . $startingWithS . $address,
+                'prefix XYZ suffix',
+                'Invalid address format: prefix XYZ suffix' . $address,
+            ],
+            'ContractSpec MuxedAddress parameter' => [
+                fn (string $v) => (new ContractSpec([]))->nativeToXdrSCVal($v, XdrSCSpecTypeDef::MUXED_ADDRESS()),
+                fn (string $text) => 'Invalid address format: ' . $text . $muxedAddress,
+                'Invalid address format: ' . $startingWithS . $muxedAddress,
+                'Invalid address format: ' . $startingWithS . $muxedAddress,
+                'prefix XYZ suffix',
+                'Invalid address format: prefix XYZ suffix' . $muxedAddress,
+            ],
+            'SignedPayloadSigner::fromAccountId' => [
+                fn (string $v) => SignedPayloadSigner::fromAccountId($v, $payload),
+                fn (string $text) => 'invalid ed25519 account id: ' . $text,
+                'a signed payload signer takes an ed25519 account id (G...), not a secret seed (S...)',
+                'invalid ed25519 account id: ' . $startingWithS,
+                'prefix XYZ suffix',
+                'invalid ed25519 account id: prefix XYZ suffix',
+            ],
+            'MuxedContract constructor' => [
+                fn (string $v) => new MuxedContract($v, 1),
+                fn (string $text) => 'Invalid contract id "' . $text . '": ' . $contractId . '"' . $text . '" given',
+                'Invalid contract id "' . $startingWithS . '": ' . $contractId . $startingWithS . ' given',
+                'Invalid contract id "' . $startingWithS . '": ' . $contractId . $startingWithS . ' given',
+                'prefix XYZ suffix',
+                'Invalid contract id "prefix XYZ suffix": ' . $contractId . '"prefix XYZ suffix" given',
+            ],
+            'MuxedContract::fromAddress' => [
+                fn (string $v) => MuxedContract::fromAddress($v),
+                fn (string $text) => 'Expected a contract (C...) or muxed contract (W...) address, got: ' . $text,
+                'Expected a contract (C...) or muxed contract (W...) address, got: ' . $startingWithS,
+                'Expected a contract (C...) or muxed contract (W...) address, got: ' . $startingWithS,
+                'prefix XYZ suffix',
+                'Expected a contract (C...) or muxed contract (W...) address, got: prefix XYZ suffix',
+            ],
+            'SorobanAuthorizationEntry::sign forAddress' => [
+                fn (string $v) => self::addressV2Entry()->sign(KeyPair::random(), Network::testnet(), null, $v),
+                fn (string $text) => 'forAddress "' . $text . $noNode,
+                'forAddress "' . $startingWithS . $noNode,
+                'forAddress "' . $startingWithS . $noNode,
+                'prefix GABC suffix',
+                'forAddress "prefix GABC suffix' . $noNode,
+            ],
+            'SorobanAuthorizationEntry::withDelegates' => [
+                fn (string $v) => SorobanAuthorizationEntry::withDelegates(
+                    self::legacyEntry(),
+                    100,
+                    [new SorobanDelegateDescriptor($v)]
+                ),
+                fn (string $text) => 'Delegate address must be a G- or C-prefixed strkey; got: ' . $text,
+                'Delegate address must be a G- or C-prefixed strkey; got: ' . $startingWithS,
+                'Delegate address must be a G- or C-prefixed strkey; got: ' . $startingWithS,
+                'prefix XYZ suffix',
+                'Delegate address must be a G- or C-prefixed strkey; got: prefix XYZ suffix',
+            ],
+        ];
+    }
+
+    #[DataProvider('embeddedSeedKeyMessageSites')]
+    public function testKeyMessageSitesRedactEmbeddedSeeds(
+        Closure $call,
+        Closure $message,
+        string $leadingUpperMessage,
+        string $leadingLowerMessage,
+        string $otherInput,
+        string $otherMessage
+    ): void {
+        // Every assertion on a secret-bearing input uses a boolean and a fixed failure message
+        // so a failing run never prints a secret seed.
+        $variants = SecretSeedVariants::create();
+        $seed = $variants->seed;
+        $cases = [
+            'embedded' => [
+                'prefix ' . $seed . ' suffix',
+                'prefix a secret seed (S...) suffix',
+            ],
+            'lowercase embedded' => [
+                'prefix ' . strtolower($seed) . ' suffix',
+                'prefix a secret seed (S...) suffix',
+            ],
+            'glued' => [
+                'ab' . $seed . 'cd',
+                'aba secret seed (S...)cd',
+            ],
+            'lowercase glued' => [
+                'x' . strtolower($seed),
+                'xa secret seed (S...)',
+            ],
+            'truncated run' => [
+                'prefix ' . substr($seed, 0, 45) . ' suffix',
+                'prefix a secret seed (S...) suffix',
+            ],
+        ];
+
+        foreach ($cases as $name => [$input, $redacted]) {
+            $error = $this->thrown($call, $input, $name);
+            $this->assertTrue($error instanceof InvalidArgumentException, $name . ': no InvalidArgumentException');
+            for ($wrapped = $error; $wrapped !== null; $wrapped = $wrapped->getPrevious()) {
+                $msg = $wrapped->getMessage();
+                $this->assertFalse(
+                    str_contains($msg, $seed),
+                    $name . ': exception message contains the secret seed'
+                );
+                $this->assertFalse(
+                    stripos($msg, $seed) !== false,
+                    $name . ': exception message contains the secret seed in another letter case'
+                );
+            }
+            $variants->assertNotShown($error, $name);
+            $this->assertTrue(
+                $error->getMessage() === $message($redacted),
+                $name . ': exception message does not match the redacted expectation'
+            );
+        }
+
+        $leadingCases = [
+            'leading uppercase S' => [$seed . ' tail', $leadingUpperMessage],
+            'leading lowercase s' => [strtolower($seed) . ' tail', $leadingLowerMessage],
+        ];
+        foreach ($leadingCases as $name => [$input, $expected]) {
+            $error = $this->thrown($call, $input, $name);
+            $this->assertTrue($error instanceof InvalidArgumentException, $name . ': no InvalidArgumentException');
+            for ($wrapped = $error; $wrapped !== null; $wrapped = $wrapped->getPrevious()) {
+                $msg = $wrapped->getMessage();
+                $this->assertFalse(
+                    stripos($msg, $seed) !== false,
+                    $name . ': exception message contains the secret seed'
+                );
+            }
+            $variants->assertNotShown($error, $name);
+            $this->assertTrue(
+                $error->getMessage() === $expected,
+                $name . ': exception message does not match the starting-with-S expectation'
+            );
+        }
+
+        $control = $this->thrown($call, $otherInput, 'other input');
+        $this->assertInstanceOf(InvalidArgumentException::class, $control);
+        $this->assertSame($otherMessage, $control->getMessage());
+    }
+
+    /**
      * Runs $call with $input and returns what it throws.
      */
     private function thrown(Closure $call, string $input, string $context): Throwable

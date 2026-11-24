@@ -18,11 +18,12 @@ use Soneso\StellarSDK\Crypto\StrKey;
  * with "S" or "s", the first letter of a secret seed: an address, an account, contract or
  * muxed id, a pool or claimable balance id, a transaction hash. A message shows such an input
  * through keyForMessage(), which names a value starting with that letter by its kind and never
- * shows it; this covers a seed with a changed, a missing or an extra character and a lowercase
- * seed. Any other position, such as an amount, a federation address or a name, and a text that
- * wraps a caller's input go through redactSecretSeeds(). A request method refuses a key
- * position value that starts with that letter through requireNotSecretSeed() before it builds
- * the request.
+ * shows it (covering a seed with a changed, a missing or an extra character and a lowercase
+ * seed), and passes any other value through redactSecretSeeds() so a seed or seed-like run
+ * inside a longer value is replaced too. Any other position, such as an amount, a federation
+ * address or a name, and a text that wraps a caller's input go through redactSecretSeeds(). A
+ * request method refuses a key position value that starts with that letter through
+ * requireNotSecretSeed() before it builds the request.
  *
  * @internal used by the address, id, amount and TxRep error messages and the request builders
  */
@@ -86,14 +87,15 @@ final class SecretSeedRedaction
 
     /**
      * Returns $value, an input meant as an address, an account id, another strkey or an id, the
-     * way a message shows it: the kind seedKind() names, otherwise $value unchanged.
+     * way a message shows it: the kind seedKind() names when $value starts with "S" or "s",
+     * otherwise the text redactSecretSeeds() produces for $value.
      *
      * @param string $value the input as given
      * @return string the text a message shows for the input
      */
     public static function keyForMessage(string $value): string
     {
-        return self::seedKind($value) ?? $value;
+        return self::seedKind($value) ?? self::redactSecretSeeds($value);
     }
 
     /**
