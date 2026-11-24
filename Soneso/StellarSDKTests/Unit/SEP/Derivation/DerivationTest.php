@@ -7,9 +7,12 @@
 
 namespace Soneso\StellarSDKTests\Unit\SEP\Derivation;
 
+use Exception;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\SEP\Derivation\BIP39;
 use Soneso\StellarSDK\SEP\Derivation\Mnemonic;
 use Soneso\StellarSDK\SEP\Derivation\WordList;
 
@@ -333,6 +336,139 @@ class DerivationTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Unsupported BIP39 language');
         new WordList('../../etc/passwd');
+    }
+
+    public static function unsupportedReverseWordCountProvider(): array
+    {
+        return [
+            'empty array with checksum' => [[], true],
+            'empty array without checksum' => [[], false],
+            'one known word with checksum' => [['abandon'], true],
+            'one known word without checksum' => [['abandon'], false],
+            'thirteen known words with checksum' => [array_fill(0, 13, 'abandon'), true],
+            'thirteen known words without checksum' => [array_fill(0, 13, 'abandon'), false],
+            'one unknown word rejected before word lookup' => [['notaword'], true],
+        ];
+    }
+
+    /**
+     * @param array<string> $words
+     */
+    #[DataProvider('unsupportedReverseWordCountProvider')]
+    public function testBip39ReverseRejectsUnsupportedWordCountWithoutWarning(array $words, bool $verifyChecksum): void
+    {
+        $bip39 = (new BIP39(12))->wordList(WordList::getLanguage());
+        $diagnostics = [];
+        $caught = null;
+        set_error_handler(static function (int $errno, string $errstr) use (&$diagnostics): bool {
+            $diagnostics[] = $errstr;
+            return true;
+        });
+        try {
+            $bip39->reverse($words, $verifyChecksum);
+        } catch (Exception $e) {
+            $caught = $e;
+        } finally {
+            restore_error_handler();
+        }
+        $this->assertNotNull($caught, 'Accepted unsupported word count');
+        $this->assertSame('$words must contain 12, 15, 18, 21, or 24 words', $caught->getMessage());
+        $this->assertSame([], $diagnostics);
+    }
+
+    public static function mismatchedReverseWordCountProvider(): array
+    {
+        $twelveValidWords = explode(
+            ' ',
+            'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+        );
+        return [
+            'configured 24, supplied 12 with checksum' => [$twelveValidWords, true],
+            'configured 24, supplied 12 without checksum' => [$twelveValidWords, false],
+            'configured 24, supplied 12 unknown words rejected before lookup' => [array_fill(0, 12, 'notaword'), true],
+        ];
+    }
+
+    /**
+     * @param array<string> $words
+     */
+    #[DataProvider('mismatchedReverseWordCountProvider')]
+    public function testBip39ReverseRejectsWordCountMismatchWithoutWarning(array $words, bool $verifyChecksum): void
+    {
+        $bip39 = (new BIP39(24))->wordList(WordList::getLanguage());
+        $diagnostics = [];
+        $caught = null;
+        set_error_handler(static function (int $errno, string $errstr) use (&$diagnostics): bool {
+            $diagnostics[] = $errstr;
+            return true;
+        });
+        try {
+            $bip39->reverse($words, $verifyChecksum);
+        } catch (Exception $e) {
+            $caught = $e;
+        } finally {
+            restore_error_handler();
+        }
+        $this->assertNotNull($caught, 'Accepted mismatched word count');
+        $this->assertSame('$words must contain 24 words', $caught->getMessage());
+        $this->assertSame([], $diagnostics);
+    }
+
+    public function testBip39ReverseAcceptsAllFiveSupportedWordCounts(): void
+    {
+        $wordList = WordList::getLanguage();
+
+        $words12 = explode(' ', 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about');
+        $m12 = (new BIP39(12))->wordList($wordList)->reverse($words12);
+        $this->assertSame(12, $m12->wordsCount);
+        $this->assertTrue(
+            $m12->entropy === '00000000000000000000000000000000',
+            '12-word reverse did not reconstruct expected entropy'
+        );
+
+        $words15 = explode(' ', 'resource asthma orphan phone ice canvas fire useful arch jewel impose vague theory cushion top');
+        $m15 = (new BIP39(15))->wordList($wordList)->reverse($words15);
+        $this->assertSame(15, $m15->wordsCount);
+        $this->assertTrue(
+            $m15->entropy === 'b781c27351c7024355cf7f0b0efdc7f85e046cf9',
+            '15-word reverse did not reconstruct expected entropy'
+        );
+        $this->assertSame(
+            'GAVXVW5MCK7Q66RIBWZZKZEDQTRXWCZUP4DIIFXCCENGW2P6W4OA34RH',
+            KeyPair::fromMnemonic($m15, 0)->getAccountId()
+        );
+
+        $words18 = array_merge(array_fill(0, 17, 'abandon'), ['agent']);
+        $m18 = (new BIP39(18))->wordList($wordList)->reverse($words18);
+        $this->assertSame(18, $m18->wordsCount);
+        $this->assertTrue(
+            $m18->entropy === '000000000000000000000000000000000000000000000000',
+            '18-word reverse did not reconstruct expected entropy'
+        );
+
+        $entropy21 = '00000000000000000000000000000000000000000000000000000000';
+        $words21 = array_merge(array_fill(0, 20, 'abandon'), ['admit']);
+        $m21 = (new BIP39(21))->wordList($wordList)->reverse($words21);
+        $this->assertSame(21, $m21->wordsCount);
+        $this->assertTrue(
+            $m21->entropy === $entropy21,
+            '21-word reverse did not reconstruct expected entropy'
+        );
+
+        $m21NoChecksum = (new BIP39(21))->wordList($wordList)->reverse(array_fill(0, 21, 'abandon'), false);
+        $this->assertSame(21, $m21NoChecksum->wordsCount);
+        $this->assertTrue(
+            $m21NoChecksum->entropy === $entropy21,
+            '21-word reverse without checksum did not reconstruct expected entropy'
+        );
+
+        $words24 = array_merge(array_fill(0, 23, 'abandon'), ['art']);
+        $m24 = (new BIP39(24))->wordList($wordList)->reverse($words24);
+        $this->assertSame(24, $m24->wordsCount);
+        $this->assertTrue(
+            $m24->entropy === '0000000000000000000000000000000000000000000000000000000000000000',
+            '24-word reverse did not reconstruct expected entropy'
+        );
     }
 
 }

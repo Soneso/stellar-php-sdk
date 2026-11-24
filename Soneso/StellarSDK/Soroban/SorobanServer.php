@@ -429,15 +429,19 @@ class SorobanServer
      * Loads the contract source code for a given wasm id
      *
      * Retrieves the contract code entry from the ledger, including the compiled WASM bytecode.
-     * The wasm id is a hex-encoded hash of the contract bytecode.
+     * The wasm id is a 64-character hexadecimal hash of the contract bytecode.
      *
-     * @param string $wasmId The hex-encoded wasm id (hash) of the contract code
+     * @param string $wasmId The hex-encoded wasm id (hash) of the contract code (64 hexadecimal characters)
      * @return XdrContractCodeEntry|null The contract code entry if found, null if not found
+     * @throws InvalidArgumentException If $wasmId is not a 64-character hexadecimal string, before any request
      * @throws GuzzleException If the RPC request fails
      */
     public function loadContractCodeForWasmId(string $wasmId) : ?XdrContractCodeEntry {
+        if (strlen($wasmId) !== 64 || !ctype_xdigit($wasmId)) {
+            throw new InvalidArgumentException('$wasmId must be a 64-character hexadecimal string');
+        }
         $ledgerKey = new XdrLedgerKey(XdrLedgerEntryType::CONTRACT_CODE());
-        $ledgerKey->contractCode = new XdrLedgerKeyContractCode(hex2bin($wasmId));
+        $ledgerKey->contractCode = new XdrLedgerKeyContractCode((string)hex2bin($wasmId));
         $ledgerEntries = $this->getLedgerEntries([$ledgerKey->toBase64Xdr()]);
         if ($ledgerEntries->entries !== null && count($ledgerEntries->entries) > 0) {
             $ledgerEntry = $ledgerEntries->entries[0];
@@ -529,8 +533,9 @@ class SorobanServer
      * including environment meta, contract spec entries, and contract meta information.
      * The contract spec can be used to introspect available functions and types.
      *
-     * @param string $wasmId The hex-encoded wasm id (hash) of the contract code
+     * @param string $wasmId The hex-encoded wasm id (hash) of the contract code (64 hexadecimal characters)
      * @return SorobanContractInfo|null The parsed contract information or null if contract not found
+     * @throws InvalidArgumentException If $wasmId is not a 64-character hexadecimal string, before any request
      * @throws SorobanContractParserException If parsing the WASM bytecode fails
      * @throws GuzzleException If the RPC request fails
      */
