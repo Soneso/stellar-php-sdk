@@ -36,9 +36,163 @@ class TransactionResponseTest extends TestCase
         $json['fee_meta_xdr'] = base64_encode(pack('N', 0));
         $this->assertSame([], TransactionResponse::fromJson($json)->getFeeMetaXdr());
         $json['fee_meta_xdr'] = base64_encode(pack('N', 0) . "\x01");
+        $response = TransactionResponse::fromJson($json);
+        $this->assertInstanceOf(TransactionResponse::class, $response);
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage(XdrLedgerEntryChange::class . '[] leaves 1 of 5 bytes unread');
-        TransactionResponse::fromJson($json);
+        $response->getFeeMetaXdr();
+    }
+
+    public static function xdrFields(): array
+    {
+        return [
+            'envelope' => ['envelope_xdr', 'getEnvelopeXdr', 'getEnvelopeXdrBase64'],
+            'result' => ['result_xdr', 'getResultXdr', 'getResultXdrBase64'],
+            'result meta' => ['result_meta_xdr', 'getResultMetaXdr', 'getResultMetaXdrBase64'],
+            'fee meta' => ['fee_meta_xdr', 'getFeeMetaXdr', 'getFeeMetaXdrBase64'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('xdrFields')]
+    public function testMalformedXdrIsDecodedOnlyByItsGetter(string $field, string $getter, string $rawGetter): void
+    {
+        $json = $this->getCompleteTransactionJson();
+        $json[$field] = '***';
+        $response = TransactionResponse::fromJson($json);
+        $this->assertInstanceOf(TransactionResponse::class, $response);
+        $this->assertTrue($response->hasResultXdr());
+        $this->assertSame('***', $response->$rawGetter());
+        $this->assertTrue($response->isSuccessful());
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            try {
+                $response->$getter();
+                $this->fail('Malformed XDR must throw on every call');
+            } catch (\InvalidArgumentException $e) {
+                $this->assertSame(\InvalidArgumentException::class, get_class($e));
+            }
+        }
+        $this->assertSame('***', $response->$rawGetter());
+        if ($field !== 'envelope_xdr') {
+            $this->assertSame(2, $response->getEnvelopeXdr()->getType()->getValue());
+        }
+        if ($field !== 'result_xdr') {
+            $this->assertSame('100', (string)$response->getResultXdr()->getFeeCharged());
+            $this->assertSame(0, $response->getResultXdr()->getResult()->getResultCode()->getValue());
+        }
+        if ($field !== 'result_meta_xdr') {
+            $this->assertSame(3, $response->getResultMetaXdr()->getV());
+        }
+        if ($field !== 'fee_meta_xdr') {
+            $feeMeta = $response->getFeeMetaXdr();
+            $this->assertCount(2, $feeMeta);
+            $this->assertSame(3, $feeMeta[0]->getType()->getValue());
+            $this->assertSame(1, $feeMeta[1]->getType()->getValue());
+        }
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('xdrFields')]
+    public function testXdrGettersRejectTrailingBytesOnEveryCall(string $field, string $getter, string $rawGetter): void
+    {
+        $json = $this->getCompleteTransactionJson();
+        $json[$field] = base64_encode(base64_decode($json[$field], true) . "\x01");
+        $response = TransactionResponse::fromJson($json);
+        $this->assertInstanceOf(TransactionResponse::class, $response);
+        $this->assertSame($json[$field], $response->$rawGetter());
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            try {
+                $response->$getter();
+                $this->fail('Trailing bytes must throw on every call');
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringContainsString('leaves 1 of', $e->getMessage());
+            }
+        }
+    }
+
+    public function testSuccessfulXdrDecodingIsCached(): void
+    {
+        $response = TransactionResponse::fromJson($this->getCompleteTransactionJson());
+        $envelope = $response->getEnvelopeXdr();
+        $this->assertSame(2, $envelope->getType()->getValue());
+        $this->assertSame($envelope, $response->getEnvelopeXdr());
+        $result = $response->getResultXdr();
+        $this->assertSame('100', (string)$result->getFeeCharged());
+        $this->assertSame(0, $result->getResult()->getResultCode()->getValue());
+        $this->assertSame($result, $response->getResultXdr());
+        $meta = $response->getResultMetaXdr();
+        $this->assertSame(3, $meta->getV());
+        $this->assertSame($meta, $response->getResultMetaXdr());
+        $fee = $response->getFeeMetaXdr();
+        $this->assertCount(2, $fee);
+        $this->assertSame($fee[0], $response->getFeeMetaXdr()[0]);
+        $this->assertSame($fee[1], $response->getFeeMetaXdr()[1]);
+
+        $empty = TransactionResponse::fromJson(['fee_meta_xdr' => 'AAAAAA==']);
+        $this->assertSame('AAAAAA==', $empty->getFeeMetaXdrBase64());
+        $this->assertSame([], $empty->getFeeMetaXdr());
+        $this->assertSame([], $empty->getFeeMetaXdr());
+    }
+
+    public function testAbsentOptionalXdrFields(): void
+    {
+        $response = TransactionResponse::fromJson([]);
+        $this->assertFalse($response->hasResultXdr());
+        $this->assertNull($response->getResultMetaXdrBase64());
+        $this->assertNull($response->getResultMetaXdr());
+        $this->assertNull($response->getFeeMetaXdrBase64());
+        $this->assertNull($response->getFeeMetaXdr());
+        $submission = SubmitTransactionResponse::fromJson([]);
+        $this->assertFalse($submission->isSuccessful());
+        $this->assertNull($submission->getCreatedClaimableBalanceId());
+    }
+
+    public function testTransactionsPageKeepsUndecodableMetadata(): void
+    {
+        $good = $this->getCompleteTransactionJson();
+        $bad = $good;
+        $bad['id'] = 'future-meta';
+        $bad['result_meta_xdr'] = 'AAAnDw=='; // Unknown metadata version 9999.
+        $page = TransactionsPageResponse::fromJson(['_embedded' => ['records' => [$good, $bad]]]);
+        $transactions = $page->getTransactions()->toArray();
+        $this->assertCount(2, $transactions);
+        $this->assertSame('a434302ea03b42dd00614e258e6b7cdce5dc8a9d7381b1cba8844b75df4f1486', $transactions[0]->getId());
+        $this->assertSame(52429011, $transactions[0]->getLedger());
+        $this->assertSame('100', (string)$transactions[0]->getResultXdr()->getFeeCharged());
+        $this->assertSame(3, $transactions[0]->getResultMetaXdr()->getV());
+        $this->assertSame('future-meta', $transactions[1]->getId());
+        $this->assertSame('AAAnDw==', $transactions[1]->getResultMetaXdrBase64());
+        $this->assertSame('100', (string)$transactions[1]->getResultXdr()->getFeeCharged());
+        $this->expectException(\InvalidArgumentException::class);
+        $transactions[1]->getResultMetaXdr();
+    }
+
+    public function testSubmissionConsumersDecodeResultLazily(): void
+    {
+        $response = SubmitTransactionResponse::fromJson([
+            'result_xdr' => 'AAAAAAAAAMgAAAAAAAAAAgAAAAAAAAAOAAAAAAAAAAA/DDS/k60NmXHQTMyQ9wVRHIOKrZc0pKL7DXoD/H/omgAAAAAAAAAOAAAAAAAAAAD16n+z3hja6fEq+WzwdQdJAW+8umvwnpAqaeVFaHcdggAAAAA=',
+            'result_meta_xdr' => 'AAAnDw==',
+        ]);
+        $this->assertTrue($response->hasResultXdr());
+        $this->assertTrue($response->isSuccessful());
+        $this->assertSame('BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU', $response->getCreatedClaimableBalanceId());
+        $this->assertSame('BAAPL2T7WPPBRWXJ6EVPS3HQOUDUSALPXS5GX4E6SAVGTZKFNB3R3ATZWM', $response->getCreatedClaimableBalanceId(1));
+        $this->assertSame($response->getResultXdr(), $response->getResultXdr());
+    }
+
+    public function testSubmissionConsumersKeepThrowingForMalformedResult(): void
+    {
+        $response = SubmitTransactionResponse::fromJson(['result_xdr' => '***']);
+        $this->assertInstanceOf(SubmitTransactionResponse::class, $response);
+        $this->assertTrue($response->hasResultXdr());
+        foreach (['isSuccessful', 'getCreatedClaimableBalanceId'] as $method) {
+            for ($attempt = 0; $attempt < 2; $attempt++) {
+                try {
+                    $response->$method();
+                    $this->fail('A malformed result must throw');
+                } catch (\InvalidArgumentException $e) {
+                    $this->assertSame(\InvalidArgumentException::class, get_class($e));
+                }
+            }
+        }
     }
 
     /**
@@ -910,10 +1064,12 @@ class TransactionResponseTest extends TestCase
             'fee_meta_xdr' => base64_encode(pack('N', 1)),
         ];
 
+        $response = TransactionResponse::fromJson($json);
+        $this->assertInstanceOf(TransactionResponse::class, $response);
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('XDR array count 1 exceeds the maximum of 0 for the 0 remaining bytes');
 
-        TransactionResponse::fromJson($json);
+        $response->getFeeMetaXdr();
     }
 
     public function testTextMemoDecodesNonUtf8MemoBytes(): void

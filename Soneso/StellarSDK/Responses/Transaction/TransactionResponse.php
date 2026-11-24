@@ -254,20 +254,34 @@ class TransactionResponse extends Response
     /**
      * Gets the parsed transaction envelope XDR
      *
+     * Decodes on first use and caches the value only after validation succeeds.
+     *
+     * @throws InvalidArgumentException If the XDR cannot be decoded or contains trailing bytes
      * @return XdrTransactionEnvelope The transaction envelope containing the transaction and signatures
      */
     public function getEnvelopeXdr(): XdrTransactionEnvelope
     {
+        if (!isset($this->envelopeXdr)) {
+            $decoded = XdrTransactionEnvelope::fromEnvelopeBase64XdrString($this->envelopeXdrBase64);
+            $this->envelopeXdr = $decoded;
+        }
         return $this->envelopeXdr;
     }
 
     /**
      * Gets the parsed transaction result XDR
      *
+     * Decodes on first use and caches the value only after validation succeeds.
+     *
+     * @throws InvalidArgumentException If the XDR cannot be decoded or contains trailing bytes
      * @return XdrTransactionResult The transaction result containing operation results
      */
     public function getResultXdr(): XdrTransactionResult
     {
+        if (!isset($this->resultXdr)) {
+            $decoded = XdrTransactionResult::fromBase64Xdr($this->resultXdrBase64);
+            $this->resultXdr = $decoded;
+        }
         return $this->resultXdr;
     }
 
@@ -275,20 +289,27 @@ class TransactionResponse extends Response
      * Reports whether the response carried a result XDR. A response without one
      * cannot answer any question about its transaction result.
      *
-     * @return bool true when getResultXdr() can be called
+     * @return bool True when a result XDR string is present, even if it cannot be decoded
      */
     public function hasResultXdr(): bool
     {
-        return isset($this->resultXdr);
+        return isset($this->resultXdrBase64);
     }
 
     /**
      * Gets the parsed transaction metadata XDR
      *
+     * Decodes on first use and caches the value only after validation succeeds.
+     *
+     * @throws InvalidArgumentException If the XDR cannot be decoded or contains trailing bytes
      * @return XdrTransactionMeta|null The transaction metadata containing ledger changes, or null
      */
     public function getResultMetaXdr(): ?XdrTransactionMeta
     {
+        if ($this->resultMetaXdr === null && $this->resultMetaXdrBase64 !== null) {
+            $decoded = XdrTransactionMeta::fromBase64Xdr($this->resultMetaXdrBase64);
+            $this->resultMetaXdr = $decoded;
+        }
         return $this->resultMetaXdr;
     }
 
@@ -305,10 +326,27 @@ class TransactionResponse extends Response
     /**
      * Gets the parsed fee metadata XDR as ledger entry changes
      *
+     * Decodes on first use and caches the value only after validation succeeds.
+     *
+     * @throws InvalidArgumentException If the XDR cannot be decoded or contains trailing bytes
      * @return array|null Array of XdrLedgerEntryChange objects, or null
      */
     public function getFeeMetaXdr(): ?array
     {
+        if ($this->feeMetaXdr === null && $this->feeMetaXdrBase64 !== null) {
+            $xdr = base64_decode($this->feeMetaXdrBase64, true);
+            if ($xdr === false) {
+                throw new InvalidArgumentException('Invalid base64-encoded fee meta XDR');
+            }
+            $xdrBuffer = new XdrBuffer($xdr);
+            $decoded = [];
+            $valCount = $xdrBuffer->readArrayLength();
+            for ($i = 0; $i < $valCount; $i++) {
+                $decoded[] = XdrLedgerEntryChange::decode($xdrBuffer);
+            }
+            $xdrBuffer->assertFullyConsumed(XdrLedgerEntryChange::class . '[]');
+            $this->feeMetaXdr = $decoded;
+        }
         return $this->feeMetaXdr;
     }
 
@@ -413,29 +451,15 @@ class TransactionResponse extends Response
         if (isset($json['operation_count'])) $this->operationCount = $json['operation_count'];
         if (isset($json['envelope_xdr'])) {
             $this->envelopeXdrBase64 = $json['envelope_xdr'];
-            $this->envelopeXdr = XdrTransactionEnvelope::fromEnvelopeBase64XdrString($this->envelopeXdrBase64);
         }
         if (isset($json['result_xdr'])){
             $this->resultXdrBase64 = $json['result_xdr'];
-            $this->resultXdr = XdrTransactionResult::fromBase64Xdr($this->resultXdrBase64);
         }
         if (isset($json['result_meta_xdr'])) {
             $this->resultMetaXdrBase64 = $json['result_meta_xdr'];
-            $this->resultMetaXdr = XdrTransactionMeta::fromBase64Xdr($this->resultMetaXdrBase64);
         }
         if (isset($json['fee_meta_xdr'])) {
             $this->feeMetaXdrBase64 = $json['fee_meta_xdr'];
-            $xdr = base64_decode($this->feeMetaXdrBase64, true);
-            if ($xdr === false) {
-                throw new InvalidArgumentException('Invalid base64-encoded fee meta XDR');
-            }
-            $xdrBuffer = new XdrBuffer($xdr);
-            $this->feeMetaXdr = array();
-            $valCount = $xdrBuffer->readArrayLength();
-            for ($i = 0; $i < $valCount; $i++) {
-                array_push($this->feeMetaXdr, XdrLedgerEntryChange::decode($xdrBuffer));
-            }
-            $xdrBuffer->assertFullyConsumed(XdrLedgerEntryChange::class . '[]');
         }
 
         if (isset($json['memo_type'])) {
