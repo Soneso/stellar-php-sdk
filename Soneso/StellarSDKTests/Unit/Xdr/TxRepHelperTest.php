@@ -8,6 +8,7 @@ namespace Soneso\StellarSDKTests\Unit\Xdr;
 
 use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
@@ -575,11 +576,150 @@ class TxRepHelperTest extends TestCase
         $this->assertSame(1005000000, TxRepHelper::parseAmount('100.5'));
     }
 
-    public function testParseAmountTooManyDecimalPlacesTruncated(): void
+    public function testParseAmountThrowsForMoreThanSevenDecimalPlaces(): void
     {
-        // More than 7 decimal places are truncated, not rounded.
-        // "0.00000019" truncated to 7 places = "0.0000001" = 1 stroop
-        $this->assertSame(1, TxRepHelper::parseAmount('0.00000019'));
+        $expectedMessage = 'Amount cannot have more than 7 decimal places';
+        $cases = [
+            '0.00000019',
+            '1.23456789',
+            '0.000000019',
+            '-0.00000019',
+            '+1.23456789',
+            '.00000019',
+            '  1.23456789  ',
+            '0.0000000010',
+        ];
+        $actual = [];
+        $expected = [];
+        foreach ($cases as $input) {
+            $expected[$input] = $expectedMessage;
+            try {
+                TxRepHelper::parseAmount($input);
+                $actual[$input] = 'no exception';
+            } catch (InvalidArgumentException $e) {
+                $actual[$input] = $e->getMessage();
+            }
+        }
+        $this->assertSame($expected, $actual);
+    }
+
+    public function testParseAmountAcceptsTrailingZerosBeyondSevenDecimalPlaces(): void
+    {
+        $this->assertSame(12345678, TxRepHelper::parseAmount('1.23456780'));
+        $this->assertSame(12345678, TxRepHelper::parseAmount('1.2345678000'));
+        $this->assertSame(-12345678, TxRepHelper::parseAmount('-1.23456780'));
+        $this->assertSame(-1, TxRepHelper::parseAmount('-0.00000010'));
+        $this->assertSame(12345678, TxRepHelper::parseAmount('+1.23456780'));
+        $this->assertSame(12345678, TxRepHelper::parseAmount('  1.23456780  '));
+        $this->assertSame(0, TxRepHelper::parseAmount('0.0000000000'));
+        $this->assertSame(1, TxRepHelper::parseAmount('.00000010'));
+    }
+
+    public function testParseAmountRedactsSecretSeed(): void
+    {
+        $seed = KeyPair::random()->getSecretSeed();
+        try {
+            TxRepHelper::parseAmount($seed);
+            self::fail('Accepted a secret seed as an amount');
+        } catch (InvalidArgumentException $e) {
+            $containsSeed = str_contains($e->getMessage(), $seed);
+            $isRedacted = $e->getMessage() === 'Cannot parse amount: a secret seed (S...)';
+            self::assertFalse($containsSeed, 'Amount error message contains a secret seed');
+            self::assertTrue($isRedacted, 'Amount error message must use the redacted form');
+        }
+    }
+
+    /**
+     * @param class-string<\Throwable>|null $exceptionClass
+     */
+    #[DataProvider('parseAmountCases')]
+    public function testParseAmountValidation(
+        string $input,
+        ?int $expected,
+        ?string $exceptionClass,
+        ?string $message,
+    ): void {
+        if ($exceptionClass !== null) {
+            $this->expectException($exceptionClass);
+        }
+        try {
+            $actual = TxRepHelper::parseAmount($input);
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame($message, $e->getMessage());
+            throw $e;
+        }
+        $this->assertSame($expected, $actual);
+    }
+
+    /**
+     * @return array<string, array{string, int|null, class-string<\Throwable>|null, string|null}>
+     */
+    public static function parseAmountCases(): array
+    {
+        $invalid = InvalidArgumentException::class;
+        $range = 'Amount is outside the signed 64-bit stroop range [-9223372036854775808, 9223372036854775807]';
+        $precision = 'Amount cannot have more than 7 decimal places';
+
+        return [
+            'exponent with excess precision' => ['1.00000009e0', null, $invalid, 'Cannot parse amount: 1.00000009e0'],
+            'one stroop exponent' => ['1e-7', null, $invalid, 'Cannot parse amount: 1e-7'],
+            'fractional stroop exponent' => ['1.5e-7', null, $invalid, 'Cannot parse amount: 1.5e-7'],
+            'fraction exponent' => ['0.1e1', null, $invalid, 'Cannot parse amount: 0.1e1'],
+            'trailing zeros exponent' => ['1.00000000e3', null, $invalid, 'Cannot parse amount: 1.00000000e3'],
+            'seven decimal places exponent' => ['1.0000000e0', null, $invalid, 'Cannot parse amount: 1.0000000e0'],
+            'huge exponent' => ['1e400', null, $invalid, 'Cannot parse amount: 1e400'],
+            'whole exponent' => ['1e2', null, $invalid, 'Cannot parse amount: 1e2'],
+            'uppercase exponent' => ['1E2', null, $invalid, 'Cannot parse amount: 1E2'],
+            'positive exponent' => ['1e+2', null, $invalid, 'Cannot parse amount: 1e+2'],
+            'negative whole exponent' => ['-1e2', null, $invalid, 'Cannot parse amount: -1e2'],
+            'maximum plus one stroop' => ['922337203685.4775808', null, $invalid, $range],
+            'huge whole amount' => ['99999999999999999999', null, $invalid, $range],
+            'minimum' => ['-922337203685.4775808', PHP_INT_MIN, null, null],
+            'maximum' => ['922337203685.4775807', 9223372036854775807, null, null],
+            'explicit plus' => ['+1.5', 15000000, null, null],
+            'seven decimal places' => ['1.2345678', 12345678, null, null],
+            'negative seven decimal places' => ['-1.2345678', -12345678, null, null],
+            'whole amount' => ['1', 10000000, null, null],
+            'fraction alone' => ['.5', 5000000, null, null],
+            'negative fraction alone' => ['-.5', -5000000, null, null],
+            'positive fraction alone' => ['+.5', 5000000, null, null],
+            'empty fraction' => ['1.', 10000000, null, null],
+            'negative empty fraction' => ['-1.', -10000000, null, null],
+            'positive empty fraction' => ['+1.', 10000000, null, null],
+            'surrounding spaces' => [' 1 ', 10000000, null, null],
+            'default trim characters' => [" \t\n\r\0\x0B1 \t\n\r\0\x0B", 10000000, null, null],
+            'bare plus' => ['+', null, $invalid, 'Cannot parse amount: +'],
+            'bare minus' => ['-', null, $invalid, 'Cannot parse amount: -'],
+            'bare dot' => ['.', null, $invalid, 'Cannot parse amount: .'],
+            'empty' => ['', null, $invalid, 'Cannot parse amount: '],
+            'whitespace only' => [" \t\n", null, $invalid, 'Cannot parse amount: '],
+            'hexadecimal' => ['0x10', null, $invalid, 'Cannot parse amount: 0x10'],
+            'incomplete exponent' => ['1e', null, $invalid, 'Cannot parse amount: 1e'],
+            'negative zero' => ['-0', 0, null, null],
+            'negative fractional zero' => ['-0.0000000', 0, null, null],
+            'negative stroop' => ['-0.0000001', -1, null, null],
+            'leading zeros' => ['007.5', 75000000, null, null],
+            'maximum minus one stroop' => ['922337203685.4775806', 9223372036854775806, null, null],
+            'minimum plus one stroop' => ['-922337203685.4775807', -9223372036854775807, null, null],
+            'minimum minus one stroop' => ['-922337203685.4775809', null, $invalid, $range],
+            'double plus' => ['++1', null, $invalid, 'Cannot parse amount: ++1'],
+            'double minus' => ['--1', null, $invalid, 'Cannot parse amount: --1'],
+            'mixed signs' => ['+-1', null, $invalid, 'Cannot parse amount: +-1'],
+            'trailing sign' => ['1-', null, $invalid, 'Cannot parse amount: 1-'],
+            'space after sign' => ['+ 1', null, $invalid, 'Cannot parse amount: + 1'],
+            'embedded space' => ['1 2', null, $invalid, 'Cannot parse amount: 1 2'],
+            'embedded tab' => ["1\t2", null, $invalid, "Cannot parse amount: 1\t2"],
+            'embedded newline' => ["1\n2", null, $invalid, "Cannot parse amount: 1\n2"],
+            'multiple dots' => ['1.2.3', null, $invalid, 'Cannot parse amount: 1.2.3'],
+            'Arabic-Indic digit' => ['١', null, $invalid, 'Cannot parse amount: ١'],
+            'fullwidth digit' => ['１', null, $invalid, 'Cannot parse amount: １'],
+            'long leading zeros' => [str_repeat('0', 10000) . '1', 10000000, null, null],
+            'long trailing zeros' => ['1.' . str_repeat('0', 10000), 10000000, null, null],
+            'long out of range amount' => [str_repeat('9', 10000), null, $invalid, $range],
+            'long excess precision' => ['0.' . str_repeat('0', 10000) . '1', null, $invalid, $precision],
+            'excess precision' => ['1.00000009', null, $invalid, $precision],
+            'trailing fractional zeros' => ['1.00000000', 10000000, null, null],
+        ];
     }
 
     public function testParseAmountZero(): void

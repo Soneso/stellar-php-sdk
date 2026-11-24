@@ -193,15 +193,23 @@ class BIP39
     /**
      * Reconstructs a mnemonic from an array of words.
      *
-     * @param array<string> $words Array of mnemonic words.
+     * @param array<string> $words Array of mnemonic words matching this instance's configured word count (12, 15, 18, 21, or 24).
      * @param bool $verifyChecksum Whether to verify the entropy checksum. Default is true.
      * @return Mnemonic The reconstructed mnemonic.
-     * @throws Exception If words are invalid or checksum verification fails.
+     * @throws Exception If the word list is not defined, the word count is unsupported or does not match this instance, a word is unknown, or checksum verification fails.
      */
     public function reverse(array $words, bool $verifyChecksum = true): Mnemonic
     {
         if (!$this->wordList) {
             throw new Exception('Wordlist is not defined');
+        }
+
+        $wordCount = count($words);
+        if (!in_array($wordCount, [12, 15, 18, 21, 24], true)) {
+            throw new Exception('$words must contain 12, 15, 18, 21, or 24 words');
+        }
+        if ($wordCount !== $this->wordsCount) {
+            throw new Exception(sprintf('$words must contain %d words', $this->wordsCount));
         }
 
         $mnemonic = new Mnemonic();

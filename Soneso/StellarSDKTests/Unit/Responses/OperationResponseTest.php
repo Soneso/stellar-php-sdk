@@ -100,6 +100,69 @@ class OperationResponseTest extends TestCase
         $this->assertNull($response->getTransaction());
     }
 
+    public function testOperationWithUndecodableEmbeddedTransactionMetadata(): void
+    {
+        $json = $this->getBaseOperationJson(OperationType::PAYMENT, 'payment');
+        $json['asset_type'] = 'native';
+        $json['from'] = 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7';
+        $json['to'] = 'GBVKI23OQZCANDUZ2YYHMJJH2PPJZZWHE4PCOQJ7UFGMYPBPZVXCYPW6';
+        $json['amount'] = '100.0000000';
+        $json['transaction'] = [
+            'id' => '5ebd5c0af4385500b53dd63b0ef5f6e8feef1a7e1c0a2d8c6c3f6e5e3c1a2b3c',
+            'hash' => '5ebd5c0af4385500b53dd63b0ef5f6e8feef1a7e1c0a2d8c6c3f6e5e3c1a2b3c',
+            'paging_token' => '12884905984',
+            'successful' => true,
+            'ledger' => 3,
+            'created_at' => '2019-02-28T17:00:00Z',
+            'source_account' => 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+            'source_account_sequence' => '4294967297',
+            'fee_charged' => '100',
+            'max_fee' => '200',
+            'operation_count' => 1,
+            'result_xdr' => 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+            'result_meta_xdr' => 'AAAnDw==', // Unknown metadata version 9999.
+            'fee_meta_xdr' => 'AAAAAA==',
+        ];
+
+        $response = OperationResponse::fromJson($json);
+
+        $this->assertInstanceOf(PaymentOperationResponse::class, $response);
+        $this->assertSame('12884905985', $response->getOperationId());
+        $this->assertSame('12884905985', $response->getPagingToken());
+        $this->assertSame('payment', $response->getHumanReadableOperationType());
+        $this->assertSame(1, $response->getOperationType());
+        $this->assertSame('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7', $response->getSourceAccount());
+        $this->assertSame('2019-02-28T17:00:00Z', $response->getCreatedAt());
+        $this->assertSame('5ebd5c0af4385500b53dd63b0ef5f6e8feef1a7e1c0a2d8c6c3f6e5e3c1a2b3c', $response->getTransactionHash());
+        $this->assertTrue($response->isTransactionSuccessful());
+        $this->assertSame('100.0000000', $response->getAmount());
+        $this->assertSame('native', $response->getAsset()->getType());
+        $this->assertSame('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7', $response->getFrom());
+        $this->assertSame('GBVKI23OQZCANDUZ2YYHMJJH2PPJZZWHE4PCOQJ7UFGMYPBPZVXCYPW6', $response->getTo());
+
+        $transaction = $response->getTransaction();
+        $this->assertNotNull($transaction);
+        $this->assertSame('5ebd5c0af4385500b53dd63b0ef5f6e8feef1a7e1c0a2d8c6c3f6e5e3c1a2b3c', $transaction->getId());
+        $this->assertSame('5ebd5c0af4385500b53dd63b0ef5f6e8feef1a7e1c0a2d8c6c3f6e5e3c1a2b3c', $transaction->getHash());
+        $this->assertSame('12884905984', $transaction->getPagingToken());
+        $this->assertTrue($transaction->isSuccessful());
+        $this->assertSame(3, $transaction->getLedger());
+        $this->assertSame('2019-02-28T17:00:00Z', $transaction->getCreatedAt());
+        $this->assertSame('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7', $transaction->getSourceAccount());
+        $this->assertSame('4294967297', $transaction->getSourceAccountSequence());
+        $this->assertSame('100', $transaction->getFeeCharged());
+        $this->assertSame('200', $transaction->getMaxFee());
+        $this->assertSame(1, $transaction->getOperationCount());
+        $this->assertSame('AAAnDw==', $transaction->getResultMetaXdrBase64());
+        $this->assertSame('100', (string)$transaction->getResultXdr()->getFeeCharged());
+        $this->assertSame(0, $transaction->getResultXdr()->getResult()->getResultCode()->getValue());
+        $this->assertSame([], $transaction->getFeeMetaXdr());
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown XdrTransactionMeta discriminant: 9999');
+        $transaction->getResultMetaXdr();
+    }
+
     public function testBaseOperationResponseWithMuxedAccount(): void
     {
         $json = $this->getBaseOperationJson(OperationType::PAYMENT, 'payment');
