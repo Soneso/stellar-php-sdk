@@ -70,6 +70,7 @@ class XdrEncoder
      *
      * @param string $value
      * @return string
+     * @throws InvalidArgumentException if the byte length exceeds 4294967295
      */
     public static function opaqueVariable(string $value): string
     {
@@ -112,9 +113,14 @@ class XdrEncoder
     /**
      * @param int $value
      * @return string
+     * @throws InvalidArgumentException if $value is outside [-2147483648, 2147483647]
      */
     public static function integer32($value): string
     {
+        if ($value < -2147483648 || $value > 2147483647) {
+            throw new InvalidArgumentException(sprintf('integer32 value %s is outside [-2147483648, 2147483647]', self::integerValueForMessage($value)));
+        }
+
         // pack() does not support a signed 32-byte int, so work around this with
         // custom encoding
         return (self::nativeIsBigEndian()) ? pack('l', $value) : strrev(pack('l', $value));
@@ -123,9 +129,14 @@ class XdrEncoder
     /**
      * @param int $value
      * @return string
+     * @throws InvalidArgumentException if $value is outside [0, 4294967295]
      */
     public static function unsignedInteger32($value): string
     {
+        if ($value < 0 || $value > 4294967295) {
+            throw new InvalidArgumentException(sprintf('unsignedInteger32 value %s is outside [0, 4294967295]', self::integerValueForMessage($value)));
+        }
+
         // unsigned 32-bit big-endian
         return pack('N', $value);
     }
@@ -146,9 +157,15 @@ class XdrEncoder
      *
      * @param BigInteger $value
      * @return string
+     * @throws InvalidArgumentException if $value is outside [-9223372036854775808, 9223372036854775807]
      */
     public static function bigInteger64(BigInteger $value): string
     {
+        if ($value->compare(new BigInteger('-9223372036854775808')) < 0 ||
+            $value->compare(new BigInteger('9223372036854775807')) > 0) {
+            throw new InvalidArgumentException(sprintf('bigInteger64 value %s is outside [-9223372036854775808, 9223372036854775807]', substr($value->toString(), 0, 80)));
+        }
+
         $xdrBytes = '';
         $bigIntBytes = $value->toBytes(true);
         $bigIntBits = '';
@@ -156,8 +173,7 @@ class XdrEncoder
             $bigIntBits = $value->toBits(true);
         }
 
-        // Special case: MAX_UINT_64 will look like 00ffffffffffffffff and have an
-        // extra preceding byte we need to get rid of
+        // Explicit BigInteger precision can add a leading zero byte.
         if (strlen($bigIntBytes) === 9 && str_starts_with($value->toHex(true), '00')) {
             $bigIntBytes = substr($bigIntBytes, 1);
         }
@@ -184,9 +200,15 @@ class XdrEncoder
      *
      * @param BigInteger $value
      * @return string
+     * @throws InvalidArgumentException if $value is outside [0, 18446744073709551615]
      */
     public static function unsignedBigInteger64(BigInteger $value): string
     {
+        if ($value->compare(new BigInteger('0')) < 0 ||
+            $value->compare(new BigInteger('18446744073709551615')) > 0) {
+            throw new InvalidArgumentException(sprintf('unsignedBigInteger64 value %s is outside [0, 18446744073709551615]', substr($value->toString(), 0, 80)));
+        }
+
         $xdrBytes = '';
         $bigIntBytes = $value->toBytes(true);
 
@@ -225,12 +247,26 @@ class XdrEncoder
     }
 
     /**
-     * @param int $value
+     * Writes a PHP int's 64-bit pattern as uint64. Negative ints represent the upper half of uint64.
+     * Signed decimal integer strings are accepted only within [PHP_INT_MIN, PHP_INT_MAX].
+     *
+     * @param mixed $value a PHP int bit pattern or a signed decimal integer string; other types are rejected
      * @return string
+     * @throws InvalidArgumentException if $value is neither an int nor a decimal integer string in range
      */
     public static function unsignedInteger64($value): string
     {
-        if ($value > PHP_INT_MAX) throw new InvalidArgumentException('value is greater than PHP_INT_MAX');
+        if (!is_int($value)) {
+            if (!is_string($value) || preg_match('/\A[+-]?[0-9]+\z/', $value) !== 1) {
+                throw new InvalidArgumentException(sprintf('unsignedInteger64 value %s is not an int or a decimal integer string in [%s, %s]', self::integerValueForMessage($value), PHP_INT_MIN, PHP_INT_MAX));
+            }
+            $integer = new BigInteger(ltrim($value, '+'));
+            if ($integer->compare(new BigInteger(PHP_INT_MIN)) < 0 ||
+                $integer->compare(new BigInteger(PHP_INT_MAX)) > 0) {
+                throw new InvalidArgumentException(sprintf('unsignedInteger64 value %s is outside [%s, %s]', self::integerValueForMessage($value), PHP_INT_MIN, PHP_INT_MAX));
+            }
+            $value = (int) $value;
+        }
 
         // unsigned 64-bit big-endian
         return pack('J', $value);
@@ -246,8 +282,9 @@ class XdrEncoder
     }
 
     /**
-     * @param int $value
+     * @param mixed $value a PHP int bit pattern or a signed decimal integer string; other types are rejected
      * @return string
+     * @throws InvalidArgumentException if $value is neither an int nor a decimal integer string in range
      */
     public static function unsignedHyper($value): string
     {
@@ -277,6 +314,7 @@ class XdrEncoder
      * @param string $value
      * @param int|null $maximumLength
      * @return string
+     * @throws InvalidArgumentException if the byte length exceeds $maximumLength or 4294967295
      */
     public static function string(string $value, ?int $maximumLength = null): string
     {
@@ -302,6 +340,7 @@ class XdrEncoder
     /**
      * @param int|null $value
      * @return string
+     * @throws InvalidArgumentException if $value is outside [0, 4294967295]
      */
     public static function optionalUnsignedInteger($value): string
     {
@@ -322,6 +361,7 @@ class XdrEncoder
      * @param string|null $value
      * @param int|null $maximumLength
      * @return string
+     * @throws InvalidArgumentException if the byte length exceeds $maximumLength or 4294967295
      */
     public static function optionalString(?string $value, $maximumLength): string
     {
@@ -336,6 +376,23 @@ class XdrEncoder
         }
 
         return $bytes;
+    }
+
+    /**
+     * Formats rejected integer inputs without exposing secret seeds or unbounded strings.
+     *
+     * @param mixed $value the rejected input
+     * @return string the int, a redacted string of at most 80 bytes, or the input's type
+     */
+    private static function integerValueForMessage(mixed $value): string
+    {
+        if (is_int($value)) {
+            return (string) $value;
+        }
+        if (is_string($value)) {
+            return substr(SecretSeedRedaction::redactSecretSeeds($value), 0, 80);
+        }
+        return get_debug_type($value);
     }
 
     /**

@@ -458,36 +458,47 @@ class TxRepHelper
      *
      * Example: `"100.0000000"` → `1000000000`
      *
-     * The input may have fewer than 7 decimal places; missing places are treated
-     * as zeros. Values with more than 7 decimal places are truncated.
+     * After default trim(), accepts an optional + or - followed by ASCII digits
+     * with an optional decimal point and fraction, or a fraction alone (e.g. .5).
+     * At least one digit is required; exponent notation is not accepted.
+     * Missing fractional places are treated as zeros. Digits after the seventh
+     * decimal place must all be zero. Leading zeros retain their decimal meaning.
+     * The result must be in the signed 64-bit stroop range
+     * [-9223372036854775808, 9223372036854775807].
      *
      * @param string $decimal Decimal amount string (e.g. `"100.5"`, `"0.0000001"`).
      * @return int Amount in stroops.
-     * @throws InvalidArgumentException If the string cannot be parsed as a decimal.
+     * @throws InvalidArgumentException If the input is not a plain decimal, has a
+     *     nonzero digit after the seventh decimal place, or is outside the signed
+     *     64-bit stroop range.
      */
     public static function parseAmount(string $decimal): int
     {
         $decimal = trim($decimal);
 
-        if (!is_numeric($decimal)) {
+        if (preg_match('/\A[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)\z/', $decimal) !== 1) {
             throw new InvalidArgumentException('Cannot parse amount: ' . SecretSeedRedaction::redactSecretSeeds($decimal));
         }
 
-        $parts = explode('.', $decimal);
-        // Detect sign from the original string to handle "-0.NNNN" correctly.
-        $sign = (isset($decimal[0]) && $decimal[0] === '-') ? -1 : 1;
-        $whole = (int)$parts[0];
-        $absWhole = abs($whole);
-
-        $stroops = $absWhole * 10000000;
-
-        if (isset($parts[1])) {
-            // Pad or truncate to exactly 7 fractional digits.
-            $frac = str_pad(substr($parts[1], 0, 7), 7, '0', STR_PAD_RIGHT);
-            $stroops += (int)$frac;
+        $negative = $decimal[0] === '-';
+        $parts = explode('.', ltrim($decimal, '+-'));
+        $fraction = $parts[1] ?? '';
+        if (strlen(rtrim($fraction, '0')) > 7) {
+            throw new InvalidArgumentException('Amount cannot have more than 7 decimal places');
         }
 
-        return $sign * $stroops;
+        // Concatenating decimal digits scales the amount without floating point.
+        $digits = ltrim($parts[0] . str_pad(substr($fraction, 0, 7), 7, '0', STR_PAD_RIGHT), '0');
+        $stroops = new BigInteger(($negative ? '-' : '') . ($digits === '' ? '0' : $digits), 10);
+        if ($stroops->compare(new BigInteger('-9223372036854775808')) < 0
+            || $stroops->compare(new BigInteger('9223372036854775807')) > 0
+        ) {
+            throw new InvalidArgumentException(
+                'Amount is outside the signed 64-bit stroop range [-9223372036854775808, 9223372036854775807]'
+            );
+        }
+
+        return (int)$stroops->toString();
     }
 
     // ---------------------------------------------------------------------------

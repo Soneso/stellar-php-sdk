@@ -1468,4 +1468,83 @@ class SorobanServerTest extends TestCase
         $this->assertNull($server->loadContractCodeForContractId(self::TEST_CONTRACT_ID));
         $this->assertCount(1, $requestHistory);
     }
+
+    public static function invalidWasmIdProvider(): array
+    {
+        $invalidIds = [
+            'non-hexadecimal' => 'zz',
+            'odd length' => 'abc',
+            'empty string' => '',
+            '62 hex digits' => 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8',
+            '66 hex digits' => 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855aa',
+            '64 chars non-hex' => 'z3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+        ];
+        $cases = [];
+        foreach (['loadContractCodeForWasmId', 'loadContractInfoForWasmId'] as $loader) {
+            foreach ($invalidIds as $label => $wasmId) {
+                $cases[$loader . ' with ' . $label] = [$loader, $wasmId];
+            }
+        }
+        return $cases;
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidWasmIdProvider')]
+    public function testWasmLoadersRejectInvalidWasmIdBeforeAnyRequest(string $loader, string $wasmId): void
+    {
+        $requestHistory = [];
+        $server = $this->createMockedSorobanServer([], $requestHistory);
+        $diagnostics = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$diagnostics): bool {
+            $diagnostics[] = $errstr;
+            return true;
+        });
+        try {
+            $server->$loader($wasmId);
+            $this->fail($loader . ' accepted invalid wasmId');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame('$wasmId must be a 64-character hexadecimal string', $e->getMessage());
+        } finally {
+            restore_error_handler();
+        }
+        $this->assertSame([], $diagnostics);
+        $this->assertCount(0, $requestHistory);
+    }
+
+    public function testWasmLoadersAcceptLowercaseAndUppercaseHex(): void
+    {
+        $upperWasmId = strtoupper(self::TEST_WASM_ID);
+        $byteCode = $this->specTestByteCode('ping');
+
+        $codeHistory = [];
+        $codeServer = $this->createMockedSorobanServer([
+            $this->ledgerEntryResponse($this->contractCodeEntryData(self::TEST_WASM_ID, 'wasm-bytes-lower')),
+            $this->ledgerEntryResponse($this->contractCodeEntryData(self::TEST_WASM_ID, 'wasm-bytes-upper')),
+        ], $codeHistory);
+
+        $lowerEntry = $codeServer->loadContractCodeForWasmId(self::TEST_WASM_ID);
+        $upperEntry = $codeServer->loadContractCodeForWasmId($upperWasmId);
+        $this->assertNotNull($lowerEntry);
+        $this->assertNotNull($upperEntry);
+        $this->assertSame('wasm-bytes-lower', $lowerEntry->code->value);
+        $this->assertSame('wasm-bytes-upper', $upperEntry->code->value);
+        $this->assertCount(2, $codeHistory);
+        $this->assertSame(self::TEST_WASM_ID, bin2hex($this->requestedLedgerKey($codeHistory, 0)->contractCode->hash));
+        $this->assertSame(self::TEST_WASM_ID, bin2hex($this->requestedLedgerKey($codeHistory, 1)->contractCode->hash));
+
+        $infoHistory = [];
+        $infoServer = $this->createMockedSorobanServer([
+            $this->ledgerEntryResponse($this->contractCodeEntryData(self::TEST_WASM_ID, $byteCode)),
+            $this->ledgerEntryResponse($this->contractCodeEntryData(self::TEST_WASM_ID, $byteCode)),
+        ], $infoHistory);
+
+        $lowerInfo = $infoServer->loadContractInfoForWasmId(self::TEST_WASM_ID);
+        $upperInfo = $infoServer->loadContractInfoForWasmId($upperWasmId);
+        $this->assertNotNull($lowerInfo);
+        $this->assertNotNull($upperInfo);
+        $this->assertSame(23, $lowerInfo->envMetaProtocol);
+        $this->assertSame('ping', $lowerInfo->funcs[0]->name);
+        $this->assertSame(23, $upperInfo->envMetaProtocol);
+        $this->assertSame('ping', $upperInfo->funcs[0]->name);
+        $this->assertCount(2, $infoHistory);
+    }
 }
