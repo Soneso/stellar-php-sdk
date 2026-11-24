@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `ClaimantPredicateResponse::getBeforeAbsoluteTimeEpoch()` returns Horizon's `abs_before_epoch` string unchanged, with `absBeforeEpoch` as a fallback, or null when absent.
 - `XdrBuffer::assertFullyConsumed()` checks that a buffer holds no unread bytes.
 - `DeploySACWithAssetHostFunction` takes optional constructor arguments; with an argument list, including an empty one, it writes `HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2`.
 - `XdrJsonHelper::encodeText()` writes SEP-51 JSON text, and `XdrJsonHelper::JSON_DEPTH_LIMIT` holds its nesting limit of 1100 levels.
@@ -18,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - `KeyPair::__debugInfo()` returns only `accountId` and `canSign`, so `var_dump()`, `print_r()` and `debug_zval_dump()` omit the secret seed and raw private key bytes. Before this change, dumping a signing `KeyPair` printed the secret seed and the raw private key bytes.
+- `TransactionResponse` preserves the raw envelope, result, result metadata and fee metadata XDR strings and decodes each on first getter access, caching only validated values. Before this change, undecodable XDR threw during `fromJson()` and aborted transaction pages and responses embedding a transaction.
+- `EffectResponse::fromJson()` preserves an unknown effect type as a base response with its common fields, so effects pages still parse. Before this change, an unknown type threw an `InvalidArgumentException` and aborted the page.
 - `KeyPair::fromBip39SeedHex()` throws an `InvalidArgumentException` without echoing the input when `$bip39SeedHex` is empty, has odd length, or contains non-hexadecimal characters. Before this change, odd-length or non-hexadecimal input raised a PHP warning and a `TypeError`, and the empty string was accepted.
 - `SorobanServer::loadContractCodeForWasmId()` and `SorobanServer::loadContractInfoForWasmId()` throw an `InvalidArgumentException` without echoing the input before building any request when `$wasmId` is not 64 hexadecimal digits. Before this change, odd-length or non-hexadecimal input raised a PHP warning and a `TypeError`, and other wrong-length hexadecimal values failed later during XDR encoding.
 - `BIP39::reverse()` throws an `Exception` without echoing the input before processing words when `$words` does not have a supported word count (12, 15, 18, 21, or 24) or does not match the instance's configured word count, also when checksum verification is disabled. Before this change, a wrong word count could produce odd-length hexadecimal entropy and raise a PHP warning and a `TypeError`, fail with a checksum error, or return a malformed mnemonic when checksum verification was off.

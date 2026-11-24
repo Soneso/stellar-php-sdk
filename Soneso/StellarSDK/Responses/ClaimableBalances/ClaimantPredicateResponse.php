@@ -25,6 +25,7 @@ class ClaimantPredicateResponse
     private ?ClaimantPredicatesResponse $or = null;
     private ?ClaimantPredicateResponse $not = null;
     private ?string $beforeAbsoluteTime = null;
+    private ?string $beforeAbsoluteTimeEpoch = null;
     private ?string $beforeRelativeTime = null;
 
     /**
@@ -88,6 +89,16 @@ class ClaimantPredicateResponse
     }
 
     /**
+     * Gets the absolute time threshold as decimal seconds since the Unix epoch.
+     *
+     * @return string|null The unchanged epoch string, or null if not provided
+     */
+    public function getBeforeAbsoluteTimeEpoch(): ?string
+    {
+        return $this->beforeAbsoluteTimeEpoch;
+    }
+
+    /**
      * Gets the relative time before which the balance can be claimed
      *
      * Specified as seconds relative to the close time of the ledger where the balance was created.
@@ -107,6 +118,11 @@ class ClaimantPredicateResponse
             $this->beforeAbsoluteTime = $json['abs_before'];
         } else if (isset($json['absBefore'])) {
             $this->beforeAbsoluteTime = $json['absBefore'];
+        }
+        if (isset($json['abs_before_epoch'])) {
+            $this->beforeAbsoluteTimeEpoch = $json['abs_before_epoch'];
+        } else if (isset($json['absBeforeEpoch'])) {
+            $this->beforeAbsoluteTimeEpoch = $json['absBeforeEpoch'];
         }
         if (isset($json['rel_before'])) {
             $this->beforeRelativeTime = $json['rel_before'];

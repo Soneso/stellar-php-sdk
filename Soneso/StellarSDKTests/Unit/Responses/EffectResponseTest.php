@@ -1166,18 +1166,40 @@ class EffectResponseTest extends TestCase
         EffectResponse::fromJson($json);
     }
 
-    public function testFromJsonThrowsExceptionForUnknownEffectType(): void
+    // Unknown Effect Type Tests
+
+    public function testFromJsonPreservesUnknownEffectType(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Unknown operation type: 9999');
+        $response = EffectResponse::fromJson($this->getBaseEffectJson(9999, 'future_effect'));
+        $this->assertSame(EffectResponse::class, get_class($response));
+        $this->assertSame('0000000012884905985-0000000001', $response->getEffectId());
+        $this->assertSame('12884905985-1', $response->getPagingToken());
+        $this->assertSame('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7', $response->getAccount());
+        $this->assertSame('2019-02-28T17:00:00Z', $response->getCreatedAt());
+        $this->assertSame(9999, $response->getEffectType());
+        $this->assertSame('future_effect', $response->getHumanReadableEffectType());
+        $this->assertSame('https://horizon.stellar.org/operations/12884905985', $response->getLinks()->getOperation()->getHref());
+        $this->assertSame('https://horizon.stellar.org/effects?cursor=12884905985-1&order=desc', $response->getLinks()->getSucceeds()->getHref());
+        $this->assertSame('https://horizon.stellar.org/effects?cursor=12884905985-1&order=asc', $response->getLinks()->getPrecedes()->getHref());
+    }
 
-        $json = [
-            'type_i' => 9999,
-            'id' => '0000000012884905985-0000000001',
-            'account' => 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'
-        ];
-
-        EffectResponse::fromJson($json);
+    public function testEffectsPageKeepsUnknownEffectBetweenKnownEffects(): void
+    {
+        $page = EffectsPageResponse::fromJson(['_embedded' => ['records' => [
+            array_merge($this->getBaseEffectJson(EffectType::ACCOUNT_CREATED, 'account_created'), ['starting_balance' => '1000.0000000']),
+            $this->getBaseEffectJson(9999, 'future_effect'),
+            array_merge($this->getBaseEffectJson(EffectType::ACCOUNT_CREDITED, 'account_credited'), ['amount' => '500.0000000', 'asset_type' => 'native']),
+        ]]]);
+        $effects = $page->getEffects()->toArray();
+        $this->assertCount(3, $effects);
+        $this->assertInstanceOf(AccountCreatedEffectResponse::class, $effects[0]);
+        $this->assertSame('1000.0000000', $effects[0]->getStartingBalance());
+        $this->assertSame(EffectResponse::class, get_class($effects[1]));
+        $this->assertSame(9999, $effects[1]->getEffectType());
+        $this->assertSame('future_effect', $effects[1]->getHumanReadableEffectType());
+        $this->assertInstanceOf(AccountCreditedEffectResponse::class, $effects[2]);
+        $this->assertSame('500.0000000', $effects[2]->getAmount());
+        $this->assertSame('native', $effects[2]->getAsset()->getType());
     }
 
     // Links Tests

@@ -353,6 +353,44 @@ class ClaimableBalanceResponseTest extends TestCase
         $this->assertNull($response->getBeforeRelativeTime());
     }
 
+    public static function absoluteTimeEpochValues(): array
+    {
+        return [
+            'canonical' => [['abs_before_epoch' => '1628182800'], '1628182800'],
+            'alias' => [['absBeforeEpoch' => '1628182800'], '1628182800'],
+            'absent' => [[], null],
+            'maximum' => [['abs_before_epoch' => '9223372036854775807'], '9223372036854775807'],
+            'canonical wins' => [['abs_before_epoch' => '1628182800', 'absBeforeEpoch' => '1'], '1628182800'],
+            'null canonical uses alias' => [['abs_before_epoch' => null, 'absBeforeEpoch' => '1628182800'], '1628182800'],
+            'zero' => [['abs_before_epoch' => '0'], '0'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('absoluteTimeEpochValues')]
+    public function testClaimantPredicateResponseAbsoluteTimeEpoch(array $epoch, ?string $expected): void
+    {
+        $response = ClaimantPredicateResponse::fromJson(['abs_before' => '2021-08-05T17:00:00Z'] + $epoch);
+        $this->assertSame('2021-08-05T17:00:00Z', $response->getBeforeAbsoluteTime());
+        $this->assertSame($expected, $response->getBeforeAbsoluteTimeEpoch());
+    }
+
+    public function testClaimantPredicateResponseAbsoluteTimeEpochNested(): void
+    {
+        $response = ClaimantPredicateResponse::fromJson(['and' => [
+            ['abs_before_epoch' => '1628182800'],
+            ['or' => [
+                ['absBeforeEpoch' => '1628182900'],
+                ['not' => ['abs_before_epoch' => '9223372036854775807']],
+            ]],
+        ]]);
+        $this->assertNull($response->getBeforeAbsoluteTimeEpoch());
+        $and = $response->getAnd()->toArray();
+        $this->assertSame('1628182800', $and[0]->getBeforeAbsoluteTimeEpoch());
+        $or = $and[1]->getOr()->toArray();
+        $this->assertSame('1628182900', $or[0]->getBeforeAbsoluteTimeEpoch());
+        $this->assertSame('9223372036854775807', $or[1]->getNot()->getBeforeAbsoluteTimeEpoch());
+    }
+
     public function testClaimantPredicateResponseAbsoluteTimeCamelCase(): void
     {
         $json = ['absBefore' => '1628182800'];

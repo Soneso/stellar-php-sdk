@@ -18,7 +18,8 @@ use Soneso\StellarSDK\Responses\Response;
  *
  * The fromJson factory method automatically deserializes JSON into the appropriate specific
  * effect subclass based on the effect type (e.g., AccountCreatedEffectResponse,
- * TrustlineCreatedEffectResponse, TradeEffectResponse, etc.).
+ * TrustlineCreatedEffectResponse, TradeEffectResponse, etc.). Unknown effect types
+ * return a base EffectResponse containing their common fields.
  *
  * Key fields:
  * - Effect ID and paging token
@@ -214,10 +215,23 @@ class EffectResponse extends Response
                 EffectType::LIQUIDITY_POOL_REVOKED => LiquidityPoolRevokedEffectResponse::fromJson($jsonData),
                 EffectType::CONTRACT_CREDITED => ContractCreditedEffectResponse::fromJson($jsonData),
                 EffectType::CONTRACT_DEBITED => ContractDebitedEffectResponse::fromJson($jsonData),
-                default => throw new \InvalidArgumentException(sprintf("Unknown operation type: %s", $effectType)),
+                default => self::fromUnknownTypeJson($jsonData),
             };
         } else {
             throw new \InvalidArgumentException("No effect type_i found in json data");
         }
+    }
+
+    /**
+     * Loads the common fields of an effect whose type has no specific response class.
+     *
+     * @param array<string, mixed> $jsonData The effect data from Horizon
+     * @return EffectResponse The common effect fields
+     */
+    private static function fromUnknownTypeJson(array $jsonData): EffectResponse
+    {
+        $response = new EffectResponse();
+        $response->loadFromJson($jsonData);
+        return $response;
     }
 }
