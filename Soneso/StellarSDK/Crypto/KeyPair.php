@@ -212,14 +212,18 @@ class KeyPair
      * This is similar to fromMnemonic() but accepts the seed directly as a hex string rather
      * than generating it from a mnemonic phrase. Uses SEP-0005 derivation path m/44'/148'/{index}'.
      *
-     * @param string $bip39SeedHex The BIP-39 seed as a hexadecimal string
+     * @param string $bip39SeedHex The BIP-39 seed as a non-empty hexadecimal string of even length
      * @param int $index The account index (0 for first account, 1 for second, etc.)
      * @return KeyPair The derived keypair at the specified index
+     * @throws InvalidArgumentException If $bip39SeedHex is empty, has odd length, or contains non-hexadecimal characters
      * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md
      */
     public static function fromBip39SeedHex(string $bip39SeedHex, int $index): KeyPair
     {
-        $seedBytes = hex2bin($bip39SeedHex);
+        if ($bip39SeedHex === '' || strlen($bip39SeedHex) % 2 !== 0 || !ctype_xdigit($bip39SeedHex)) {
+            throw new InvalidArgumentException('$bip39SeedHex must be a non-empty hexadecimal string of even length');
+        }
+        $seedBytes = (string)hex2bin($bip39SeedHex);
         $masterNode = HDNode::newMasterNode($seedBytes);
         $accountNode = $masterNode->derivePath(sprintf("m/44'/148'/%s'", $index));
         return static::fromPrivateKey($accountNode->getPrivateKeyBytes());

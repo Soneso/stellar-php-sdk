@@ -8,6 +8,7 @@ namespace Soneso\StellarSDKTests\Unit\Crypto;
 
 use Exception;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Crypto\CryptoException;
 use Soneso\StellarSDK\Crypto\KeyPair;
@@ -629,6 +630,51 @@ class KeyPairTest extends TestCase
 
         assertEquals($random->getAccountId(), $keyPair->getAccountId());
         assertEquals($random->getSecretSeed(), $keyPair->getSecretSeed());
+    }
+
+    public static function invalidBip39SeedHexProvider(): array
+    {
+        return [
+            'non-hexadecimal' => ['zz'],
+            'odd length' => ['abc'],
+            'empty string' => [''],
+        ];
+    }
+
+    #[DataProvider('invalidBip39SeedHexProvider')]
+    public function testFromBip39SeedHexRejectsInvalidInputWithoutWarning(string $invalidHex): void
+    {
+        $diagnostics = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$diagnostics): bool {
+            $diagnostics[] = $errstr;
+            return true;
+        });
+        try {
+            KeyPair::fromBip39SeedHex($invalidHex, 0);
+            $this->fail('Accepted invalid bip39SeedHex');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame(
+                '$bip39SeedHex must be a non-empty hexadecimal string of even length',
+                $e->getMessage()
+            );
+        } finally {
+            restore_error_handler();
+        }
+        $this->assertSame([], $diagnostics);
+    }
+
+    public function testFromBip39SeedHexValidControls(): void
+    {
+        $seedHex = 'e4a5a632e70943ae7f07659df1332160937fad82587216a4c64315a0fb39497ee4a01f76ddab4cba68147977f3a147b6ad584c41808e8238a07f6cc4b582f186';
+        $expectedAccountId = 'GDRXE2BQUC3AZNPVFSCEZ76NJ3WWL25FYFK6RGZGIEKWE4SOOHSUJUJ6';
+
+        $this->assertSame($expectedAccountId, KeyPair::fromBip39SeedHex($seedHex, 0)->getAccountId());
+        $this->assertSame($expectedAccountId, KeyPair::fromBip39SeedHex(strtoupper($seedHex), 0)->getAccountId());
+
+        // HDNode::newMasterNode() imposes no seed length, so short nonempty hex stays accepted.
+        $expectedShortAccountId = 'GB25RGCZVWQKY5Q5W3BVBGVR6ZYCPI6FB2WLDKJXBV2HJ42KECPLLECX';
+        $this->assertSame($expectedShortAccountId, KeyPair::fromBip39SeedHex('ab', 0)->getAccountId());
+        $this->assertSame($expectedShortAccountId, KeyPair::fromBip39SeedHex('AB', 0)->getAccountId());
     }
 
     private function captureVarDump(KeyPair $keyPair): string
