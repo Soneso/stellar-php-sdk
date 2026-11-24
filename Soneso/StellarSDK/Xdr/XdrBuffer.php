@@ -50,6 +50,16 @@ class XdrBuffer
     }
 
     /**
+     * Returns the byte offset immediately after the data read from this buffer.
+     *
+     * @return int The number of bytes consumed
+     */
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    /**
      * Checks that a complete XDR value consumes the entire buffer.
      *
      * @param string $typeName name of the decoded type, used in the error message

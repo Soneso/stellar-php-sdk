@@ -171,29 +171,27 @@ class SorobanClient
      * deployed contract.
      *
      * The contract WASM must be installed first using SorobanClient::install.
+     * To attempt a deployment without the SDK reading the contract's metadata, build the operation
+     * directly from CreateContractWithConstructorHostFunction with
+     * InvokeHostFunctionOperationBuilder.
      *
      * @param DeployRequest $deployRequest Deployment parameters including WASM hash, constructor args, and salt
      * @return SorobanClient The client for the newly deployed contract
+     * @throws SorobanContractParserException If parsing fails before deployment, or when loading
+     * the contract by its ID after deployment if the initial code entry was missing
      * @throws SorobanSimulationException If an invocation or automatic restore simulation fails
      * @throws Exception If deployment fails or contract ID cannot be extracted
      * @throws GuzzleException If the RPC request fails
      */
     public static function deploy(DeployRequest $deployRequest) : SorobanClient {
-        // Load the spec from the uploaded code before deploying: the code entry
-        // is already settled, while the instance entry this call is about to
-        // write can trail the transaction status on a busy RPC, whose
-        // ledger-entry ingestion runs behind. Code without a parseable spec
-        // deploys anyway; the forClientOptions fallback reports it with its
-        // usual error semantics.
+        // Parse the uploaded code before building the deployment transaction. A parser
+        // error stops deployment. If the RPC has no code entry, load by contract id
+        // after deployment; otherwise reuse the spec to avoid instance ingestion lag.
         $specServer = $deployRequest->server ?? new SorobanServer($deployRequest->rpcUrl);
         if ($deployRequest->logger !== null) {
             $specServer->setLogger($deployRequest->logger);
         }
-        try {
-            $contractInfo = $specServer->loadContractInfoForWasmId($deployRequest->wasmHash);
-        } catch (SorobanContractParserException $e) {
-            $contractInfo = null;
-        }
+        $contractInfo = $specServer->loadContractInfoForWasmId($deployRequest->wasmHash);
 
         $sourceAddress = Address::fromAccountId($deployRequest->sourceAccountKeyPair->getAccountId());
         $createContractHostFunction = new CreateContractWithConstructorHostFunction(
@@ -226,7 +224,7 @@ class SorobanClient
             throw new Exception("Could not get contract id for deployed contract");
         }
         $clientOptions->contractId = StrKey::encodeContractIdHex($contractId);
-        if ($contractInfo !== null && count($contractInfo->specEntries) > 0) {
+        if ($contractInfo !== null) {
             return new SorobanClient($contractInfo->specEntries, $clientOptions);
         }
         return SorobanClient::forClientOptions(options: $clientOptions);
@@ -246,10 +244,15 @@ class SorobanClient
      * constructor arguments (an empty vector when none are given), as deploy() does. For
      * the plain CREATE_CONTRACT form, build the operation directly with
      * CreateContractFromExternalRefHostFunction.
+     * To attempt a deployment without the SDK reading the contract's metadata, build the operation
+     * directly from CreateContractFromExternalRefWithConstructorHostFunction with
+     * InvokeHostFunctionOperationBuilder.
      *
      * @param DeployFromExternalRefRequest $deployRequest Deployment parameters including the
      * executable owner, the tag, constructor args, and salt
      * @return SorobanClient The client for the newly deployed contract
+     * @throws SorobanContractParserException If parsing the resolved code fails before deployment,
+     * or when loading the contract by its ID after deployment if the initial code entry was missing
      * @throws SorobanSimulationException If an invocation or automatic restore simulation fails
      * @throws Exception If the reference does not resolve (the owner holds no entry under
      * the tag; the message shows the tag with anything that may be a secret seed replaced),
@@ -273,17 +276,10 @@ class SorobanClient
                 . " holds no entry under tag " . SecretSeedRedaction::redactSecretSeeds($deployRequest->tag));
         }
 
-        // Load the spec from the resolved code before deploying: the code entry
-        // is already settled, while the instance entry this call is about to
-        // write can trail the transaction status on a busy RPC, whose
-        // ledger-entry ingestion runs behind. Code without a parseable spec
-        // deploys anyway; the forClientOptions fallback reports it with its
-        // usual error semantics.
-        try {
-            $contractInfo = $server->loadContractInfoForWasmId($wasmId);
-        } catch (SorobanContractParserException $e) {
-            $contractInfo = null;
-        }
+        // Parse the resolved code before building the deployment transaction. A parser
+        // error stops deployment. If the RPC has no code entry, load by contract id
+        // after deployment; otherwise reuse the spec to avoid instance ingestion lag.
+        $contractInfo = $server->loadContractInfoForWasmId($wasmId);
 
         $sourceAddress = Address::fromAccountId($deployRequest->sourceAccountKeyPair->getAccountId());
         $createContractHostFunction = new CreateContractFromExternalRefWithConstructorHostFunction(
@@ -317,7 +313,7 @@ class SorobanClient
             throw new Exception("Could not get contract id for deployed contract");
         }
         $clientOptions->contractId = StrKey::encodeContractIdHex($contractId);
-        if ($contractInfo !== null && count($contractInfo->specEntries) > 0) {
+        if ($contractInfo !== null) {
             return new SorobanClient($contractInfo->specEntries, $clientOptions);
         }
         return SorobanClient::forClientOptions(options: $clientOptions);

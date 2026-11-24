@@ -35,6 +35,18 @@ use Soneso\StellarSDK\Xdr\XdrTransactionV1Envelope;
  */
 class XdrBufferTest extends TestCase
 {
+    public function testGetPositionTracksConsumedBytes(): void
+    {
+        $buffer = new XdrBuffer(pack('N', 7) . XdrEncoder::string('abc'));
+        $this->assertTrue(method_exists($buffer, 'getPosition'));
+        $this->assertSame(0, $buffer->getPosition());
+        $this->assertSame(7, $buffer->readUnsignedInteger32());
+        $this->assertSame(4, $buffer->getPosition());
+        $this->assertSame('abc', $buffer->readString());
+        $this->assertSame(12, $buffer->getPosition());
+        $buffer->assertFullyConsumed('test');
+    }
+
     public function testAssertFullyConsumedAtEnd(): void
     {
         $buffer = new XdrBuffer(pack('N', 7));

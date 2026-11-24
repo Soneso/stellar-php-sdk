@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `XdrBuffer::assertFullyConsumed()` checks that a buffer holds no unread bytes.
 - `DeploySACWithAssetHostFunction` takes optional constructor arguments; with an argument list, including an empty one, it writes `HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2`.
 - `XdrJsonHelper::encodeText()` writes SEP-51 JSON text, and `XdrJsonHelper::JSON_DEPTH_LIMIT` holds its nesting limit of 1100 levels.
+- `XdrBuffer::getPosition()` returns the number of bytes consumed from the buffer.
 
 ### Removed
 - `XdrConfigUpgradeSetKeyBase`, `XdrInnerTransactionResultPairBase`, `XdrLiquidityPoolDepositOperationBase`, `XdrLiquidityPoolWithdrawOperationBase` and `XdrOperationResultTrBase`. The classes of the same name without `Base` are generated in full and keep their API.
@@ -61,6 +62,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `URIScheme::signAndSubmitTransaction()` throws `InvalidArgumentException` for a `callback` that does not start with `url:`, including an empty one, and sends nothing. Before this change, it submitted the transaction to Horizon.
 - `URIScheme::getParameterValue()` returns null for a URI without a query, a URI that cannot be parsed, or a parameter given as an array, so `signAndSubmitTransaction()` throws its documented `InvalidArgumentException`. Before this change, these URIs raised a `TypeError`.
 - `StellarSDK`, `SorobanServer`, the SEP clients, and the SEP-7 callback refuse a service URL that cannot be parsed or an `https` URL without a host with `InvalidArgumentException`. Before this change, a URL that could not be parsed raised a `TypeError`, and the check accepted an `https` URL without a host.
+- `SorobanContractParser::parseContractByteCode()` reads contract byte code by its wasm sections and throws `SorobanContractParserException` with the byte offset for an invalid wasm header, section or entry. Before this change, it returned a shortened spec without an error when a spec entry did not decode, and threw for an empty spec section.
+- `SorobanContractInfo::$metaEntries` combines the entries of every `contractmetav0` section in module order, with the values of repeated `sep` entries joined by a comma as SEP-47 defines, and `$supportedSeps` lists the SEPs among them. Before this change, the entries of later `contractmetav0` sections were lost, and only the last `sep` value of the first section counted.
+- `SorobanClient::deploy()` and `SorobanClient::deployFromExternalRef()` throw `SorobanContractParserException` before they build the deployment transaction when they cannot parse the code entry from the RPC. Before this change, they ignored the parser error and went on with the deployment.
 
 ## [1.18.0] - 2026-11-14
 

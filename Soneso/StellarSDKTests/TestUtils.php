@@ -24,6 +24,48 @@ class TestUtils
 {
 
     /**
+     * Builds a wasm module with custom sections after the supplied header and code sections.
+     *
+     * @param array<string, string> $sections Section names and raw contents in module order
+     * @param string $prefix Wasm header and any preceding sections
+     * @return string Framed wasm bytes
+     */
+    public static function wasmModule(array $sections, string $prefix = "\0asm\1\0\0\0"): string
+    {
+        $bytes = $prefix;
+        foreach ($sections as $name => $content) {
+            $bytes .= self::wasmCustomSection($name, $content);
+        }
+        return $bytes;
+    }
+
+    /**
+     * @param string $name Custom section name
+     * @param string $content Raw section contents
+     * @return string Section ID, size, name and contents
+     */
+    public static function wasmCustomSection(string $name, string $content): string
+    {
+        $payload = self::wasmUnsignedLeb128(strlen($name)) . $name . $content;
+        return "\0" . self::wasmUnsignedLeb128(strlen($payload)) . $payload;
+    }
+
+    /**
+     * @param int $value Nonnegative integer to encode
+     * @return string Unsigned LEB128 bytes
+     */
+    public static function wasmUnsignedLeb128(int $value): string
+    {
+        $bytes = '';
+        do {
+            $byte = $value & 127;
+            $value >>= 7;
+            $bytes .= chr($byte | ($value ? 128 : 0));
+        } while ($value);
+        return $bytes;
+    }
+
+    /**
      * Funds $accountId via Friendbot and waits until the account is visible to
      * the given endpoints.
      *
