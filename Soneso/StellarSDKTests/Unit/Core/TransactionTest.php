@@ -17,12 +17,15 @@ use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\CreateAccountOperation;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\FeeBumpTransaction;
+use Soneso\StellarSDK\FeeBumpTransactionBuilder;
 use Soneso\StellarSDK\InflationOperation;
+use Soneso\StellarSDK\LedgerBounds;
 use Soneso\StellarSDK\ManageSellOfferOperation;
 use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\MuxedAccount;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\PaymentOperation;
+use Soneso\StellarSDK\Signer;
 use Soneso\StellarSDK\TimeBounds;
 use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
@@ -642,17 +645,16 @@ class TransactionTest extends TestCase
         $feeBumpEnvelope->setFeeBump(new XdrFeeBumpTransactionEnvelope($feeBumpTx, $signatures));
 
         return [
-            'V1' => [$v1Envelope, pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX) . $v1Tx->encode(), true],
-            'V0' => [$v0Envelope, $v0TaggedTransaction, false],
-            'fee bump' => [$feeBumpEnvelope, pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP) . $feeBumpTx->encode(), true],
+            'V1' => [$v1Envelope, pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX) . $v1Tx->encode()],
+            'V0' => [$v0Envelope, $v0TaggedTransaction],
+            'fee bump' => [$feeBumpEnvelope, pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP) . $feeBumpTx->encode()],
         ];
     }
 
     #[DataProvider('inflationEnvelopeProvider')]
-    public function testImportedInflationEnvelopePreservesOperationsAndHash(
+    public function testImportedInflationEnvelopePreservesOperationsEnvelopeAndHash(
         XdrTransactionEnvelope $envelope,
         string $taggedTransaction,
-        bool $expectEnvelopeEqual,
     ): void
     {
         [$inflation, $payment] = self::inflationXdrOperations();
@@ -670,9 +672,7 @@ class TransactionTest extends TestCase
         $this->assertInstanceOf(PaymentOperation::class, $parsed[1]);
         $this->assertSame($payment->encode(), $parsed[1]->toXdr()->encode());
         $this->assertSame($expectedHash, $imported->hash($network));
-        if ($expectEnvelopeEqual) {
-            $this->assertSame($input, $imported->toEnvelopeXdrBase64());
-        }
+        $this->assertSame($input, $imported->toEnvelopeXdrBase64());
     }
 
     public static function zeroAndEmptySetOptionsProvider(): array
@@ -796,6 +796,488 @@ class TransactionTest extends TestCase
         $this->assertSame(-1, $ops[0]->getOfferId());
         $this->assertSame($input, $imported->toEnvelopeXdrBase64());
         $this->assertSame($expectedHash, $imported->hash($network));
+    }
+
+    public function testV0EnvelopeWithTimeBoundsAndTextMemoRoundTripsAsV0(): void
+    {
+        $envelope = self::buildV0EnvelopeFixture(withTimeBounds: true, textMemo: 'v0 memo');
+        $input = base64_encode($envelope->encode());
+        $expectedV1Body = self::buildEquivalentV1TransactionFixture(withTimeBounds: true, textMemo: 'v0 memo')->encode();
+
+        $readers = [
+            AbstractTransaction::fromEnvelopeBase64XdrString($input),
+            AbstractTransaction::fromEnvelopeXdr(XdrTransactionEnvelope::fromEnvelopeBase64XdrString($input)),
+            Transaction::fromV0EnvelopeXdr($envelope->getV0()),
+        ];
+
+        foreach ($readers as $imported) {
+            $this->assertInstanceOf(Transaction::class, $imported);
+            $written = $imported->toEnvelopeXdr();
+            $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $written->getType()->getValue());
+            $this->assertNotNull($written->getV0());
+            $this->assertNull($written->getV1());
+            $this->assertSame($input, base64_encode($written->encode()));
+            $this->assertSame($input, $imported->toEnvelopeXdrBase64());
+            $this->assertSame($expectedV1Body, $imported->toXdr()->encode());
+            $this->assertSame(base64_encode($expectedV1Body), $imported->toXdrBase64());
+        }
+    }
+
+    public function testV0EnvelopeWithoutTimeBoundsAndMemoNoneRoundTripsAsV0(): void
+    {
+        $envelope = self::buildV0EnvelopeFixture(withTimeBounds: false, textMemo: null);
+        $input = base64_encode($envelope->encode());
+
+        $imported = AbstractTransaction::fromEnvelopeBase64XdrString($input);
+
+        $this->assertInstanceOf(Transaction::class, $imported);
+        $written = $imported->toEnvelopeXdr();
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $written->getType()->getValue());
+        $this->assertNotNull($written->getV0());
+        $this->assertNull($written->getV1());
+        $this->assertNull($written->getV0()->getTx()->getTimeBounds());
+        $this->assertSame($input, base64_encode($written->encode()));
+        $this->assertSame($input, $imported->toEnvelopeXdrBase64());
+    }
+
+    public function testV0EnvelopeSignedAfterReadingKeepsV0AndVerifiesAgainstV1Hash(): void
+    {
+        $envelope = self::buildV0EnvelopeFixture(withTimeBounds: true, textMemo: 'v0 memo');
+        $existingSig = $envelope->getV0()->getSignatures()[0];
+        $input = base64_encode($envelope->encode());
+        $signer = KeyPair::fromSeed('SCZANGBA5YHTNYVVV4C3U252E2B6P6F5T3U6MM63WBSBZATAQI3EBTQ4');
+        $network = Network::testnet();
+
+        $imported = AbstractTransaction::fromEnvelopeBase64XdrString($input);
+        $this->assertInstanceOf(Transaction::class, $imported);
+        $imported->sign($signer, $network);
+
+        $written = $imported->toEnvelopeXdr();
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $written->getType()->getValue());
+        $this->assertNotNull($written->getV0());
+        $this->assertNull($written->getV1());
+
+        $signatures = $written->getV0()->getSignatures();
+        $this->assertCount(2, $signatures);
+        $this->assertSame($existingSig->encode(), $signatures[0]->encode());
+        $this->assertSame($signer->getHint(), $signatures[1]->getHint());
+
+        $expectedV1Tx = self::buildEquivalentV1TransactionFixture(withTimeBounds: true, textMemo: 'v0 memo');
+        $expectedHash = $this->expectedTransactionHash(
+            $network,
+            pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX) . $expectedV1Tx->encode()
+        );
+        $actualHash = $imported->hash($network);
+        $this->assertSame(bin2hex($expectedHash), bin2hex($actualHash));
+        $this->assertTrue($signer->verifySignature($signatures[1]->getSignature(), $actualHash));
+
+        $decoded = XdrTransactionEnvelope::fromEnvelopeBase64XdrString($imported->toEnvelopeXdrBase64());
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $decoded->getType()->getValue());
+        $this->assertCount(2, $decoded->getV0()->getSignatures());
+        $this->assertSame($existingSig->encode(), $decoded->getV0()->getSignatures()[0]->encode());
+        $this->assertSame($signatures[1]->encode(), $decoded->getV0()->getSignatures()[1]->encode());
+    }
+
+    public function testFeeBumpAroundV0TransactionWritesV1InnerAndRoundTrips(): void
+    {
+        $v0Envelope = self::buildV0EnvelopeFixture(withTimeBounds: true, textMemo: 'v0 memo');
+        $existingSig = $v0Envelope->getV0()->getSignatures()[0];
+        $v0Input = base64_encode($v0Envelope->encode());
+        $innerTx = AbstractTransaction::fromEnvelopeBase64XdrString($v0Input);
+        $this->assertInstanceOf(Transaction::class, $innerTx);
+
+        $feeSourceAccountId = 'GCTIJ5XTJIGZSZI2H5K2XXMPDHDL4TSZ7TPHGTOVGNHWXZKAGHNBC7JH';
+        $feeSource = MuxedAccount::fromAccountId($feeSourceAccountId);
+        $network = Network::testnet();
+
+        $expectedV1Tx = self::buildEquivalentV1TransactionFixture(withTimeBounds: true, textMemo: 'v0 memo');
+        $expectedInnerV1 = new XdrTransactionV1Envelope($expectedV1Tx, [$existingSig]);
+        $expectedInnerWrapper = new XdrFeeBumpTransactionInnerTx(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX));
+        $expectedInnerWrapper->setV1($expectedInnerV1);
+        $expectedFeeBumpTx = new XdrFeeBumpTransaction($feeSource->toXdr(), 400, $expectedInnerWrapper, new XdrFeeBumpTransactionExt(0));
+        $expectedFeeBumpEnvelope = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP));
+        $expectedFeeBumpEnvelope->setFeeBump(new XdrFeeBumpTransactionEnvelope($expectedFeeBumpTx, []));
+        $expectedFeeBumpBase64 = base64_encode($expectedFeeBumpEnvelope->encode());
+        $expectedFeeBumpHash = $this->expectedTransactionHash(
+            $network,
+            pack('N', XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP) . $expectedFeeBumpTx->encode()
+        );
+
+        $feeBumps = [
+            new FeeBumpTransaction($feeSource, 400, $innerTx),
+            (new FeeBumpTransactionBuilder($innerTx))
+                ->setFeeAccount($feeSourceAccountId)
+                ->setBaseFee(200)
+                ->build(),
+            (new FeeBumpTransactionBuilder($innerTx))
+                ->setMuxedFeeAccount($feeSource)
+                ->setBaseFee(200)
+                ->build(),
+        ];
+
+        foreach ($feeBumps as $feeBump) {
+            $written = $feeBump->toEnvelopeXdr();
+            $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_FEE_BUMP, $written->getType()->getValue());
+            $innerXdr = $written->getFeeBump()->getTx()->getInnerTx();
+            $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX, $innerXdr->getType()->getValue());
+            $this->assertNotNull($innerXdr->getV1());
+            $this->assertSame($expectedV1Tx->encode(), $innerXdr->getV1()->getTx()->encode());
+            $this->assertCount(1, $innerXdr->getV1()->getSignatures());
+            $this->assertSame($existingSig->encode(), $innerXdr->getV1()->getSignatures()[0]->encode());
+
+            $this->assertSame($expectedFeeBumpBase64, $feeBump->toEnvelopeXdrBase64());
+            $this->assertSame(bin2hex($expectedFeeBumpHash), bin2hex($feeBump->hash($network)));
+
+            // Wrapping a V0 transaction leaves the inner transaction's V0 form untouched.
+            $this->assertSame($v0Input, $innerTx->toEnvelopeXdrBase64());
+
+            foreach ([
+                AbstractTransaction::fromEnvelopeBase64XdrString($feeBump->toEnvelopeXdrBase64()),
+                FeeBumpTransaction::fromFeeBumpTransactionEnvelope($written->getFeeBump()),
+            ] as $roundTripped) {
+                $this->assertInstanceOf(FeeBumpTransaction::class, $roundTripped);
+                $this->assertSame($expectedFeeBumpBase64, $roundTripped->toEnvelopeXdrBase64());
+                $this->assertSame(bin2hex($expectedFeeBumpHash), bin2hex($roundTripped->hash($network)));
+                $this->assertSame($feeSourceAccountId, $roundTripped->getFeeAccount()->getAccountId());
+                $this->assertSame(400, $roundTripped->getFee());
+                $this->assertSame('v0 memo', $roundTripped->getInnerTx()->getMemo()->getValue());
+                $this->assertSame(1000, $roundTripped->getInnerTx()->getTimeBounds()->getMinTime()->getTimestamp());
+                $this->assertSame(2000, $roundTripped->getInnerTx()->getTimeBounds()->getMaxTime()->getTimestamp());
+                $this->assertCount(1, $roundTripped->getInnerTx()->getSignatures());
+                $this->assertSame($existingSig->encode(), $roundTripped->getInnerTx()->getSignatures()[0]->encode());
+            }
+        }
+    }
+
+    public function testV1EnvelopeWithSameFieldsRoundTripsAsV1(): void
+    {
+        $v1Tx = self::buildEquivalentV1TransactionFixture(withTimeBounds: true, textMemo: 'v0 memo');
+        $existingSig = self::fixedV0TestSignature();
+        $v1Envelope = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX));
+        $v1Envelope->setV1(new XdrTransactionV1Envelope($v1Tx, [$existingSig]));
+        $input = base64_encode($v1Envelope->encode());
+
+        $imported = AbstractTransaction::fromEnvelopeBase64XdrString($input);
+        $this->assertInstanceOf(Transaction::class, $imported);
+        $written = $imported->toEnvelopeXdr();
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX, $written->getType()->getValue());
+        $this->assertNotNull($written->getV1());
+        $this->assertNull($written->getV0());
+        $this->assertSame($input, $imported->toEnvelopeXdrBase64());
+
+        $sourceAccount = new Account(self::v0FixtureSourceKeyPair()->getAccountId(), new BigInteger('12344'));
+        $built = (new TransactionBuilder($sourceAccount))
+            ->addOperation(new PaymentOperation(
+                MuxedAccount::fromAccountId('GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO'),
+                Asset::native(),
+                '1'
+            ))
+            ->addMemo(Memo::text('v0 memo'))
+            ->setTimeBounds(new TimeBounds(new DateTime('@1000'), new DateTime('@2000')))
+            ->setMaxOperationFee(100)
+            ->build();
+        $built->addSignature($existingSig);
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX, $built->toEnvelopeXdr()->getType()->getValue());
+        $this->assertSame($input, $built->toEnvelopeXdrBase64());
+
+        $v0Envelope = self::buildV0EnvelopeFixture(withTimeBounds: true, textMemo: 'v0 memo');
+        $v0Input = base64_encode($v0Envelope->encode());
+        $importedV0 = AbstractTransaction::fromEnvelopeBase64XdrString($v0Input);
+        $this->assertInstanceOf(Transaction::class, $importedV0);
+        $writtenV0 = $importedV0->toEnvelopeXdr();
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $writtenV0->getType()->getValue());
+        $this->assertNotNull($writtenV0->getV0());
+        $this->assertNull($writtenV0->getV1());
+        $this->assertSame($v0Input, $importedV0->toEnvelopeXdrBase64());
+    }
+
+    public function testV0SetSorobanTransactionDataSwitchesToV1AndBack(): void
+    {
+        $envelope = self::buildV0EnvelopeFixture(withTimeBounds: true, textMemo: 'v0 memo');
+        $input = base64_encode($envelope->encode());
+        $tx = AbstractTransaction::fromEnvelopeBase64XdrString($input);
+        $this->assertInstanceOf(Transaction::class, $tx);
+
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $tx->toEnvelopeXdr()->getType()->getValue());
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+
+        $tx->setSorobanTransactionData(null);
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+
+        $sorobanData = new XdrSorobanTransactionData(
+            new XdrSorobanTransactionDataExt(0),
+            new XdrSorobanResources(new XdrLedgerFootprint([], []), 100000, 200000, 300000),
+            50000
+        );
+        $tx->setSorobanTransactionData($sorobanData);
+
+        $written = $tx->toEnvelopeXdr();
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX, $written->getType()->getValue());
+        $this->assertNotNull($written->getV1());
+        $this->assertNull($written->getV0());
+        $this->assertSame(1, $written->getV1()->getTx()->getExt()->getDiscriminant());
+        $this->assertSame($sorobanData->encode(), $written->getV1()->getTx()->getExt()->getSorobanTransactionData()->encode());
+
+        $decoded = AbstractTransaction::fromEnvelopeBase64XdrString($tx->toEnvelopeXdrBase64());
+        $this->assertInstanceOf(Transaction::class, $decoded);
+        $this->assertSame(50000, $decoded->getSorobanTransactionData()->resourceFee);
+
+        $tx->setSorobanTransactionData(null);
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $tx->toEnvelopeXdr()->getType()->getValue());
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+    }
+
+    public function testV0SetLedgerBoundsSwitchesToV1AndBack(): void
+    {
+        $envelope = self::buildV0EnvelopeFixture(withTimeBounds: true, textMemo: 'v0 memo');
+        $input = base64_encode($envelope->encode());
+        $tx = AbstractTransaction::fromEnvelopeBase64XdrString($input);
+        $this->assertInstanceOf(Transaction::class, $tx);
+
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $tx->toEnvelopeXdr()->getType()->getValue());
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+
+        $tx->getPreconditions()->setLedgerBounds(null);
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+
+        $tx->getPreconditions()->setLedgerBounds(new LedgerBounds(100, 200));
+
+        $written = $tx->toEnvelopeXdr();
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX, $written->getType()->getValue());
+        $this->assertNotNull($written->getV1());
+        $this->assertNull($written->getV0());
+        $cond = $written->getV1()->getTx()->getPreconditions();
+        $this->assertSame(XdrPreconditionType::V2, $cond->getType()->getValue());
+        $this->assertSame(100, $cond->getV2()->getLedgerBounds()->getMinLedger());
+        $this->assertSame(200, $cond->getV2()->getLedgerBounds()->getMaxLedger());
+        $this->assertSame(1000, $cond->getV2()->getTimeBounds()->getMinTimestamp());
+        $this->assertSame(2000, $cond->getV2()->getTimeBounds()->getMaxTimestamp());
+
+        $tx->getPreconditions()->setLedgerBounds(null);
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $tx->toEnvelopeXdr()->getType()->getValue());
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+    }
+
+    public function testV0SetMinSeqNumberSwitchesToV1AndBack(): void
+    {
+        $envelope = self::buildV0EnvelopeFixture(withTimeBounds: true, textMemo: 'v0 memo');
+        $input = base64_encode($envelope->encode());
+        $tx = AbstractTransaction::fromEnvelopeBase64XdrString($input);
+        $this->assertInstanceOf(Transaction::class, $tx);
+
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $tx->toEnvelopeXdr()->getType()->getValue());
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+
+        $tx->getPreconditions()->setMinSeqNumber(null);
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+
+        $tx->getPreconditions()->setMinSeqNumber(new BigInteger('12340'));
+
+        $written = $tx->toEnvelopeXdr();
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX, $written->getType()->getValue());
+        $this->assertNotNull($written->getV1());
+        $this->assertNull($written->getV0());
+        $cond = $written->getV1()->getTx()->getPreconditions();
+        $this->assertSame(XdrPreconditionType::V2, $cond->getType()->getValue());
+        $this->assertSame('12340', $cond->getV2()->getMinSeqNum()->sequenceNumber->toString());
+
+        $tx->getPreconditions()->setMinSeqNumber(null);
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $tx->toEnvelopeXdr()->getType()->getValue());
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+    }
+
+    public function testV0SetMinSeqAgeSwitchesToV1AndBack(): void
+    {
+        $envelope = self::buildV0EnvelopeFixture(withTimeBounds: true, textMemo: 'v0 memo');
+        $input = base64_encode($envelope->encode());
+        $tx = AbstractTransaction::fromEnvelopeBase64XdrString($input);
+        $this->assertInstanceOf(Transaction::class, $tx);
+
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $tx->toEnvelopeXdr()->getType()->getValue());
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+
+        $tx->getPreconditions()->setMinSeqAge(0);
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+
+        $tx->getPreconditions()->setMinSeqAge(60);
+
+        $written = $tx->toEnvelopeXdr();
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX, $written->getType()->getValue());
+        $this->assertNotNull($written->getV1());
+        $this->assertNull($written->getV0());
+        $cond = $written->getV1()->getTx()->getPreconditions();
+        $this->assertSame(XdrPreconditionType::V2, $cond->getType()->getValue());
+        $this->assertSame(60, $cond->getV2()->getMinSeqAge());
+
+        $tx->getPreconditions()->setMinSeqAge(PHP_INT_MIN);
+        $writtenUnsigned = $tx->toEnvelopeXdr();
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX, $writtenUnsigned->getType()->getValue());
+        $this->assertSame(PHP_INT_MIN, $writtenUnsigned->getV1()->getTx()->getPreconditions()->getV2()->getMinSeqAge());
+
+        $tx->getPreconditions()->setMinSeqAge(0);
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $tx->toEnvelopeXdr()->getType()->getValue());
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+    }
+
+    public function testV0SetMinSeqLedgerGapSwitchesToV1AndBack(): void
+    {
+        $envelope = self::buildV0EnvelopeFixture(withTimeBounds: true, textMemo: 'v0 memo');
+        $input = base64_encode($envelope->encode());
+        $tx = AbstractTransaction::fromEnvelopeBase64XdrString($input);
+        $this->assertInstanceOf(Transaction::class, $tx);
+
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $tx->toEnvelopeXdr()->getType()->getValue());
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+
+        $tx->getPreconditions()->setMinSeqLedgerGap(0);
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+
+        $tx->getPreconditions()->setMinSeqLedgerGap(5);
+
+        $written = $tx->toEnvelopeXdr();
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX, $written->getType()->getValue());
+        $this->assertNotNull($written->getV1());
+        $this->assertNull($written->getV0());
+        $cond = $written->getV1()->getTx()->getPreconditions();
+        $this->assertSame(XdrPreconditionType::V2, $cond->getType()->getValue());
+        $this->assertSame(5, $cond->getV2()->getMinSeqLedgerGap());
+
+        $tx->getPreconditions()->setMinSeqLedgerGap(0);
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $tx->toEnvelopeXdr()->getType()->getValue());
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+    }
+
+    public function testV0SetExtraSignersSwitchesToV1AndBack(): void
+    {
+        $envelope = self::buildV0EnvelopeFixture(withTimeBounds: true, textMemo: 'v0 memo');
+        $input = base64_encode($envelope->encode());
+        $tx = AbstractTransaction::fromEnvelopeBase64XdrString($input);
+        $this->assertInstanceOf(Transaction::class, $tx);
+
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $tx->toEnvelopeXdr()->getType()->getValue());
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+
+        $tx->getPreconditions()->setExtraSigners([]);
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+
+        $extraSigner = Signer::ed25519PublicKey(
+            KeyPair::fromAccountId('GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO')
+        );
+        $tx->getPreconditions()->setExtraSigners([$extraSigner]);
+
+        $written = $tx->toEnvelopeXdr();
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX, $written->getType()->getValue());
+        $this->assertNotNull($written->getV1());
+        $this->assertNull($written->getV0());
+        $cond = $written->getV1()->getTx()->getPreconditions();
+        $this->assertSame(XdrPreconditionType::V2, $cond->getType()->getValue());
+        $this->assertCount(1, $cond->getV2()->getExtraSigners());
+        $this->assertSame($extraSigner->encode(), $cond->getV2()->getExtraSigners()[0]->encode());
+
+        $tx->getPreconditions()->setExtraSigners([]);
+        $this->assertSame(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0, $tx->toEnvelopeXdr()->getType()->getValue());
+        $this->assertSame($input, $tx->toEnvelopeXdrBase64());
+    }
+
+    public function testSparseOperationsArrayProducesListInXdr(): void
+    {
+        $destId = 'GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO';
+        $op1 = new CreateAccountOperation($destId, '100');
+        $op2 = new PaymentOperation(
+            MuxedAccount::fromAccountId($destId),
+            Asset::native(),
+            '50'
+        );
+        $source = MuxedAccount::fromAccountId($this->sourceAccountId);
+        $sequence = new BigInteger('101');
+
+        $listTx = new Transaction($source, $sequence, [$op1, $op2]);
+        $sparseTx = new Transaction($source, $sequence, [1 => $op1, 3 => $op2]);
+
+        $listXdr = $listTx->toXdr();
+        $sparseXdr = $sparseTx->toXdr();
+
+        $sparseOps = $sparseXdr->getOperations();
+        $this->assertSame([0, 1], array_keys($sparseOps));
+        $this->assertSame($op1->toXdr()->encode(), $sparseOps[0]->encode());
+        $this->assertSame($op2->toXdr()->encode(), $sparseOps[1]->encode());
+        $this->assertSame($listTx->toXdrBase64(), $sparseTx->toXdrBase64());
+
+        $listLines = [];
+        $listXdr->toTxRep('tx', $listLines);
+        $sparseLines = [];
+        $sparseXdr->toTxRep('tx', $sparseLines);
+        $this->assertSame($listLines, $sparseLines);
+
+        $this->assertSame($listXdr->toJson(), $sparseXdr->toJson());
+    }
+
+    private static function v0FixtureSourceKeyPair(): KeyPair
+    {
+        return KeyPair::fromSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
+    }
+
+    private static function fixedV0TestSignature(): XdrDecoratedSignature
+    {
+        return new XdrDecoratedSignature("\x01\x02\x03\x04", str_repeat("\xab", 64));
+    }
+
+    private static function buildV0FixtureOperation(): XdrOperation
+    {
+        $destEd25519 = KeyPair::fromAccountId('GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO')->getPublicKey();
+        $paymentBody = new XdrOperationBody(new XdrOperationType(XdrOperationType::PAYMENT));
+        $paymentBody->setPaymentOp(new XdrPaymentOperation(
+            new XdrMuxedAccount($destEd25519),
+            new XdrAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_NATIVE)),
+            new BigInteger('10000000')
+        ));
+        return new XdrOperation($paymentBody);
+    }
+
+    private static function buildV0FixtureMemo(?string $textMemo): XdrMemo
+    {
+        if ($textMemo === null) {
+            return new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_NONE));
+        }
+        $memo = new XdrMemo(new XdrMemoType(XdrMemoType::MEMO_TEXT));
+        $memo->setText($textMemo);
+        return $memo;
+    }
+
+    private static function buildV0EnvelopeFixture(bool $withTimeBounds, ?string $textMemo): XdrTransactionEnvelope
+    {
+        $timeBounds = $withTimeBounds ? new XdrTimeBounds(new DateTime('@1000'), new DateTime('@2000')) : null;
+        $v0Tx = new XdrTransactionV0(
+            self::v0FixtureSourceKeyPair()->getPublicKey(),
+            new XdrSequenceNumber(new BigInteger('12345')),
+            [self::buildV0FixtureOperation()],
+            100,
+            self::buildV0FixtureMemo($textMemo),
+            $timeBounds,
+            new XdrTransactionV0Ext(0)
+        );
+        $envelope = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0));
+        $envelope->setV0(new XdrTransactionV0Envelope($v0Tx, [self::fixedV0TestSignature()]));
+        return $envelope;
+    }
+
+    private static function buildEquivalentV1TransactionFixture(bool $withTimeBounds, ?string $textMemo): XdrTransaction
+    {
+        if ($withTimeBounds) {
+            $cond = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::TIME));
+            $cond->setTimeBounds(new XdrTimeBounds(new DateTime('@1000'), new DateTime('@2000')));
+        } else {
+            $cond = new XdrPreconditions(new XdrPreconditionType(XdrPreconditionType::NONE));
+        }
+        return new XdrTransaction(
+            new XdrMuxedAccount(self::v0FixtureSourceKeyPair()->getPublicKey()),
+            new XdrSequenceNumber(new BigInteger('12345')),
+            [self::buildV0FixtureOperation()],
+            100,
+            self::buildV0FixtureMemo($textMemo),
+            $cond,
+            new XdrTransactionExt(0)
+        );
     }
 
     private function assertImportedHash(XdrTransactionEnvelope $envelope, string $taggedTransaction): void

@@ -4023,7 +4023,7 @@ parameters:
 		-
 			message: '#^Instanceof between Soneso\\StellarSDK\\AbstractOperation and Soneso\\StellarSDK\\AbstractOperation will always evaluate to true\.$#'
 			identifier: instanceof.alwaysTrue
-			count: 2
+			count: 1
 			path: Soneso/StellarSDK/Transaction.php
 
 		-
