@@ -7,6 +7,7 @@ namespace Soneso\StellarSDK\Xdr;
 
 use InvalidArgumentException;
 use JsonException;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 class XdrSignerKeyTypeBase {
     public int $value;
@@ -153,7 +154,7 @@ class XdrSignerKeyTypeBase {
                     $val = TxRepHelper::parseInt32(substr($name, strlen($prefix)), $name);
                     return new static($val);
                 }
-                throw new InvalidArgumentException('Unknown enum value: ' . $name);
+                throw new InvalidArgumentException('Unknown enum value: ' . SecretSeedRedaction::redactSecretSeeds($name));
         }
     }
 
@@ -168,7 +169,7 @@ class XdrSignerKeyTypeBase {
     public static function fromTxRep(array $map, string $prefix): static {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
-            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . SecretSeedRedaction::redactSecretSeeds($prefix));
         }
         if (str_starts_with($raw, 'XdrSignerKeyTypeBase#')) {
             return new static(TxRepHelper::parseInt32(substr($raw, 21), $prefix));

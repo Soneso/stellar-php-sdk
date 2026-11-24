@@ -44,7 +44,7 @@ final class SecretSeedVariants
     public static function create(): self
     {
         $seed = KeyPair::random()->getSecretSeed();
-        Assert::assertNotNull($seed);
+        Assert::assertTrue($seed !== null, 'KeyPair::random() produced no secret seed');
         $changed = $seed;
         $changed[28] = $seed[28] === 'A' ? 'B' : 'A';
         return new self($seed, [

@@ -44,7 +44,7 @@ class XdrTrustlineAsset extends XdrTrustlineAssetBase
     {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
-            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . SecretSeedRedaction::redactSecretSeeds($prefix));
         }
 
         if ($raw === 'native' || $raw === 'XLM') {
@@ -57,7 +57,7 @@ class XdrTrustlineAsset extends XdrTrustlineAssetBase
             if ($bytes === false) {
                 throw new InvalidArgumentException(
                     'Invalid trustline asset: expected 64-char hex pool ID but got invalid hex: '
-                        . SecretSeedRedaction::keyForMessage($raw)
+                        . SecretSeedRedaction::redactSecretSeeds(SecretSeedRedaction::keyForMessage($raw))
                 );
             }
             $result = new static(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE));
@@ -75,7 +75,8 @@ class XdrTrustlineAsset extends XdrTrustlineAssetBase
 
         if (!StrKey::isValidAccountId($issuer)) {
             throw new InvalidArgumentException(
-                'Invalid trustline asset issuer: ' . SecretSeedRedaction::keyForMessage($issuer)
+                'Invalid trustline asset issuer: '
+                    . SecretSeedRedaction::redactSecretSeeds(SecretSeedRedaction::keyForMessage($issuer))
             );
         }
 

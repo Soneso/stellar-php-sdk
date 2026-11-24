@@ -697,10 +697,10 @@ final class XdrJsonHelper
     /**
      * Return a safe, bounded preview of user-supplied input for use in exception messages.
      *
-     * Embedding unbounded user input in exception messages can cause log-amplification
-     * denial-of-service when the message is logged. This helper caps the preview at $max
-     * bytes and appends "..." when the string is truncated, keeping messages informative
-     * without being exploitable.
+     * Secret seeds and seed-like runs are replaced through
+     * {@see SecretSeedRedaction::redactSecretSeeds()} before control or non-UTF-8 bytes
+     * are escaped and before truncation at $max bytes, so neither escaping nor cutting
+     * can break seed detection or leave seed characters in the preview.
      *
      * @param string $s   The user-supplied string.
      * @param int    $max Maximum bytes before truncation (must be > 3).
@@ -708,6 +708,7 @@ final class XdrJsonHelper
      */
     public static function safePreview(string $s, int $max = 80): string
     {
+        $redacted = SecretSeedRedaction::redactSecretSeeds($s);
         // ASCII control characters (0x00-0x1F, 0x7F) are always replaced with their
         // hex escape form: attacker-controlled input echoed through exception
         // messages could otherwise inject ANSI escape sequences when those messages
@@ -716,13 +717,13 @@ final class XdrJsonHelper
         // text previews stay readable, and escaped otherwise, so the preview is
         // never invalid UTF-8 - a message a caller cannot serialize, for example
         // to JSON.
-        $isUtf8 = mb_check_encoding($s, 'UTF-8');
+        $isUtf8 = mb_check_encoding($redacted, 'UTF-8');
         $sanitised = preg_replace_callback(
             $isUtf8 ? '/[\x00-\x1F\x7F]/' : '/[\x00-\x1F\x7F-\xFF]/',
             static function (array $m): string {
                 return '\\x' . strtoupper(bin2hex($m[0]));
             },
-            $s
+            $redacted
         );
         if ($sanitised === null) {
             // preg_replace_callback returns null only on PCRE engine failure
@@ -817,7 +818,7 @@ final class XdrJsonHelper
         // helper receives the string form of every key it reports.
         $previews = array_map(
             static function ($key): string {
-                return "'" . self::safePreview(SecretSeedRedaction::redactSecretSeeds((string) $key), 40) . "'";
+                return "'" . self::safePreview((string) $key, 40) . "'";
             },
             array_slice(array_values($unknown), 0, self::UNKNOWN_FIELD_REPORT_LIMIT)
         );
@@ -1025,7 +1026,7 @@ final class XdrJsonHelper
                     if (isset($frames[$depth - 1][$key])) {
                         throw new InvalidArgumentException(
                             "Duplicate key in JSON input: '"
-                            . self::safePreview(SecretSeedRedaction::redactSecretSeeds($key), 40) . "'"
+                            . self::safePreview($key, 40) . "'"
                         );
                     }
                     $frames[$depth - 1][$key] = true;
@@ -1233,7 +1234,7 @@ final class XdrJsonHelper
         if (!ctype_digit($decimal)) {
             throw new InvalidArgumentException(
                 'wrapUnsignedToSignedInt: input must be unsigned decimal digits; got "'
-                . self::safePreview(SecretSeedRedaction::redactSecretSeeds($decimal)) . '"'
+                . self::safePreview($decimal) . '"'
             );
         }
         $gmp = gmp_init($decimal, 10);
@@ -1309,7 +1310,7 @@ final class XdrJsonHelper
         if (!ctype_digit($digits)) {
             throw new InvalidArgumentException(
                 'SEP-51 int64 string must contain only decimal digits (with optional leading minus); '
-                . 'got "' . self::safePreview(SecretSeedRedaction::redactSecretSeeds($s)) . '"'
+                . 'got "' . self::safePreview($s) . '"'
             );
         }
     }
@@ -1331,7 +1332,7 @@ final class XdrJsonHelper
         if (!ctype_digit($s)) {
             throw new InvalidArgumentException(
                 'SEP-51 uint64 string must contain only decimal digits (no sign); got "'
-                . self::safePreview(SecretSeedRedaction::redactSecretSeeds($s)) . '"'
+                . self::safePreview($s) . '"'
             );
         }
     }

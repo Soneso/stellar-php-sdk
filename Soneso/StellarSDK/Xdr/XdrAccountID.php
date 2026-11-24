@@ -41,11 +41,12 @@ class XdrAccountID extends XdrAccountIDBase
     {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
-            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . SecretSeedRedaction::redactSecretSeeds($prefix));
         }
         if (!StrKey::isValidAccountId($raw)) {
             throw new InvalidArgumentException(
-                'Invalid account ID in TxRep for key "' . $prefix . '": ' . SecretSeedRedaction::keyForMessage($raw)
+                'Invalid account ID in TxRep for key "' . SecretSeedRedaction::redactSecretSeeds($prefix) . '": '
+                    . SecretSeedRedaction::redactSecretSeeds(SecretSeedRedaction::keyForMessage($raw))
             );
         }
         return new static($raw);

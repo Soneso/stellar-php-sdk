@@ -36,7 +36,7 @@ class XdrAllowTrustOperationAsset extends XdrAllowTrustOperationAssetBase
     {
         $code = TxRepHelper::getValue($map, $prefix);
         if ($code === null) {
-            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . SecretSeedRedaction::redactSecretSeeds($prefix));
         }
 
         $codeLen = strlen($code);

@@ -74,7 +74,8 @@ class XdrChangeTrustAsset extends XdrChangeTrustAssetBase
 
         if (!StrKey::isValidAccountId($issuer)) {
             throw new InvalidArgumentException(
-                'Invalid change trust asset issuer: ' . SecretSeedRedaction::keyForMessage($issuer)
+                'Invalid change trust asset issuer: '
+                    . SecretSeedRedaction::redactSecretSeeds(SecretSeedRedaction::keyForMessage($issuer))
             );
         }
 

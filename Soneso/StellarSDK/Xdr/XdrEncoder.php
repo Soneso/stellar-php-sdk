@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK\Xdr;
 
 use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 /**
  * See: https://tools.ietf.org/html/rfc4506
@@ -99,7 +100,12 @@ class XdrEncoder
     public static function assertMaxLength(int $length, int $max, string $name): void
     {
         if ($length > $max) {
-            throw new InvalidArgumentException(sprintf('%s length %d exceeds the maximum of %d', $name, $length, $max));
+            throw new InvalidArgumentException(sprintf(
+                '%s length %d exceeds the maximum of %d',
+                SecretSeedRedaction::redactSecretSeeds($name),
+                $length,
+                $max
+            ));
         }
     }
 

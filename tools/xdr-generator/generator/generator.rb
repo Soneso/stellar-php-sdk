@@ -133,6 +133,7 @@ class Generator < Xdrgen::Generators::Base
 
     imports = ["use InvalidArgumentException;"]
     imports << "use JsonException;" if emits_sep51_methods
+    imports << "use Soneso\\StellarSDK\\Soroban\\SecretSeedRedaction;" if should_generate_txrep?(php_name)
 
     out.puts GENERATED_HEADER
     out.puts ""
@@ -1999,7 +2000,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "                    $val = TxRepHelper::parseInt32(substr($name, strlen($prefix)), $name);"
     out.puts "                    return new static($val);"
     out.puts "                }"
-    out.puts "                throw new InvalidArgumentException('Unknown enum value: ' . $name);"
+    out.puts "                throw new InvalidArgumentException('Unknown enum value: ' . SecretSeedRedaction::redactSecretSeeds($name));"
     out.puts "        }"
     out.puts "    }"
     out.puts ""
@@ -2010,7 +2011,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    public static function fromTxRep(array $map, string $prefix): static {"
     out.puts "        $raw = TxRepHelper::getValue($map, $prefix);"
     out.puts "        if ($raw === null) {"
-    out.puts "            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);"
+    out.puts "            throw new InvalidArgumentException('Missing TxRep value for: ' . SecretSeedRedaction::redactSecretSeeds($prefix));"
     out.puts "        }"
     out.puts "        if (str_starts_with($raw, '#{class_name}#')) {"
     out.puts "            return new static(TxRepHelper::parseInt32(substr($raw, #{class_name.length + 1}), $prefix));"
