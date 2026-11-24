@@ -471,4 +471,272 @@ class DerivationTest extends TestCase
         );
     }
 
+    public static function invalidEntropyFormatProvider(): array
+    {
+        return [
+            '31 hex chars plus trailing newline' => [12, '31-zero-hex-newline'],
+            '31 mixed hex chars plus trailing newline' => [12, '31-mixed-hex-newline'],
+            '32 hex chars plus trailing newline' => [12, '32-zero-hex-newline'],
+            'uppercase hexadecimal' => [15, 'uppercase-160-bit'],
+        ];
+    }
+
+    #[DataProvider('invalidEntropyFormatProvider')]
+    public function testBip39UseEntropyRejectsInvalidFormatWithoutWarning(int $wordCount, string $case): void
+    {
+        $entropy = match ($case) {
+            '31-zero-hex-newline' => substr('00000000000000000000000000000000', 0, 31) . "\n",
+            '31-mixed-hex-newline' => substr('b781c27351c7024355cf7f0b0efdc7f85e046cf9', 0, 31) . "\n",
+            '32-zero-hex-newline' => '00000000000000000000000000000000' . "\n",
+            'uppercase-160-bit' => strtoupper('b781c27351c7024355cf7f0b0efdc7f85e046cf9'),
+            default => throw new InvalidArgumentException('Unknown invalid entropy format case'),
+        };
+        $bip39 = (new BIP39($wordCount))->wordList(WordList::getLanguage());
+        $diagnostics = [];
+        $caught = null;
+        set_error_handler(static function (int $errno, string $errstr) use (&$diagnostics): bool {
+            $diagnostics[] = $errstr;
+            return true;
+        });
+        try {
+            $bip39->useEntropy($entropy);
+        } catch (Exception $e) {
+            $caught = $e;
+        } finally {
+            restore_error_handler();
+        }
+        $this->assertNotNull($caught, 'Accepted invalid entropy format');
+        $message = $caught->getMessage();
+        $this->assertTrue(
+            $message === 'Invalid entropy (requires hexadecimal)',
+            'Unexpected exception message for invalid entropy format'
+        );
+        $this->assertFalse(str_contains($message, $entropy), 'Exception message leaked entropy');
+        $this->assertTrue(
+            $diagnostics === [],
+            'Unexpected PHP diagnostic emitted for invalid entropy format'
+        );
+    }
+
+    public function testBip39UseEntropyRoundTripsAllFiveSupportedSizes(): void
+    {
+        $wordList = WordList::getLanguage();
+        $vectors = [
+            [
+                12,
+                '00000000000000000000000000000000',
+                explode(' ', 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'),
+            ],
+            [
+                15,
+                'b781c27351c7024355cf7f0b0efdc7f85e046cf9',
+                explode(' ', 'resource asthma orphan phone ice canvas fire useful arch jewel impose vague theory cushion top'),
+            ],
+            [
+                18,
+                '000000000000000000000000000000000000000000000000',
+                array_merge(array_fill(0, 17, 'abandon'), ['agent']),
+            ],
+            [
+                21,
+                '00000000000000000000000000000000000000000000000000000000',
+                array_merge(array_fill(0, 20, 'abandon'), ['admit']),
+            ],
+            [
+                24,
+                '0000000000000000000000000000000000000000000000000000000000000000',
+                array_merge(array_fill(0, 23, 'abandon'), ['art']),
+            ],
+        ];
+
+        foreach ($vectors as [$wordCount, $entropy, $expectedWords]) {
+            $mnemonic = (new BIP39($wordCount))
+                ->useEntropy($entropy)
+                ->wordList($wordList)
+                ->mnemonic();
+
+            $this->assertSame($wordCount, $mnemonic->wordsCount);
+            $this->assertSame($wordCount, count($mnemonic->words));
+            $this->assertTrue(
+                $mnemonic->entropy === $entropy,
+                sprintf('%d-word useEntropy() mnemonic entropy did not match input', $wordCount)
+            );
+            $this->assertTrue(
+                $mnemonic->words === $expectedWords,
+                sprintf('%d-word useEntropy() did not match expected vector words', $wordCount)
+            );
+
+            $reversed = (new BIP39($wordCount))
+                ->wordList($wordList)
+                ->reverse($mnemonic->words, true);
+
+            $this->assertSame($wordCount, $reversed->wordsCount);
+            $this->assertTrue(
+                $reversed->entropy === $entropy,
+                sprintf('%d-word round-trip through checksum verification failed', $wordCount)
+            );
+        }
+    }
+
+    public static function mismatchedEntropyLengthProvider(): array
+    {
+        return [
+            'configured 12 words, 256-bit entropy' => [
+                12,
+                256,
+                'Entropy length mismatch: expected 128 bits, got 256 bits',
+            ],
+            'configured 24 words, 128-bit entropy' => [
+                24,
+                128,
+                'Entropy length mismatch: expected 256 bits, got 128 bits',
+            ],
+            'configured 15 words, 192-bit entropy' => [
+                15,
+                192,
+                'Entropy length mismatch: expected 160 bits, got 192 bits',
+            ],
+        ];
+    }
+
+    #[DataProvider('mismatchedEntropyLengthProvider')]
+    public function testBip39UseEntropyRejectsLengthMismatch(
+        int $wordCount,
+        int $entropyBits,
+        string $expectedMessage,
+    ): void {
+        $entropy = match ($entropyBits) {
+            128 => '00000000000000000000000000000000',
+            192 => '000000000000000000000000000000000000000000000000',
+            256 => '0000000000000000000000000000000000000000000000000000000000000000',
+            default => throw new InvalidArgumentException('Unsupported test entropy bit size'),
+        };
+        $bip39 = (new BIP39($wordCount))->wordList(WordList::getLanguage());
+        $caught = null;
+        try {
+            $bip39->useEntropy($entropy);
+        } catch (Exception $e) {
+            $caught = $e;
+        }
+        $this->assertNotNull($caught, 'Accepted mismatched entropy length');
+        $message = $caught->getMessage();
+        $this->assertTrue(
+            $message === $expectedMessage,
+            'Unexpected exception message for mismatched entropy length'
+        );
+        $this->assertFalse(str_contains($message, $entropy), 'Exception message leaked entropy');
+    }
+
+    public function testBip39UseEntropyRejectsUnsupportedLengthBeforeMismatchCheck(): void
+    {
+        $unsupportedEntropy = substr('00000000000000000000000000000000', 0, 30);
+        $bip39 = (new BIP39(12))->wordList(WordList::getLanguage());
+        $caught = null;
+        try {
+            $bip39->useEntropy($unsupportedEntropy);
+        } catch (Exception $e) {
+            $caught = $e;
+        }
+        $this->assertNotNull($caught, 'Accepted unsupported entropy length');
+        $this->assertTrue(
+            $caught->getMessage() === 'Invalid entropy length',
+            'Unexpected exception message for unsupported entropy length'
+        );
+    }
+
+    public function testBip39UseEntropyRejectedCallPreservesConfiguredEntropy(): void
+    {
+        $entropy128 = '00000000000000000000000000000000';
+        $entropy256 = '0000000000000000000000000000000000000000000000000000000000000000';
+        $expectedWords12 = explode(
+            ' ',
+            'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+        );
+        $wordList = WordList::getLanguage();
+        $bip39 = (new BIP39(12))->wordList($wordList)->useEntropy($entropy128);
+
+        $caught = null;
+        try {
+            $bip39->useEntropy($entropy256);
+        } catch (Exception $e) {
+            $caught = $e;
+        }
+        $this->assertNotNull($caught, 'Accepted mismatched entropy length');
+        $this->assertTrue(
+            $caught->getMessage() === 'Entropy length mismatch: expected 128 bits, got 256 bits',
+            'Unexpected exception message for mismatched entropy length'
+        );
+
+        $mnemonic = $bip39->mnemonic();
+        $this->assertSame(12, $mnemonic->wordsCount);
+        $this->assertTrue($mnemonic->entropy === $entropy128, 'Previously configured entropy was overwritten');
+        $this->assertTrue($mnemonic->words === $expectedWords12, 'Previously configured mnemonic words changed');
+
+        $reversed = (new BIP39(12))->wordList($wordList)->reverse($mnemonic->words, true);
+        $this->assertTrue($reversed->entropy === $entropy128, 'Preserved mnemonic failed checksum round-trip');
+    }
+
+    public function testBip39StaticEntropyUsesDefaultEnglishWordList(): void
+    {
+        $expectedWords12 = explode(
+            ' ',
+            'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+        );
+        $mnemonic12 = BIP39::Entropy('00000000000000000000000000000000');
+        $this->assertSame(12, $mnemonic12->wordsCount);
+        $this->assertTrue($mnemonic12->words === $expectedWords12, 'BIP39::Entropy() 128-bit words did not match');
+
+        $expectedWords15 = explode(
+            ' ',
+            'resource asthma orphan phone ice canvas fire useful arch jewel impose vague theory cushion top'
+        );
+        $mnemonic15 = BIP39::Entropy('b781c27351c7024355cf7f0b0efdc7f85e046cf9');
+        $this->assertSame(15, $mnemonic15->wordsCount);
+        $this->assertTrue($mnemonic15->words === $expectedWords15, 'BIP39::Entropy() 160-bit words did not match');
+    }
+
+    public function testBip39StaticGenerateUsesDefaultEnglishWordList(): void
+    {
+        $mnemonic = BIP39::Generate(12);
+        $this->assertSame(12, $mnemonic->wordsCount);
+        $this->assertSame(12, count($mnemonic->words));
+        $this->assertTrue(
+            $mnemonic->entropy !== null,
+            'BIP39::Generate(12) did not populate entropy'
+        );
+        $this->assertSame(32, strlen($mnemonic->entropy));
+
+        $reversed = (new BIP39(12))
+            ->wordList(WordList::getLanguage(WordList::LANGUAGE_ENGLISH))
+            ->reverse($mnemonic->words, true);
+        $this->assertSame(12, $reversed->wordsCount);
+        $this->assertTrue(
+            $reversed->entropy === $mnemonic->entropy,
+            'BIP39::Generate(12) words were not accepted by reverse() with matching entropy'
+        );
+    }
+
+    public function testBip39StaticWordsUsesDefaultEnglishWordList(): void
+    {
+        $mnemonic12 = BIP39::Words(
+            'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+        );
+        $this->assertSame(12, $mnemonic12->wordsCount);
+        $this->assertTrue(
+            $mnemonic12->entropy === '00000000000000000000000000000000',
+            'BIP39::Words() string input did not reconstruct expected 128-bit entropy'
+        );
+
+        $words15 = explode(
+            ' ',
+            'resource asthma orphan phone ice canvas fire useful arch jewel impose vague theory cushion top'
+        );
+        $mnemonic15 = BIP39::Words($words15);
+        $this->assertSame(15, $mnemonic15->wordsCount);
+        $this->assertTrue(
+            $mnemonic15->entropy === 'b781c27351c7024355cf7f0b0efdc7f85e046cf9',
+            'BIP39::Words() array input did not reconstruct expected 160-bit entropy'
+        );
+    }
+
 }

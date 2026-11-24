@@ -3289,12 +3289,6 @@ parameters:
 			path: Soneso/StellarSDK/SEP/CrossBorderPayments/SEP31ReceiveAssetInfo.php
 
 		-
-			message: '#^Call to an undefined static method Soneso\\StellarSDK\\SEP\\Derivation\\WordList\:\:English\(\)\.$#'
-			identifier: staticMethod.notFound
-			count: 3
-			path: Soneso/StellarSDK/SEP/Derivation/BIP39.php
-
-		-
 			message: '#^Call to function is_array\(\) with array\<string\> will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
