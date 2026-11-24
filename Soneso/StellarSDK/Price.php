@@ -114,7 +114,7 @@ class Price
         $k1 = 0.0;
         $k2 = 1.0;
         $b = 1.0 / $n;
-        if (!is_finite($b) || $b == 0.0) {
+        if (!is_finite($b)) {
             return false;
         }
         do {
