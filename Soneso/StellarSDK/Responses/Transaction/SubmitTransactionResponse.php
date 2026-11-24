@@ -74,6 +74,7 @@ class SubmitTransactionResponse extends TransactionResponse
      * cannot confirm success and answers false.
      *
      * @return bool True if transaction succeeded, false otherwise
+     * @throws \InvalidArgumentException If a present result XDR cannot be decoded or contains trailing bytes
      */
     public function isSuccessful() : bool {
         if (!$this->hasResultXdr()) {
@@ -129,6 +130,7 @@ class SubmitTransactionResponse extends TransactionResponse
      * @param int $operationIndex index of the CreateClaimableBalance operation
      * within the transaction, 0 for the first
      * @return string|null the created balance id as a "B..." strkey, or null
+     * @throws \InvalidArgumentException If a present result XDR cannot be decoded or contains trailing bytes
      */
     public function getCreatedClaimableBalanceId(int $operationIndex = 0): ?string
     {
