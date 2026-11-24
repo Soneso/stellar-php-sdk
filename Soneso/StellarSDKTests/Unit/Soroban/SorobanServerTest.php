@@ -65,6 +65,7 @@ use Soneso\StellarSDK\Asset;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use phpseclib3\Math\BigInteger;
+use Soneso\StellarSDKTests\TestUtils;
 
 /**
  * Unit tests for SorobanServer class
@@ -1254,7 +1255,10 @@ class SorobanServerTest extends TestCase
             [],
             [new XdrSCSpecTypeDef(XdrSCSpecType::VOID())],
         );
-        return 'contractenvmetav0' . $envMeta->encode() . 'contractspecv0' . $specEntry->encode();
+        return TestUtils::wasmModule([
+            'contractenvmetav0' => $envMeta->encode(),
+            'contractspecv0' => $specEntry->encode(),
+        ]);
     }
 
     /**

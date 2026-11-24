@@ -35,6 +35,7 @@ use Soneso\StellarSDK\Soroban\Contract\InstallRequest;
 use Soneso\StellarSDK\Soroban\Contract\MethodOptions;
 use Soneso\StellarSDK\Soroban\Contract\SACClient;
 use Soneso\StellarSDK\Soroban\Contract\SorobanClient;
+use Soneso\StellarSDK\Soroban\Exceptions\SorobanContractParserException;
 use Soneso\StellarSDK\Soroban\Responses\GetTransactionResponse;
 use Soneso\StellarSDK\Soroban\Responses\RestorePreamble;
 use Soneso\StellarSDK\Soroban\Responses\SorobanRpcErrorResponse;
@@ -44,6 +45,7 @@ use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\Xdr\XdrAccountEntry;
 use Soneso\StellarSDK\Xdr\XdrAccountEntryExt;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
+use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrContractCodeEntry;
 use Soneso\StellarSDK\Xdr\XdrContractCodeEntryExt;
 use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
@@ -76,6 +78,7 @@ use Soneso\StellarSDK\Xdr\XdrSorobanTransactionMeta;
 use Soneso\StellarSDK\Xdr\XdrSorobanTransactionMetaExt;
 use Soneso\StellarSDK\Xdr\XdrTransactionMeta;
 use Soneso\StellarSDK\Xdr\XdrTransactionMetaV3;
+use Soneso\StellarSDKTests\TestUtils;
 
 /**
  * Unit tests for the SorobanClient high-level contract client.
@@ -828,18 +831,16 @@ class SorobanClientTest extends TestCase
         }
     }
 
-    public function testDeployFromExternalRefFallsBackWhenCodeHasNoParseableSpec(): void
+    public function testDeployFromExternalRefFallsBackWhenCodeEntryMissing(): void
     {
         $wasmHash = hash('sha256', 'test-wasm', true);
         $createdContract = Address::fromContractId(StrKey::decodeContractIdHex(self::TEST_CONTRACT_ID))->toXdrSCVal();
 
-        // The resolved code is not parseable wasm, so the spec preload throws and the
-        // deployment proceeds without a spec; the client is then built through the
-        // forClientOptions fallback, which loads the instance and its code entry.
+        // Without a code entry, the deployed contract is loaded by its id.
         $mock = new MockHandler([
             $this->ledgerEntryResponse($this->executableTagEntryData(
                 self::TEST_OWNER_ID_HEX, self::TEST_EXECUTABLE_TAG, XdrSCVal::forBytes($wasmHash))),
-            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, 'not wasm')),
+            $this->emptyLedgerEntriesResponse(),
             $this->accountEntryResponse(),
             $this->simulateResponse(XdrSCVal::forVoid(), true),
             $this->sendTransactionResponse(),
@@ -847,7 +848,8 @@ class SorobanClientTest extends TestCase
             $this->ledgerEntryResponse($this->contractInstanceEntryData($wasmHash)),
             $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $this->createContractByteCode('hello'))),
         ]);
-        $server = $this->createMockedServer($mock);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
         $keyPair = KeyPair::fromSeed(self::TEST_SECRET_SEED);
 
         $deployRequest = new DeployFromExternalRefRequest(
@@ -862,9 +864,183 @@ class SorobanClientTest extends TestCase
 
         $client = SorobanClient::deployFromExternalRef($deployRequest);
 
-        $this->assertContains('hello', $client->getMethodNames());
+        $this->assertSame(['hello'], $client->getMethodNames());
         $this->assertSame(self::TEST_CONTRACT_ID, $client->getContractId());
         $this->assertSame(0, $mock->count());
+        $methods = array_map(static fn($item) => json_decode((string)$item['request']->getBody(), true)['method'], $history);
+        $this->assertSame([
+            'getLedgerEntries', 'getLedgerEntries', 'getLedgerEntries', 'simulateTransaction',
+            'sendTransaction', 'getTransaction', 'getLedgerEntries', 'getLedgerEntries',
+        ], $methods);
+        $instanceKey = $this->requestedLedgerKey($history, 6);
+        $this->assertNotNull($instanceKey->contractData);
+        $this->assertSame(StrKey::decodeContractIdHex(self::TEST_CONTRACT_ID), $instanceKey->contractData->contract->contractId);
+        $this->assertSame(XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE, $instanceKey->contractData->key->type->value);
+    }
+
+    public function testDeployRejectsInvalidSpecBeforeDeployment(): void
+    {
+        $wasmHash = hash('sha256', 'test-wasm', true);
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $this->contractByteCodeWithInvalidSpec())),
+        ]);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
+        $request = new DeployRequest(
+            rpcUrl: self::TEST_RPC_URL,
+            network: $this->testNetwork,
+            sourceAccountKeyPair: KeyPair::fromSeed(self::TEST_SECRET_SEED),
+            wasmHash: bin2hex($wasmHash),
+            server: $server,
+        );
+
+        try {
+            SorobanClient::deploy($request);
+            $this->fail('Expected a parser exception before deployment');
+        } catch (SorobanContractParserException $e) {
+            $this->assertSame(
+                'invalid byte code: the contractspecv0 entry at byte offset 342 does not decode: Unknown enum value: 6',
+                $e->getMessage(),
+            );
+        }
+        $methods = array_map(static fn($item) => json_decode((string)$item['request']->getBody(), true)['method'], $history);
+        $this->assertSame(['getLedgerEntries'], $methods);
+    }
+
+    public function testDeployFromExternalRefRejectsInvalidSpecBeforeDeployment(): void
+    {
+        $wasmHash = hash('sha256', 'test-wasm', true);
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->executableTagEntryData(
+                self::TEST_OWNER_ID_HEX, self::TEST_EXECUTABLE_TAG, XdrSCVal::forBytes($wasmHash))),
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $this->contractByteCodeWithInvalidSpec())),
+        ]);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
+        $request = new DeployFromExternalRefRequest(
+            rpcUrl: self::TEST_RPC_URL,
+            network: $this->testNetwork,
+            sourceAccountKeyPair: KeyPair::fromSeed(self::TEST_SECRET_SEED),
+            executableOwner: Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            tag: self::TEST_EXECUTABLE_TAG,
+            server: $server,
+        );
+
+        try {
+            SorobanClient::deployFromExternalRef($request);
+            $this->fail('Expected a parser exception before deployment');
+        } catch (SorobanContractParserException $e) {
+            $this->assertSame(
+                'invalid byte code: the contractspecv0 entry at byte offset 342 does not decode: Unknown enum value: 6',
+                $e->getMessage(),
+            );
+        }
+        $methods = array_map(static fn($item) => json_decode((string)$item['request']->getBody(), true)['method'], $history);
+        $this->assertSame(['getLedgerEntries', 'getLedgerEntries'], $methods);
+    }
+
+    public function testDeployReusesEmptySpecWithoutReadingContract(): void
+    {
+        $wasmHash = hash('sha256', 'test-wasm', true);
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $this->contractByteCodeWithEmptySpec())),
+            $this->accountEntryResponse(),
+            $this->simulateResponse(XdrSCVal::forVoid(), true),
+            $this->sendTransactionResponse(),
+            $this->getTransactionRpcResponse(GetTransactionResponse::STATUS_SUCCESS,
+                Address::fromContractId(self::TEST_CONTRACT_ID)->toXdrSCVal()),
+        ]);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
+        $request = new DeployRequest(
+            rpcUrl: self::TEST_RPC_URL,
+            network: $this->testNetwork,
+            sourceAccountKeyPair: KeyPair::fromSeed(self::TEST_SECRET_SEED),
+            wasmHash: bin2hex($wasmHash),
+            server: $server,
+        );
+
+        $client = SorobanClient::deploy($request);
+
+        $this->assertSame(self::TEST_CONTRACT_ID, $client->getContractId());
+        $this->assertSame([], $client->getMethodNames());
+        $methods = array_map(static fn($item) => json_decode((string)$item['request']->getBody(), true)['method'], $history);
+        $this->assertSame([
+            'getLedgerEntries', 'getLedgerEntries', 'simulateTransaction', 'sendTransaction', 'getTransaction',
+        ], $methods);
+    }
+
+    public function testDeployFromExternalRefReusesEmptySpecWithoutReadingContract(): void
+    {
+        $wasmHash = hash('sha256', 'test-wasm', true);
+        $mock = new MockHandler([
+            $this->ledgerEntryResponse($this->executableTagEntryData(
+                self::TEST_OWNER_ID_HEX, self::TEST_EXECUTABLE_TAG, XdrSCVal::forBytes($wasmHash))),
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $this->contractByteCodeWithEmptySpec())),
+            $this->accountEntryResponse(),
+            $this->simulateResponse(XdrSCVal::forVoid(), true),
+            $this->sendTransactionResponse(),
+            $this->getTransactionRpcResponse(GetTransactionResponse::STATUS_SUCCESS,
+                Address::fromContractId(self::TEST_CONTRACT_ID)->toXdrSCVal()),
+        ]);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
+        $request = new DeployFromExternalRefRequest(
+            rpcUrl: self::TEST_RPC_URL,
+            network: $this->testNetwork,
+            sourceAccountKeyPair: KeyPair::fromSeed(self::TEST_SECRET_SEED),
+            executableOwner: Address::fromContractId(self::TEST_OWNER_ID_HEX),
+            tag: self::TEST_EXECUTABLE_TAG,
+            server: $server,
+        );
+
+        $client = SorobanClient::deployFromExternalRef($request);
+
+        $this->assertSame(self::TEST_CONTRACT_ID, $client->getContractId());
+        $this->assertSame([], $client->getMethodNames());
+        $methods = array_map(static fn($item) => json_decode((string)$item['request']->getBody(), true)['method'], $history);
+        $this->assertSame([
+            'getLedgerEntries', 'getLedgerEntries', 'getLedgerEntries', 'simulateTransaction',
+            'sendTransaction', 'getTransaction',
+        ], $methods);
+    }
+
+    public function testDeployFallsBackWhenCodeEntryMissing(): void
+    {
+        $wasmHash = hash('sha256', 'test-wasm', true);
+        $mock = new MockHandler([
+            $this->emptyLedgerEntriesResponse(),
+            $this->accountEntryResponse(),
+            $this->simulateResponse(XdrSCVal::forVoid(), true),
+            $this->sendTransactionResponse(),
+            $this->getTransactionRpcResponse(GetTransactionResponse::STATUS_SUCCESS,
+                Address::fromContractId(self::TEST_CONTRACT_ID)->toXdrSCVal()),
+            $this->ledgerEntryResponse($this->contractInstanceEntryData($wasmHash)),
+            $this->ledgerEntryResponse($this->contractCodeEntryData($wasmHash, $this->createContractByteCode('hello'))),
+        ]);
+        $history = [];
+        $server = $this->createMockedServer($mock, $history);
+        $request = new DeployRequest(
+            rpcUrl: self::TEST_RPC_URL,
+            network: $this->testNetwork,
+            sourceAccountKeyPair: KeyPair::fromSeed(self::TEST_SECRET_SEED),
+            wasmHash: bin2hex($wasmHash),
+            server: $server,
+        );
+
+        $client = SorobanClient::deploy($request);
+
+        $this->assertSame(self::TEST_CONTRACT_ID, $client->getContractId());
+        $this->assertSame(['hello'], $client->getMethodNames());
+        $methods = array_map(static fn($item) => json_decode((string)$item['request']->getBody(), true)['method'], $history);
+        $this->assertSame([
+            'getLedgerEntries', 'getLedgerEntries', 'simulateTransaction', 'sendTransaction',
+            'getTransaction', 'getLedgerEntries', 'getLedgerEntries',
+        ], $methods);
+        $instanceKey = $this->requestedLedgerKey($history, 5);
+        $this->assertNotNull($instanceKey->contractData);
+        $this->assertSame(StrKey::decodeContractIdHex(self::TEST_CONTRACT_ID), $instanceKey->contractData->contract->contractId);
+        $this->assertSame(XdrSCValType::SCV_LEDGER_KEY_CONTRACT_INSTANCE, $instanceKey->contractData->key->type->value);
     }
 
     public function testDeployFromExternalRefThrowsWhenNoContractIdReturned(): void
@@ -1390,7 +1566,27 @@ class SorobanClientTest extends TestCase
         $envMeta = new XdrSCEnvMetaEntry(new XdrSCEnvMetaKind(XdrSCEnvMetaKind::SC_ENV_META_KIND_INTERFACE_VERSION));
         $envMeta->interfaceVersion = new XdrSCEnvMetaEntryInterfaceVersion(23, 0);
         $specEntry = $this->createFunctionEntry($functionName);
-        return 'contractenvmetav0' . $envMeta->encode() . 'contractspecv0' . $specEntry->encode();
+        return TestUtils::wasmModule([
+            'contractenvmetav0' => $envMeta->encode(),
+            'contractspecv0' => $specEntry->encode(),
+        ]);
+    }
+
+    private function contractByteCodeWithInvalidSpec(): string
+    {
+        $byteCode = file_get_contents(__DIR__ . '/../../wasm/soroban_hello_world_contract.wasm');
+        $specStart = strpos($byteCode, 'contractspecv0') + strlen('contractspecv0');
+        return substr_replace($byteCode, pack('N', 6), $specStart, 4);
+    }
+
+    private function contractByteCodeWithEmptySpec(): string
+    {
+        $byteCode = file_get_contents(__DIR__ . '/../../wasm/soroban_hello_world_contract.wasm');
+        $specStart = strpos($byteCode, 'contractspecv0') + strlen('contractspecv0');
+        $spec = XdrSCSpecEntry::decode(new XdrBuffer(substr($byteCode, $specStart)));
+        // The fixture's spec has one entry and one-byte section and name lengths.
+        return substr($byteCode, 0, $specStart - 17) . TestUtils::wasmCustomSection('contractspecv0', '')
+            . substr($byteCode, $specStart + strlen($spec->encode()));
     }
 
     /**

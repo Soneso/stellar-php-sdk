@@ -11,35 +11,25 @@ use ErrorException;
 /**
  * Exception thrown when parsing Soroban smart contract WASM bytecode fails
  *
- * This exception is raised during contract bytecode parsing when required metadata sections
- * are missing or malformed. The parser expects contracts to embed metadata in WASM custom
- * sections following SEP-47 (Contract Metadata) and SEP-48 (Contract Specification) standards.
+ * The parser checks the WASM header and section framing. It decodes every entry of
+ * the first contractenvmetav0 section, the first contractspecv0 section and every
+ * contractmetav0 section; entries of later environment meta and spec sections are not read.
  *
- * Two specific error scenarios trigger this exception:
+ * This exception is thrown if the header or section framing is invalid, contractenvmetav0
+ * or contractspecv0 is missing, the first contractenvmetav0 section holds no entry, or an
+ * entry being read does not decode. Framing and entry errors name the byte offset in the
+ * byte code. A present, empty contractspecv0 section is valid.
  *
- * 1. Missing Environment Meta Entry:
- *    The contractenvmetav0 custom section is missing or cannot be decoded from the WASM bytecode.
- *    This section contains the Soroban environment protocol and pre-release version.
- *
- * 2. Missing Contract Spec Entries:
- *    The contractspecv0 custom section is missing or contains no valid spec entries.
- *    This section defines function signatures, user-defined types, and event definitions.
- *
- * These errors typically indicate:
- * - Corrupted or incomplete WASM bytecode
- * - Contract compiled without proper metadata embedding
- * - Invalid contract deployment or storage
- * - Incorrect contract code retrieval
- *
- * The exception is thrown by SorobanContractParser::parseContractByteCode() and may be
- * propagated through SorobanServer methods that retrieve and parse contract information.
+ * SorobanContractParser::parseContractByteCode() throws this exception; SorobanServer
+ * methods that load contract information, SorobanClient::forClientOptions, SorobanClient::deploy and
+ * SorobanClient::deployFromExternalRef let it propagate.
  *
  * @package Soneso\StellarSDK\Soroban\Exceptions
  * @see \Soneso\StellarSDK\Soroban\SorobanContractParser Parser that throws this exception
  * @see \Soneso\StellarSDK\Soroban\SorobanServer Server methods that may propagate this exception
  * @see \Soneso\StellarSDK\Soroban\SorobanContractInfo Container for parsed contract metadata
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0047.md SEP-47: Contract Metadata
- * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0048.md SEP-48: Contract Specification
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0046.md SEP-46: Contract Meta
+ * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0048.md SEP-48: Contract Interface Specification
  * @since 1.0.0
  */
 class SorobanContractParserException extends ErrorException
