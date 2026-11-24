@@ -22,6 +22,7 @@ use GuzzleHttp\Psr7\Response;
 use Soneso\StellarSDK\Account;
 use Soneso\StellarSDK\Asset;
 use Soneso\StellarSDK\Crypto\KeyPair;
+use Soneso\StellarSDK\FeeBumpTransactionBuilder;
 use Soneso\StellarSDK\ManageDataOperation;
 use Soneso\StellarSDK\ManageDataOperationBuilder;
 use Soneso\StellarSDK\Memo;
@@ -32,6 +33,7 @@ use Soneso\StellarSDK\PaymentOperationBuilder;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeRequestErrorResponse;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeRequestBuilder;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeResponse;
+use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationError;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidHomeDomain;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidMemoType;
 use Soneso\StellarSDK\SEP\WebAuth\ChallengeValidationErrorInvalidMemoValue;
@@ -46,8 +48,17 @@ use Soneso\StellarSDK\SEP\WebAuth\SubmitCompletedChallengeTimeoutResponseExcepti
 use Soneso\StellarSDK\SEP\WebAuth\SubmitCompletedChallengeUnknownResponseException;
 use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 use Soneso\StellarSDK\TimeBounds;
+use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\TransactionBuilder;
+use Soneso\StellarSDK\TransactionPreconditions;
+use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
+use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
+use Soneso\StellarSDK\Xdr\XdrPreconditions;
+use Soneso\StellarSDK\Xdr\XdrPreconditionsV2;
+use Soneso\StellarSDK\Xdr\XdrPreconditionType;
 use Soneso\StellarSDK\Xdr\XdrTransactionEnvelope;
+use Soneso\StellarSDK\Xdr\XdrTransactionV0;
+use Soneso\StellarSDK\Xdr\XdrTransactionV0Envelope;
 
 
 class WebAuthTest extends TestCase
@@ -68,9 +79,9 @@ class WebAuthTest extends TestCase
         $this->serverKeyPair = KeyPair::fromSeed($this->serverSecretSeed);
     }
 
-    private function validFirstManageDataOp(string $accountId) : ManageDataOperation {
+    private function validFirstManageDataOp(string $accountId, ?string $homeDomain = null) : ManageDataOperation {
         $muxedAccount = MuxedAccount::fromAccountId($accountId);
-        $builder = (new ManageDataOperationBuilder($this->domain . " auth", random_bytes(64)))->setMuxedSourceAccount($muxedAccount);
+        $builder = (new ManageDataOperationBuilder(($homeDomain ?? $this->domain) . " auth", base64_encode(random_bytes(48))))->setMuxedSourceAccount($muxedAccount);
         return $builder->build();
     }
 
@@ -148,7 +159,7 @@ class WebAuthTest extends TestCase
 
     private function invalidHomeDomainOp(string $accountId) : ManageDataOperation {
         $muxedAccount = MuxedAccount::fromAccountId($accountId);
-        $builder = (new ManageDataOperationBuilder("fake.com" . " auth", random_bytes(64)))->setMuxedSourceAccount($muxedAccount);
+        $builder = (new ManageDataOperationBuilder("fake.com" . " auth", base64_encode(random_bytes(48))))->setMuxedSourceAccount($muxedAccount);
         return $builder->build();
     }
 
@@ -158,10 +169,10 @@ class WebAuthTest extends TestCase
         return $builder->build();
     }
 
-    private function requestChallengeSuccess(string $accountId, int|string|null $memo = null) : string {
+    private function requestChallengeSuccess(string $accountId, int|string|null $memo = null, ?string $homeDomain = null) : string {
         $transactionAccount = new Account($this->serverAccountId, new BigInteger(-1));
         $transaction = (new TransactionBuilder($transactionAccount))
-                ->addOperation($this::validFirstManageDataOp($accountId))
+                ->addOperation($this::validFirstManageDataOp($accountId, $homeDomain))
                 ->addOperation($this::validSecondManageDataOp())
                 ->addMemo($this::memoForId($memo))
                 ->setTimeBounds($this::validTimeBounds())
@@ -397,6 +408,482 @@ class WebAuthTest extends TestCase
         }
     }
 
+
+    /**
+     * @param array<int, array<string, mixed>> $history
+     * @param array<string> $expected
+     */
+    private function assertRequestMethods(array $history, array $expected): void
+    {
+        $this->assertSame($expected, array_map(
+            static fn(array $entry): string => $entry['request']->getMethod(), $history,
+        ), 'Only the expected requests may be sent; rejected challenges must send no POST');
+    }
+
+    private function signerRecordingCalls(KeyPair $key, int &$calls): KeyPair
+    {
+        $signer = $this->createMock(KeyPair::class);
+        $signer->method('signDecorated')->willReturnCallback(
+            static function (string $hash) use ($key, &$calls): XdrDecoratedSignature {
+                $calls++;
+                return $key->signDecorated($hash);
+            },
+        );
+        return $signer;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $history
+     * @param class-string<\Exception> $exceptionClass
+     * @param array<string> $methods
+     */
+    private function assertRejectedWithoutSigningOrPost(
+        callable $authenticate, array &$history, int &$signCalls,
+        string $exceptionClass, string $message, array $methods,
+    ): void {
+        $error = null;
+        try {
+            $authenticate();
+        } catch (\Exception $e) {
+            $error = $e;
+        }
+        $this->assertRequestMethods($history, $methods);
+        $this->assertSame(0, $signCalls, 'The user must not be asked to sign a rejected challenge');
+        $this->assertNotNull($error, 'The challenge must be rejected');
+        $this->assertSame($exceptionClass, $error::class);
+        $this->assertSame($message, $error->getMessage());
+    }
+
+    /** @return array<string, array{string}> */
+    public static function rejectedCallbackAnswers(): array
+    {
+        return array_combine($cases = [
+            'payment', 'payment by reference', 'payment without clientDomain', 'changed fee',
+            'unchanged', 'all signatures removed', 'wrong key', 'other network',
+            'malformed signature', 'wrong hint', 'invalid base64', 'truncated XDR', 'wrong envelope type',
+            'null', 'false', 'object', 'V0 envelope', 'V2 time bounds',
+        ], array_map(static fn(string $case): array => [$case], $cases));
+    }
+
+    #[DataProvider('rejectedCallbackAnswers')]
+    public function testCallbackRejectsUnsafeAnswerBeforeUserSigning(string $case): void
+    {
+        $user = KeyPair::random();
+        $domain = KeyPair::random();
+        $clientDomain = $case === 'payment without clientDomain' ? null : 'place.client.com';
+        $body = $clientDomain === null
+            ? $this->requestChallengeSuccess($user->getAccountId())
+            : $this->requestChallengeValidClientDomainOpSourceAccount($user->getAccountId(), $domain->getAccountId());
+        $responses = [new Response(200, [], $body)];
+        if ($clientDomain !== null) {
+            $responses[] = new Response(200, [], 'SIGNING_KEY="' . $domain->getAccountId() . '"');
+        }
+        $responses[] = new Response(200, [], $this->requestJWTSuccess());
+        $history = [];
+        $webAuth = $this->webAuthRecordingRequests($responses, $history);
+        $calls = 0;
+        $signer = $this->signerRecordingCalls($user, $calls);
+        $callback = function (string &$argument) use ($case, $user, $domain): mixed {
+            $transaction = Transaction::fromEnvelopeBase64XdrString($argument);
+            if (str_starts_with($case, 'payment')) {
+                $payment = (new TransactionBuilder(new Account($user->getAccountId(), new BigInteger(41))))
+                    ->addOperation((new PaymentOperationBuilder($this->serverAccountId, Asset::native(), '1'))->build())
+                    ->build()->toEnvelopeXdrBase64();
+                if ($case === 'payment by reference') {
+                    $argument = $payment;
+                }
+                return $payment;
+            }
+            switch ($case) {
+                case 'changed fee':
+                    $transaction->setFee(1234);
+                    break;
+                case 'all signatures removed':
+                    $transaction->setSignatures([]);
+                    break;
+                case 'wrong key':
+                    $transaction->sign(KeyPair::random(), Network::testnet());
+                    break;
+                case 'other network':
+                    $transaction->sign($domain, Network::public());
+                    break;
+                case 'malformed signature':
+                    $transaction->setSignatures([
+                        ...$transaction->getSignatures(), new XdrDecoratedSignature($domain->getHint(), 'x'),
+                    ]);
+                    break;
+                case 'wrong hint':
+                    $signature = $domain->signDecorated($transaction->hash(Network::testnet()));
+                    $signature->setHint($domain->getHint() ^ "\xff\xff\xff\xff");
+                    $transaction->setSignatures([...$transaction->getSignatures(), $signature]);
+                    break;
+                case 'invalid base64':
+                    return '!';
+                case 'null':
+                    return null;
+                case 'false':
+                    return false;
+                case 'object':
+                    return new \stdClass();
+                case 'truncated XDR':
+                    return base64_encode(substr(base64_decode($argument), 0, -1));
+                case 'wrong envelope type':
+                    return (new FeeBumpTransactionBuilder($transaction))
+                        ->setFeeAccount($this->serverAccountId)->setBaseFee(200)->build()->toEnvelopeXdrBase64();
+                case 'V0 envelope':
+                    $transaction->sign($domain, Network::testnet());
+                    $tx = $transaction->toXdr();
+                    // The typed transaction API preserves decoded V0 envelopes but does not construct them.
+                    $envelope = new XdrTransactionEnvelope(new XdrEnvelopeType(XdrEnvelopeType::ENVELOPE_TYPE_TX_V0));
+                    $envelope->setV0(new XdrTransactionV0Envelope(new XdrTransactionV0(
+                        $tx->getSourceAccount()->getEd25519(), $tx->getSequenceNumber(), $tx->getOperations(),
+                        $tx->getFee(), $tx->getMemo(), $tx->getTimeBounds(),
+                    ), $transaction->getSignatures()));
+                    return base64_encode($envelope->encode());
+                case 'V2 time bounds':
+                    $envelope = $transaction->toEnvelopeXdr();
+                    $tx = $envelope->getV1()->getTx();
+                    $this->assertSame(XdrPreconditionType::TIME, $tx->getPreconditions()->getType()->getValue());
+                    // The typed API selects PRECOND_TIME when only time bounds are set.
+                    $preconditions = new XdrPreconditions(XdrPreconditionType::V2());
+                    $preconditions->setV2(new XdrPreconditionsV2(0, 0, [], $tx->getTimeBounds()));
+                    $tx->setPreconditions($preconditions);
+                    $transaction = Transaction::fromEnvelopeXdr($envelope);
+                    $this->assertSame(XdrPreconditionType::V2, $transaction->toXdr()->getPreconditions()->getType()->getValue());
+                    $transaction->sign($domain, Network::testnet());
+                    break;
+            }
+            return $transaction->toEnvelopeXdrBase64();
+        };
+        $exception = ChallengeValidationErrorInvalidSignature::class;
+        $message = 'Invalid client domain signature';
+        if (str_starts_with($case, 'payment') || in_array($case, ['changed fee', 'V2 time bounds'], true)) {
+            $exception = ChallengeValidationError::class;
+            $message = 'Client domain signing callback returned a different transaction';
+        } elseif (in_array($case, ['invalid base64', 'null', 'false', 'object', 'truncated XDR'], true)) {
+            $exception = InvalidArgumentException::class;
+            $message = $case === 'truncated XDR'
+                ? 'Unexpected end of XDR data' : 'Invalid base64-encoded transaction envelope';
+        } elseif (in_array($case, ['wrong envelope type', 'V0 envelope'], true)) {
+            $exception = ChallengeValidationError::class;
+            $message = 'Invalid transaction type';
+        }
+        $this->assertRejectedWithoutSigningOrPost(
+            fn() => $webAuth->jwtToken($user->getAccountId(), [$signer],
+                clientDomain: $clientDomain, clientDomainSigningCallback: $callback),
+            $history, $calls, $exception, $message,
+            $clientDomain === null ? ['GET'] : ['GET', 'GET'],
+        );
+    }
+
+    /** @return array<string, array{string}> */
+    public static function acceptedCallbackSignatures(): array
+    {
+        return array_combine($cases = [
+            'honest', 'server signature removed', 'duplicate domain signature', 'overlapping signers',
+            'same signature different hint', 'no client_domain operation', 'without clientDomain',
+            'local key only', 'local key and callback', 'domain key is server', 'domain key is user',
+            'payment argument with original answer',
+        ], array_map(static fn(string $case): array => [$case], $cases));
+    }
+
+    #[DataProvider('acceptedCallbackSignatures')]
+    public function testClientDomainSigningPreservesChallengeAndSignatureOrder(string $case): void
+    {
+        $user = KeyPair::random();
+        $domain = match ($case) {
+            'domain key is server' => $this->serverKeyPair,
+            'domain key is user' => $user,
+            default => KeyPair::random(),
+        };
+        $clientDomain = $case === 'without clientDomain' ? null : 'place.client.com';
+        $localKey = in_array($case, ['local key only', 'local key and callback'], true) ? $domain : null;
+        $body = in_array($case, ['no client_domain operation', 'without clientDomain'], true)
+            ? $this->requestChallengeSuccess($user->getAccountId())
+            : $this->requestChallengeValidClientDomainOpSourceAccount($user->getAccountId(), $domain->getAccountId());
+        $challenge = Transaction::fromEnvelopeBase64XdrString(json_decode($body, true)['transaction']);
+        $hash = $challenge->hash(Network::testnet());
+        $responses = [new Response(200, [], $body)];
+        $lookup = $clientDomain !== null && $localKey === null;
+        if ($lookup) {
+            $responses[] = new Response(200, [], 'SIGNING_KEY="' . $domain->getAccountId() . '"');
+        }
+        $responses[] = new Response(200, [], $this->requestJWTSuccess());
+        $history = [];
+        $webAuth = $this->webAuthRecordingRequests($responses, $history);
+        $callback = function (string &$argument) use ($case, $user, $domain): string {
+            $transaction = Transaction::fromEnvelopeBase64XdrString($argument);
+            if (in_array($case, ['server signature removed', 'without clientDomain'], true)) {
+                $transaction->setSignatures([]);
+            }
+            if (in_array($case, ['no client_domain operation', 'without clientDomain', 'local key and callback', 'domain key is server'], true)) {
+                return $transaction->toEnvelopeXdrBase64();
+            }
+            if ($case === 'same signature different hint') {
+                $signature = $domain->signDecorated($transaction->hash(Network::testnet()));
+                $signature->setHint($domain->getHint() ^ "\xff\xff\xff\xff");
+                $transaction->setSignatures([...$transaction->getSignatures(), $signature]);
+            }
+            $transaction->sign($domain, Network::testnet());
+            if ($case === 'duplicate domain signature' || $case === 'overlapping signers') {
+                $transaction->sign($domain, Network::testnet());
+            }
+            if ($case === 'overlapping signers') {
+                $transaction->sign($user, Network::testnet());
+            }
+            if ($case === 'payment argument with original answer') {
+                $argument = (new TransactionBuilder(new Account($user->getAccountId(), new BigInteger(41))))
+                    ->addOperation((new PaymentOperationBuilder($this->serverAccountId, Asset::native(), '1'))->build())
+                    ->build()->toEnvelopeXdrBase64();
+            }
+            return $transaction->toEnvelopeXdrBase64();
+        };
+        $signers = $case === 'overlapping signers' ? [$user, $domain, $user, $this->serverKeyPair] : [$user];
+        $jwt = $webAuth->jwtToken($user->getAccountId(), $signers, clientDomain: $clientDomain,
+            clientDomainKeyPair: $localKey, clientDomainSigningCallback: $case === 'local key only' ? null : $callback);
+        $this->assertSame($this->successJWTToken, $jwt);
+        $this->assertRequestMethods($history, $lookup ? ['GET', 'GET', 'POST'] : ['GET', 'POST']);
+        $query = $this->challengeRequestQuery($history);
+        if ($clientDomain === null) {
+            $this->assertArrayNotHasKey('client_domain', $query);
+        } else {
+            $this->assertSame('place.client.com', $query['client_domain']);
+        }
+        if ($lookup) {
+            $this->assertSame('https://place.client.com/.well-known/stellar.toml', (string)$history[1]['request']->getUri());
+        }
+        $posted = XdrTransactionEnvelope::fromEnvelopeBase64XdrString(
+            json_decode((string)$history[array_key_last($history)]['request']->getBody(), true)['transaction'],
+        );
+        $this->assertTrue(
+            $challenge->toEnvelopeXdr()->getV1()->getTx()->encode() === $posted->getV1()->getTx()->encode(),
+            'The posted transaction body must be byte-identical to the challenge body',
+        );
+        $signatures = $posted->getV1()->getSignatures();
+        $expectedKeys = [$this->serverKeyPair, $domain, $user];
+        $expectedCount = 3;
+        if (in_array($case, ['no client_domain operation', 'without clientDomain', 'domain key is server', 'domain key is user'], true)) {
+            $expectedKeys = [$this->serverKeyPair, $user];
+            $expectedCount = 2;
+        } elseif ($localKey !== null) {
+            $expectedKeys = [$this->serverKeyPair, $user, $domain];
+        } elseif ($case === 'same signature different hint') {
+            $expectedKeys = [$this->serverKeyPair, $domain, $domain, $user];
+            $expectedCount = 4;
+        }
+        $this->assertCount($expectedCount, $signatures);
+        $this->assertSame($challenge->getSignatures()[0]->encode(), $signatures[0]->encode());
+        foreach ($expectedKeys as $index => $key) {
+            $hint = $case === 'same signature different hint' && $index === 1
+                ? $key->getHint() ^ "\xff\xff\xff\xff" : $key->getHint();
+            $this->assertSame($hint, $signatures[$index]->getHint());
+            $this->assertTrue($key->verifySignature($signatures[$index]->getSignature(), $hash),
+                'Every posted signature must verify over the original challenge hash');
+        }
+    }
+
+    /** @return array<string, array{int, bool, bool}> */
+    public static function callbackSignatureLimits(): array
+    {
+        return [
+            'exactly 20' => [18, true, false],
+            '20 with overlapping user' => [19, true, true],
+            '21 after merging' => [19, false, false],
+            '21 before user signing' => [20, false, false],
+        ];
+    }
+
+    #[DataProvider('callbackSignatureLimits')]
+    public function testCallbackSignatureLimit(int $callbackCount, bool $accepted, bool $overlappingUser): void
+    {
+        $user = KeyPair::random();
+        $body = $this->requestChallengeSuccess($user->getAccountId());
+        $challenge = Transaction::fromEnvelopeBase64XdrString(json_decode($body, true)['transaction']);
+        $history = [];
+        $webAuth = $this->webAuthRecordingRequests([
+            new Response(200, [], $body), new Response(200, [], $this->requestJWTSuccess()),
+        ], $history);
+        $callbackSigners = [];
+        for ($i = 0; $i < $callbackCount; $i++) {
+            $callbackSigners[] = KeyPair::random();
+        }
+        if ($overlappingUser) {
+            $callbackSigners[$callbackCount - 1] = $user;
+        }
+        $callback = static function (string $argument) use ($callbackSigners): string {
+            $transaction = Transaction::fromEnvelopeBase64XdrString($argument);
+            $transaction->setSignatures([]);
+            foreach ($callbackSigners as $key) {
+                $transaction->sign($key, Network::testnet());
+            }
+            return $transaction->toEnvelopeXdrBase64();
+        };
+        if (!$accepted) {
+            $calls = 0;
+            $signer = $this->signerRecordingCalls($user, $calls);
+            $error = null;
+            try {
+                $webAuth->jwtToken($user->getAccountId(), [$signer], clientDomainSigningCallback: $callback);
+            } catch (\Exception $e) {
+                $error = $e;
+            }
+            $this->assertRequestMethods($history, ['GET']);
+            if ($callbackCount === 20) {
+                $this->assertSame(0, $calls, 'The merged callback signatures already exceed the limit before user signing');
+            }
+            $this->assertInstanceOf(ChallengeValidationErrorInvalidSignature::class, $error);
+            $this->assertSame('Invalid transaction envelope, more than 20 signatures', $error->getMessage());
+            return;
+        }
+        $this->assertSame($this->successJWTToken,
+            $webAuth->jwtToken($user->getAccountId(), [$user], clientDomainSigningCallback: $callback));
+        $this->assertRequestMethods($history, ['GET', 'POST']);
+        $posted = Transaction::fromEnvelopeBase64XdrString(json_decode((string)$history[1]['request']->getBody(), true)['transaction']);
+        $this->assertCount(20, $posted->getSignatures());
+        $expectedKeys = $overlappingUser ? [$this->serverKeyPair, ...$callbackSigners] : [$this->serverKeyPair, ...$callbackSigners, $user];
+        foreach ($expectedKeys as $index => $key) {
+            $this->assertSame($key->getHint(), $posted->getSignatures()[$index]->getHint());
+            $this->assertTrue($key->verifySignature($posted->getSignatures()[$index]->getSignature(), $challenge->hash(Network::testnet())));
+        }
+    }
+
+    public function testSigningWithoutCallbackPreservesDuplicateSignaturesAndBytes(): void
+    {
+        $user = KeyPair::random();
+        $body = $this->requestChallengeSuccess($user->getAccountId());
+        $expected = Transaction::fromEnvelopeBase64XdrString(json_decode($body, true)['transaction']);
+        foreach ([$user, $this->serverKeyPair, $user] as $key) {
+            $expected->sign($key, Network::testnet());
+        }
+        $history = [];
+        $webAuth = $this->webAuthRecordingRequests([
+            new Response(200, [], $body), new Response(200, [], $this->requestJWTSuccess()),
+        ], $history);
+        $this->assertSame($this->successJWTToken, $webAuth->jwtToken($user->getAccountId(), [$user, $this->serverKeyPair, $user]));
+        $this->assertRequestMethods($history, ['GET', 'POST']);
+        $this->assertSame($expected->toEnvelopeXdrBase64(), json_decode((string)$history[1]['request']->getBody(), true)['transaction']);
+    }
+
+    private function requestChallengeWithSourceAndNonce(MuxedAccount $source, ?string $nonce): string
+    {
+        $original = Transaction::fromEnvelopeBase64XdrString(json_decode($this->requestChallengeSuccess($this->clientAccountId), true)['transaction']);
+        $transaction = new Transaction($source, new BigInteger(0), [
+            (new ManageDataOperationBuilder('place.domain.com auth', $nonce))->setSourceAccount($this->clientAccountId)->build(),
+            $this->validSecondManageDataOp(),
+        ], preconditions: $original->getPreconditions());
+        $transaction->sign($this->serverKeyPair, Network::testnet());
+        return json_encode(['transaction' => $transaction->toEnvelopeXdrBase64()]);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function invalidTransactionSources(): array
+    {
+        return ['another account' => ['other'], 'user account' => ['user'], 'muxed server zero' => ['muxed zero'], 'muxed server nonzero' => ['muxed nonzero']];
+    }
+
+    #[DataProvider('invalidTransactionSources')]
+    public function testChallengeRejectsInvalidTransactionSource(string $case): void
+    {
+        $source = match ($case) {
+            'user' => new MuxedAccount($this->clientAccountId),
+            'muxed zero' => new MuxedAccount($this->serverAccountId, 0),
+            'muxed nonzero' => new MuxedAccount($this->serverAccountId, 7),
+            default => new MuxedAccount(KeyPair::random()->getAccountId()),
+        };
+        $history = [];
+        $webAuth = $this->webAuthRecordingRequests([
+            new Response(200, [], $this->requestChallengeWithSourceAndNonce($source, str_repeat('a', 64))),
+            new Response(200, [], $this->requestJWTSuccess()),
+        ], $history);
+        $calls = 0;
+        $signer = $this->signerRecordingCalls(KeyPair::random(), $calls);
+        $this->assertRejectedWithoutSigningOrPost(
+            fn() => $webAuth->jwtToken($this->clientAccountId, [$signer]), $history, $calls,
+            ChallengeValidationErrorInvalidSourceAccount::class,
+            'Invalid transaction source account, expected the server signing key', ['GET'],
+        );
+    }
+
+    public function testChallengeRejectsMuxedSourceWithMuxedServerSigningKey(): void
+    {
+        $source = new MuxedAccount($this->serverAccountId, 0);
+        $preconditions = new TransactionPreconditions();
+        $preconditions->setTimeBounds($this->validTimeBounds());
+        $challenge = new Transaction($source, new BigInteger(0), [
+            $this->validFirstManageDataOp($this->clientAccountId),
+        ], preconditions: $preconditions);
+        $challenge->sign($this->serverKeyPair, Network::testnet());
+        $history = [];
+        $handlerStack = HandlerStack::create(new MockHandler([
+            new Response(200, [], json_encode(['transaction' => $challenge->toEnvelopeXdrBase64()])),
+            new Response(200, [], $this->requestJWTSuccess()),
+        ]));
+        $handlerStack->push(Middleware::history($history));
+        $webAuth = new WebAuth($this->authServer, $source->getAccountId(), $this->domain, Network::testnet(),
+            new Client(['handler' => $handlerStack]));
+        $calls = 0;
+        $signer = $this->signerRecordingCalls(KeyPair::fromSeed($this->clientSecretSeed), $calls);
+        $this->assertRejectedWithoutSigningOrPost(
+            fn() => $webAuth->jwtToken($this->clientAccountId, [$signer]), $history, $calls,
+            ChallengeValidationErrorInvalidSourceAccount::class,
+            'Invalid transaction source account, expected the server signing key', ['GET'],
+        );
+    }
+
+    /** @return array<string, array{?string}> */
+    public static function invalidChallengeNonces(): array
+    {
+        return [
+            'missing' => [null], 'empty' => [''], 'one byte' => ['a'],
+            'not base64' => [str_repeat('!', 64)],
+            'whitespace in 64 bytes' => [str_repeat('a', 63) . ' '],
+            'base64url in 64 bytes' => [str_repeat('-_', 32)],
+            // 47 bytes encode to 64 base64 characters with one trailing '='.
+            'padded 47 bytes' => [base64_encode(str_repeat('a', 47))],
+        ];
+    }
+
+    #[DataProvider('invalidChallengeNonces')]
+    public function testChallengeRejectsInvalidNonce(?string $nonce): void
+    {
+        $history = [];
+        $webAuth = $this->webAuthRecordingRequests([
+            new Response(200, [], $this->requestChallengeWithSourceAndNonce(new MuxedAccount($this->serverAccountId), $nonce)),
+            new Response(200, [], $this->requestJWTSuccess()),
+        ], $history);
+        $calls = 0;
+        $signer = $this->signerRecordingCalls(KeyPair::random(), $calls);
+        $this->assertRejectedWithoutSigningOrPost(
+            fn() => $webAuth->jwtToken($this->clientAccountId, [$signer]), $history, $calls,
+            ChallengeValidationError::class,
+            'Invalid nonce in operation[0]: expected 64 base64 bytes encoding 48 bytes', ['GET'],
+        );
+    }
+
+    /** @return array<string, array{string}> */
+    public static function validChallengeNonces(): array
+    {
+        return [
+            'standard base64 punctuation' => [str_repeat('+/', 32)],
+            'hexadecimal characters' => [str_repeat('0123456789abcdef', 4)],
+            'random bytes encoded' => [base64_encode(random_bytes(48))],
+        ];
+    }
+
+    #[DataProvider('validChallengeNonces')]
+    public function testChallengeAcceptsValidNonce(string $nonce): void
+    {
+        $this->assertSame(64, strlen($nonce));
+        $this->assertSame(48, strlen(base64_decode($nonce, true)));
+        $history = [];
+        $webAuth = $this->webAuthRecordingRequests([
+            new Response(200, [], $this->requestChallengeWithSourceAndNonce(new MuxedAccount($this->serverAccountId), $nonce)),
+            new Response(200, [], $this->requestJWTSuccess()),
+        ], $history);
+        $this->assertSame($this->successJWTToken, $webAuth->jwtToken($this->clientAccountId, [KeyPair::fromSeed($this->clientSecretSeed)]));
+        $this->assertRequestMethods($history, ['GET', 'POST']);
+    }
+
     public function testDefaultSuccess(): void {
         $webAuth = new WebAuth($this->authServer, $this->serverAccountId, $this->domain, Network::testnet());
         $mock = new MockHandler([
@@ -408,6 +895,90 @@ class WebAuthTest extends TestCase
         $userAccountId = $userKeyPair->getAccountId();
         $jwtToken = $webAuth->jwtToken($userAccountId, [$userKeyPair]);
         $this->assertEquals($this->successJWTToken, $jwtToken);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function requestedHomeDomains(): array {
+        return [
+            'different domain' => ['fake.com'],
+            'zero string' => ['0'],
+        ];
+    }
+
+    #[DataProvider('requestedHomeDomains')]
+    public function testRequestedHomeDomainIsSentAndValidated(string $homeDomain): void {
+        $history = [];
+        $challenge = $homeDomain === 'fake.com'
+            ? $this->requestChallengeInvalidHomeDomain($this->clientAccountId)
+            : $this->requestChallengeSuccess($this->clientAccountId, homeDomain: '0');
+        $webAuth = $this->webAuthRecordingRequests([
+            new Response(200, [], $challenge),
+            new Response(200, [], $this->requestJWTSuccess()),
+        ], $history);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+
+        try {
+            $this->assertSame($this->successJWTToken,
+                $webAuth->jwtToken($this->clientAccountId, [$userKeyPair], homeDomain: $homeDomain));
+        } finally {
+            $this->assertSame($homeDomain, $this->challengeRequestQuery($history)['home_domain'] ?? null);
+        }
+        $this->assertCount(2, $history);
+        $this->assertSame('GET', $history[0]['request']->getMethod());
+        $this->assertSame('POST', $history[1]['request']->getMethod());
+    }
+
+    #[DataProvider('requestedHomeDomains')]
+    public function testRequestedHomeDomainRejectsConstructorDomain(string $homeDomain): void {
+        $history = [];
+        $webAuth = $this->webAuthRecordingRequests([
+            new Response(200, [], $this->requestChallengeSuccess($this->clientAccountId)),
+            new Response(200, [], $this->requestJWTSuccess()),
+        ], $history);
+        $calls = 0;
+        $userKeyPair = $this->signerRecordingCalls(KeyPair::fromSeed($this->clientSecretSeed), $calls);
+
+        try {
+            $webAuth->jwtToken($this->clientAccountId, [$userKeyPair], homeDomain: $homeDomain);
+            $this->fail('Expected a home domain mismatch');
+        } catch (ChallengeValidationErrorInvalidHomeDomain $e) {
+            $this->assertSame('invalid home domain in operation[0]', $e->getMessage());
+        }
+        $this->assertSame(0, $calls, 'The user must not be asked to sign a challenge for the wrong home domain');
+        $this->assertSame($homeDomain, $this->challengeRequestQuery($history)['home_domain'] ?? null);
+        $this->assertCount(1, $history);
+        $this->assertSame('GET', $history[0]['request']->getMethod());
+    }
+
+    /** @return array<string, array{string|null}> */
+    public static function constructorHomeDomains(): array {
+        return [
+            'null' => [null],
+            'empty string' => [''],
+            'explicit constructor domain' => ['place.domain.com'],
+        ];
+    }
+
+    #[DataProvider('constructorHomeDomains')]
+    public function testConstructorHomeDomainIsValidated(?string $homeDomain): void {
+        $history = [];
+        $webAuth = $this->webAuthRecordingRequests([
+            new Response(200, [], $this->requestChallengeSuccess($this->clientAccountId)),
+            new Response(200, [], $this->requestJWTSuccess()),
+        ], $history);
+        $userKeyPair = KeyPair::fromSeed($this->clientSecretSeed);
+
+        $this->assertSame($this->successJWTToken,
+            $webAuth->jwtToken($this->clientAccountId, [$userKeyPair], homeDomain: $homeDomain));
+        $query = $this->challengeRequestQuery($history);
+        if ($homeDomain === 'place.domain.com') {
+            $this->assertSame('place.domain.com', $query['home_domain']);
+        } else {
+            $this->assertArrayNotHasKey('home_domain', $query);
+        }
+        $this->assertCount(2, $history);
+        $this->assertSame('GET', $history[0]['request']->getMethod());
+        $this->assertSame('POST', $history[1]['request']->getMethod());
     }
 
     public function testMemoSuccess(): void {
