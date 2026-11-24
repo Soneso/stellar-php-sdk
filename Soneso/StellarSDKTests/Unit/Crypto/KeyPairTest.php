@@ -677,4 +677,228 @@ class KeyPairTest extends TestCase
         $this->assertSame($expectedShortAccountId, KeyPair::fromBip39SeedHex('AB', 0)->getAccountId());
     }
 
+    private function captureVarDump(KeyPair $keyPair): string
+    {
+        ob_start();
+        try {
+            var_dump($keyPair);
+            $captured = ob_get_contents();
+        } finally {
+            ob_end_clean();
+        }
+
+        assertTrue(is_string($captured), 'Captured var_dump output must be a string');
+
+        return is_string($captured) ? $captured : '';
+    }
+
+    private function captureDebugZvalDump(KeyPair $keyPair): string
+    {
+        ob_start();
+        try {
+            debug_zval_dump($keyPair);
+            $captured = ob_get_contents();
+        } finally {
+            ob_end_clean();
+        }
+
+        assertTrue(is_string($captured), 'Captured debug_zval_dump output must be a string');
+
+        return is_string($captured) ? $captured : '';
+    }
+
+    private function assertSigningKeyPairStateIntactAfterDump(
+        KeyPair $keyPair,
+        string $expectedAccountId,
+        string $varExportBefore,
+        string $serializedBefore
+    ): void {
+        assertTrue(
+            json_encode($keyPair) === '{}',
+            'json_encode output for KeyPair must be an empty JSON object'
+        );
+        assertTrue(
+            var_export($keyPair, true) === $varExportBefore,
+            'var_export output must remain unchanged after debug dump'
+        );
+        $serializedAfter = serialize($keyPair);
+        assertTrue(
+            $serializedAfter === $serializedBefore,
+            'serialize output must remain unchanged after debug dump'
+        );
+
+        $unserialized = unserialize($serializedAfter, ['allowed_classes' => [KeyPair::class]]);
+        assertTrue($unserialized instanceof KeyPair, 'Unserialized value must be a KeyPair');
+        if ($unserialized instanceof KeyPair) {
+            assertTrue(
+                $unserialized->getAccountId() === $expectedAccountId,
+                'Unserialized key pair must have the expected account id'
+            );
+            $roundTripMessage = "message signed by unserialized key pair";
+            $roundTripSignature = $unserialized->sign($roundTripMessage);
+            assertTrue(
+                $keyPair->verifySignature($roundTripSignature, $roundTripMessage),
+                'Original key pair must verify signature created by unserialized key pair'
+            );
+        }
+
+        $message = "message signed after debug dump";
+        $signature = $keyPair->sign($message);
+
+        assertTrue($keyPair->verifySignature($signature, $message), 'Signature created after debug dump must verify');
+        assertTrue(
+            KeyPair::fromAccountId($expectedAccountId)->verifySignature($signature, $message),
+            'Public-key-only key pair must verify signature created after debug dump'
+        );
+    }
+
+    public function testVarDumpHidesSecretMaterialAndShowsPublicFields(): void
+    {
+        $seed = "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE";
+        $accountId = "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D";
+        $keyPair = KeyPair::fromSeed($seed);
+        $privateKey = $keyPair->getPrivateKey();
+        assertTrue(is_string($privateKey) && strlen($privateKey) === 32, 'Signing key pair must have a 32-byte private key');
+        $privateKeyHex = bin2hex($privateKey);
+        $privateKeyBase64 = base64_encode($privateKey);
+
+        $varExportBefore = var_export($keyPair, true);
+        $serializedBefore = serialize($keyPair);
+
+        $output = $this->captureVarDump($keyPair);
+
+        assertFalse(str_contains($output, $seed), 'var_dump output exposes secret seed');
+        assertFalse(str_contains($output, $privateKey), 'var_dump output exposes raw private key bytes');
+        assertFalse(stripos($output, $privateKeyHex) !== false, 'var_dump output exposes hex-encoded private key');
+        assertFalse(str_contains($output, $privateKeyBase64), 'var_dump output exposes base64-encoded private key');
+        assertTrue(str_contains($output, $accountId), 'var_dump output must contain account id');
+        assertTrue(str_contains($output, 'canSign'), 'var_dump output must contain canSign');
+        assertTrue(str_contains($output, 'bool(true)'), 'var_dump output must show canSign as bool(true)');
+
+        $this->assertSigningKeyPairStateIntactAfterDump($keyPair, $accountId, $varExportBefore, $serializedBefore);
+    }
+
+    public function testPrintRHidesSecretMaterialAndShowsPublicFields(): void
+    {
+        $seed = "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE";
+        $accountId = "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D";
+        $keyPair = KeyPair::fromSeed($seed);
+        $privateKey = $keyPair->getPrivateKey();
+        assertTrue(is_string($privateKey) && strlen($privateKey) === 32, 'Signing key pair must have a 32-byte private key');
+        $privateKeyHex = bin2hex($privateKey);
+        $privateKeyBase64 = base64_encode($privateKey);
+
+        $varExportBefore = var_export($keyPair, true);
+        $serializedBefore = serialize($keyPair);
+
+        $output = print_r($keyPair, true);
+
+        assertFalse(str_contains($output, $seed), 'print_r output exposes secret seed');
+        assertFalse(str_contains($output, $privateKey), 'print_r output exposes raw private key bytes');
+        assertFalse(stripos($output, $privateKeyHex) !== false, 'print_r output exposes hex-encoded private key');
+        assertFalse(str_contains($output, $privateKeyBase64), 'print_r output exposes base64-encoded private key');
+        assertTrue(str_contains($output, $accountId), 'print_r output must contain account id');
+        assertTrue(str_contains($output, 'canSign'), 'print_r output must contain canSign');
+
+        $this->assertSigningKeyPairStateIntactAfterDump($keyPair, $accountId, $varExportBefore, $serializedBefore);
+    }
+
+    public function testDebugZvalDumpHidesSecretMaterialAndShowsPublicFields(): void
+    {
+        $seed = "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE";
+        $accountId = "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D";
+        $keyPair = KeyPair::fromSeed($seed);
+        $privateKey = $keyPair->getPrivateKey();
+        assertTrue(is_string($privateKey) && strlen($privateKey) === 32, 'Signing key pair must have a 32-byte private key');
+        $privateKeyHex = bin2hex($privateKey);
+        $privateKeyBase64 = base64_encode($privateKey);
+
+        $varExportBefore = var_export($keyPair, true);
+        $serializedBefore = serialize($keyPair);
+
+        $output = $this->captureDebugZvalDump($keyPair);
+
+        assertFalse(str_contains($output, $seed), 'debug_zval_dump output exposes secret seed');
+        assertFalse(str_contains($output, $privateKey), 'debug_zval_dump output exposes raw private key bytes');
+        assertFalse(stripos($output, $privateKeyHex) !== false, 'debug_zval_dump output exposes hex-encoded private key');
+        assertFalse(str_contains($output, $privateKeyBase64), 'debug_zval_dump output exposes base64-encoded private key');
+        assertTrue(str_contains($output, $accountId), 'debug_zval_dump output must contain account id');
+        assertTrue(str_contains($output, 'canSign'), 'debug_zval_dump output must contain canSign');
+        assertTrue(str_contains($output, 'bool(true)'), 'debug_zval_dump output must show canSign as bool(true)');
+
+        $this->assertSigningKeyPairStateIntactAfterDump($keyPair, $accountId, $varExportBefore, $serializedBefore);
+    }
+
+    public function testDebugInfoForSigningKeyPair(): void
+    {
+        $seed = "SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE";
+        $accountId = "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D";
+        $keyPair = KeyPair::fromSeed($seed);
+
+        assertTrue(method_exists($keyPair, '__debugInfo'), 'KeyPair must define __debugInfo()');
+        $debugInfo = $keyPair->__debugInfo();
+        assertTrue(
+            $debugInfo === ['accountId' => $accountId, 'canSign' => true],
+            '__debugInfo() must return exact accountId and boolean true for canSign'
+        );
+    }
+
+    public function testDebugOutputForPublicKeyOnlyKeyPair(): void
+    {
+        $accountId = "GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D";
+        $keyPair = KeyPair::fromAccountId($accountId);
+
+        $varExportBefore = var_export($keyPair, true);
+        $serializedBefore = serialize($keyPair);
+
+        $varDumpOutput = $this->captureVarDump($keyPair);
+        $printROutput = print_r($keyPair, true);
+        $debugZvalDumpOutput = $this->captureDebugZvalDump($keyPair);
+
+        assertTrue(str_contains($varDumpOutput, $accountId), 'var_dump output must contain account id');
+        assertTrue(str_contains($varDumpOutput, 'canSign'), 'var_dump output must contain canSign');
+        assertTrue(str_contains($varDumpOutput, 'bool(false)'), 'var_dump output must show canSign as bool(false)');
+        assertFalse(str_contains($varDumpOutput, 'bool(true)'), 'var_dump output must not show bool(true) for public-key-only key pair');
+        assertTrue(str_contains($printROutput, $accountId), 'print_r output must contain account id');
+        assertTrue(str_contains($printROutput, 'canSign'), 'print_r output must contain canSign');
+        assertTrue(str_contains($debugZvalDumpOutput, $accountId), 'debug_zval_dump output must contain account id');
+        assertTrue(str_contains($debugZvalDumpOutput, 'canSign'), 'debug_zval_dump output must contain canSign');
+        assertTrue(str_contains($debugZvalDumpOutput, 'bool(false)'), 'debug_zval_dump output must show canSign as bool(false)');
+        assertFalse(str_contains($debugZvalDumpOutput, 'bool(true)'), 'debug_zval_dump output must not show bool(true) for public-key-only key pair');
+
+        assertTrue(method_exists($keyPair, '__debugInfo'), 'KeyPair must define __debugInfo()');
+        $debugInfo = $keyPair->__debugInfo();
+        assertTrue(
+            $debugInfo === ['accountId' => $accountId, 'canSign' => false],
+            '__debugInfo() must return exact accountId and boolean false for canSign'
+        );
+
+        assertTrue(
+            json_encode($keyPair) === '{}',
+            'json_encode output for public-key-only KeyPair must be an empty JSON object'
+        );
+        assertTrue(
+            var_export($keyPair, true) === $varExportBefore,
+            'var_export output for public-key-only KeyPair must remain unchanged after debug dumps'
+        );
+        $serializedAfter = serialize($keyPair);
+        assertTrue(
+            $serializedAfter === $serializedBefore,
+            'serialize output for public-key-only KeyPair must remain unchanged after debug dumps'
+        );
+
+        $unserialized = unserialize($serializedAfter, ['allowed_classes' => [KeyPair::class]]);
+        assertTrue($unserialized instanceof KeyPair, 'Unserialized value must be a KeyPair');
+        if ($unserialized instanceof KeyPair) {
+            assertTrue(
+                $unserialized->getAccountId() === $accountId,
+                'Unserialized public-key-only key pair must have the expected account id'
+            );
+            assertTrue(
+                $unserialized->getPrivateKey() === null,
+                'Unserialized public-key-only key pair must not have a private key'
+            );
+        }
+    }
+
 }
