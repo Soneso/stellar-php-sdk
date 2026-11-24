@@ -40,7 +40,10 @@ class XdrSCAddress extends XdrSCAddressBase
             $res->muxedAccount = XdrMuxedAccountMed25519::decodeInverted($xdrBuffer);
             return $res;
         } else {
-            throw new InvalidArgumentException("invalid account id: " . SecretSeedRedaction::keyForMessage($accountId));
+            throw new InvalidArgumentException(
+                "invalid account id: "
+                    . SecretSeedRedaction::redactSecretSeeds(SecretSeedRedaction::keyForMessage($accountId))
+            );
         }
     }
 

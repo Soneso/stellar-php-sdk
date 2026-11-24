@@ -190,6 +190,15 @@ class GeneratorHelpersTest < Minitest::Test
     refute_includes var_json.string, 'checkFixedLength'
   end
 
+  def test_enum_txrep_methods_redact_secret_seeds_in_error_messages
+    enum_defn = find_ast_definition(:enum, 'MemoType')
+    out = StringIO.new
+    @gen.send(:render_enum_txrep_methods, out, 'XdrMemoType', 'XdrMemoType', enum_defn)
+
+    assert_includes out.string, "throw new InvalidArgumentException('Unknown enum value: ' . SecretSeedRedaction::redactSecretSeeds($name));"
+    assert_includes out.string, "throw new InvalidArgumentException('Missing TxRep value for: ' . SecretSeedRedaction::redactSecretSeeds($prefix));"
+  end
+
   private
 
   XDR_DIR = File.join(__dir__, '..', '..', '..', 'xdr')
@@ -207,7 +216,11 @@ class GeneratorHelpersTest < Minitest::Test
   def find_ast_definition(kind, xdr_name)
     # Load the AST first so xdrgen requires treetop before AST::Definitions constants autoload.
     nodes = [self.class.ast]
-    klass = kind == :struct ? Xdrgen::AST::Definitions::Struct : Xdrgen::AST::Definitions::Typedef
+    klass = case kind
+            when :struct then Xdrgen::AST::Definitions::Struct
+            when :enum then Xdrgen::AST::Definitions::Enum
+            else Xdrgen::AST::Definitions::Typedef
+            end
     until nodes.empty?
       node = nodes.shift
       match = node.definitions.find { |d| d.is_a?(klass) && d.name.to_s == xdr_name }

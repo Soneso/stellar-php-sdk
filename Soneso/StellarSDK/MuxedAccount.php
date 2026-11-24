@@ -156,7 +156,10 @@ class MuxedAccount
         } else if ("M" == $firstChar) {
             return static::fromMed25519AccountId($accountId);
         } else {
-            throw new InvalidArgumentException("invalid accountId: " . SecretSeedRedaction::keyForMessage($accountId));
+            throw new InvalidArgumentException(
+                "invalid accountId: "
+                    . SecretSeedRedaction::redactSecretSeeds(SecretSeedRedaction::keyForMessage($accountId))
+            );
         }
     }
 

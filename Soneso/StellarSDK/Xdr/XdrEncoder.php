@@ -101,7 +101,12 @@ class XdrEncoder
     public static function assertMaxLength(int $length, int $max, string $name): void
     {
         if ($length > $max) {
-            throw new InvalidArgumentException(sprintf('%s length %d exceeds the maximum of %d', $name, $length, $max));
+            throw new InvalidArgumentException(sprintf(
+                '%s length %d exceeds the maximum of %d',
+                SecretSeedRedaction::redactSecretSeeds($name),
+                $length,
+                $max
+            ));
         }
     }
 

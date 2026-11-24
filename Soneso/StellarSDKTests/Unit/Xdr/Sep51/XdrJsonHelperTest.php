@@ -9,7 +9,9 @@ namespace Soneso\StellarSDKTests\Unit\Xdr\Sep51;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\TestCase;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Xdr\XdrJsonHelper;
+use Soneso\StellarSDKTests\Unit\Soroban\SecretSeedVariants;
 
 /**
  * Unit tests for XdrJsonHelper — the SEP-51 primitive helper class.
@@ -2239,5 +2241,170 @@ class XdrJsonHelperTest extends TestCase
         $this->assertSame('a', XdrJsonHelper::decodeText('"a"'));
         $this->assertNull(XdrJsonHelper::decodeText('null'));
         $this->assertTrue(XdrJsonHelper::decodeText('true'));
+    }
+
+    // =========================================================================
+    // safePreview: secret-seed redaction, escaping and truncation
+    // =========================================================================
+
+    public function testSafePreview_keepsOrdinaryTextUnchanged(): void
+    {
+        $this->assertSame('', XdrJsonHelper::safePreview(''));
+        $this->assertSame('bogus', XdrJsonHelper::safePreview('bogus'));
+        $this->assertSame('tx.memo.type', XdrJsonHelper::safePreview('tx.memo.type'));
+        $this->assertSame('S' . str_repeat('A', 38), XdrJsonHelper::safePreview('S' . str_repeat('A', 38)));
+        $this->assertSame('A' . str_repeat('S', 60), XdrJsonHelper::safePreview('A' . str_repeat('S', 60)));
+        $this->assertSame('héllo', XdrJsonHelper::safePreview('héllo'));
+        $this->assertSame('a\\x1Bb', XdrJsonHelper::safePreview("a\x1bb"));
+        $this->assertSame('a\\xFFb', XdrJsonHelper::safePreview("a\xFFb"));
+        $this->assertSame(str_repeat('x', 77) . '...', XdrJsonHelper::safePreview(str_repeat('x', 85)));
+    }
+
+    public function testSafePreview_redactsEverySeedVariant(): void
+    {
+        $variants = SecretSeedVariants::create();
+        foreach ($variants->variants as $name => $variant) {
+            $preview = XdrJsonHelper::safePreview($variant['input']);
+            $this->assertTrue(
+                $preview === $variant['redacted'],
+                $name . ': safePreview did not redact the seed variant'
+            );
+            $this->assertPreviewHoldsNoSeedWindow($preview, $variants->seed, $name);
+        }
+    }
+
+    public function testSafePreview_redactsPrefixesAndEmbeddedSeeds(): void
+    {
+        $variants = SecretSeedVariants::create();
+        $changed = $variants->variants['one changed character']['input'];
+        $cases = $variants->insideLongerValues();
+        $cases['key prefix with valid seed'] = [
+            'input' => 'tx.' . $variants->seed . '.memo',
+            'redacted' => 'tx.' . SecretSeedVariants::SECRET_SEED . '.memo',
+        ];
+        $cases['key prefix with changed seed'] = [
+            'input' => 'foo:' . $changed,
+            'redacted' => 'foo:' . SecretSeedVariants::SECRET_SEED,
+        ];
+        $cases['two seeds'] = [
+            'input' => $variants->seed . ' ' . $variants->seed,
+            'redacted' => SecretSeedVariants::SECRET_SEED . ' ' . SecretSeedVariants::SECRET_SEED,
+        ];
+
+        foreach ($cases as $name => $case) {
+            $preview = XdrJsonHelper::safePreview($case['input']);
+            $this->assertTrue(
+                $preview === $case['redacted'],
+                $name . ': safePreview did not redact the embedded seed'
+            );
+            $this->assertPreviewHoldsNoSeedWindow($preview, $variants->seed, $name);
+        }
+    }
+
+    public function testSafePreview_redactsBeforeEscapingControlAndInvalidUtf8Bytes(): void
+    {
+        // Escaping before redaction would turn \x1b or \xFF into ASCII alphanumeric
+        // \x1B / \xFF glued onto the following seed-like run, hiding a changed seed
+        // from run detection.
+        $variants = SecretSeedVariants::create();
+        $seed = $variants->seed;
+        $changed = $variants->variants['one changed character']['input'];
+        $marker = SecretSeedVariants::SECRET_SEED;
+        $cases = [
+            'escape byte before changed seed' => ["\x1b" . $changed, '\\x1B' . $marker],
+            'control bytes around valid seed' => ["\x00" . $seed . "\x7f", '\\x00' . $marker . '\\x7F'],
+            'invalid utf-8 byte before changed seed' => ["\xFF" . $changed, '\\xFF' . $marker],
+            'lone utf-8 lead byte before valid seed' => ["\xC3" . $seed, '\\xC3' . $marker],
+        ];
+
+        foreach ($cases as $name => [$input, $expected]) {
+            $preview = XdrJsonHelper::safePreview($input);
+            $this->assertTrue(
+                $preview === $expected,
+                $name . ': safePreview did not redact before escaping'
+            );
+            $this->assertPreviewHoldsNoSeedWindow($preview, $seed, $name);
+        }
+    }
+
+    public function testSafePreview_redactsBeforeTruncationAtBoundaries(): void
+    {
+        // Truncating before redaction would leave a prefix of the seed shorter than 40
+        // characters and with no checksum, leaking seed characters into the preview.
+        $variants = SecretSeedVariants::create();
+        $seed = $variants->seed;
+        $changed = $variants->variants['one changed character']['input'];
+        $marker = SecretSeedVariants::SECRET_SEED; // 20 bytes
+        $cases = [
+            '80: 50 prefix + seed fits after redaction' => [str_repeat('a', 50) . $seed, 80, str_repeat('a', 50) . $marker],
+            '80: 60 prefix + seed fills exactly 80 bytes' => [str_repeat('a', 60) . $seed, 80, str_repeat('a', 60) . $marker],
+            '80: 61 prefix + seed truncates the marker' => [str_repeat('a', 61) . $seed, 80, str_repeat('a', 61) . substr($marker, 0, 16) . '...'],
+            '80: 76 glued prefix + seed truncates at boundary' => [str_repeat('a', 76) . $seed, 80, str_repeat('a', 76) . 'a...'],
+            '80: 76 separated prefix + changed seed truncates at boundary' => [str_repeat('a', 75) . ':' . $changed, 80, str_repeat('a', 75) . ':a...'],
+            '40: 20 prefix + seed fills exactly 40 bytes' => [str_repeat('a', 20) . $seed, 40, str_repeat('a', 20) . $marker],
+            '40: 21 prefix + seed truncates the marker' => [str_repeat('a', 21) . $seed, 40, str_repeat('a', 21) . substr($marker, 0, 16) . '...'],
+            '40: 30 separated prefix + changed seed truncates the marker' => [str_repeat('a', 29) . ':' . $changed, 40, str_repeat('a', 29) . ':' . substr($marker, 0, 7) . '...'],
+        ];
+
+        foreach ($cases as $name => [$input, $max, $expected]) {
+            $preview = XdrJsonHelper::safePreview($input, $max);
+            $this->assertTrue(
+                $preview === $expected,
+                $name . ': safePreview did not redact before truncating'
+            );
+            $this->assertLessThanOrEqual($max, strlen($preview), $name);
+            $this->assertPreviewHoldsNoSeedWindow($preview, $seed, $name);
+        }
+    }
+
+    public function testSafePreview_isIdempotentAndMatchesDoubleRedaction(): void
+    {
+        $variants = SecretSeedVariants::create();
+        $seed = $variants->seed;
+        $changed = $variants->variants['one changed character']['input'];
+        $inputs = [
+            'ordinary' => 'bogus',
+            'control char' => "a\x1bb",
+            'long ordinary' => str_repeat('x', 100),
+            '39-char S run' => 'S' . str_repeat('A', 38),
+            'escape + changed seed' => "\x1b" . $changed,
+            'invalid utf-8 + changed seed' => "\xFF" . $changed,
+            'boundary prefix + seed' => str_repeat('a', 65) . $seed,
+        ];
+        foreach ($variants->variants as $name => $variant) {
+            $inputs['variant: ' . $name] = $variant['input'];
+        }
+        foreach ($variants->insideLongerValues() as $name => $value) {
+            $inputs['longer: ' . $name] = $value['input'];
+        }
+
+        foreach ([80, 40] as $max) {
+            foreach ($inputs as $name => $input) {
+                $context = $name . ' (max ' . $max . ')';
+                $once = XdrJsonHelper::safePreview($input, $max);
+                $preRedacted = XdrJsonHelper::safePreview(SecretSeedRedaction::redactSecretSeeds($input), $max);
+                $twice = XdrJsonHelper::safePreview($once, $max);
+                $this->assertTrue(
+                    $preRedacted === $once,
+                    $context . ': pre-redacting the input changed safePreview output'
+                );
+                $this->assertTrue(
+                    $twice === $once,
+                    $context . ': calling safePreview twice changed the output'
+                );
+                $this->assertPreviewHoldsNoSeedWindow($once, $seed, $context);
+            }
+        }
+    }
+
+    private function assertPreviewHoldsNoSeedWindow(string $preview, string $seed, string $context): void
+    {
+        $window = 16;
+        for ($start = 0; $start + $window <= strlen($seed); $start++) {
+            $this->assertFalse(
+                stripos($preview, substr($seed, $start, $window)) !== false,
+                $context . ': safePreview output holds a part of the seed'
+            );
+        }
     }
 }

@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK\Xdr;
 
 use InvalidArgumentException;
 use phpseclib3\Math\BigInteger;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 
 /**
@@ -71,7 +72,12 @@ class XdrBuffer
         $total = $this->size;
         $unread = $total - $this->position;
         if ($unread !== 0) {
-            throw new InvalidArgumentException(sprintf('%s leaves %d of %d bytes unread', $typeName, $unread, $total));
+            throw new InvalidArgumentException(sprintf(
+                '%s leaves %d of %d bytes unread',
+                SecretSeedRedaction::redactSecretSeeds($typeName),
+                $unread,
+                $total
+            ));
         }
     }
     
@@ -299,7 +305,7 @@ class XdrBuffer
         if ($discriminant !== 0) {
             throw new InvalidArgumentException(sprintf(
                 '%s extension point must be 0, got %d',
-                $typeName,
+                SecretSeedRedaction::redactSecretSeeds($typeName),
                 $discriminant
             ));
         }
@@ -326,7 +332,7 @@ class XdrBuffer
         }
         throw new InvalidArgumentException(sprintf(
             '%s presence flag must be 0 or 1, got %d',
-            $fieldName,
+            SecretSeedRedaction::redactSecretSeeds($fieldName),
             $word
         ));
     }

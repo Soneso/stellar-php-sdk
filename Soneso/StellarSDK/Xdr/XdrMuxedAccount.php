@@ -86,18 +86,18 @@ class XdrMuxedAccount extends XdrMuxedAccountBase
     {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
-            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . SecretSeedRedaction::redactSecretSeeds($prefix));
         }
 
         if ($raw === '') {
-            throw new InvalidArgumentException('Empty muxed account address for: ' . $prefix);
+            throw new InvalidArgumentException('Empty muxed account address for: ' . SecretSeedRedaction::redactSecretSeeds($prefix));
         }
 
         $firstChar = $raw[0];
 
         if ($firstChar === 'G') {
             if (!StrKey::isValidAccountId($raw)) {
-                throw new InvalidArgumentException('Invalid account ID: ' . $raw);
+                throw new InvalidArgumentException('Invalid account ID: ' . SecretSeedRedaction::redactSecretSeeds($raw));
             }
             return new static(KeyPair::fromAccountId($raw)->getPublicKey());
         }
@@ -111,7 +111,8 @@ class XdrMuxedAccount extends XdrMuxedAccountBase
         }
 
         throw new InvalidArgumentException(
-            'Unrecognized muxed account address prefix "' . $firstChar . '": ' . SecretSeedRedaction::keyForMessage($raw)
+            'Unrecognized muxed account address prefix "' . $firstChar . '": '
+                . SecretSeedRedaction::redactSecretSeeds(SecretSeedRedaction::keyForMessage($raw))
         );
     }
 }

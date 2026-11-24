@@ -8,6 +8,7 @@ namespace Soneso\StellarSDK\SEP\TxRep;
 
 use InvalidArgumentException;
 use Soneso\StellarSDK\Constants\StellarConstants;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 use Soneso\StellarSDK\Xdr\TxRepHelper;
 use Soneso\StellarSDK\Xdr\XdrBuffer;
 use Soneso\StellarSDK\Xdr\XdrDecoratedSignature;
@@ -447,7 +448,7 @@ class TxRep
             return $memo;
         }
 
-        throw new InvalidArgumentException('Unknown memo type: ' . $memoTypeStr);
+        throw new InvalidArgumentException('Unknown memo type: ' . SecretSeedRedaction::redactSecretSeeds($memoTypeStr));
     }
 
     /**

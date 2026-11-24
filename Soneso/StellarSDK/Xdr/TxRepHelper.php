@@ -526,7 +526,9 @@ class TxRepHelper
     public static function parseAccountId(string $strKey): XdrAccountID
     {
         if (!StrKey::isValidAccountId($strKey)) {
-            throw new InvalidArgumentException('Invalid account ID: ' . SecretSeedRedaction::keyForMessage($strKey));
+            throw new InvalidArgumentException(
+                'Invalid account ID: ' . SecretSeedRedaction::redactSecretSeeds(SecretSeedRedaction::keyForMessage($strKey))
+            );
         }
 
         return XdrAccountID::fromAccountId($strKey);
@@ -563,7 +565,10 @@ class TxRepHelper
             $ma = MuxedAccount::fromAccountId($strKey);
         } catch (Exception $e) {
             throw new InvalidArgumentException(
-                'Invalid muxed account: ' . SecretSeedRedaction::keyForMessage($strKey), 0, $e
+                'Invalid muxed account: '
+                    . SecretSeedRedaction::redactSecretSeeds(SecretSeedRedaction::keyForMessage($strKey)),
+                0,
+                $e
             );
         }
 
@@ -632,7 +637,10 @@ class TxRepHelper
         $issuer = trim($parts[1]);
 
         if (!StrKey::isValidAccountId($issuer)) {
-            throw new InvalidArgumentException('Invalid asset issuer: ' . SecretSeedRedaction::keyForMessage($issuer));
+            throw new InvalidArgumentException(
+                'Invalid asset issuer: '
+                    . SecretSeedRedaction::redactSecretSeeds(SecretSeedRedaction::keyForMessage($issuer))
+            );
         }
 
         $issuerId = XdrAccountID::fromAccountId($issuer);
@@ -728,7 +736,8 @@ class TxRepHelper
 
         if (!StrKey::isValidAccountId($issuer)) {
             throw new InvalidArgumentException(
-                'Invalid change trust asset issuer: ' . SecretSeedRedaction::keyForMessage($issuer)
+                'Invalid change trust asset issuer: '
+                    . SecretSeedRedaction::redactSecretSeeds(SecretSeedRedaction::keyForMessage($issuer))
             );
         }
 
@@ -821,7 +830,7 @@ class TxRepHelper
             if ($bytes === false) {
                 throw new InvalidArgumentException(
                     'Invalid trustline asset: expected 64-char hex pool ID but got invalid hex: '
-                        . SecretSeedRedaction::keyForMessage($value)
+                        . SecretSeedRedaction::redactSecretSeeds(SecretSeedRedaction::keyForMessage($value))
                 );
             }
             $result = new XdrTrustlineAsset(new XdrAssetType(XdrAssetType::ASSET_TYPE_POOL_SHARE));
@@ -839,7 +848,8 @@ class TxRepHelper
 
         if (!StrKey::isValidAccountId($issuer)) {
             throw new InvalidArgumentException(
-                'Invalid trustline asset issuer: ' . SecretSeedRedaction::keyForMessage($issuer)
+                'Invalid trustline asset issuer: '
+                    . SecretSeedRedaction::redactSecretSeeds(SecretSeedRedaction::keyForMessage($issuer))
             );
         }
 
@@ -938,7 +948,9 @@ class TxRepHelper
 
         if ($prefix === 'G') {
             if (!StrKey::isValidAccountId($value)) {
-                throw new InvalidArgumentException('Invalid Ed25519 signer key: ' . $value);
+                throw new InvalidArgumentException(
+                    'Invalid Ed25519 signer key: ' . SecretSeedRedaction::redactSecretSeeds($value)
+                );
             }
             $signer = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_ED25519));
             $signer->setEd25519(StrKey::decodeAccountId($value));
@@ -947,7 +959,9 @@ class TxRepHelper
 
         if ($prefix === 'T') {
             if (!StrKey::isValidPreAuthTx($value)) {
-                throw new InvalidArgumentException('Invalid pre-auth tx signer key: ' . $value);
+                throw new InvalidArgumentException(
+                    'Invalid pre-auth tx signer key: ' . SecretSeedRedaction::redactSecretSeeds($value)
+                );
             }
             $signer = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_PRE_AUTH_TX));
             $signer->setPreAuthTx(StrKey::decodePreAuthTx($value));
@@ -956,7 +970,9 @@ class TxRepHelper
 
         if ($prefix === 'X') {
             if (!StrKey::isValidSha256Hash($value)) {
-                throw new InvalidArgumentException('Invalid sha256-hash signer key: ' . $value);
+                throw new InvalidArgumentException(
+                    'Invalid sha256-hash signer key: ' . SecretSeedRedaction::redactSecretSeeds($value)
+                );
             }
             $signer = new XdrSignerKey(new XdrSignerKeyType(XdrSignerKeyType::SIGNER_KEY_TYPE_HASH_X));
             $signer->setHashX(StrKey::decodeSha256Hash($value));
@@ -969,7 +985,10 @@ class TxRepHelper
             return $signer;
         }
 
-        throw new InvalidArgumentException('Unknown signer key prefix: ' . SecretSeedRedaction::keyForMessage($value));
+        throw new InvalidArgumentException(
+            'Unknown signer key prefix: '
+                . SecretSeedRedaction::redactSecretSeeds(SecretSeedRedaction::keyForMessage($value))
+        );
     }
 
     /**

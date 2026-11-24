@@ -51,13 +51,38 @@ use Soneso\StellarSDK\Util\StellarAmount;
 use Soneso\StellarSDK\Xdr\TxRepHelper;
 use Soneso\StellarSDK\Xdr\XdrAccountID;
 use Soneso\StellarSDK\Xdr\XdrAllowTrustOperationAsset;
+use Soneso\StellarSDK\Xdr\XdrAssetType;
+use Soneso\StellarSDK\Xdr\XdrBuffer;
+use Soneso\StellarSDK\Xdr\XdrChangeTrustAsset;
+use Soneso\StellarSDK\Xdr\XdrClaimPredicateType;
 use Soneso\StellarSDK\Xdr\XdrClaimableBalanceID;
+use Soneso\StellarSDK\Xdr\XdrClaimableBalanceIDType;
+use Soneso\StellarSDK\Xdr\XdrClaimantType;
+use Soneso\StellarSDK\Xdr\XdrConfigSettingID;
+use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
 use Soneso\StellarSDK\Xdr\XdrContractExecutable;
+use Soneso\StellarSDK\Xdr\XdrContractExecutableType;
+use Soneso\StellarSDK\Xdr\XdrContractIDPreimageType;
+use Soneso\StellarSDK\Xdr\XdrCryptoKeyType;
+use Soneso\StellarSDK\Xdr\XdrEncoder;
+use Soneso\StellarSDK\Xdr\XdrEnvelopeType;
 use Soneso\StellarSDK\Xdr\XdrHostFunction;
+use Soneso\StellarSDK\Xdr\XdrHostFunctionType;
 use Soneso\StellarSDK\Xdr\XdrJsonHelper;
+use Soneso\StellarSDK\Xdr\XdrLedgerEntryType;
+use Soneso\StellarSDK\Xdr\XdrLiquidityPoolType;
+use Soneso\StellarSDK\Xdr\XdrMemo;
+use Soneso\StellarSDK\Xdr\XdrMemoType;
 use Soneso\StellarSDK\Xdr\XdrMuxedAccount;
+use Soneso\StellarSDK\Xdr\XdrOperationType;
+use Soneso\StellarSDK\Xdr\XdrPreconditionType;
+use Soneso\StellarSDK\Xdr\XdrPublicKeyType;
+use Soneso\StellarSDK\Xdr\XdrRevokeSponsorshipType;
 use Soneso\StellarSDK\Xdr\XdrSCAddress;
+use Soneso\StellarSDK\Xdr\XdrSCAddressType;
 use Soneso\StellarSDK\Xdr\XdrSCContractInstance;
+use Soneso\StellarSDK\Xdr\XdrSCErrorCode;
+use Soneso\StellarSDK\Xdr\XdrSCErrorType;
 use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntry;
 use Soneso\StellarSDK\Xdr\XdrSCSpecEntryKind;
@@ -69,6 +94,11 @@ use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseV0Kind;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionCaseVoidV0;
 use Soneso\StellarSDK\Xdr\XdrSCSpecUDTUnionV0;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
+use Soneso\StellarSDK\Xdr\XdrSCValType;
+use Soneso\StellarSDK\Xdr\XdrSignerKeyTypeBase;
+use Soneso\StellarSDK\Xdr\XdrSorobanAuthorizedFunctionType;
+use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
+use Soneso\StellarSDK\Xdr\XdrTrustlineAsset;
 use Throwable;
 
 /**
@@ -1142,6 +1172,426 @@ class SecretSeedMessagesTest extends TestCase
         $this->assertCount(2, $history);
         parse_str($history[1]['request']->getUri()->getQuery(), $query);
         $this->assertSame('sam*soneso.com', $query['q'] ?? null);
+    }
+
+    /**
+     * Minimal V1 transaction TxRep template with `{memoType}` in place of `tx.memo.type`.
+     */
+    private static function txRepMemoTemplate(): string
+    {
+        $account = self::account();
+        return "type: ENVELOPE_TYPE_TX\ntx.sourceAccount: $account\ntx.fee: 100\ntx.seqNum: 2\n"
+            . "tx.cond.type: PRECOND_NONE\ntx.memo.type: {memoType}\ntx.operations.len: 0\n"
+            . "tx.ext.v: 0\nsignatures.len: 0";
+    }
+
+    /**
+     * XDR text reader sites (generated enum/union readers, SEP-51 preview readers and
+     * TxRep::transactionEnvelopeXdrBase64FromTxRep) together with hand-written XDR sites that
+     * interpolate a caller-supplied value or prefix.
+     *
+     * @return array<string, array{Closure(string): mixed, Closure(string): string, string, string}>
+     */
+    public static function xdrTextReaderSites(): array
+    {
+        $memoTemplate = self::txRepMemoTemplate();
+        return [
+            'XdrMemoType::fromTxRepName' => [
+                fn (string $v) => XdrMemoType::fromTxRepName($v),
+                fn (string $text) => 'Unknown enum value: ' . $text,
+                'MEMO_BOGUS', 'Unknown enum value: MEMO_BOGUS',
+            ],
+            'XdrMemoType::fromTxRep value' => [
+                fn (string $v) => XdrMemoType::fromTxRep(['k' => $v], 'k'),
+                fn (string $text) => 'Unknown enum value: ' . ltrim($text),
+                'MEMO_BOGUS', 'Unknown enum value: MEMO_BOGUS',
+            ],
+            'XdrMemoType::fromTxRep missing prefix' => [
+                fn (string $v) => XdrMemoType::fromTxRep([], $v),
+                fn (string $text) => 'Missing TxRep value for: ' . $text,
+                'tx.memo.type', 'Missing TxRep value for: tx.memo.type',
+            ],
+            'XdrMemoType::fromJsonValue' => [
+                fn (string $v) => XdrMemoType::fromJsonValue($v),
+                fn (string $text) => 'Unknown XdrMemoType JSON value: ' . $text,
+                'bogus', 'Unknown XdrMemoType JSON value: bogus',
+            ],
+            'TxRep::transactionEnvelopeXdrBase64FromTxRep memo type' => [
+                fn (string $v) => TxRep::transactionEnvelopeXdrBase64FromTxRep(
+                    str_replace('{memoType}', $v, $memoTemplate)
+                ),
+                fn (string $text) => 'Unknown memo type: ' . ltrim($text),
+                'MEMO_BOGUS', 'Unknown memo type: MEMO_BOGUS',
+            ],
+            'XdrContractExecutable::fromJsonValue wasm' => [
+                fn (string $v) => XdrContractExecutable::fromJsonValue(['wasm' => $v]),
+                fn (string $text) => 'Wasm hash must be a hexadecimal string, "' . $text . '" given',
+                'xyz', 'Wasm hash must be a hexadecimal string, "xyz" given',
+            ],
+            'XdrContractExecutable::fromTxRep wasm_hash' => [
+                fn (string $v) => XdrContractExecutable::fromTxRep(
+                    ['x.type' => 'CONTRACT_EXECUTABLE_WASM', 'x.wasm_hash' => $v],
+                    'x'
+                ),
+                fn (string $text) => 'Wasm hash must be a hexadecimal string, "' . ltrim($text) . '" given',
+                'xyz', 'Wasm hash must be a hexadecimal string, "xyz" given',
+            ],
+            'XdrContractExecutable::fromJsonValue void arm' => [
+                fn (string $v) => XdrContractExecutable::fromJsonValue($v),
+                fn (string $text) => 'Unknown XdrContractExecutableBase void arm string: ' . $text,
+                'bogus', 'Unknown XdrContractExecutableBase void arm string: bogus',
+            ],
+            'XdrContractExecutable::fromJsonValue arm key' => [
+                fn (string $v) => XdrContractExecutable::fromJsonValue([$v => null]),
+                fn (string $text) => 'Unknown arm key for XdrContractExecutableBase: ' . $text,
+                'bogus', 'Unknown arm key for XdrContractExecutableBase: bogus',
+            ],
+            'XdrAccountID::fromTxRep missing prefix' => [
+                fn (string $v) => XdrAccountID::fromTxRep([], $v),
+                fn (string $text) => 'Missing TxRep value for: ' . $text,
+                'tx.sourceAccount', 'Missing TxRep value for: tx.sourceAccount',
+            ],
+            'XdrAccountID::fromTxRep invalid key prefix' => [
+                fn (string $v) => XdrAccountID::fromTxRep([$v => 'XYZ'], $v),
+                fn (string $text) => 'Invalid account ID in TxRep for key "' . $text . '": XYZ',
+                'tx.sourceAccount', 'Invalid account ID in TxRep for key "tx.sourceAccount": XYZ',
+            ],
+            'XdrAllowTrustOperationAsset::fromTxRep missing prefix' => [
+                fn (string $v) => XdrAllowTrustOperationAsset::fromTxRep([], $v),
+                fn (string $text) => 'Missing TxRep value for: ' . $text,
+                'tx.asset', 'Missing TxRep value for: tx.asset',
+            ],
+            'XdrMuxedAccount::fromTxRep missing prefix' => [
+                fn (string $v) => XdrMuxedAccount::fromTxRep([], $v),
+                fn (string $text) => 'Missing TxRep value for: ' . $text,
+                'tx.sourceAccount', 'Missing TxRep value for: tx.sourceAccount',
+            ],
+            'XdrMuxedAccount::fromTxRep empty prefix' => [
+                fn (string $v) => XdrMuxedAccount::fromTxRep([$v => ''], $v),
+                fn (string $text) => 'Empty muxed account address for: ' . $text,
+                'tx.sourceAccount', 'Empty muxed account address for: tx.sourceAccount',
+            ],
+            'XdrTrustlineAsset::fromTxRep missing prefix' => [
+                fn (string $v) => XdrTrustlineAsset::fromTxRep([], $v),
+                fn (string $text) => 'Missing TxRep value for: ' . $text,
+                'tx.asset', 'Missing TxRep value for: tx.asset',
+            ],
+            'XdrEncoder::assertMaxLength name' => [
+                fn (string $v) => XdrEncoder::assertMaxLength(29, 28, $v . '.text'),
+                fn (string $text) => $text . '.text length 29 exceeds the maximum of 28',
+                'tx.memo', 'tx.memo.text length 29 exceeds the maximum of 28',
+            ],
+            'XdrMemo::fromTxRep overlong text prefix' => [
+                fn (string $v) => XdrMemo::fromTxRep(
+                    [$v . '.type' => 'MEMO_TEXT', $v . '.text' => str_repeat('m', 29)],
+                    $v
+                ),
+                fn (string $text) => $text . '.text length 29 exceeds the maximum of 28',
+                'tx.memo', 'tx.memo.text length 29 exceeds the maximum of 28',
+            ],
+            'XdrBuffer::assertFullyConsumed typeName' => [
+                fn (string $v) => (new XdrBuffer("\x00"))->assertFullyConsumed($v),
+                fn (string $text) => $text . ' leaves 1 of 1 bytes unread',
+                'XdrMemo', 'XdrMemo leaves 1 of 1 bytes unread',
+            ],
+            'XdrBuffer::readExtensionPoint typeName' => [
+                fn (string $v) => (new XdrBuffer("\x00\x00\x00\x01"))->readExtensionPoint($v),
+                fn (string $text) => $text . ' extension point must be 0, got 1',
+                'XdrTransaction', 'XdrTransaction extension point must be 0, got 1',
+            ],
+            'XdrBuffer::readOptionalPresence fieldName' => [
+                fn (string $v) => (new XdrBuffer("\x00\x00\x00\x02"))->readOptionalPresence($v),
+                fn (string $text) => $text . ' presence flag must be 0 or 1, got 2',
+                'XdrOperation.sourceAccount', 'XdrOperation.sourceAccount presence flag must be 0 or 1, got 2',
+            ],
+        ];
+    }
+
+    #[DataProvider('xdrTextReaderSites')]
+    public function testXdrTextReadersRedactSeedsAndKeepControls(
+        Closure $call,
+        Closure $message,
+        string $otherInput,
+        string $otherMessage
+    ): void {
+        // Secret-bearing assertions use fixed failure messages so a failure prints no seed.
+        $variants = SecretSeedVariants::create();
+        foreach ($variants->variants as $name => $variant) {
+            $error = $this->thrown($call, $variant['input'], $name);
+            $this->assertTrue($error instanceof InvalidArgumentException, $name . ': no InvalidArgumentException');
+            $this->assertTrue(
+                $error->getMessage() === $message($variant['redacted']),
+                $name . ': the message does not match the redacted expectation'
+            );
+            $variants->assertNotShown($error, $name);
+        }
+        foreach ($variants->insideLongerValues() as $form => $value) {
+            $error = $this->thrown($call, $value['input'], $form);
+            $this->assertTrue($error instanceof InvalidArgumentException, $form . ': no InvalidArgumentException');
+            $this->assertTrue(
+                $error->getMessage() === $message($value['redacted']),
+                $form . ': the message does not redact the embedded seed'
+            );
+            $variants->assertNotShown($error, $form);
+        }
+        $error = $this->thrown($call, $otherInput, 'other input');
+        $this->assertInstanceOf(InvalidArgumentException::class, $error);
+        $this->assertSame($otherMessage, $error->getMessage());
+    }
+
+    public function testHandWrittenXdrKeySitesRedactEmbeddedSeeds(): void
+    {
+        // Key-position readers in Xdr/ must also redact seeds embedded behind a non-S prefix
+        // while keeping ordinary invalid inputs byte-identical.
+        $variants = SecretSeedVariants::create();
+        $seed = $variants->seed;
+        $marker = SecretSeedVariants::SECRET_SEED;
+        $poolPrefix = 'Invalid trustline asset: expected 64-char hex pool ID but got invalid hex: ';
+
+        $cases = [
+            'TxRepHelper::parseSignerKey G-prefixed seed' => [
+                fn (string $v) => TxRepHelper::parseSignerKey($v),
+                'G' . $seed,
+                'Invalid Ed25519 signer key: G' . $marker,
+                'GINVALID',
+                'Invalid Ed25519 signer key: GINVALID',
+            ],
+            'TxRepHelper::parseSignerKey T-prefixed seed' => [
+                fn (string $v) => TxRepHelper::parseSignerKey($v),
+                'T' . $seed,
+                'Invalid pre-auth tx signer key: T' . $marker,
+                'TINVALID',
+                'Invalid pre-auth tx signer key: TINVALID',
+            ],
+            'TxRepHelper::parseSignerKey X-prefixed seed' => [
+                fn (string $v) => TxRepHelper::parseSignerKey($v),
+                'X' . $seed,
+                'Invalid sha256-hash signer key: X' . $marker,
+                'XINVALID',
+                'Invalid sha256-hash signer key: XINVALID',
+            ],
+            'TxRepHelper::parseSignerKey unknown prefix + seed' => [
+                fn (string $v) => TxRepHelper::parseSignerKey($v),
+                'Y' . $seed,
+                'Unknown signer key prefix: Y' . $marker,
+                'YABC',
+                'Unknown signer key prefix: YABC',
+            ],
+            'TxRepHelper::parseAccountId G-prefixed seed' => [
+                fn (string $v) => TxRepHelper::parseAccountId($v),
+                'G' . $seed,
+                'Invalid account ID: G' . $marker,
+                'GINVALID',
+                'Invalid account ID: GINVALID',
+            ],
+            'TxRepHelper::parseAsset issuer G-prefixed seed' => [
+                fn (string $v) => TxRepHelper::parseAsset('USD:' . $v),
+                'G' . $seed,
+                'Invalid asset issuer: G' . $marker,
+                'GINVALID',
+                'Invalid asset issuer: GINVALID',
+            ],
+            'TxRepHelper::parseChangeTrustAsset issuer G-prefixed seed' => [
+                fn (string $v) => TxRepHelper::parseChangeTrustAsset('USD:' . $v),
+                'G' . $seed,
+                'Invalid change trust asset issuer: G' . $marker,
+                'GINVALID',
+                'Invalid change trust asset issuer: GINVALID',
+            ],
+            'TxRepHelper::parseTrustlineAsset issuer G-prefixed seed' => [
+                fn (string $v) => TxRepHelper::parseTrustlineAsset('USD:' . $v),
+                'G' . $seed,
+                'Invalid trustline asset issuer: G' . $marker,
+                'GINVALID',
+                'Invalid trustline asset issuer: GINVALID',
+            ],
+            'TxRepHelper::parseTrustlineAsset 64-char pool ID with seed' => [
+                fn (string $v) => TxRepHelper::parseTrustlineAsset($v),
+                'aaaaaaaa' . $seed,
+                $poolPrefix . 'aaaaaaaa' . $marker,
+                str_repeat('Z', 64),
+                $poolPrefix . str_repeat('Z', 64),
+            ],
+            'XdrMuxedAccount::fromTxRep G-prefixed seed' => [
+                fn (string $v) => XdrMuxedAccount::fromTxRep(['k' => $v], 'k'),
+                'G' . $seed,
+                'Invalid account ID: G' . $marker,
+                'GINVALID',
+                'Invalid account ID: GINVALID',
+            ],
+            'XdrMuxedAccount::fromTxRep X-prefixed seed' => [
+                fn (string $v) => XdrMuxedAccount::fromTxRep(['k' => $v], 'k'),
+                'X' . $seed,
+                'Unrecognized muxed account address prefix "X": X' . $marker,
+                'XINVALID',
+                'Unrecognized muxed account address prefix "X": XINVALID',
+            ],
+            'XdrAccountID::fromTxRep G-prefixed seed' => [
+                fn (string $v) => XdrAccountID::fromTxRep(['k' => $v], 'k'),
+                'G' . $seed,
+                'Invalid account ID in TxRep for key "k": G' . $marker,
+                'GINVALID',
+                'Invalid account ID in TxRep for key "k": GINVALID',
+            ],
+            'XdrTrustlineAsset::fromTxRep 64-char pool ID with seed' => [
+                fn (string $v) => XdrTrustlineAsset::fromTxRep(['k' => $v], 'k'),
+                'aaaaaaaa' . $seed,
+                $poolPrefix . 'aaaaaaaa' . $marker,
+                str_repeat('Z', 64),
+                $poolPrefix . str_repeat('Z', 64),
+            ],
+            'XdrTrustlineAsset::fromTxRep issuer G-prefixed seed' => [
+                fn (string $v) => XdrTrustlineAsset::fromTxRep(['k' => 'USD:' . $v], 'k'),
+                'G' . $seed,
+                'Invalid trustline asset issuer: G' . $marker,
+                'GINVALID',
+                'Invalid trustline asset issuer: GINVALID',
+            ],
+            'XdrChangeTrustAsset::fromTxRep issuer G-prefixed seed' => [
+                fn (string $v) => XdrChangeTrustAsset::fromTxRep(['k' => 'USD:' . $v], 'k'),
+                'G' . $seed,
+                'Invalid change trust asset issuer: G' . $marker,
+                'GINVALID',
+                'Invalid change trust asset issuer: GINVALID',
+            ],
+            'XdrSCAddress::forAccountId X-prefixed seed' => [
+                fn (string $v) => XdrSCAddress::forAccountId($v),
+                'X' . $seed,
+                'invalid account id: X' . $marker,
+                'XABC',
+                'invalid account id: XABC',
+            ],
+            'XdrSCAddress::getCanonicalContractIdHex embedded seed' => [
+                fn (string $v) => XdrSCAddress::forContractId($v)->getCanonicalContractIdHex(),
+                'x' . $seed,
+                'Contract id must be a "C..." strkey or a hexadecimal string, "x' . $marker . '" given',
+                'xyz',
+                'Contract id must be a "C..." strkey or a hexadecimal string, "xyz" given',
+            ],
+            'XdrSCAddress::getCanonicalLiquidityPoolIdHex embedded seed' => [
+                fn (string $v) => XdrSCAddress::forLiquidityPoolId($v)->getCanonicalLiquidityPoolIdHex(),
+                'x' . $seed,
+                'Liquidity pool id must be an "L..." strkey or a hexadecimal string, "x' . $marker . '" given',
+                'xyz',
+                'Liquidity pool id must be an "L..." strkey or a hexadecimal string, "xyz" given',
+            ],
+            'XdrClaimableBalanceID::getCanonicalHashHex embedded seed' => [
+                fn (string $v) => XdrClaimableBalanceID::forClaimableBalanceId($v)->getCanonicalHashHex(),
+                'x' . $seed,
+                'Claimable balance id must be a "B..." strkey or a hexadecimal string, "x' . $marker . '" given',
+                'xyz',
+                'Claimable balance id must be a "B..." strkey or a hexadecimal string, "xyz" given',
+            ],
+            'MuxedAccount::fromAccountId X-prefixed seed' => [
+                fn (string $v) => MuxedAccount::fromAccountId($v),
+                'X' . $seed,
+                'invalid accountId: X' . $marker,
+                'XABC',
+                'invalid accountId: XABC',
+            ],
+        ];
+
+        foreach ($cases as $name => [$call, $secretInput, $expectedRedacted, $otherInput, $otherMessage]) {
+            $error = $this->thrown($call, $secretInput, $name);
+            $this->assertTrue($error instanceof InvalidArgumentException, $name . ': no InvalidArgumentException');
+            $this->assertTrue(
+                $error->getMessage() === $expectedRedacted,
+                $name . ': the message does not redact the embedded seed'
+            );
+            $variants->assertNotShown($error, $name);
+
+            $control = $this->thrown($call, $otherInput, $name . ' control');
+            $this->assertInstanceOf(InvalidArgumentException::class, $control, $name . ' control');
+            $this->assertSame($otherMessage, $control->getMessage(), $name . ' control');
+        }
+
+        // TxRepHelper::parseMuxedAccount wraps MuxedAccount::fromAccountId; verify the entire
+        // exception chain redacts an embedded seed while preserving the control message.
+        $muxError = $this->thrown(fn (string $v) => TxRepHelper::parseMuxedAccount($v), 'X' . $seed, 'parseMuxedAccount');
+        $this->assertTrue($muxError instanceof InvalidArgumentException, 'parseMuxedAccount: no InvalidArgumentException');
+        $this->assertTrue(
+            $muxError->getMessage() === 'Invalid muxed account: X' . $marker,
+            'parseMuxedAccount: the message does not redact the embedded seed'
+        );
+        $this->assertTrue(
+            $muxError->getPrevious() instanceof InvalidArgumentException
+                && $muxError->getPrevious()->getMessage() === 'invalid accountId: X' . $marker,
+            'parseMuxedAccount: the previous exception does not redact the embedded seed'
+        );
+        $variants->assertNotShown($muxError, 'parseMuxedAccount');
+        $muxControl = $this->thrown(fn (string $v) => TxRepHelper::parseMuxedAccount($v), 'XYZ', 'parseMuxedAccount control');
+        $this->assertInstanceOf(InvalidArgumentException::class, $muxControl);
+        $this->assertSame('Invalid muxed account: XYZ', $muxControl->getMessage());
+        $this->assertInstanceOf(InvalidArgumentException::class, $muxControl->getPrevious());
+        $this->assertSame('invalid accountId: XYZ', $muxControl->getPrevious()->getMessage());
+    }
+
+    /**
+     * All 25 generated XDR enum classes with TxRep readers and their exact error message
+     * when `fromTxRep()` is called with an empty map and plain prefix `tx.x`.
+     *
+     * @return array<string, array{class-string, string}>
+     */
+    public static function generatedEnumMissingTxRepClasses(): array
+    {
+        return [
+            'XdrAssetType' => [XdrAssetType::class, 'Missing TxRep value for: tx.x'],
+            'XdrClaimPredicateType' => [XdrClaimPredicateType::class, 'Missing TxRep value for: tx.x'],
+            'XdrClaimableBalanceIDType' => [XdrClaimableBalanceIDType::class, 'Missing TxRep value for: tx.x'],
+            'XdrClaimantType' => [XdrClaimantType::class, 'Missing TxRep value for: tx.x'],
+            'XdrConfigSettingID' => [XdrConfigSettingID::class, 'Missing TxRep value for: tx.x'],
+            'XdrContractDataDurability' => [XdrContractDataDurability::class, 'Missing TxRep value for: tx.x'],
+            'XdrContractExecutableType' => [XdrContractExecutableType::class, 'Missing TxRep value for: tx.x'],
+            'XdrContractIDPreimageType' => [XdrContractIDPreimageType::class, 'Missing TxRep value for: tx.x'],
+            'XdrCryptoKeyType' => [XdrCryptoKeyType::class, 'Missing TxRep value for: tx.x'],
+            'XdrEnvelopeType' => [XdrEnvelopeType::class, 'Missing TxRep value for: tx.x'],
+            'XdrHostFunctionType' => [XdrHostFunctionType::class, 'Missing TxRep value for: tx.x'],
+            'XdrLedgerEntryType' => [XdrLedgerEntryType::class, 'Missing TxRep value for: tx.x'],
+            'XdrLiquidityPoolType' => [XdrLiquidityPoolType::class, 'Missing TxRep value for: tx.x'],
+            'XdrMemoType' => [XdrMemoType::class, 'Missing TxRep value for: tx.x'],
+            'XdrOperationType' => [XdrOperationType::class, 'Missing TxRep value for: tx.x'],
+            'XdrPreconditionType' => [XdrPreconditionType::class, 'Missing TxRep value for: tx.x'],
+            'XdrPublicKeyType' => [XdrPublicKeyType::class, 'Missing TxRep value for: tx.x'],
+            'XdrRevokeSponsorshipType' => [XdrRevokeSponsorshipType::class, 'Missing TxRep value for: tx.x'],
+            'XdrSCAddressType' => [XdrSCAddressType::class, 'Missing TxRep value for: tx.x'],
+            'XdrSCErrorCode' => [XdrSCErrorCode::class, 'Missing TxRep value for: tx.x'],
+            'XdrSCErrorType' => [XdrSCErrorType::class, 'Missing TxRep value for: tx.x'],
+            'XdrSCValType' => [XdrSCValType::class, 'Missing TxRep value for: tx.x'],
+            'XdrSignerKeyTypeBase' => [XdrSignerKeyTypeBase::class, 'Missing TxRep value for: tx.x'],
+            'XdrSorobanAuthorizedFunctionType' => [XdrSorobanAuthorizedFunctionType::class, 'Missing TxRep value for: tx.x'],
+            'XdrSorobanCredentialsType' => [XdrSorobanCredentialsType::class, 'Missing TxRep value for: tx.x'],
+        ];
+    }
+
+    /**
+     * @param class-string $enumClass
+     */
+    #[DataProvider('generatedEnumMissingTxRepClasses')]
+    public function testGeneratedEnumFromTxRepMissingFieldRedactsEmbeddedSeed(
+        string $enumClass,
+        string $expectedPlainMessage
+    ): void {
+        $variants = SecretSeedVariants::create();
+        $prefix = 'tx.' . $variants->seed . '.x';
+        $error = $this->thrown(
+            fn (string $v) => $enumClass::fromTxRep([], $v),
+            $prefix,
+            $enumClass . '::fromTxRep'
+        );
+        $this->assertTrue($error instanceof InvalidArgumentException, $enumClass . ': no InvalidArgumentException');
+        $this->assertTrue(
+            $error->getMessage() === 'Missing TxRep value for: tx.' . SecretSeedVariants::SECRET_SEED . '.x',
+            $enumClass . ': the message does not redact the embedded seed'
+        );
+        $variants->assertNotShown($error, $enumClass . '::fromTxRep');
+
+        $plainError = $this->thrown(
+            fn (string $v) => $enumClass::fromTxRep([], $v),
+            'tx.x',
+            $enumClass . '::fromTxRep plain'
+        );
+        $this->assertInstanceOf(InvalidArgumentException::class, $plainError);
+        $this->assertSame($expectedPlainMessage, $plainError->getMessage());
     }
 
     /**

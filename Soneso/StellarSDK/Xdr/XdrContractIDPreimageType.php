@@ -7,6 +7,7 @@ namespace Soneso\StellarSDK\Xdr;
 
 use InvalidArgumentException;
 use JsonException;
+use Soneso\StellarSDK\Soroban\SecretSeedRedaction;
 
 class XdrContractIDPreimageType {
     public int $value;
@@ -126,7 +127,7 @@ class XdrContractIDPreimageType {
                     $val = TxRepHelper::parseInt32(substr($name, strlen($prefix)), $name);
                     return new static($val);
                 }
-                throw new InvalidArgumentException('Unknown enum value: ' . $name);
+                throw new InvalidArgumentException('Unknown enum value: ' . SecretSeedRedaction::redactSecretSeeds($name));
         }
     }
 
@@ -141,7 +142,7 @@ class XdrContractIDPreimageType {
     public static function fromTxRep(array $map, string $prefix): static {
         $raw = TxRepHelper::getValue($map, $prefix);
         if ($raw === null) {
-            throw new InvalidArgumentException('Missing TxRep value for: ' . $prefix);
+            throw new InvalidArgumentException('Missing TxRep value for: ' . SecretSeedRedaction::redactSecretSeeds($prefix));
         }
         if (str_starts_with($raw, 'XdrContractIDPreimageType#')) {
             return new static(TxRepHelper::parseInt32(substr($raw, 26), $prefix));
