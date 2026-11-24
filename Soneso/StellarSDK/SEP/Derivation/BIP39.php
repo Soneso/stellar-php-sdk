@@ -37,11 +37,11 @@ class BIP39
     private ?WordList $wordList = null;
 
     /**
-     * Creates a mnemonic from the provided hexadecimal entropy.
+     * Creates an English mnemonic from the provided hexadecimal entropy.
      *
-     * @param string $entropy Hexadecimal entropy string (128-256 bits).
-     * @return Mnemonic The generated mnemonic.
-     * @throws Exception If entropy is invalid.
+     * @param string $entropy Lowercase hexadecimal entropy string (128, 160, 192, 224, or 256 bits).
+     * @return Mnemonic The generated mnemonic using the English word list.
+     * @throws Exception If entropy is not valid lowercase hexadecimal, has an unsupported length, or the English word list cannot be loaded.
      * @security Minimum entropy requirement is 128 bits (32 hex characters). SEP-5 recommends 256 bits (64 hex characters) for maximum security.
      */
     public static function Entropy(string $entropy): Mnemonic
@@ -53,34 +53,34 @@ class BIP39
         $wordsCount = ($entropyBits + $checksumBits) / 11;
         return (new self($wordsCount))
             ->useEntropy($entropy)
-            ->wordlist(WordList::English())
+            ->wordList(WordList::getLanguage(WordList::LANGUAGE_ENGLISH))
             ->mnemonic();
     }
 
     /**
-     * Generates a new mnemonic with cryptographically secure entropy.
+     * Generates a new English mnemonic with cryptographically secure entropy.
      *
      * @param int $wordCount Number of words in the mnemonic (12, 15, 18, 21, or 24). Default is 12.
-     * @return Mnemonic The generated mnemonic.
-     * @throws Exception If word count is invalid.
+     * @return Mnemonic The generated mnemonic using the English word list.
+     * @throws Exception If word count is invalid, entropy generation fails, or the English word list cannot be loaded.
      * @security Uses cryptographically secure random_bytes() for entropy generation. SEP-5 recommends 24-word mnemonics (256 bits) for production use.
      */
     public static function Generate(int $wordCount = 12): Mnemonic
     {
         return (new self($wordCount))
             ->generateSecureEntropy()
-            ->wordlist(WordList::English())
+            ->wordList(WordList::getLanguage(WordList::LANGUAGE_ENGLISH))
             ->mnemonic();
     }
 
     /**
-     * Reconstructs a mnemonic from words.
+     * Reconstructs a mnemonic from words, defaulting to the English word list when none is provided.
      *
-     * @param string|array<string> $words Mnemonic words as string or array.
-     * @param WordList|null $wordList Word list to use. Default is English.
-     * @param bool $verifyChecksum Whether to verify entropy checksum. Default is true.
+     * @param string|array<string> $words Mnemonic words as a space-separated string or an array.
+     * @param WordList|null $wordList Word list to use. Defaults to the English word list when null.
+     * @param bool $verifyChecksum Whether to verify the entropy checksum. Default is true.
      * @return Mnemonic The reconstructed mnemonic.
-     * @throws Exception If words are invalid or checksum verification fails.
+     * @throws Exception If words are not a string or array, word count is invalid, a word is unknown, checksum verification fails, or the default English word list cannot be loaded.
      */
     public static function Words($words, ?WordList $wordList = null, bool $verifyChecksum = true): Mnemonic
     {
@@ -94,7 +94,7 @@ class BIP39
 
         $wordCount = count($words);
         return (new self($wordCount))
-            ->wordlist($wordList ?? WordList::English())
+            ->wordList($wordList ?? WordList::getLanguage(WordList::LANGUAGE_ENGLISH))
             ->reverse($words, $verifyChecksum);
     }
 
@@ -125,13 +125,25 @@ class BIP39
     /**
      * Uses the provided entropy for mnemonic generation.
      *
-     * @param string $entropy Hexadecimal entropy string.
+     * Validates the entropy format, supported BIP-39 bit length, and match against this
+     * instance's configured entropy size before modifying instance state.
+     *
+     * @param string $entropy Lowercase hexadecimal entropy string matching this instance's configured bit length (128, 160, 192, 224, or 256 bits).
      * @return BIP39 This instance for method chaining.
-     * @throws Exception If entropy is invalid.
+     * @throws Exception If entropy is not valid lowercase hexadecimal, has an unsupported bit length, or does not match this instance's configured bit length.
      */
     public function useEntropy(string $entropy): self
     {
         self::validateEntropy($entropy);
+        $entropyBits = strlen($entropy) * 4;
+        if ($entropyBits !== $this->entropyBits) {
+            throw new Exception(sprintf(
+                'Entropy length mismatch: expected %d bits, got %d bits',
+                $this->entropyBits,
+                $entropyBits
+            ));
+        }
+
         $this->entropy = $entropy;
         $checksum = $this->checksum($entropy, $this->checksumBits);
         $this->rawBinaryChunks = str_split($this->hex2bits($this->entropy) . $checksum, 11);
@@ -295,12 +307,15 @@ class BIP39
     /**
      * Validates entropy format and length according to BIP-39 requirements.
      *
-     * @param string $entropy Hexadecimal entropy string to validate.
-     * @throws Exception If entropy is not valid hexadecimal or has invalid length (must be 128, 160, 192, 224, or 256 bits).
+     * Requires a lowercase hexadecimal string with no trailing newline or other characters
+     * and a supported BIP-39 bit length (128, 160, 192, 224, or 256 bits).
+     *
+     * @param string $entropy Lowercase hexadecimal entropy string to validate.
+     * @throws Exception If entropy is not valid lowercase hexadecimal or does not have a supported bit length (128, 160, 192, 224, or 256 bits).
      */
     private static function validateEntropy(string $entropy): void
     {
-        if (!preg_match('/^[a-f0-9]{2,}$/', $entropy)) {
+        if (!preg_match('/\A[a-f0-9]{2,}\z/', $entropy)) {
             throw new Exception('Invalid entropy (requires hexadecimal)');
         }
 
