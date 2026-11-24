@@ -506,4 +506,21 @@ class KeyPair
         $signerKey->setEd25519($this->getPublicKey());
         return $signerKey;
     }
+
+    /**
+     * Returns public debug information for var_dump(), print_r() and debug_zval_dump()
+     *
+     * Omits the secret seed and raw private key bytes so debug output does not
+     * expose private key material, exposing only the public account ID and
+     * whether the keypair can sign.
+     *
+     * @return array{accountId: string, canSign: bool}
+     */
+    public function __debugInfo(): array
+    {
+        return [
+            'accountId' => $this->accountId,
+            'canSign' => $this->privateKey !== null,
+        ];
+    }
 }
