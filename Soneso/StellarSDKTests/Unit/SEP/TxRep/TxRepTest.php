@@ -6,10 +6,218 @@
 
 namespace Soneso\StellarSDKTests\Unit\SEP\TxRep;
 
+use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use phpseclib3\Math\BigInteger;
+use Soneso\StellarSDK\Account;
+use Soneso\StellarSDK\AccountMergeOperationBuilder;
+use Soneso\StellarSDK\Memo;
 use Soneso\StellarSDK\SEP\TxRep\TxRep;
+use Soneso\StellarSDK\Transaction;
+use Soneso\StellarSDK\TransactionBuilder;
 
 class TxRepTest extends TestCase {
+
+    public function testMemoHashRejectsMissingValue(): void
+    {
+        $this->assertMemoReadFails(
+            $this->memoTxRep('MEMO_HASH', null),
+            'missing tx.memo.hash'
+        );
+    }
+
+    #[DataProvider('invalidMemoHashProvider')]
+    public function testMemoHashRejectsInvalidValues(string $hashHex): void
+    {
+        $this->assertMemoReadFails(
+            $this->memoTxRep('MEMO_HASH', $hashHex),
+            'invalid tx.memo.hash'
+        );
+    }
+
+    public function testMemoReturnRejectsMissingValue(): void
+    {
+        $this->assertMemoReadFails(
+            $this->memoTxRep('MEMO_RETURN', null),
+            'missing tx.memo.retHash'
+        );
+    }
+
+    #[DataProvider('invalidMemoHashProvider')]
+    public function testMemoReturnRejectsInvalidValues(string $hashHex): void
+    {
+        $this->assertMemoReadFails(
+            $this->memoTxRep('MEMO_RETURN', $hashHex),
+            'invalid tx.memo.retHash'
+        );
+    }
+
+    /** @return array<string, array{string}> */
+    public static function invalidMemoHashProvider(): array
+    {
+        return [
+            'empty' => [''],
+            'non-hex character' => ['00112233445566778899aabbccddeeff00112233445566778899aabbccddeefg'],
+            '63 digits' => ['00112233445566778899aabbccddeeff00112233445566778899aabbccddeef'],
+            '62 digits' => ['00112233445566778899aabbccddeeff00112233445566778899aabbccddee'],
+            '66 digits' => ['00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00'],
+            'one byte' => ['30'],
+            '0x prefix' => ['0x00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff'],
+            'inner space' => ['00112233445566778899aabbccddeeff00 112233445566778899aabbccddeeff'],
+        ];
+    }
+
+    public function testFeeBumpMemoHashRejectsInvalidValue(): void
+    {
+        $this->assertMemoReadFails(
+            $this->memoTxRep('MEMO_HASH', null, true),
+            'missing feeBump.tx.innerTx.tx.memo.hash'
+        );
+        $this->assertMemoReadFails(
+            $this->memoTxRep('MEMO_HASH', '30', true),
+            'invalid feeBump.tx.innerTx.tx.memo.hash'
+        );
+    }
+
+    public function testFeeBumpMemoReturnRejectsInvalidValue(): void
+    {
+        $this->assertMemoReadFails(
+            $this->memoTxRep('MEMO_RETURN', null, true),
+            'missing feeBump.tx.innerTx.tx.memo.retHash'
+        );
+        $this->assertMemoReadFails(
+            $this->memoTxRep('MEMO_RETURN', '30', true),
+            'invalid feeBump.tx.innerTx.tx.memo.retHash'
+        );
+    }
+
+    #[DataProvider('validMemoHashProvider')]
+    public function testMemoHashPreservesBytes(string $hashHex): void
+    {
+        $xdr = $this->readTxRepWithoutWarnings($this->memoTxRep('MEMO_HASH', $hashHex));
+        $transaction = Transaction::fromEnvelopeBase64XdrString($xdr);
+        self::assertInstanceOf(Transaction::class, $transaction);
+        self::assertSame(
+            "\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff"
+                . "\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff",
+            $transaction->getMemo()->getValue()
+        );
+    }
+
+    #[DataProvider('validMemoHashProvider')]
+    public function testMemoReturnPreservesBytes(string $hashHex): void
+    {
+        $xdr = $this->readTxRepWithoutWarnings($this->memoTxRep('MEMO_RETURN', $hashHex));
+        $transaction = Transaction::fromEnvelopeBase64XdrString($xdr);
+        self::assertInstanceOf(Transaction::class, $transaction);
+        self::assertSame(
+            "\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff"
+                . "\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff",
+            $transaction->getMemo()->getValue()
+        );
+    }
+
+    /** @return array<string, array{string}> */
+    public static function validMemoHashProvider(): array
+    {
+        return [
+            'lower case' => ['00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff'],
+            'upper case' => ['00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF'],
+            'inline comment' => ['00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff (comment)'],
+        ];
+    }
+
+    public function testMemoHashRoundTrip(): void
+    {
+        $transaction = $this->memoTransaction(Memo::hash(
+            "\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff"
+                . "\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff"
+        ));
+        $envelope = $transaction->toEnvelopeXdrBase64();
+        $txRep = TxRep::fromTransactionEnvelopeXdrBase64($envelope);
+        self::assertStringContainsString(
+            "tx.memo.type: MEMO_HASH\ntx.memo.hash: 00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\n",
+            $txRep
+        );
+        self::assertSame($envelope, $this->readTxRepWithoutWarnings($txRep));
+    }
+
+    public function testMemoReturnRoundTrip(): void
+    {
+        $transaction = $this->memoTransaction(Memo::return(
+            "\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff"
+                . "\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff"
+        ));
+        $envelope = $transaction->toEnvelopeXdrBase64();
+        $txRep = TxRep::fromTransactionEnvelopeXdrBase64($envelope);
+        self::assertStringContainsString(
+            "tx.memo.type: MEMO_RETURN\ntx.memo.retHash: 00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff\n",
+            $txRep
+        );
+        self::assertSame($envelope, $this->readTxRepWithoutWarnings($txRep));
+    }
+
+    private function memoTransaction(Memo $memo): Transaction
+    {
+        $account = new Account(
+            'GDICQ4HZOFVPJF7QNLHOUFUBNAH3TN4AJSRHZKFQH25I465VDVQE4ZS2',
+            new BigInteger(0)
+        );
+        $operation = (new AccountMergeOperationBuilder(
+            'GALKCFFI5YT2D2SR2WPXAPFN7AWYIMU4DYSPN6HNBHH37YAD2PNFIGXE'
+        ))->build();
+        return (new TransactionBuilder($account))->addOperation($operation)->addMemo($memo)->build();
+    }
+
+    private function assertMemoReadFails(string $txRep, string $expectedMessage): void
+    {
+        $exception = null;
+        try {
+            $this->readTxRepWithoutWarnings($txRep);
+        } catch (InvalidArgumentException $error) {
+            $exception = $error;
+        }
+        self::assertInstanceOf(InvalidArgumentException::class, $exception);
+        self::assertSame($expectedMessage, $exception->getMessage());
+    }
+
+    private function readTxRepWithoutWarnings(string $txRep): string
+    {
+        $warnings = [];
+        set_error_handler(static function (int $severity, string $message) use (&$warnings): bool {
+            $warnings[] = $message;
+            return true;
+        }, E_WARNING);
+        try {
+            return TxRep::transactionEnvelopeXdrBase64FromTxRep($txRep);
+        } finally {
+            restore_error_handler();
+            self::assertSame([], $warnings);
+        }
+    }
+
+    private function memoTxRep(string $memoType, ?string $hashHex, bool $feeBump = false): string
+    {
+        $prefix = $feeBump ? 'feeBump.tx.innerTx.tx' : 'tx';
+        $txRep = $feeBump
+            ? "type: ENVELOPE_TYPE_TX_FEE_BUMP\n"
+                . "feeBump.tx.feeSource: GBD4KWT3HXUGS4ACUZZELY67UJXLOFTZAPR5DT5QIMBO6BX53FXFSLQS\n"
+                . "feeBump.tx.fee: 200\nfeeBump.tx.innerTx.type: ENVELOPE_TYPE_TX\n"
+            : "type: ENVELOPE_TYPE_TX\n";
+        $txRep .= "{$prefix}.sourceAccount: GDICQ4HZOFVPJF7QNLHOUFUBNAH3TN4AJSRHZKFQH25I465VDVQE4ZS2\n"
+            . "{$prefix}.fee: 100\n{$prefix}.seqNum: 1\n{$prefix}.cond.type: PRECOND_NONE\n"
+            . "{$prefix}.memo.type: {$memoType}\n";
+        if ($hashHex !== null) {
+            $field = $memoType === 'MEMO_HASH' ? 'hash' : 'retHash';
+            $txRep .= "{$prefix}.memo.{$field}: {$hashHex}\n";
+        }
+        return $txRep . "{$prefix}.operations.len: 1\n"
+            . "{$prefix}.operations[0].sourceAccount._present: false\n"
+            . "{$prefix}.operations[0].body.type: ACCOUNT_MERGE\n"
+            . "{$prefix}.operations[0].body.destination: GALKCFFI5YT2D2SR2WPXAPFN7AWYIMU4DYSPN6HNBHH37YAD2PNFIGXE\n"
+            . "{$prefix}.ext.v: 0\n";
+    }
 
     public function testTxRepAndBack(): void {
         $txrep = 'type: ENVELOPE_TYPE_TX
