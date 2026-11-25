@@ -11,8 +11,11 @@ namespace Soneso\StellarSDK\SEP\WebAuth;
  *
  * Thrown when the authentication server returns an error in response to a challenge request
  * (GET to the auth endpoint). This can occur due to invalid request parameters, server-side
- * validation failures, rate limiting, or other issues preventing challenge generation. The
- * exception message contains the error details from the server response.
+ * validation failures, rate limiting, or other issues preventing challenge generation. It is
+ * also thrown for a failed transfer and for an HTTP 200 response that cannot be parsed or holds
+ * no transaction string. For a non-200 response, the message is the server's error text or the
+ * status; otherwise it describes the failure. The code is the HTTP status, and 0 for a failed
+ * transfer without a response and for a parsed HTTP 200 response without a transaction string.
  *
  * Security Implications:
  * Challenge request failures can indicate rate limiting (protection against DoS attacks),

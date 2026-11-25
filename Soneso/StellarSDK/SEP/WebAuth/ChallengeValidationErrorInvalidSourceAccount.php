@@ -7,9 +7,10 @@
 namespace Soneso\StellarSDK\SEP\WebAuth;
 
 /**
- * Exception thrown when operation source accounts in the challenge transaction are invalid.
+ * Exception thrown when the transaction or operation source accounts in the challenge transaction are invalid.
  *
- * Thrown when operations in the challenge do not have the required source accounts according
+ * Thrown when the transaction source is not the server signing key as an unmuxed account, or
+ * when operations in the challenge do not have the required source accounts according
  * to SEP-10 rules: the first operation must have the client account as source, subsequent
  * operations must have either the server account or (for client_domain) the client domain
  * account as source. This validates proper operation attribution.

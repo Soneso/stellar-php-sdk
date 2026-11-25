@@ -9,10 +9,9 @@ namespace Soneso\StellarSDK\SEP\WebAuth;
 /**
  * Exception thrown when submitting the signed challenge results in an unexpected HTTP response.
  *
- * Thrown when the authentication server returns an HTTP status code that is not recognized
- * by the SEP-10 protocol (neither 200 OK, 400 Bad Request, nor 504 Gateway Timeout). This
- * indicates an unexpected server response that doesn't follow the SEP-10 specification or
- * represents an unusual error condition.
+ * Thrown when the authentication server returns an HTTP status code other than 200 OK,
+ * 400 Bad Request and 504 Gateway Timeout, which have their own handling. SEP-10 treats
+ * every status other than 200 as an error.
  *
  * Security Implications:
  * Unexpected responses could indicate server misconfiguration, protocol violations, or
@@ -22,9 +21,9 @@ namespace Soneso\StellarSDK\SEP\WebAuth;
  *
  * Common Scenarios:
  * - Server returns 500 Internal Server Error during authentication processing
- * - Authentication endpoint returns 401/403 (non-standard for SEP-10)
+ * - Authentication endpoint returns 401 or 403
  * - Server misconfiguration returning unexpected status codes
- * - Proxy or intermediary returning non-SEP-10 compliant responses
+ * - Proxy or intermediary returning its own error status
  * - Server implementation not following SEP-10 specification
  * - Network issues causing malformed HTTP responses
  *

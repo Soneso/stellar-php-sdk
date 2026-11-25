@@ -222,7 +222,7 @@ class StellarToml
      * Fetches and parses stellar.toml from a domain.
      *
      * Constructs the URL https://DOMAIN/.well-known/stellar.toml and retrieves
-     * the stellar.toml file from the specified domain.
+     * the stellar.toml file from the specified domain. Redirects stay on HTTPS.
      *
      * @param string $domain The domain to fetch the stellar.toml from (without protocol)
      * @param Client|null $httpClient Optional HTTP client for testing or custom configuration
@@ -238,7 +238,15 @@ class StellarToml
         }
         try {
             $request = new Request('GET', $url, RequestBuilder::HEADERS);
-            $response = $client->send($request);
+            $options = [];
+            $redirects = $client->getConfig('allow_redirects');
+            if ($redirects === true || (is_array($redirects) && $redirects !== [])) {
+                $redirectOptions = is_array($redirects) ? $redirects : [];
+                $redirectOptions['protocols'] = array_values(array_intersect($redirectOptions['protocols'] ?? ['https'], ['https']));
+                // No permitted protocol means no redirect, so redirects are disabled.
+                $options['allow_redirects'] = $redirectOptions['protocols'] === [] ? false : $redirectOptions;
+            }
+            $response = $client->send($request, $options);
             if ($response->getStatusCode() != NetworkConstants::HTTP_OK) {
                 throw new Exception("Stellar toml not found. Response status code ". $response->getStatusCode());
             }

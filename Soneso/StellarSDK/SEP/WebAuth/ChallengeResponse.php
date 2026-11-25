@@ -16,7 +16,7 @@ use Soneso\StellarSDK\Responses\Response;
  * envelope that the client must sign to prove control of their account.
  *
  * Structure:
- * The response contains a single field 'transaction' which is the challenge transaction as a
+ * The response contains 'transaction' which is the challenge transaction as a
  * base64-encoded XDR TransactionEnvelope. This transaction has sequence number 0, time bounds
  * set to expire in approximately 15 minutes, and ManageData operations for authentication.
  *
@@ -39,6 +39,7 @@ use Soneso\StellarSDK\Responses\Response;
 class ChallengeResponse extends Response
 {
     private ?string $transaction = null;
+    private ?string $networkPassphrase = null;
 
     /**
      * @param string $transaction
@@ -56,8 +57,21 @@ class ChallengeResponse extends Response
         return $this->transaction;
     }
 
+    /**
+     * Returns the optional network passphrase advertised by the server.
+     *
+     * @return string|null The advertised passphrase, or null when no string is supplied.
+     */
+    public function getNetworkPassphrase(): ?string
+    {
+        return $this->networkPassphrase;
+    }
+
     protected function loadFromJson(array $json) : void {
+        // Treat non-string fields as absent to keep the typed properties valid: WebAuth rejects a missing
+        // transaction and skips the network check without a passphrase.
         if (is_string($json['transaction'] ?? null)) $this->transaction = $json['transaction'];
+        if (is_string($json['network_passphrase'] ?? null)) $this->networkPassphrase = $json['network_passphrase'];
     }
 
     public static function fromJson(array $json) : ChallengeResponse

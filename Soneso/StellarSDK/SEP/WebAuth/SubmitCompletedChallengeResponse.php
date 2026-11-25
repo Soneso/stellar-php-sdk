@@ -78,6 +78,7 @@ class SubmitCompletedChallengeResponse extends Response {
     }
 
     protected function loadFromJson(array $json) : void {
+        // Ignore non-string fields so WebAuth can report a missing result without a typed-property error.
         if (is_string($json['token'] ?? null)) $this->jwtToken = $json['token'];
         if (is_string($json['error'] ?? null)) $this->error = $json['error'];
     }
