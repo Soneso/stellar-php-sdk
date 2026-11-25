@@ -9,10 +9,9 @@ namespace Soneso\StellarSDK\SEP\WebAuth;
 /**
  * Exception thrown when the challenge transaction signature validation fails.
  *
- * Thrown when the challenge transaction does not have exactly one signature, the signature
- * is not of the expected type, or the signature verification fails for the server's signing
- * key. This validates that the challenge was genuinely created and signed by the authentication
- * server.
+ * Thrown when no challenge signature with the server signing key's hint verifies for the
+ * configured network. Additional signatures are allowed and preserved. Also thrown when
+ * merging callback and local signatures would exceed the 20-signature envelope limit.
  *
  * Security Implications:
  * Server signature verification prevents man-in-the-middle attacks and ensures the challenge
@@ -25,8 +24,8 @@ namespace Soneso\StellarSDK\SEP\WebAuth;
  * - Challenge signed by wrong server or malicious actor
  * - Signature corrupted during transmission
  * - Server using incorrect signing key (not matching stellar.toml)
- * - Challenge has multiple signatures (should have exactly one from server)
- * - Invalid signature type or malformed signature structure
+ * - Challenge has no signatures or none that verify with the server key and matching hint
+ * - Callback signature merge exceeds the envelope limit
  *
  * @package Soneso\StellarSDK\SEP\WebAuth
  * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md#challenge SEP-10 Server Signature Verification

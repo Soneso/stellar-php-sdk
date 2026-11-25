@@ -7,7 +7,7 @@
 namespace Soneso\StellarSDK\SEP\WebAuth;
 
 /**
- * Base exception class for SEP-10 challenge transaction validation failures.
+ * General exception for SEP-10 challenge transaction validation failures.
  *
  * Thrown when the challenge transaction received from the authentication server fails general
  * validation checks that don't fall into specific validation error categories. This includes
@@ -20,10 +20,12 @@ namespace Soneso\StellarSDK\SEP\WebAuth;
  * validation failures should be treated as potential security threats and properly logged.
  *
  * Common Scenarios:
- * - Invalid transaction envelope type (not ENVELOPE_TYPE_TX)
+ * - Invalid transaction envelope type (neither ENVELOPE_TYPE_TX nor ENVELOPE_TYPE_TX_V0)
  * - Zero operations in the challenge transaction
- * - Invalid operation type in the transaction structure
- * - Malformed XDR data in the challenge
+ * - Callback changes the validated transaction body or envelope form
+ * - Non-empty advertised network passphrase differs from the configured network
+ *
+ * A challenge with invalid base64, invalid XDR or trailing bytes throws InvalidArgumentException.
  *
  * @package Soneso\StellarSDK\SEP\WebAuth
  * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md#challenge SEP-10 Challenge Specification

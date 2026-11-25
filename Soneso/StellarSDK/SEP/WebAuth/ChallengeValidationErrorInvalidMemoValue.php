@@ -9,10 +9,11 @@ namespace Soneso\StellarSDK\SEP\WebAuth;
 /**
  * Exception thrown when the challenge transaction memo value does not match the expected value.
  *
- * Thrown in two scenarios: (1) when a memo was expected but is missing from the challenge
- * transaction, or (2) when the memo value in the challenge does not match the memo value
- * requested by the client. This ensures that authentication is scoped to the correct user
- * within a shared/pooled account.
+ * Thrown in three scenarios: (1) when a memo was expected but is missing from the challenge
+ * transaction, (2) when the memo value in the challenge differs from the value requested
+ * by the client, or (3) when the challenge for a G account contains an ID memo but the client
+ * requested none.
+ * This ensures that authentication is scoped to the correct user within a shared/pooled account.
  *
  * Security Implications:
  * Memo validation prevents user impersonation within shared accounts. If memo values are not
@@ -23,7 +24,7 @@ namespace Soneso\StellarSDK\SEP\WebAuth;
  * Common Scenarios:
  * - Client requested memo 12345 but challenge contains memo 67890
  * - Client requested authentication with memo but challenge has no memo
- * - Server incorrectly omits memo from challenge when one was requested
+ * - Challenge for a G account contains an ID memo when the client requested none
  * - Attempt to authenticate with wrong user ID in shared account
  *
  * @package Soneso\StellarSDK\SEP\WebAuth

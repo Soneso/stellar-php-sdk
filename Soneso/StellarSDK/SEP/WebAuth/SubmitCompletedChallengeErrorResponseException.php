@@ -12,7 +12,9 @@ namespace Soneso\StellarSDK\SEP\WebAuth;
  * Thrown when the authentication server responds with an error after receiving the signed
  * challenge transaction. This typically indicates validation failures on the server side,
  * such as invalid signatures, insufficient signing weight, or other authentication requirements
- * not being met. The exception message contains the error details from the server response.
+ * not being met. It is also thrown for an HTTP 200 response without a usable token. The exception
+ * message is the server's error text when the response carries a non-empty one, and an SDK message
+ * otherwise.
  *
  * Security Implications:
  * Server-side validation errors indicate the authentication attempt failed security checks.

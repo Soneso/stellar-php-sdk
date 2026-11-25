@@ -75,6 +75,36 @@ display_decimals=2';
         $this->assertEquals(2, $currencies[0]->displayDecimals);
     }
 
+    /** @dataProvider redirectProtocolsWithoutHttps */
+    public function testFromDomainDisablesRedirectsWithoutHttps(array $protocols): void
+    {
+        $history = [];
+        $mock = new MockHandler([
+            new Response(302, ['Location' => 'https://other.example.com/stellar.toml']),
+            new Response(200, [], $this->tomlBody),
+        ]);
+        $stack = HandlerStack::create($mock);
+        $stack->push(Middleware::history($history));
+        $client = new Client(['handler' => $stack, 'allow_redirects' => ['protocols' => $protocols]]);
+        try {
+            StellarToml::fromDomain('example.com', $client);
+            $this->fail('A disabled redirect must be rejected as an unexpected status');
+        } catch (Exception $e) {
+            $this->assertSame(Exception::class, $e::class);
+            $this->assertSame('Stellar toml not found. Response status code 302', $e->getMessage());
+        }
+        $this->assertCount(1, $history);
+        $this->assertFalse($history[0]['options']['allow_redirects']);
+        $this->assertSame('https://example.com/.well-known/stellar.toml', (string)$history[0]['request']->getUri());
+        $this->assertSame(1, $mock->count());
+    }
+
+    /** @return array<string, array{array<string>}> */
+    public static function redirectProtocolsWithoutHttps(): array
+    {
+        return ['empty protocols' => [[]], 'HTTP only' => [['http']]];
+    }
+
     public function testFromDomainNotFound(): void
     {
         $mock = new MockHandler([

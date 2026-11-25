@@ -22,7 +22,6 @@ namespace Soneso\StellarSDK\SEP\WebAuth;
  * - Server incorrectly generates challenge with MEMO_TEXT instead of MEMO_ID
  * - Attempt to use MEMO_HASH for user identification (unsupported)
  * - Malformed memo type in the challenge transaction
- * - Client requesting authentication with non-ID memo type
  *
  * @package Soneso\StellarSDK\SEP\WebAuth
  * @see https://github.com/stellar/stellar-protocol/blob/v3.4.1/ecosystem/sep-0010.md#memos SEP-10 Memo Requirements
