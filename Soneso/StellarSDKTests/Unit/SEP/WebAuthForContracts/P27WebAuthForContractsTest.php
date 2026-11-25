@@ -11,23 +11,37 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Crypto\StrKey;
+use Soneso\StellarSDK\InvokeContractHostFunction;
+use Soneso\StellarSDK\InvokeHostFunctionOperation;
 use Soneso\StellarSDK\Network;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationError;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidServerSignature;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 use Soneso\StellarSDK\Soroban\Address;
+use Soneso\StellarSDK\Soroban\Requests\SimulateTransactionRequest;
+use Soneso\StellarSDK\Soroban\Responses\SimulateTransactionResponse;
 use Soneso\StellarSDK\Soroban\SorobanAddressCredentials;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizedFunction;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizedInvocation;
 use Soneso\StellarSDK\Soroban\SorobanCredentials;
 use Soneso\StellarSDK\Soroban\SorobanDelegateDescriptor;
+use Soneso\StellarSDK\Soroban\SorobanServer;
+use Soneso\StellarSDK\Transaction;
 use Soneso\StellarSDK\Util\Hash;
+use Soneso\StellarSDK\Xdr\XdrContractDataDurability;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
+use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
+use Soneso\StellarSDK\Xdr\XdrLedgerKey;
+use Soneso\StellarSDK\Xdr\XdrSCAddress;
 use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
+use Soneso\StellarSDK\Xdr\XdrSCNonceKey;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
 use Soneso\StellarSDK\Xdr\XdrSorobanCredentialsType;
+use Soneso\StellarSDK\Xdr\XdrSorobanResources;
+use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
+use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
 
 /**
  * Protocol 27 (CAP-71) tests for the SEP-45 WebAuthForContracts flow.
@@ -245,16 +259,24 @@ class P27WebAuthForContractsTest extends TestCase
             XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
         );
 
+        $serverXdrBefore = $serverEntry->toBase64Xdr();
+        $clientXdrBefore = $clientEntry->toBase64Xdr();
+
         $webAuth = $this->makeWebAuth();
-        // validateChallenge must NOT throw — the V2 server signature is valid
+        // validateChallenge must NOT throw -- the V2 server signature is valid
         $webAuth->validateChallenge(
             [$serverEntry, $clientEntry],
             $this->clientContractId,
             $this->domain,
         );
 
-        // If we reach here, the V2 server entry was accepted
-        $this->assertTrue(true);
+        $this->assertSame(
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
+            $serverEntry->credentials->credentialType,
+        );
+        $this->assertCount(1, $serverEntry->credentials->getAddressCredentials()->signature->vec);
+        $this->assertSame($serverXdrBefore, $serverEntry->toBase64Xdr());
+        $this->assertSame($clientXdrBefore, $clientEntry->toBase64Xdr());
     }
 
     /**
@@ -749,6 +771,9 @@ class P27WebAuthForContractsTest extends TestCase
             XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
         );
 
+        $serverXdrBefore = $serverEntry->toBase64Xdr();
+        $clientXdrBefore = $clientEntry->toBase64Xdr();
+
         $webAuth = $this->makeWebAuth();
         $webAuth->validateChallenge(
             [$serverEntry, $clientEntry],
@@ -756,7 +781,13 @@ class P27WebAuthForContractsTest extends TestCase
             $this->domain,
         );
 
-        $this->assertTrue(true); // No exception means success
+        $this->assertSame(
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
+            $serverEntry->credentials->credentialType,
+        );
+        $this->assertCount(1, $serverEntry->credentials->getAddressCredentials()->signature->vec);
+        $this->assertSame($serverXdrBefore, $serverEntry->toBase64Xdr());
+        $this->assertSame($clientXdrBefore, $clientEntry->toBase64Xdr());
     }
 
     /**
@@ -796,6 +827,9 @@ class P27WebAuthForContractsTest extends TestCase
             XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
         );
 
+        $serverXdrBefore = $serverEntry->toBase64Xdr();
+        $clientXdrBefore = $clientEntry->toBase64Xdr();
+
         $webAuth = $this->makeWebAuth();
         $webAuth->validateChallenge(
             [$serverEntry, $clientEntry],
@@ -803,7 +837,16 @@ class P27WebAuthForContractsTest extends TestCase
             $this->domain,
         );
 
-        $this->assertTrue(true);
+        $this->assertSame(
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS,
+            $serverEntry->credentials->credentialType,
+        );
+        $this->assertSame(
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
+            $clientEntry->credentials->credentialType,
+        );
+        $this->assertSame($serverXdrBefore, $serverEntry->toBase64Xdr());
+        $this->assertSame($clientXdrBefore, $clientEntry->toBase64Xdr());
     }
 
     /**
@@ -893,6 +936,9 @@ class P27WebAuthForContractsTest extends TestCase
             300000,
         );
 
+        $serverXdrBefore = $serverEntry->toBase64Xdr();
+        $clientXdrBefore = $clientEntry->toBase64Xdr();
+
         $webAuth = $this->makeWebAuth();
         $webAuth->validateChallenge(
             [$serverEntry, $clientEntry],
@@ -900,7 +946,13 @@ class P27WebAuthForContractsTest extends TestCase
             $this->domain,
         );
 
-        $this->assertTrue(true);
+        $this->assertSame(
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS,
+            $serverEntry->credentials->credentialType,
+        );
+        $this->assertCount(1, $serverEntry->credentials->getAddressCredentials()->signature->vec);
+        $this->assertSame($serverXdrBefore, $serverEntry->toBase64Xdr());
+        $this->assertSame($clientXdrBefore, $clientEntry->toBase64Xdr());
     }
 
     /**
@@ -1016,5 +1068,135 @@ class P27WebAuthForContractsTest extends TestCase
 
         // $addressCredentials is still null (arm is preserved)
         $this->assertNull($signedClient->credentials->addressCredentials);
+    }
+
+    /**
+     * verifySimulation attaches ADDRESS_V2 and ADDRESS_WITH_DELEGATES entries unchanged to the
+     * simulated InvokeHostFunctionOperation so Soroban RPC simulates in enforcing mode.
+     */
+    public function testVerifySimulationPreservesP27CredentialArmsUnchanged(): void
+    {
+        $serverKeyPair   = KeyPair::random();
+        $clientKeyPair   = KeyPair::random();
+        $delegateKeyPair = KeyPair::random();
+
+        $argsMap = $this->buildArgsMap(
+            $this->clientContractId,
+            $this->domain,
+            'auth.example.stellar.org',
+            $serverKeyPair->getAccountId(),
+            'p27_sim_nonce',
+        );
+
+        $serverEntry = $this->buildAuthEntry(
+            $serverKeyPair->getAccountId(),
+            $this->webAuthContractId,
+            'web_auth_verify',
+            $argsMap,
+            9101,
+            200000,
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
+        );
+        $serverEntry->sign($serverKeyPair, Network::testnet());
+
+        $baseClientEntry = $this->buildAuthEntry(
+            $this->clientContractId,
+            $this->webAuthContractId,
+            'web_auth_verify',
+            $argsMap,
+            9102,
+            200000,
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
+        );
+        $withDelegatesClient = SorobanAuthorizationEntry::withDelegates(
+            $baseClientEntry,
+            200000,
+            [new SorobanDelegateDescriptor($delegateKeyPair->getAccountId())],
+        );
+
+        $webAuth = new WebAuthForContracts(
+            $this->authServer,
+            $this->webAuthContractId,
+            $serverKeyPair->getAccountId(),
+            $this->domain,
+            Network::testnet(),
+        );
+
+        $signed = $webAuth->signAuthorizationEntries(
+            [$serverEntry, $withDelegatesClient],
+            $this->clientContractId,
+            [$clientKeyPair],
+            200500,
+        );
+
+        $expectedXdrs = array_map(
+            static fn (SorobanAuthorizationEntry $entry): string => $entry->toBase64Xdr(),
+            $signed,
+        );
+
+        $footprint = new XdrLedgerFootprint([], [
+            XdrLedgerKey::forContractData(
+                XdrSCAddress::forContractId($this->clientContractId),
+                XdrSCVal::forLedgerNonceKey(new XdrSCNonceKey(9102)),
+                XdrContractDataDurability::TEMPORARY(),
+            ),
+            XdrLedgerKey::forContractData(
+                XdrSCAddress::forAccountId($serverKeyPair->getAccountId()),
+                XdrSCVal::forLedgerNonceKey(new XdrSCNonceKey(9101)),
+                XdrContractDataDurability::TEMPORARY(),
+            ),
+        ]);
+        $txData = new XdrSorobanTransactionData(
+            new XdrSorobanTransactionDataExt(0),
+            new XdrSorobanResources($footprint, 100000, 1000, 1000),
+            50000,
+        );
+        $simResponse = SimulateTransactionResponse::fromJson([
+            'jsonrpc' => '2.0',
+            'id'      => 1,
+            'result'  => [
+                'latestLedger'    => 200490,
+                'transactionData' => $txData->toBase64Xdr(),
+            ],
+        ]);
+
+        $capturedRequest = null;
+        $sorobanServer   = $this->createMock(SorobanServer::class);
+        $sorobanServer->expects($this->once())
+            ->method('simulateTransaction')
+            ->willReturnCallback(function (SimulateTransactionRequest $req) use (&$capturedRequest, $simResponse): SimulateTransactionResponse {
+                $capturedRequest = $req;
+                return $simResponse;
+            });
+
+        $webAuth->setSorobanServer($sorobanServer);
+        $webAuth->verifySimulation($signed, $this->clientContractId);
+
+        $this->assertNotNull($capturedRequest);
+        $this->assertSame('enforce', $capturedRequest->getAuthMode());
+        $decodedTx = Transaction::fromEnvelopeBase64XdrString(
+            $capturedRequest->getTransaction()->toEnvelopeXdrBase64(),
+        );
+        $this->assertInstanceOf(Transaction::class, $decodedTx);
+        $this->assertSame('GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF', $decodedTx->getSourceAccount()->getAccountId());
+        $this->assertSame('0', $decodedTx->getSequenceNumber()->toString());
+        $this->assertCount(1, $decodedTx->getOperations());
+
+        $op = $decodedTx->getOperations()[0];
+        $this->assertInstanceOf(InvokeHostFunctionOperation::class, $op);
+        $this->assertInstanceOf(InvokeContractHostFunction::class, $op->function);
+        $this->assertSame($this->webAuthContractId, $op->function->contractId);
+        $this->assertSame('web_auth_verify', $op->function->functionName);
+        $this->assertCount(2, $op->auth);
+        $this->assertSame($expectedXdrs[0], $op->auth[0]->toBase64Xdr());
+        $this->assertSame($expectedXdrs[1], $op->auth[1]->toBase64Xdr());
+        $this->assertSame(
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_V2,
+            $op->auth[0]->credentials->credentialType,
+        );
+        $this->assertSame(
+            XdrSorobanCredentialsType::SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+            $op->auth[1]->credentials->credentialType,
+        );
     }
 }

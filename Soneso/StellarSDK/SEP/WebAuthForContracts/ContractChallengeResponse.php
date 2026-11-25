@@ -38,7 +38,9 @@ use Soneso\StellarSDK\Responses\Response;
  * 6. Verify the server entry has a valid signature
  * 7. Verify nonce consistency across all entries
  * 8. Sign the client entry with the client's key(s)
- * 9. Submit the signed entries back to the token endpoint
+ * 9. Sign the client domain entry, locally or remotely, when the challenge contains one
+ * 10. Simulate the signed entries via Soroban RPC and verify the read-write ledger footprint
+ * 11. Submit the signed entries back to the token endpoint
  *
  * The optional 'network_passphrase' field may be included to help clients verify they're using
  * the correct network passphrase when signing.
@@ -96,7 +98,8 @@ class ContractChallengeResponse extends Response
      * Loads this response from JSON data.
      *
      * @param array $json JSON data array from the server response
-     * @throws Exception if authorization_entries is missing, or authorization_entries or network_passphrase is not a string
+     * @throws Exception if authorization_entries is missing or not a string, or network_passphrase is not a string.
+     *                   A null field counts as absent, and each camelCase alias is read only when its snake_case field is absent.
      */
     protected function loadFromJson(array $json): void
     {
@@ -132,7 +135,8 @@ class ContractChallengeResponse extends Response
      *
      * @param array $json JSON data array from the server response
      * @return ContractChallengeResponse the created response object
-     * @throws Exception if authorization_entries is missing, or authorization_entries or network_passphrase is not a string
+     * @throws Exception if authorization_entries is missing or not a string, or network_passphrase is not a string.
+     *                   A null field counts as absent, and each camelCase alias is read only when its snake_case field is absent.
      */
     public static function fromJson(array $json): ContractChallengeResponse
     {

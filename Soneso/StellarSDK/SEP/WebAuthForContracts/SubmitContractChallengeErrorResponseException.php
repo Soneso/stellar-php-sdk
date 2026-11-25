@@ -10,9 +10,9 @@ namespace Soneso\StellarSDK\SEP\WebAuthForContracts;
  * Exception thrown when submitting signed authorization entries returns an error.
  *
  * This exception is thrown when the POST request to the WEB_AUTH_FOR_CONTRACTS_ENDPOINT
- * with signed authorization entries succeeds (returns 200 or 400) but the response contains
- * an error field instead of a JWT token. This indicates the server validated the request
- * but rejected the authorization entries for authentication.
+ * with signed authorization entries returns HTTP 400, or returns HTTP 200 with a non-empty string
+ * error, malformed JSON, or without a token accepted by the response handler. This indicates the server
+ * rejected the authorization entries or returned an invalid response body.
  *
  * Common reasons for submission errors:
  * - Invalid signatures on the client authorization entry

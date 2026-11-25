@@ -11,7 +11,9 @@ namespace Soneso\StellarSDK\SEP\WebAuthForContracts;
  *
  * This exception is thrown when no authorization entry exists where credentials.address
  * matches the client's contract account. Per SEP-45, every challenge must include an
- * authorization entry for the client account that will be signed by the client.
+ * authorization entry for the client account that will be signed by the client. It is also
+ * thrown when the challenge carries client domain arguments but no authorization entry for the
+ * client domain account.
  *
  * Security Impact:
  * High severity. Without a client authorization entry, the client cannot prove control
