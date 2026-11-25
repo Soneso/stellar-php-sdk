@@ -10,8 +10,8 @@ namespace Soneso\StellarSDK\SEP\WebAuthForContracts;
  * Exception thrown when submitting signed authorization entries returns an unexpected response.
  *
  * This exception is thrown when the POST request to the WEB_AUTH_FOR_CONTRACTS_ENDPOINT
- * returns an HTTP status code other than 200, 400, or 504. This indicates an unexpected
- * server response that doesn't conform to the SEP-45 specification.
+ * returns an HTTP status code other than 200, 400, or 504, which have their own handling.
+ * SEP-45 treats every status other than 200 as an error.
  *
  * Common scenarios:
  * - 401 Unauthorized: Server requires additional authentication
@@ -22,8 +22,9 @@ namespace Soneso\StellarSDK\SEP\WebAuthForContracts;
  * - 502 Bad Gateway: Proxy or gateway error
  * - 503 Service Unavailable: Server temporarily unavailable
  *
- * The exception includes both the HTTP status code and the raw response body for
- * debugging and error reporting purposes.
+ * The exception message includes only the HTTP status code so an unexpected response body
+ * (which may carry a token) does not reach logs through the message. Callers can still
+ * inspect the raw response body via getResponseBody().
  *
  * @package Soneso\StellarSDK\SEP\WebAuthForContracts
  * @see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md SEP-45 Token Endpoint
@@ -36,6 +37,9 @@ class SubmitContractChallengeUnknownResponseException extends \Exception
     /**
      * Creates a new unknown response exception.
      *
+     * Sets a status-only exception message while preserving the raw response body on
+     * getResponseBody().
+     *
      * @param string $responseBody the raw response body from the server
      * @param int $httpStatusCode the HTTP status code from the response
      */
@@ -43,7 +47,9 @@ class SubmitContractChallengeUnknownResponseException extends \Exception
     {
         $this->responseBody = $responseBody;
         $this->httpStatusCode = $httpStatusCode;
-        parent::__construct("Unknown response from server (HTTP $httpStatusCode): $responseBody");
+        // Keep the response body out of the exception message: the body of an unexpected
+        // response can carry a token and must not reach logs through the message.
+        parent::__construct("Unknown response from server (HTTP $httpStatusCode)");
     }
 
     /**
@@ -58,6 +64,9 @@ class SubmitContractChallengeUnknownResponseException extends \Exception
 
     /**
      * Returns the raw response body from the server.
+     *
+     * The response body is kept out of the exception message because an unexpected response
+     * may contain sensitive data such as a token.
      *
      * @return string the response body
      */

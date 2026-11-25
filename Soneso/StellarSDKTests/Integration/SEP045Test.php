@@ -10,7 +10,6 @@ use GuzzleHttp\Client;
 use PHPUnit\Framework\TestCase;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
-use Soneso\StellarSDK\SEP\WebAuthForContracts\SubmitContractChallengeUnknownResponseException;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 use Soneso\StellarSDK\Soroban\Address;
 use Soneso\StellarSDK\Soroban\Contract\DeployRequest;
@@ -46,8 +45,7 @@ class SEP045Test extends TestCase
      * 2. Deploys sep_45_account.wasm to testnet with proper constructor arguments
      * 3. Uses the deployed contract ID for SEP-45 authentication
      * 4. Validates that the challenge is received and signed correctly
-     * 5. Simulates the transaction locally to debug server-side simulation errors
-     * 6. Receives a real JWT token from the test anchor
+     * 5. Receives a real JWT token from the test anchor
      *
      * Note: The client contract (sep_45_account.wasm) is sourced from:
      * https://github.com/stellar/anchor-platform/tree/main/soroban/contracts/account
@@ -111,32 +109,16 @@ class SEP045Test extends TestCase
         // Step 6: Test SEP-45 authentication with deployed contract
         $webAuth = WebAuthForContracts::fromDomain("testanchor.stellar.org", Network::testnet());
 
-        try {
-            print("Authenticating with testanchor.stellar.org..." . PHP_EOL);
-            // signatureExpirationLedger will be auto-filled
-            $jwt = $webAuth->jwtToken(
-                $contractId,
-                [$signerKeyPair]
-            );
+        print("Authenticating with testanchor.stellar.org..." . PHP_EOL);
+        // signatureExpirationLedger will be auto-filled
+        $jwt = $webAuth->jwtToken(
+            $contractId,
+            [$signerKeyPair]
+        );
 
-            // Success - we received a real JWT token
-            $this->assertNotEmpty($jwt);
-            print("Successfully received JWT token" . PHP_EOL);
-            print("JWT: {$jwt}" . PHP_EOL);
-        } catch (SubmitContractChallengeUnknownResponseException $e) {
-            // The test anchor may fail during token submission because it tries to
-            // simulate the transaction and the auth contract doesn't implement the
-            // expected SEP-45 contract interface. However, the important part is
-            // that we successfully:
-            // 1. Deployed a contract to testnet
-            // 2. Received a challenge from the anchor
-            // 3. Validated the challenge
-            // 4. Signed the authorization entries with auto-filled expiration
-            // The failure happens at submission, which is acceptable for this test
-            print("Note: Token submission failed (expected): " . $e->getMessage() . PHP_EOL);
-            print("Contract deployment and challenge flow validated successfully" . PHP_EOL);
-            $this->assertTrue(true);
-        }
+        // Success - we received a real JWT token
+        $this->assertNotEmpty($jwt);
+        print("Successfully received JWT token" . PHP_EOL);
     }
 
     /**
@@ -256,29 +238,18 @@ class SEP045Test extends TestCase
             return SorobanAuthorizationEntry::fromBase64Xdr($jsonData['authorization_entry']);
         };
 
-        try {
-            print("Authenticating with testanchor.stellar.org using client domain: {$clientDomain}..." . PHP_EOL);
-            $jwt = $webAuth->jwtToken(
-                $contractId,
-                [$signerKeyPair],
-                clientDomain: $clientDomain,
-                clientDomainSigningCallback: $callback
-            );
+        print("Authenticating with testanchor.stellar.org using client domain: {$clientDomain}..." . PHP_EOL);
+        $jwt = $webAuth->jwtToken(
+            $contractId,
+            [$signerKeyPair],
+            clientDomain: $clientDomain,
+            clientDomainSigningCallback: $callback
+        );
 
-            // Success - we received a real JWT token
-            $this->assertNotEmpty($jwt);
-            $this->assertTrue($callbackInvoked, 'Client domain signing callback should have been invoked');
-            print("Successfully received JWT token with client domain support" . PHP_EOL);
-            print("JWT: {$jwt}" . PHP_EOL);
-        } catch (SubmitContractChallengeUnknownResponseException $e) {
-            // Similar to testWithStellarTestAnchor, the submission may fail but
-            // the important part is that we successfully completed the full flow
-            // including remote client domain signing via the callback
-            print("Note: Token submission failed (expected): " . $e->getMessage() . PHP_EOL);
-            print("Contract deployment, challenge flow, and remote signing validated successfully" . PHP_EOL);
-            $this->assertTrue($callbackInvoked, 'Client domain signing callback should have been invoked');
-            $this->assertTrue(true);
-        }
+        // Success - we received a real JWT token
+        $this->assertNotEmpty($jwt);
+        $this->assertTrue($callbackInvoked, 'Client domain signing callback should have been invoked');
+        print("Successfully received JWT token with client domain support" . PHP_EOL);
     }
 
 }

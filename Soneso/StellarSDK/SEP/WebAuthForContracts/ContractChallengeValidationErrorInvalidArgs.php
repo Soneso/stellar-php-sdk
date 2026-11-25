@@ -11,11 +11,15 @@ namespace Soneso\StellarSDK\SEP\WebAuthForContracts;
  *
  * This exception is thrown when:
  * - The args are not in the expected Map<Symbol, String> format
- * - Required arguments are missing (account, home_domain, web_auth_domain, etc.)
- * - Argument values don't match expected values
- * - The web_auth_domain_account doesn't match the server's signing key
- * - Client domain arguments are present but invalid
+ * - The args differ between authorization entries that have the same nonce
+ * - The web_auth_domain_account is missing or doesn't match the server's signing key
+ * - Only one of client_domain and client_domain_account is present
+ * - Client domain arguments are present but not requested, or don't match the expected values
  * - Args cannot be parsed or decoded
+ *
+ * Once the args of all entries are equal, a missing or mismatched account, home_domain or
+ * web_auth_domain throws its own exception. A nonce that differs between entries, or a missing
+ * or empty nonce, throws ContractChallengeValidationErrorInvalidNonce.
  *
  * Security Impact:
  * High severity. Invalid arguments could indicate a malformed or malicious challenge.

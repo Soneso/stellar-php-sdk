@@ -47,7 +47,7 @@ class GeneralInformation
     /// The web authentication contract ID for SEP-45 Web Authentication.
     public ?string $webAuthContractId = null;
 
-    /// The signing key is used for SEP-3 Compliance Protocol (deprecated) and SEP-10 Authentication Protocol.
+    /// The signing key is used for SEP-3 Compliance Protocol (deprecated), SEP-10 Authentication Protocol and SEP-45 Web Authentication.
     public ?string $signingKey = null;
 
     /// Location of public-facing Horizon instance (if one is offered).

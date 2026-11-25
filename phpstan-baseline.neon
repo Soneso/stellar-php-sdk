@@ -3709,12 +3709,6 @@ parameters:
 			path: Soneso/StellarSDK/SEP/WebAuthForContracts/SubmitContractChallengeResponse.php
 
 		-
-			message: '#^Instanceof between Soneso\\StellarSDK\\Crypto\\KeyPair and Soneso\\StellarSDK\\Crypto\\KeyPair will always evaluate to true\.$#'
-			identifier: instanceof.alwaysTrue
-			count: 1
-			path: Soneso/StellarSDK/SEP/WebAuthForContracts/WebAuthForContracts.php
-
-		-
 			message: '#^Instanceof between Soneso\\StellarSDK\\Soroban\\SorobanAuthorizationEntry and Soneso\\StellarSDK\\Soroban\\SorobanAuthorizationEntry will always evaluate to true\.$#'
 			identifier: instanceof.alwaysTrue
 			count: 1
