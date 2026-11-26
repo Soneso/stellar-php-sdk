@@ -71,7 +71,8 @@ Signature:
 WebAuthForContracts::fromDomain(
     string  $domain,
     Network $network,
-    ?Client $httpClient = null
+    ?Client $httpClient = null,
+    ?string $sorobanRpcUrl = null  // required on every network but testnet
 ): WebAuthForContracts
 ```
 
@@ -98,12 +99,12 @@ Constructor signature:
 ```
 new WebAuthForContracts(
     string  $authEndpoint,       // WEB_AUTH_FOR_CONTRACTS_ENDPOINT — must be a valid URL
-    string  $webAuthContractId,  // WEB_AUTH_CONTRACT_ID — must start with 'C'
-    string  $serverSigningKey,   // SIGNING_KEY — must start with 'G'
+    string  $webAuthContractId,  // WEB_AUTH_CONTRACT_ID: a valid C... contract strkey
+    string  $serverSigningKey,   // SIGNING_KEY: a valid G... account strkey
     string  $serverHomeDomain,   // domain where stellar.toml was loaded from — must not be empty
     Network $network,
     ?Client $httpClient    = null,
-    ?string $sorobanRpcUrl = null // defaults to soroban-testnet.stellar.org / soroban.stellar.org
+    ?string $sorobanRpcUrl = null // testnet default soroban-testnet.stellar.org; required on every other network
 )
 ```
 
@@ -111,7 +112,7 @@ The constructor validates all parameters and throws `InvalidArgumentException` i
 
 ### Custom Soroban RPC URL
 
-By default the SDK uses `https://soroban-testnet.stellar.org` (testnet) or `https://soroban.stellar.org` (pubnet). Pass `$sorobanRpcUrl` to override.
+On testnet the SDK uses `https://soroban-testnet.stellar.org` unless you pass `$sorobanRpcUrl`. On every other network, pubnet included, pass the URL of an RPC provider you choose; without it the constructor and `fromDomain()` throw `InvalidArgumentException`.
 
 ```php
 $webAuth = new WebAuthForContracts(
@@ -132,11 +133,12 @@ $webAuth = new WebAuthForContracts(
 `jwtToken()` executes the entire SEP-45 flow in one call:
 
 1. GET challenge from server (`authorization_entries` + optional `network_passphrase`)
-2. Validate `network_passphrase` if present
+2. Validate `network_passphrase` if present and not empty
 3. Decode and validate all authorization entries (contract address, function name, args, server signature, nonce consistency)
-4. Auto-fetch current ledger via Soroban RPC to set `signatureExpirationLedger` (if signers provided and no explicit expiration)
+4. Auto-fetch current ledger via Soroban RPC to set `signatureExpirationLedger` (if no explicit expiration)
 5. Sign the client authorization entry with the provided keypairs
-6. POST signed entries to server and return the JWT token string
+6. Simulate the signed entries via Soroban RPC and verify the read-write footprint (`verifySimulation()`)
+7. POST signed entries to server and return the JWT token string
 
 Method signature:
 ```
@@ -177,7 +179,7 @@ $jwtToken = $webAuth->jwtToken(
 );
 ```
 
-**Signature expiration:** When signers are provided and `$signatureExpirationLedger` is `null`, the SDK calls `SorobanServer::getLatestLedger()` and sets expiration to `sequence + 10` (~50–60 seconds). If the signers array is empty this Soroban RPC call is skipped entirely.
+**Signature expiration:** When `$signatureExpirationLedger` is `null`, the SDK calls `SorobanServer::getLatestLedger()` and sets expiration to `sequence + 10` (about 50 to 60 seconds), also with an empty signers array.
 
 **Protocol 27 (CAP-71):** `jwtToken()` signs whichever credential arm the server returns — `ADDRESS`, `ADDRESS_V2`, or `ADDRESS_WITH_DELEGATES` — and preserves the arm on write-back, so no flow change is needed. For `ADDRESS_WITH_DELEGATES` entries, supply every signer the contract's `__check_auth` rules require, including delegate signers.
 
@@ -195,7 +197,7 @@ use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 
 $webAuth = WebAuthForContracts::fromDomain('anchor.example.com', Network::testnet());
 
-// Empty signers array — no signatures added, no Soroban RPC call made
+// Empty signers array: no signatures added; the ledger lookup and the simulation still call Soroban RPC
 $jwtToken = $webAuth->jwtToken(
     clientAccountId: 'CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ',
     signers:         []
@@ -236,7 +238,7 @@ $jwtToken = $webAuth->jwtToken(
 
 ### Remote signing via callback
 
-When the client domain signing key is on a separate server, provide a callback. The callback receives a single `SorobanAuthorizationEntry` (the client domain entry) and must return a signed `SorobanAuthorizationEntry`.
+When the client domain signing key is on a separate server, provide a callback. The callback receives a copy of the client domain entry as a single `SorobanAuthorizationEntry` and must return it signed. Only the top-level signature and the signature expiration ledger may change; any other change throws `InvalidArgumentException`. A `$clientDomainKeyPair` with a private key signs locally, and the callback is not called.
 
 ```php
 <?php declare(strict_types=1);
@@ -265,8 +267,8 @@ $clientDomainSigningCallback = function (SorobanAuthorizationEntry $entry): Soro
     return SorobanAuthorizationEntry::fromBase64Xdr($data['authorization_entry']);
 };
 
-// When using a callback (no clientDomainKeyPair), the SDK fetches the client domain's
-// stellar.toml to get its SIGNING_KEY for validation — this makes one extra HTTP request
+// When using a callback (no clientDomainKeyPair) and the challenge carries the client domain,
+// the SDK fetches the client domain's stellar.toml to get its SIGNING_KEY: one extra HTTP request
 $jwtToken = $webAuth->jwtToken(
     clientAccountId:              $contractId,
     signers:                      [$signer],
@@ -334,7 +336,10 @@ try {
         signatureExpirationLedger: $expirationLedger
     );
 
-    // Step 6: POST signed entries and get JWT
+    // Step 6: Simulate via Soroban RPC and verify the read-write footprint before submitting
+    $webAuth->verifySimulation($signedEntries, $contractId);
+
+    // Step 7: POST signed entries and get JWT
     $jwtToken = $webAuth->sendSignedChallenge($signedEntries);
 
     echo 'JWT Token: ' . $jwtToken . PHP_EOL;
@@ -359,7 +364,8 @@ validateChallenge(
     array   $authEntries,
     string  $clientAccountId,
     ?string $homeDomain            = null,  // defaults to $serverHomeDomain
-    ?string $clientDomainAccountId = null
+    ?string $clientDomainAccountId = null,
+    ?string $clientDomain          = null   // compared with the client_domain arg when passed
 ): void
 
 signAuthorizationEntries(
@@ -372,7 +378,13 @@ signAuthorizationEntries(
     ?string   $clientDomainAccountId        = null
 ): array<SorobanAuthorizationEntry>
 
-sendSignedChallenge(array $signedEntries): string  // returns JWT token
+verifySimulation(
+    array   $signedEntries,
+    string  $clientAccountId,
+    ?string $clientDomainAccountId = null
+): void
+
+sendSignedChallenge(array $signedEntries): string  // returns JWT token; call validateChallenge() and verifySimulation() first
 ```
 
 ---
@@ -427,7 +439,7 @@ The JWT returned by `jwtToken()` contains standard claims:
 
 ## Error Handling
 
-All challenge validation exceptions extend `ContractChallengeValidationError` which extends `\ErrorException`. Submit exceptions extend `\Exception` directly. All exception classes are in `Soneso\StellarSDK\SEP\WebAuthForContracts`.
+All challenge validation exceptions extend `ContractChallengeValidationError` which extends `\ErrorException`. Submit exceptions extend `\Exception` directly. All exception classes are in `Soneso\StellarSDK\SEP\WebAuthForContracts`. Soroban RPC transport and decoding errors of the ledger lookup and the simulation propagate unwrapped.
 
 ```php
 <?php declare(strict_types=1);
@@ -447,6 +459,7 @@ use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorIn
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidWebAuthDomain;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorMissingClientEntry;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorMissingServerEntry;
+use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorSimulationFailed;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorSubInvocationsFound;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\SubmitContractChallengeErrorResponseException;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\SubmitContractChallengeTimeoutResponseException;
@@ -521,13 +534,18 @@ try {
     // No authorization entry for the client contract account found
     echo 'Invalid challenge: missing client entry' . PHP_EOL;
 
+} catch (ContractChallengeValidationErrorSimulationFailed $e) {
+    // Soroban RPC reported a simulation error, or the read-write footprint holds a disallowed entry;
+    // getSimulationError() and getRpcError() return the RPC server's untrusted details
+    echo 'Simulation check failed: ' . $e->getMessage() . PHP_EOL;
+
 } catch (ContractChallengeValidationError $e) {
     // Catch-all for other challenge validation failures (malformed XDR, etc.)
     echo 'Challenge validation failed: ' . $e->getMessage() . PHP_EOL;
 
 } catch (SubmitContractChallengeErrorResponseException $e) {
-    // Server rejected signed entries — signer not in __check_auth, invalid sig, etc.
-    // HTTP 200 or 400 with an "error" field in the JSON response body
+    // Server rejected signed entries
+    // HTTP 400, or HTTP 200 with a non-empty "error" field or no token
     echo 'Authentication rejected: ' . $e->getMessage() . PHP_EOL;
 
 } catch (SubmitContractChallengeTimeoutResponseException $e) {
@@ -559,8 +577,9 @@ try {
 | `ContractChallengeValidationErrorInvalidArgs` | Args not in Map format, `web_auth_domain_account` ≠ server signing key, client domain mismatch | High |
 | `ContractChallengeValidationErrorMissingServerEntry` | No entry with credentials address = server signing key | High |
 | `ContractChallengeValidationErrorMissingClientEntry` | No entry with credentials address = client contract ID | High |
+| `ContractChallengeValidationErrorSimulationFailed` | Soroban RPC simulation of the signed entries failed (for example, a signer the contract does not accept), or its read-write footprint holds a disallowed entry; `getSimulationError()` and `getRpcError()` available | High |
 | `ContractChallengeValidationError` | Generic validation failure (malformed XDR, empty entries, invalid entry type) | Unexpected server behavior |
-| `SubmitContractChallengeErrorResponseException` | Server rejected signed entries (HTTP 200/400 with `"error"` field) | Operational — check signer registration |
+| `SubmitContractChallengeErrorResponseException` | Server rejected signed entries: HTTP 400, or HTTP 200 with a non-empty `"error"` field or no token | Operational |
 | `SubmitContractChallengeTimeoutResponseException` | HTTP 504 Gateway Timeout | Operational — retry with backoff |
 | `SubmitContractChallengeUnknownResponseException` | Unexpected HTTP status; `getHttpStatusCode()` + `getResponseBody()` available | Unexpected server behavior |
 
@@ -568,12 +587,14 @@ try {
 
 ## Testing with Mock Handlers
 
-`setMockHandler()` replaces the internal Guzzle HTTP client with a `MockHandler`. No network calls are made. Responses are consumed in order.
+`setMockHandler()` replaces the internal Guzzle HTTP client with a `MockHandler`. Responses are consumed in order. Soroban RPC calls do not use this client: `jwtToken()` simulates the signed entries, so inject a `SorobanServer` with a mocked client through `setSorobanServer()`.
 
 ```php
 <?php declare(strict_types=1);
 
+use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use Soneso\StellarSDK\Crypto\KeyPair;
 use Soneso\StellarSDK\Network;
@@ -584,11 +605,16 @@ use Soneso\StellarSDK\Soroban\SorobanAuthorizedFunction;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizedInvocation;
 use Soneso\StellarSDK\Soroban\SorobanAuthorizationEntry;
 use Soneso\StellarSDK\Soroban\SorobanCredentials;
+use Soneso\StellarSDK\Soroban\SorobanServer;
 use Soneso\StellarSDK\Crypto\StrKey;
 use Soneso\StellarSDK\Xdr\XdrEncoder;
 use Soneso\StellarSDK\Xdr\XdrInvokeContractArgs;
+use Soneso\StellarSDK\Xdr\XdrLedgerFootprint;
 use Soneso\StellarSDK\Xdr\XdrSCMapEntry;
 use Soneso\StellarSDK\Xdr\XdrSCVal;
+use Soneso\StellarSDK\Xdr\XdrSorobanResources;
+use Soneso\StellarSDK\Xdr\XdrSorobanTransactionData;
+use Soneso\StellarSDK\Xdr\XdrSorobanTransactionDataExt;
 
 // ── Server keypair (simulates the anchor's signing key) ──────────────────────
 $serverKeyPair      = KeyPair::random();
@@ -652,6 +678,24 @@ $mock = new MockHandler([
 $webAuth = new WebAuthForContracts($authServer, $webAuthContractId, $serverAccountId, $domain, $network);
 $webAuth->setMockHandler($mock);
 
+// ── Mock the Soroban RPC simulation: an empty read-write footprint passes the check ──
+$transactionData = new XdrSorobanTransactionData(
+    new XdrSorobanTransactionDataExt(0),
+    new XdrSorobanResources(new XdrLedgerFootprint([], []), 0, 0, 0),
+    0
+);
+$rpcMock = new MockHandler([
+    new Response(200, [], json_encode([
+        'jsonrpc' => '2.0',
+        'id'      => 1,
+        'result'  => ['transactionData' => $transactionData->toBase64Xdr(), 'latestLedger' => 2000000],
+    ])),
+]);
+$webAuth->setSorobanServer(new SorobanServer(
+    'https://soroban-testnet.stellar.org',
+    new Client(['handler' => HandlerStack::create($rpcMock)])
+));
+
 $clientSigner = KeyPair::random();
 // Mock-only expiration; avoids a live ledger lookup
 $jwtToken = $webAuth->jwtToken(
@@ -668,13 +712,13 @@ echo 'Mock JWT: ' . $jwtToken . PHP_EOL;
 - The server entry credentials address must match `$serverSigningKey` (G... address)
 - The client entry credentials address must match the `$clientAccountId` (C... address)
 - The server entry must be signed with `$serverKeyPair` and the correct `Network` before encoding
-- `web_auth_domain` in the args map must match the `host` portion of the `$authEndpoint` URL (including port if non-standard, e.g., `auth.example.stellar.org:8080`)
+- `web_auth_domain` in the args map must match the `host` portion of the `$authEndpoint` URL, ignoring case; when the URL names a port, `host:port` (for example, `auth.example.stellar.org:8080`) also matches
 - The `nonce` arg must be identical across all entries
 - No entry may contain sub-invocations
 
 **Mock response ordering for client domain callback:**
 
-When using `clientDomainSigningCallback` (without `clientDomainKeyPair`), the SDK fetches the client domain's stellar.toml after the challenge. Provide three mocked responses in this order:
+When using `clientDomainSigningCallback` (without `clientDomainKeyPair`) and the challenge carries the client domain arguments, the SDK fetches the client domain's stellar.toml after the challenge. Provide three mocked HTTP responses in this order, and mock the Soroban RPC simulation through `setSorobanServer()` as above:
 
 ```php
 $mock = new MockHandler([
@@ -703,7 +747,7 @@ $webAuth->jwtToken('CCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW6DRJ', [
 ```php
 // WRONG: KeyPair::fromAccountId() has no private key and cannot produce signatures
 $publicOnly = KeyPair::fromAccountId($accountId);
-$webAuth->jwtToken($contractId, [$publicOnly]); // Server rejects — signature invalid
+$webAuth->jwtToken($contractId, [$publicOnly]); // throws InvalidArgumentException before the challenge request
 
 // CORRECT: use KeyPair::fromSeed() to include the private key
 $signer = KeyPair::fromSeed(getenv('CONTRACT_SIGNER_SEED'));
@@ -748,7 +792,7 @@ new WebAuthForContracts($endpoint, $webAuthContractId, $serverSigningKey, $domai
 
 **WRONG: using setUseFormUrlEncoded() after the fact to switch to JSON, then forgetting the default**
 
-The default is `useFormUrlEncoded = true` (form-urlencoded). The SDK docblock incorrectly states "By default, application/json is used" — the actual default is form-urlencoded. Verified in source.
+The default is `useFormUrlEncoded = true` (form-urlencoded).
 
 ```php
 $webAuth->setUseFormUrlEncoded(false);  // switches to JSON

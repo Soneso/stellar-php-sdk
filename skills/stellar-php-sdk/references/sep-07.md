@@ -284,8 +284,8 @@ try {
 
 `signAndSubmitTransaction()` extracts the transaction from a `web+stellar:tx?` URI, signs it with the provided keypair, and submits it either to a callback URL or directly to the Stellar network.
 
-- If `callback` parameter is present and starts with `url:`, POSTs the signed XDR to that URL.
-- Otherwise, submits directly to the Stellar network.
+- If `callback` parameter is present and starts with `url:`, POSTs the signed XDR to that URL. Any other callback value, an empty one included, throws `InvalidArgumentException` and sends nothing.
+- Without a `callback` parameter, submits to the Horizon server of the signing network: public, testnet, or futurenet. Any other network throws `InvalidArgumentException`.
 
 When the method submits directly to the network, it runs the SEP-29 memo requirement check and throws `AccountRequiresMemoException` if a destination of the transaction requires a memo the transaction does not carry (see the [SEP-29 guide](sep-29.md)).
 
@@ -574,12 +574,12 @@ $uriScheme->checkUIRSchemeIsValid($uri);
 **Callback value must be prefixed with "url:":**
 
 ```php
-// WRONG: raw URL, signAndSubmitTransaction() will NOT route to callback
+// WRONG: raw URL, signAndSubmitTransaction() rejects this callback
 $uri = $uriScheme->generateSignTransactionURI(
     transactionEnvelopeXdrBase64: $xdrBase64,
     callback: 'https://example.com/submit'  // missing "url:" prefix
 );
-// No callback is sent; falls through to direct network submission
+// signAndSubmitTransaction() throws InvalidArgumentException and sends nothing
 
 // CORRECT: prefix with "url:"
 $uri = $uriScheme->generateSignTransactionURI(

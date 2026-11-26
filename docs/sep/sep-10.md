@@ -161,7 +161,7 @@ $userKeyPair = KeyPair::fromSeed("SAP2SSCIWNH2RWIP7Q5TERS26ZORQGZJOGJJF57EKQWZ2N
 $jwtToken = $webAuth->jwtToken(
     clientAccountId: $userKeyPair->getAccountId(),
     signers: [$userKeyPair],
-    memo: 1234567890  // User ID memo (must be integer)
+    memo: 1234567890  // User ID memo; pass a decimal string above PHP_INT_MAX
 );
 ```
 
@@ -210,7 +210,8 @@ use Soneso\StellarSDK\SEP\WebAuth\WebAuth;
 $webAuth = WebAuth::fromDomain("testanchor.stellar.org", Network::testnet());
 $userKeyPair = KeyPair::fromSeed("SAP2SSCIWNH2RWIP7Q5TERS26ZORQGZJOGJJF57EKQWZ2NJMJDR233CD");
 
-// Callback receives base64-encoded transaction XDR and must return signed XDR
+// Callback receives the base64-encoded transaction envelope XDR and returns the same
+// envelope with the client domain signature added; only its signatures may change
 $signingCallback = function(string $transactionXdr): string {
     $httpClient = new Client();
     $response = $httpClient->post('https://signing-server.mywallet.com/sign', [
@@ -319,7 +320,7 @@ try {
     echo "Invalid web auth domain";
     
 } catch (ChallengeValidationErrorInvalidSourceAccount $e) {
-    // Operation source account is incorrect (first op must be client, others must be server)
+    // Transaction source is not the server key, or an operation has the wrong source account
     echo "Invalid source account in challenge operation";
     
 } catch (ChallengeValidationErrorInvalidOperationType $e) {
@@ -367,7 +368,7 @@ try {
 | `ChallengeValidationErrorInvalidTimeBounds` | Challenge expired | Request a new challenge |
 | `ChallengeValidationErrorInvalidHomeDomain` | Wrong home domain | Check domain configuration |
 | `ChallengeValidationErrorInvalidWebAuthDomain` | Wrong web auth domain | Verify auth endpoint URL |
-| `ChallengeValidationErrorInvalidSourceAccount` | Wrong operation source | Server configuration issue |
+| `ChallengeValidationErrorInvalidSourceAccount` | Wrong transaction or operation source | Server configuration issue |
 | `ChallengeValidationErrorInvalidOperationType` | Non-ManageData operation | **Security risk** - server may be malicious |
 | `ChallengeValidationErrorInvalidMemoType` | Memo not NONE or ID | Server configuration issue |
 | `ChallengeValidationErrorInvalidMemoValue` | Memo mismatch | Check memo parameter matches server |
@@ -442,7 +443,7 @@ $jwtToken = authenticateWithRetry($webAuth, $userKeyPair->getAccountId(), [$user
 
 The SDK automatically validates challenges (sequence number, signatures, time bounds, operations) and throws specific exceptions if anything looks wrong.
 
-> **Note:** The SDK does not currently support Authorization headers when requesting challenges (SEP-10 v3.4.0 feature). Most servers don't require this, as it's an optional feature that servers may implement to restrict or rate-limit challenge generation.
+> **Note:** A server may require an `Authorization` header on the challenge request to restrict or rate-limit challenge generation. For such a server, pass `authorizationSigner` to `jwtToken()`. A `KeyPair` signs the token locally: pass the client account key, or the client domain account key when you request a `clientDomain`. A callable receives the claims array and returns the token.
 
 ## Testing
 

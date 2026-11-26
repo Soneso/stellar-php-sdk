@@ -400,8 +400,8 @@ use Soneso\StellarSDK\Soroban\SorobanServer;
 // Testnet
 $server = new SorobanServer("https://soroban-testnet.stellar.org");
 
-// Mainnet
-$server = new SorobanServer("https://soroban.stellar.org");
+// Mainnet: no public RPC endpoint is operated for general use, so pass your RPC provider's URL
+$server = new SorobanServer("https://rpc.your-provider.com");
 ```
 
 ### Health Check

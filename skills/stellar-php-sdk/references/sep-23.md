@@ -759,7 +759,7 @@ The decoded data of a P-strkey is the 32-byte signer key, a 4-byte payload lengt
 - every padding byte zero.
 
 ```text
-InvalidArgumentException: Signed payload padding must be zero, byte 0x01 found at offset 47
+InvalidArgumentException: XDR padding must be zero, byte 0x01 found at offset 47
 InvalidArgumentException: Signed payload declares 10 payload bytes, but the decoded data is 52 bytes where 48 are expected
 InvalidArgumentException: Zero-length signed payload has no SEP-23 strkey representation
 ```

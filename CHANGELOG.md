@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.19.0] - 2026-11-26
+
 ### Added
 - `WebAuth::jwtToken()` takes an optional `authorizationSigner` for the `Authorization` header of the challenge request: a `KeyPair` signs an EdDSA JWT over the request claims with a lifetime of 900 seconds, and a callable returns a token for these claims.
 - `ChallengeRequestBuilder::request()` takes an optional authorization token, sends it as a Bearer `Authorization` header in place of the HTTP client's authentication, and checks it before sending without repeating it in an error. It rejects an empty token or one of only spaces and tabs.
@@ -53,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ContractChallengeRequestBuilder::request()` accepts a challenge only with HTTP 200. Any other status, also in a Guzzle exception such as a refused redirect, throws `HorizonRequestException` with the server's non-empty `error` text or the status as message, never the body; `jwtToken()` and `getChallenge()` pass both on.
 - `ContractChallengeRequestBuilder::request()` reports a Guzzle exception that carries an HTTP 200 response as a transfer failure: its `HorizonRequestException` keeps the exception message, the response, and the status, and does not read the body as a Horizon error.
 - `WebAuthForContracts::sendSignedChallenge()` returns a token only from an HTTP 200 response without a non-empty `error`, counts `"0"` as a value, and throws `SubmitContractChallengeErrorResponseException` for every HTTP 400 response.
+- The user documentation and the agent skill describe the SEP-45 client simulation with its `ContractChallengeValidationErrorSimulationFailed` exception and the Soroban RPC URL every network except testnet needs. For SEP-10 they cover memo values above `PHP_INT_MAX`, client domain signing and the `authorizationSigner` parameter. They name the Horizon server a SEP-7 submission uses per network and the nesting limit of XDR-JSON.
 
 ### Removed
 - `XdrConfigUpgradeSetKeyBase`, `XdrInnerTransactionResultPairBase`, `XdrLiquidityPoolDepositOperationBase`, `XdrLiquidityPoolWithdrawOperationBase` and `XdrOperationResultTrBase`. The classes of the same name without `Base` are generated in full and keep their API.
@@ -108,7 +111,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - On PHP 8.1, `XdrTimeBounds` keeps a time point of exactly 2^63 seconds when it decodes XDR or reads SEP-51 JSON. Before this change, it read the value as 2^63+1, so the re-encoded transaction differed.
 - `GetTransactionResponse::getXdrTransactionMeta()` decodes `resultMetaXdr`. Before this change, it decoded `resultXdr` and threw or returned a wrong object.
 - XDR decoding, encoding, TxRep, and SEP-51 JSON input reject arrays, strings, and opaque values longer than the maximum their XDR definition declares, and `TransactionBuilder::build()` rejects more than 100 operations. Before this change, the SDK accepted such values, for example a transaction with 101 operations or a 29-byte memo text.
-- `SetOptionsOperation` writes a clear flags or set flags value of 0 and a home domain of "" or "0". Before this change, it dropped them, so clearing a home domain with "" sent nothing and an imported transaction with such a value got another hash.
+- `SetOptionsOperation` writes a clear flags or set flags value of 0 and a home domain of "" or "0". Before this change, it dropped them, so clearing a home domain with "" sent nothing and an imported transaction with such a value got another hash. An inflation destination of "" or "0" throws `InvalidArgumentException`.
 - `AbstractTransaction::fromEnvelopeXdr()`, `fromEnvelopeBase64XdrString()` and `AbstractOperation::fromXdr()` read an inflation operation as the new `InflationOperation`, which encodes it unchanged. Before this change, they threw "Unknown operation type: 9", so a transaction with inflation could not be read or hashed.
 - XDR decoding rejects a string or variable-length opaque value whose padding bytes are not zero. Before this change, such a value decoded and re-encoded with zero padding, so two different byte strings decoded to the same value.
 - `XdrDecoder::opaqueVariable()` and `XdrDecoder::string()` throw `InvalidArgumentException` for a length prefix, value, or padding that is cut off. Before this change, a cut-off length prefix raised a PHP warning and a `TypeError`, and a cut-off value or padding returned the available bytes.
@@ -136,6 +139,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The SEP-10 challenge and token requests to an HTTPS URL and `StellarToml::fromDomain()` follow redirects only to HTTPS; disabled redirects and the other redirect settings of the HTTP client stay as configured. When the redirect protocols of the HTTP client exclude HTTPS, these requests follow no redirect.
 - The SEP-45 challenge and token requests to an HTTPS URL follow redirects only to HTTPS; disabled redirects and the other redirect settings of the HTTP client stay as configured. When the redirect protocols of the HTTP client exclude HTTPS, these requests follow no redirect.
 - `SubmitContractChallengeUnknownResponseException` names only the HTTP status in its message, since the response body can carry a token; `getResponseBody()` still returns the body.
+- The SDK requires phpseclib 3.0.58 or newer, the version that fixes the advisory GHSA-w3p9-g4p2-h3rr about parsing encrypted keys. The SDK parses no encrypted keys with phpseclib.
 
 ## [1.18.0] - 2026-11-14
 
