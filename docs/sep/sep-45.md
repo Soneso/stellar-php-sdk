@@ -23,9 +23,10 @@ Services supporting all account types should implement both protocols.
 1. Client requests a challenge from the server
 2. Server returns authorization entries calling `web_auth_verify` on its web-auth contract
 3. Client validates and signs the entries with keypairs registered in the contract
-4. Client submits signed entries to server
-5. Server simulates the transaction — this invokes the client contract's `__check_auth`
-6. If `__check_auth` succeeds, server returns a JWT token
+4. Client simulates the signed entries through Soroban RPC and checks the ledger entries they would write
+5. Client submits signed entries to server
+6. Server simulates the transaction, which invokes the client contract's `__check_auth`
+7. If `__check_auth` succeeds, server returns a JWT token
 
 ## Quick example
 
@@ -103,7 +104,7 @@ $webAuth = new WebAuthForContracts(
 
 ### Custom Soroban RPC URL
 
-By default, the SDK uses `soroban-testnet.stellar.org` for testnet and `soroban.stellar.org` for pubnet. Specify a custom URL if you run a private RPC server.
+On testnet, the SDK uses `soroban-testnet.stellar.org` unless you pass another URL. Every other network, pubnet included, needs the `sorobanRpcUrl` of an RPC provider you choose; without it the constructor and `fromDomain()` throw `InvalidArgumentException`.
 
 ```php
 <?php
@@ -124,7 +125,7 @@ $webAuth = new WebAuthForContracts(
 
 ## Basic authentication
 
-The `jwtToken()` method executes the complete SEP-45 flow: requesting the challenge, validating entries, signing with your keypairs, and submitting for a JWT.
+The `jwtToken()` method executes the complete SEP-45 flow: requesting the challenge, validating entries, signing with your keypairs, simulating the signed entries, and submitting for a JWT. The simulation needs a reachable Soroban RPC server.
 
 ```php
 <?php
@@ -164,7 +165,7 @@ $webAuth = WebAuthForContracts::fromDomain("anchor.example.com", Network::testne
 $jwtToken = $webAuth->jwtToken($contractId, [$signer]);
 ```
 
-The lookup uses a `SorobanServer` created from the configured Soroban RPC URL.
+The lookup and the simulation use a `SorobanServer` created from the configured Soroban RPC URL.
 To use a preconfigured server instead (custom HTTP client, or a mock in
 tests), inject it with `setSorobanServer()`.
 
@@ -213,7 +214,7 @@ $webAuth = WebAuthForContracts::fromDomain("anchor.example.com", Network::testne
 $jwtToken = $webAuth->jwtToken($contractId, []);
 ```
 
-**Note:** When the signers array is empty, the SDK skips the Soroban RPC call since no signature expiration is needed. This only works if both the anchor and your contract support signature-less authentication.
+**Note:** With an empty signers array, the SDK still sets the signature expiration ledger and simulates the entries through Soroban RPC. This only works if both the anchor and your contract support signature-less authentication.
 
 ## Client domain verification
 
@@ -249,7 +250,7 @@ $jwtToken = $webAuth->jwtToken(
 
 ### Remote signing via callback
 
-If the client domain signing key is on a remote server, use a callback function. The callback receives a `SorobanAuthorizationEntry` and returns the signed entry.
+If the client domain signing key is on a remote server, use a callback function. The callback receives a copy of the client domain entry as a `SorobanAuthorizationEntry` and returns it signed. Only its signature and signature expiration ledger may change; the SDK rejects any other change with `InvalidArgumentException`.
 
 ```php
 <?php
@@ -333,7 +334,10 @@ try {
         $signatureExpirationLedger
     );
 
-    // Step 6: Submit signed entries for JWT token
+    // Step 6: Simulate the signed entries and check the ledger entries they would write
+    $webAuth->verifySimulation($signedEntries, $contractAccountId);
+
+    // Step 7: Submit signed entries for JWT token
     $jwtToken = $webAuth->sendSignedChallenge($signedEntries);
 
     echo "JWT Token: " . $jwtToken . "\n";
@@ -380,6 +384,7 @@ use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorIn
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorInvalidNetworkPassphrase;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorMissingServerEntry;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorMissingClientEntry;
+use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeValidationErrorSimulationFailed;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\ContractChallengeRequestErrorResponse;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\SubmitContractChallengeErrorResponseException;
 use Soneso\StellarSDK\SEP\WebAuthForContracts\SubmitContractChallengeTimeoutResponseException;
@@ -423,13 +428,17 @@ try {
     // No authorization entry for client account
     echo "Invalid challenge: missing client entry\n";
     
+} catch (ContractChallengeValidationErrorSimulationFailed $e) {
+    // Soroban RPC reported a simulation error, or the signed entries would write a ledger entry
+    // outside the permitted set; getSimulationError() and getRpcError() hold the untrusted RPC details
+    echo "Simulation check failed: " . $e->getMessage() . "\n";
+
 } catch (ContractChallengeRequestErrorResponse $e) {
     // Server returned an error for challenge request
     echo "Challenge request failed: " . $e->getMessage() . "\n";
     
 } catch (SubmitContractChallengeErrorResponseException $e) {
     // Server rejected the signed challenge
-    // Common cause: signer not registered in contract's __check_auth
     echo "Authentication failed: " . $e->getMessage() . "\n";
 
 } catch (SubmitContractChallengeTimeoutResponseException $e) {
@@ -441,6 +450,7 @@ try {
     echo "Unexpected error (HTTP " . $e->getCode() . "): " . $e->getMessage() . "\n";
 
 } catch (Exception $e) {
+    // Also catches Soroban RPC transport errors, which propagate unwrapped
     echo "Unexpected error: " . $e->getMessage() . "\n";
 }
 ```
@@ -449,11 +459,12 @@ try {
 
 | Error | Cause | Solution |
 |-------|-------|----------|
-| `SubmitContractChallengeErrorResponseException` | Signer not in contract's `__check_auth` | Verify signer is registered in contract storage |
+| `ContractChallengeValidationErrorSimulationFailed` | Signer not in contract's `__check_auth` | Verify signer is registered in contract storage |
 | `ContractChallengeValidationErrorInvalidContractAddress` | Contract address mismatch | Check stellar.toml `WEB_AUTH_CONTRACT_ID` |
 | `ContractChallengeValidationErrorSubInvocationsFound` | Malicious challenge | Don't sign; report to anchor |
 | `ContractChallengeValidationErrorInvalidNetworkPassphrase` | Wrong network | Check you're using testnet vs pubnet correctly |
 | `ContractChallengeValidationErrorInvalidServerSignature` | Invalid server signature | Server may be compromised or misconfigured |
+| `ContractChallengeValidationErrorSimulationFailed` | Simulation failed, or the entries would write a ledger entry outside the permitted set | Check `getSimulationError()` and the Soroban RPC URL; report a disallowed entry to the anchor |
 
 ## Security notes
 
@@ -501,8 +512,8 @@ use Soneso\StellarSDK\SEP\WebAuthForContracts\WebAuthForContracts;
 // Testnet
 $webAuth = WebAuthForContracts::fromDomain("testnet.anchor.com", Network::testnet());
 
-// Public network (mainnet)
-$webAuth = WebAuthForContracts::fromDomain("anchor.com", Network::public());
+// Public network (mainnet), with the Soroban RPC URL of your provider
+$webAuth = WebAuthForContracts::fromDomain("anchor.com", Network::public(), sorobanRpcUrl: "https://your-rpc-provider.example.com");
 ```
 
 ## Protocol 27 credentials

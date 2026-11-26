@@ -119,11 +119,12 @@ Method signature:
 jwtToken(
     string   $clientAccountId,           // G... or M... account address
     array    $signers,                   // array<KeyPair> — must include private keys
-    ?int     $memo = null,               // ID memo for shared accounts (G... accounts only)
+    int|string|null $memo = null,        // ID memo for shared accounts (G... accounts only)
     ?string  $homeDomain = null,         // override home domain when server serves multiple
     ?string  $clientDomain = null,       // wallet domain for client attribution
     ?KeyPair $clientDomainKeyPair = null, // wallet signing keypair (if local)
-    ?callable $clientDomainSigningCallback = null // callback for remote signing
+    ?callable $clientDomainSigningCallback = null, // callback for remote signing
+    KeyPair|callable|null $authorizationSigner = null // signs the challenge request's Authorization token
 ): string
 ```
 
@@ -185,7 +186,7 @@ echo 'JWT: ' . $jwtToken . PHP_EOL;
 
 ## Memo-Based Authentication
 
-For services that distinguish users sharing a single Stellar account via an integer memo. The `$memo` parameter must be a positive integer.
+For services that distinguish users sharing a single Stellar account via an integer memo. The `$memo` parameter takes an ID from 0 to 2^64-1; pass a decimal string above `PHP_INT_MAX`.
 
 ```php
 <?php declare(strict_types=1);
@@ -282,7 +283,7 @@ echo 'JWT: ' . $jwtToken . PHP_EOL;
 
 ### Remote signing callback (key on a separate server)
 
-When the wallet's signing key is stored on a dedicated signing server, provide a callback instead. The SDK loads the wallet's `stellar.toml` to get its `SIGNING_KEY` for validation, then calls the callback with the base64-encoded transaction XDR. The callback must return the signed transaction as base64-encoded XDR.
+When the wallet's signing key is stored on a dedicated signing server, provide a callback instead. When the challenge has a `client_domain` operation, the SDK loads the wallet's `stellar.toml` to get its `SIGNING_KEY` for validation, then calls the callback with the base64-encoded transaction envelope XDR. The callback must return the same envelope, signed by the wallet, as base64-encoded XDR; a changed transaction throws `ChallengeValidationError`.
 
 ```php
 <?php declare(strict_types=1);
@@ -324,7 +325,7 @@ echo 'JWT: ' . $jwtToken . PHP_EOL;
 
 Callback signature: `function(string $transactionXdr): string`
 
-When `$clientDomain` is provided, you must supply either `$clientDomainKeyPair` or `$clientDomainSigningCallback` — not both, and not neither.
+When `$clientDomain` is provided, supply `$clientDomainKeyPair`, `$clientDomainSigningCallback`, or both. A key pair with a private key signs locally, and the callback is not called. A key pair with only the public key names the domain account without a `stellar.toml` lookup and needs the callback to sign.
 
 ```php
 // WRONG: clientDomain without a keypair or callback — throws InvalidArgumentException
@@ -366,7 +367,7 @@ Returned from the challenge endpoint (GET). Contains the base64-encoded transact
 
 | Method | Return type | Description |
 |--------|-------------|-------------|
-| `getTransaction()` | `string` | Base64-encoded XDR transaction envelope |
+| `getTransaction()` | `?string` | Base64-encoded XDR transaction envelope, or null when the response holds none |
 | `setTransaction(string $tx)` | `void` | Setter |
 
 ### SubmitCompletedChallengeResponse
@@ -427,7 +428,7 @@ try {
     echo 'SECURITY: invalid sequence number — do not proceed' . PHP_EOL;
 
 } catch (ChallengeValidationErrorInvalidSignature $e) {
-    // Challenge not signed by the expected server key, or has the wrong number of signatures
+    // No valid signature of the expected server key, or more than 20 signatures after signing
     echo 'Invalid server signature — check stellar.toml SIGNING_KEY' . PHP_EOL;
 
 } catch (ChallengeValidationErrorInvalidTimeBounds $e) {
@@ -435,7 +436,7 @@ try {
     echo 'Challenge expired — retry to get a fresh one' . PHP_EOL;
 
 } catch (ChallengeValidationErrorInvalidHomeDomain $e) {
-    // First op key does not match "<serverHomeDomain> auth"
+    // First op key does not match "<homeDomain> auth" for a non-empty $homeDomain, else "<serverHomeDomain> auth"
     echo 'Home domain mismatch in challenge' . PHP_EOL;
 
 } catch (ChallengeValidationErrorInvalidWebAuthDomain $e) {
@@ -443,7 +444,7 @@ try {
     echo 'Web auth domain mismatch' . PHP_EOL;
 
 } catch (ChallengeValidationErrorInvalidSourceAccount $e) {
-    // Wrong source account on an operation (first op must be client; others must be server or client-domain account)
+    // Transaction source is not the server key, or wrong source account on an operation (first op must be client; others must be server or client-domain account)
     echo 'Invalid source account in challenge operation' . PHP_EOL;
 
 } catch (ChallengeValidationErrorInvalidOperationType $e) {
@@ -487,11 +488,11 @@ try {
 | `InvalidArgumentException` (PHP built-in) | Bad parameters: memo + M... account, or `clientDomain` without signing means | Fix calling code |
 | `ChallengeRequestErrorResponse` | Server rejected challenge GET (bad account, rate limit, etc.) | Check account format, respect rate limits |
 | `ChallengeValidationErrorInvalidSeqNr` | Challenge sequence number != 0 | **Security risk** — abort |
-| `ChallengeValidationErrorInvalidSignature` | Wrong server signature or wrong number of signatures | Verify stellar.toml `SIGNING_KEY` |
+| `ChallengeValidationErrorInvalidSignature` | No valid server signature, or more than 20 signatures after signing | Verify stellar.toml `SIGNING_KEY` |
 | `ChallengeValidationErrorInvalidTimeBounds` | Challenge time window has passed or not started | Retry — get a fresh challenge |
-| `ChallengeValidationErrorInvalidHomeDomain` | First op key != `"<serverHomeDomain> auth"` | Check serverHomeDomain config |
-| `ChallengeValidationErrorInvalidWebAuthDomain` | `web_auth_domain` op value != auth endpoint host | Server config mismatch |
-| `ChallengeValidationErrorInvalidSourceAccount` | Wrong source on any operation | Server config issue |
+| `ChallengeValidationErrorInvalidHomeDomain` | First op key != `"<homeDomain> auth"`, with `$homeDomain` when non-empty, else `serverHomeDomain` | Check home domain config |
+| `ChallengeValidationErrorInvalidWebAuthDomain` | `web_auth_domain` op value != auth endpoint host, compared case-insensitively; `host:port` also matches when the endpoint URL names a port | Server config mismatch |
+| `ChallengeValidationErrorInvalidSourceAccount` | Transaction source is not the server signing key, or wrong source on an operation | Server config issue |
 | `ChallengeValidationErrorInvalidOperationType` | Non-ManageData operation in challenge | **Security risk** — server may be malicious |
 | `ChallengeValidationErrorInvalidMemoType` | Memo is not `MEMO_NONE` or `MEMO_ID` | Server config issue |
 | `ChallengeValidationErrorInvalidMemoValue` | Memo value missing or doesn't match request | Server config issue |
@@ -565,7 +566,7 @@ use phpseclib3\Math\BigInteger;
 $serverKeyPair = KeyPair::random();
 $serverAccountId = $serverKeyPair->getAccountId();
 $domain = 'place.domain.com';
-$authServer = 'http://api.stellar.org/auth';
+$authServer = 'https://api.stellar.org/auth';
 
 // Client keypair
 $clientKeyPair = KeyPair::random();
@@ -576,7 +577,7 @@ $transactionAccount = new Account($serverAccountId, new BigInteger(-1)); // seq 
 $now = time();
 $transaction = (new TransactionBuilder($transactionAccount))
     ->addOperation(
-        (new ManageDataOperationBuilder($domain . ' auth', random_bytes(64)))
+        (new ManageDataOperationBuilder($domain . ' auth', base64_encode(random_bytes(48))))
             ->setMuxedSourceAccount(MuxedAccount::fromAccountId($clientAccountId))
             ->build()
     )
@@ -611,8 +612,8 @@ echo 'Mock JWT: ' . $jwtToken . PHP_EOL;
 
 **Key details for building a valid mock challenge:**
 - The `TransactionAccount` sequence starts at `-1` (BigInteger) — `build()` increments it to `0`
-- The first ManageData op key must be `"<serverHomeDomain> auth"` and its source must be the client account
-- The `web_auth_domain` op source must be the server signing key; its value must match the `host` part of `$authServer`
+- The first ManageData op key must be `"<serverHomeDomain> auth"`, or `"<homeDomain> auth"` when `jwtToken()` gets a non-empty `$homeDomain`, and its source must be the client account
+- The `web_auth_domain` op source must be the server signing key; its value must match the `host` part of `$authServer`, ignoring case, or `host:port` when `$authServer` names a port
 - The transaction must be signed by the server's keypair with the correct `Network`
 - Time bounds must include the current time
 
@@ -635,12 +636,12 @@ $webAuth->jwtToken($gAddress, [$keyPair], memo: 99);              // G... + memo
 
 **Wrong: network passphrase mismatch**
 
-The `Network` passed to `WebAuth` must match the network the server signed the challenge with. If they differ, `ChallengeValidationErrorInvalidSignature` is thrown even though the challenge was technically valid.
+The `Network` passed to `WebAuth` must match the network the server signed the challenge with. If the challenge response names another network in `network_passphrase`, `ChallengeValidationError` is thrown before validation. Without that field, the server signature does not verify and `ChallengeValidationErrorInvalidSignature` is thrown.
 
 ```php
 // WRONG: WebAuth on public network but anchor signed for testnet
 $webAuth = new WebAuth($endpoint, $signingKey, $domain, Network::public());
-// → ChallengeValidationErrorInvalidSignature (signatures won't verify)
+// → ChallengeValidationError, or ChallengeValidationErrorInvalidSignature without network_passphrase
 
 // CORRECT: match the network to the anchor's actual network
 $webAuth = new WebAuth($endpoint, $signingKey, $domain, Network::testnet());
@@ -670,7 +671,7 @@ $webAuth->jwtToken($accountId, [$keyPair],
 ```php
 // WRONG: KeyPair::fromAccountId() has no private key and cannot sign
 $publicOnly = KeyPair::fromAccountId($accountId);
-$webAuth->jwtToken($accountId, [$publicOnly]); // signing fails silently or server rejects
+$webAuth->jwtToken($accountId, [$publicOnly]); // throws InvalidArgumentException before the challenge request
 
 // CORRECT: KeyPair::fromSeed() includes the private key
 $fullKeyPair = KeyPair::fromSeed(getenv('STELLAR_SECRET_SEED'));

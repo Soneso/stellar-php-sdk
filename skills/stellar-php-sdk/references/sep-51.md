@@ -29,7 +29,7 @@ public function toJson(): string;
 public static function fromJson(string $json): static;
 ```
 
-`toJson` is `json_encode(toJsonValue(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)`. `fromJson` is `static::fromJsonValue(json_decode($json, true, 512, JSON_THROW_ON_ERROR))`. Use the `*Value` pair when composing or piping; use the plain `toJson` / `fromJson` pair at API boundaries. Lower-level primitives shared by every type live on `Soneso\StellarSDK\Xdr\XdrJsonHelper`.
+`toJson` is `XdrJsonHelper::encodeText(toJsonValue())` and `fromJson` is `static::fromJsonValue(XdrJsonHelper::decodeText($json))`. Both throw `JsonException` for JSON nested deeper than `XdrJsonHelper::JSON_DEPTH_LIMIT` (1100 levels), and `decodeText` rejects a repeated object key with `InvalidArgumentException`. Use the `*Value` pair when composing or piping; use the plain `toJson` / `fromJson` pair at API boundaries. Lower-level primitives shared by every type live on `Soneso\StellarSDK\Xdr\XdrJsonHelper`.
 
 ## Quick round-trip
 
